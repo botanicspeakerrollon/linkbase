@@ -145,5 +145,4 @@ The sample container was renamed in place to `linkbase-samples`, with its role r
 
 ## Still to do
 
-- Set up a private git remote, so the code isn't only on this PC.
 - Choose where backups are copied to, and consider scheduling them.

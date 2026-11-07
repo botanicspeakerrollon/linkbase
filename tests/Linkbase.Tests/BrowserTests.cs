@@ -652,6 +652,10 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         var search = _page.Locator(".pattern-bar");
 
         Assert.Equal(RailWidth, (await rail.BoundingBoxAsync())!.Width, 0);
+
+        // The rail opens on mouseenter, so the pointer has to come from outside it. Playwright's starts at (0, 0), which is
+        // inside the rail, and an earlier test may leave it anywhere.
+        await _page.Mouse.MoveAsync(900, 500);
         await rail.HoverAsync();
         await _page.WaitForFunctionAsync("() => document.querySelector('.app-rail').getBoundingClientRect().width > 100");
         await _page.WaitForTimeoutAsync(400);

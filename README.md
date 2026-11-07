@@ -59,6 +59,10 @@ and Chromium has to be installed once, after a build:
 powershell -ExecutionPolicy Bypass -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium
 ```
 
+**CI** runs the same build and every test on GitHub Actions for each push to `main` and each pull request
+(`.github/workflows/ci.yml`), on Ubuntu with the runner's Docker. Results are kept with each run for two weeks. The
+performance test is skipped there, as it is locally unless `LINKBASE_PERF_CONNECTION` is set.
+
 Coverage measures the code we wrote, leaving out migrations and generated code. It uses Microsoft's collector rather
 than coverlet, because Windows Smart App Control blocks the rewritten copy of `Linkbase.dll` that coverlet produces.
 
