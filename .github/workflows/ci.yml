@@ -1,0 +1,64 @@
+# Builds in Release and runs every test on each push and pull request. The database tests start Postgres with
+# Testcontainers, which uses the runner's Docker, and the browser tests drive Chromium through Playwright.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes an older run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore Linkbase.sln
+
+      # Warnings are errors, from Directory.Build.props.
+      - name: Build
+        run: dotnet build Linkbase.sln -c Release --no-restore
+
+      - name: Install Chromium for the browser tests
+        run: pwsh tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Test
+        run: >
+          dotnet test tests/Linkbase.Tests -c Release --no-build
+          --logger "trx;LogFileName=results.trx"
+          --logger "console;verbosity=minimal"
+          --results-directory TestResults
+
+      - name: Keep the test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+          retention-days: 14
