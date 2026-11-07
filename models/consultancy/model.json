@@ -1,0 +1,35 @@
+// A small, made-up consultancy, to show a model that isn't climbing. Everything here is fictional.
+{
+  "name": "Example consultancy",
+  "types": [
+    {
+      "name": "Person", "color": "#c2410c", "icon": "Person",
+      "source": { "file": "people.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "title" }, { "key": "joined", "type": "date" } ]
+    },
+    {
+      "name": "Team", "color": "#4338ca", "icon": "Groups",
+      "source": { "file": "teams.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "floor", "type": "number" } ]
+    },
+    {
+      "name": "Client", "color": "#0f766e", "icon": "Business",
+      "source": { "file": "clients.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "sector" }, { "key": "city" } ]
+    },
+    {
+      "name": "Project", "color": "#a16207", "icon": "Assignment",
+      "source": { "file": "projects.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "started", "type": "date" }, { "key": "budget", "type": "number" }, { "key": "status" } ]
+    }
+  ],
+  "relationships": [
+    { "from": "Person", "type": "MEMBER_OF", "to": "Team", "source": { "file": "people.csv", "fromColumn": "id", "toColumn": "team" } },
+    { "from": "Project", "type": "FOR", "to": "Client", "source": { "file": "projects.csv", "fromColumn": "id", "toColumn": "client" } },
+    {
+      "from": "Person", "type": "WORKS_ON", "to": "Project",
+      "source": { "file": "assignments.csv", "fromColumn": "person", "toColumn": "project" },
+      "fields": [ { "key": "role" }, { "key": "days_a_week", "type": "number" } ]
+    }
+  ]
+}

@@ -1,0 +1,294 @@
+@page "/import/{BatchId:long}"
+@inject WebImportRepository Repository
+@inject AreaRepository Areas
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Review import</PageTitle>
+
+<MudBreadcrumbs Items="_crumbs" Class="pa-0 mb-2" />
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Review import</MudText>
+
+@if (_import is null)
+{
+    @if (_loaded)
+    {
+        <MudAlert Severity="Severity.Warning">This import no longer exists.</MudAlert>
+    }
+    else
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+}
+else if (_import.Status != ImportStatus.Staged)
+{
+    <MudAlert Severity="Severity.Info">This import is @_import.Status.ToString().ToLowerInvariant(), so there's nothing left to review. <MudLink Href="/import">Back to imports</MudLink></MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.body2" Class="mb-3">
+        @(_import.Title ?? _import.SourceUrl ?? "Pasted text")
+        @if (_import.Title is not null && _import.SourceUrl is not null)
+        {
+            <span> · @_import.SourceUrl</span>
+        }
+    </MudText>
+
+    @if (_import.Warnings.Count > 0)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-3">
+            <div>Removed from the model's answer, because the text didn't support it:</div>
+            <ul>
+                @foreach (var warning in _import.Warnings)
+                {
+                    <li>@warning</li>
+                }
+            </ul>
+        </MudAlert>
+    }
+
+    @if (_import.Crags.Count == 0)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-3">No crags or routes were found in this text.</MudAlert>
+    }
+
+    @foreach (var crag in _import.Crags)
+    {
+        <MudPaper Class="pa-3 mb-3" Elevation="1">
+            <MudGrid Spacing="2" Class="align-center">
+                <MudItem xs="12" md="1">
+                    <MudCheckBox @bind-Value="crag.Include" Label="Add" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="crag.Name" Label="Crag" Disabled="@(!crag.Include)" />
+                </MudItem>
+                <MudItem xs="12" md="1">
+                    <MudChip T="string" Size="Size.Small" Color="@MatchColor(crag.Match)">@crag.Match</MudChip>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="long" Value="crag.Choice" ValueChanged="@(choice => ChooseCragAsync(crag, choice))" Label="Use" Disabled="@(!crag.Include)"
+                               ToStringFunc="@(choice => ChoiceLabel(crag, choice))">
+                        @if (crag.Match == StagedMatch.Ambiguous)
+                        {
+                            <MudSelectItem T="long" Value="StagedRow.Undecided">Choose…</MudSelectItem>
+                        }
+                        <MudSelectItem T="long" Value="StagedRow.CreateNew">Create a new crag</MudSelectItem>
+                        @foreach (var candidate in crag.Candidates)
+                        {
+                            <MudSelectItem T="long" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    @if (crag.Choice > 0)
+                    {
+                        <MudLink Href="@($"/browse/crag/{crag.Choice}")" Target="_blank" Typo="Typo.caption">Open this crag</MudLink>
+                    }
+                </MudItem>
+
+                @if (crag.Include && crag.Choice == StagedRow.CreateNew)
+                {
+                    <MudItem xs="12" md="4">
+                        <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="AreaOption" Value="@AreaValue(crag)" ValueChanged="@(area => SetArea(crag, area))" Label="Area" Clearable="true"
+                                         SearchFunc="SearchAreasAsync" ToStringFunc="@(a => a?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true"
+                                         HelperText="@AreaHelp(crag)">
+                            <ItemTemplate Context="option">@option.Path</ItemTemplate>
+                        </MudAutocomplete>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Value="crag.NewAreaName" ValueChanged="@(name => SetNewAreaName(crag, name))" Label="Or a new area named"
+                                      HelperText="Goes inside the area on the left. With none chosen, tick the box if it's a country." />
+                        @if (!string.IsNullOrWhiteSpace(crag.NewAreaName) && crag.NewAreaParentId is null)
+                        {
+                            <MudCheckBox T="bool" Value="@(crag.NewAreaKind == AreaKind.Country)" ValueChanged="@(isCountry => SetNewAreaIsCountry(crag, isCountry))" Label="It's a country" Dense="true" />
+                        }
+                    </MudItem>
+                    <MudItem xs="6" md="2"><MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="crag.RockType" Label="Rock type" /></MudItem>
+                    <MudItem xs="3" md="1"><MudNumericField Variant="Variant.Outlined" Margin="Margin.Dense" T="double?" @bind-Value="crag.Lat" Label="Lat" HideSpinButtons="true" /></MudItem>
+                    <MudItem xs="3" md="1"><MudNumericField Variant="Variant.Outlined" Margin="Margin.Dense" T="double?" @bind-Value="crag.Lon" Label="Lon" HideSpinButtons="true" /></MudItem>
+                }
+            </MudGrid>
+
+            @if (crag.Include && crag.Routes.Count > 0)
+            {
+                <MudDataGrid T="StagedRoute" Items="crag.Routes" ReadOnly="false" EditMode="DataGridEditMode.Cell" Dense="true" Elevation="0" Class="mt-2" Filterable="false" SortMode="SortMode.None">
+                    <Columns>
+                        <TemplateColumn Title="Add" Editable="false">
+                            <CellTemplate>
+                                <MudCheckBox @bind-Value="context.Item.Include" Dense="true" aria-label="@($"Add {context.Item.Name}")" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Name" Title="Route" />
+                        <PropertyColumn Property="x => x.Grade" Title="Grade" />
+                        <TemplateColumn Title="System" Editable="false">
+                            <CellTemplate>
+                                <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="GradeSystem?" @bind-Value="context.Item.GradeSystem" ToStringFunc="@(v => Labels.Of(v))" Dense="true" Clearable="true">
+                                    @foreach (var value in Enum.GetValues<GradeSystem>())
+                                    {
+                                        <MudSelectItem T="GradeSystem?" Value="value">@Labels.Of(value)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Discipline" Editable="false">
+                            <CellTemplate>
+                                <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="Discipline?" @bind-Value="context.Item.Discipline" ToStringFunc="@(v => Labels.Of(v))" Dense="true" Clearable="true">
+                                    @foreach (var value in Enum.GetValues<Discipline>())
+                                    {
+                                        <MudSelectItem T="Discipline?" Value="value">@Labels.Of(value)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.LengthM" Title="m" />
+                        <PropertyColumn Property="x => x.Pitches" Title="Pitches" />
+                        <PropertyColumn Property="x => x.Summary" Title="Summary" />
+                        <TemplateColumn Title="Match" Editable="false">
+                            <CellTemplate>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudChip T="string" Size="Size.Small" Color="@MatchColor(context.Item.Match)">@context.Item.Match</MudChip>
+                                    @if (context.Item.Candidates.Count > 0)
+                                    {
+                                        <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="long" @bind-Value="context.Item.Choice" Dense="true" Style="min-width: 11rem"
+                                                   ToStringFunc="@(choice => ChoiceLabel(context.Item, choice))">
+                                            @if (context.Item.Match == StagedMatch.Ambiguous)
+                                            {
+                                                <MudSelectItem T="long" Value="StagedRow.Undecided">Choose…</MudSelectItem>
+                                            }
+                                            <MudSelectItem T="long" Value="StagedRow.CreateNew">Create new</MudSelectItem>
+                                            @foreach (var candidate in context.Item.Candidates)
+                                            {
+                                                <MudSelectItem T="long" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    @if (context.Item.Choice > 0)
+                                    {
+                                        <MudLink Href="@($"/browse/route/{context.Item.Choice}")" Target="_blank" Typo="Typo.caption">Open</MudLink>
+                                    }
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            }
+        </MudPaper>
+    }
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-3">@_error</MudAlert>
+    }
+
+    <MudStack Row="true">
+        <MudButton OnClick="CommitAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_saving || _import.Crags.Count == 0)">Add to logbook</MudButton>
+        <MudButton Href="/import" Variant="Variant.Text">Back</MudButton>
+    </MudStack>
+    <MudText Typo="Typo.caption" Class="d-block mt-2">Your edits here aren't saved until you add them. Existing rows you match to aren't changed.</MudText>
+}
+
+@code {
+    [Parameter] public long BatchId { get; set; }
+
+    private StagedImport? _import;
+    private bool _loaded;
+    private bool _saving;
+    private string? _error;
+    private readonly Dictionary<long, string> _areaNames = [];
+    private readonly List<BreadcrumbItem> _crumbs = [new("Import", "/import"), new("Review", null, disabled: true)];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _import = await Repository.LoadStagedAsync(BatchId);
+        _loaded = true;
+    }
+
+    private static Color MatchColor(StagedMatch match) => match switch
+    {
+        StagedMatch.Existing => Color.Success,
+        StagedMatch.Ambiguous => Color.Warning,
+        _ => Color.Info,
+    };
+
+    private static string CandidateLabel(MatchCandidate candidate) =>
+        candidate.Detail is null ? candidate.Name : $"{candidate.Name} ({candidate.Detail})";
+
+    private static string ChoiceLabel(StagedRow row, long choice) => choice switch
+    {
+        StagedRow.Undecided => "Choose…",
+        StagedRow.CreateNew => "Create new",
+        _ => row.Candidates.FirstOrDefault(c => c.Id == choice) is { } candidate ? CandidateLabel(candidate) : "",
+    };
+
+    private async Task ChooseCragAsync(StagedCrag crag, long choice)
+    {
+        crag.Choice = choice;
+        await Repository.RematchRoutesAsync(BatchId, _import!.SourceUrl, crag);
+    }
+
+    private static AreaOption? AreaValue(StagedCrag crag)
+    {
+        var id = crag.AreaId ?? crag.NewAreaParentId;
+        return id is { } areaId ? new AreaOption(areaId, crag.AreaLabel ?? "", crag.AreaLabel ?? "") : null;
+    }
+
+    private static string AreaHelp(StagedCrag crag) =>
+        crag.ExtractedArea is { } area ? $"The text says: {area}" : "The text doesn't say";
+
+    private static void SetArea(StagedCrag crag, AreaOption? area)
+    {
+        crag.AreaLabel = area?.Name;
+        if (string.IsNullOrWhiteSpace(crag.NewAreaName))
+        {
+            crag.AreaId = area?.Id;
+            crag.NewAreaParentId = null;
+        }
+        else
+        {
+            crag.AreaId = null;
+            crag.NewAreaParentId = area?.Id;
+        }
+    }
+
+    private static void SetNewAreaName(StagedCrag crag, string? name)
+    {
+        crag.NewAreaName = name;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            crag.AreaId = crag.NewAreaParentId;
+            crag.NewAreaParentId = null;
+        }
+        else if (crag.AreaId is { } areaId)
+        {
+            crag.NewAreaParentId = areaId;
+            crag.AreaId = null;
+        }
+    }
+
+    private static void SetNewAreaIsCountry(StagedCrag crag, bool isCountry) =>
+        crag.NewAreaKind = isCountry ? AreaKind.Country : null;
+
+    private async Task<IEnumerable<AreaOption>> SearchAreasAsync(string text, CancellationToken cancellationToken) =>
+        await Areas.SearchAsync(text, cancellationToken);
+
+    private async Task CommitAsync()
+    {
+        _saving = true;
+        _error = null;
+        try
+        {
+            var summary = await Repository.CommitAsync(BatchId, _import!.Crags);
+            Snackbar.Add(
+                $"Added {Labels.Count(summary.RoutesCreated, "new route")} and {Labels.Count(summary.CragsCreated, "new crag")}. "
+                + $"Matched {Labels.Count(summary.RoutesMatched, "route")} and {Labels.Count(summary.CragsMatched, "crag")} already in your logbook.",
+                Severity.Success);
+            Navigation.NavigateTo("/import");
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

@@ -1,0 +1,8 @@
+Supplier ID,Name,Founded,Staff,Approved,Country
+s1,Northgate Hosting,2009-05-14,48,true,UK
+s2,Pixel & Pine Studio,2016-10-03,9,true,Ireland
+s3,Ledgerline Accounting,1998-02-27,120,false,UK
+s4,Brightwire Networks,2012-07-19,35,true,Netherlands
+s5,Quillfeather Translation,2020-01-06,6,true,Germany
+,Unnamed supplier with no id,2021-03-01,2,false,UK
+s2,Pixel and Pine (duplicate row),2016-10-03,9,true,Ireland

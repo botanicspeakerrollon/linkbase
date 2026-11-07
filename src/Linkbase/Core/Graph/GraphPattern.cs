@@ -1,0 +1,231 @@
+using Linkbase.Data;
+using Linkbase.Domains;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+using Npgsql;
+using NpgsqlTypes;
+
+namespace Linkbase.Core.Graph;
+
+public enum GraphValueType { Text, Number, Date, Boolean }
+
+public enum FilterOperator { Equals, Contains, StartsWith, EndsWith, GreaterThan, GreaterOrEqual, LessThan, LessOrEqual }
+
+public sealed record GraphConnection(string SourceLabel, string RelType, string TargetLabel);
+
+public sealed record GraphPropertyInfo(string Label, string Key, GraphValueType Type);
+
+// What exists in the graph: which labels link to which, and which properties each label has.
+public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IReadOnlyList<GraphPropertyInfo> Properties)
+{
+    // In the order of Properties, which the repository lists with the most common types first.
+    public IReadOnlyList<string> Labels { get; } = Properties.Select(p => p.Label).Distinct().ToList();
+
+    public IReadOnlyList<string> RelTypes { get; } = Connections.Select(c => c.RelType).Distinct().OrderBy(r => r, StringComparer.Ordinal).ToList();
+
+    // How the model file says its types should look, where it says so.
+    public IReadOnlyList<GraphTypeInfo> Types { get; init; } = [];
+}
+
+public sealed record GraphTypeInfo(string Label, string? Color, string? Icon);
+
+public sealed record PatternFilter(string Key, FilterOperator Operator, string Value)
+{
+    // Free text: the value can be in the node's name or any of its properties.
+    public const string AnyField = "*";
+}
+
+// A null label matches a node of any kind.
+public sealed record PatternNode(string? Label, IReadOnlyList<PatternFilter> Filters);
+
+public sealed record PatternRel(string RelType, bool Outgoing);
+
+// A chain such as Crag <-AT- Route. There's always one more node than there are relationships.
+public sealed record GraphPattern(IReadOnlyList<PatternNode> Nodes, IReadOnlyList<PatternRel> Rels);
+
+// Node ids are in the order of the query's matches. Remaining counts matches left out by the limit.
+public sealed record PatternResult(IReadOnlyList<string> NodeIds, int Remaining);
+
+public sealed record PropertyMatch(string Label, string Key, string Value);
+
+public sealed record RelationshipCount(string RelType, bool Outgoing, string OtherLabel, int Count);
+
+// Turns a pattern into SQL. Labels, relationships and property names only ever reach the SQL text after
+// passing an allow-list. Every value is a parameter.
+public static partial class GraphPatternSql
+{
+
+    public static (string Sql, List<NpgsqlParameter> Parameters) Build(GraphPattern pattern, GraphSchema schema, int limit, int offset)
+    {
+        if (pattern.Nodes.Count == 0 || pattern.Rels.Count != pattern.Nodes.Count - 1)
+        {
+            throw new LinkbaseValidationException("That search isn't complete.");
+        }
+
+        var parameters = new List<NpgsqlParameter>();
+        string Add(object value, NpgsqlDbType type)
+        {
+            var name = $"p{parameters.Count}";
+            parameters.Add(new NpgsqlParameter(name, type) { Value = value });
+            return $"@{name}";
+        }
+
+        var from = new StringBuilder("FROM graph_nodes n0");
+        var where = new List<string> { $"n0.user_id = {Add(AppUser.DefaultId, NpgsqlDbType.Bigint)}" };
+
+        for (var i = 0; i < pattern.Rels.Count; i++)
+        {
+            var rel = pattern.Rels[i];
+            if (!schema.RelTypes.Contains(rel.RelType))
+            {
+                throw new LinkbaseValidationException($"Unknown relationship '{rel.RelType}'.");
+            }
+
+            var (near, far) = rel.Outgoing ? ("source_id", "target_id") : ("target_id", "source_id");
+            from.Append($" JOIN graph_edges e{i} ON e{i}.{near} = n{i}.node_id AND e{i}.rel_type = {Add(rel.RelType, NpgsqlDbType.Text)}");
+            from.Append($" JOIN graph_nodes n{i + 1} ON n{i + 1}.node_id = e{i}.{far}");
+        }
+
+        for (var i = 0; i < pattern.Nodes.Count; i++)
+        {
+            var node = pattern.Nodes[i];
+            if (node.Label is { } label)
+            {
+                if (!schema.Labels.Contains(label))
+                {
+                    throw new LinkbaseValidationException($"Unknown type '{label}'.");
+                }
+
+                where.Add($"n{i}.label = {Add(label, NpgsqlDbType.Text)}");
+            }
+
+            foreach (var filter in node.Filters)
+            {
+                where.Add(FilterSql(i, node.Label, filter, schema, Add));
+            }
+        }
+
+        var indexes = Enumerable.Range(0, pattern.Nodes.Count).ToList();
+        var ids = string.Join(", ", indexes.Select(i => $"n{i}.node_id"));
+
+        // Names that really contain the text come before near misses.
+        var closest = indexes.SelectMany(i => pattern.Nodes[i].Filters
+            .Where(f => f.Key == PatternFilter.AnyField)
+            .Select(f => $"n{i}.name ILIKE {Add($"%{EscapeLike(f.Value)}%", NpgsqlDbType.Text)} DESC"));
+        var order = string.Join(", ", closest.Concat(indexes.SelectMany(i => new[] { $"n{i}.name", $"n{i}.node_id" })));
+        var sql =
+            $"""
+            SELECT ARRAY[{ids}] AS "NodeIds", count(*) OVER () AS "Total"
+            {from}
+            WHERE {string.Join(" AND ", where)}
+            ORDER BY {order}
+            LIMIT {Add(limit, NpgsqlDbType.Integer)} OFFSET {Add(offset, NpgsqlDbType.Integer)}
+            """;
+        return (sql, parameters);
+    }
+
+    // Conditions on the nodes an expansion adds, as node n0. A condition only applies to types that have that
+    // property, so filtering by a route's grade doesn't hide the crag it's at.
+    public static string PropertyFiltersSql(IReadOnlyList<PatternFilter> filters, GraphSchema schema, Func<object, NpgsqlDbType, string> add)
+    {
+        var conditions = filters.Select(filter =>
+        {
+            var info = schema.Properties.FirstOrDefault(p => p.Key == filter.Key && p.Key != "name")
+                ?? throw new LinkbaseValidationException($"Unknown property '{filter.Key}'.");
+            var labels = schema.Properties.Where(p => p.Key == filter.Key && p.Type == info.Type).Select(p => p.Label).ToArray();
+
+            // This checks the key, so it has to come before the key goes into the text below.
+            var comparison = FilterSql(0, info.Label, filter, schema, add);
+            return $"(n0.label <> ALL({add(labels, NpgsqlDbType.Array | NpgsqlDbType.Text)}) OR n0.props->>'{filter.Key}' IS NULL OR {comparison})";
+        });
+        return string.Join(" AND ", conditions.DefaultIfEmpty("TRUE"));
+    }
+
+    private static string FilterSql(int index, string? label, PatternFilter filter, GraphSchema schema, Func<object, NpgsqlDbType, string> add)
+    {
+        if (filter.Key == PatternFilter.AnyField)
+        {
+            return AnyFieldSql(index, filter, add);
+        }
+
+        var type = ValueType(schema, label, filter.Key)
+            ?? throw new LinkbaseValidationException($"Unknown property '{filter.Key}'.");
+
+        // The key is safe to put in the SQL text: it came from the schema, and it must also look like a column name.
+        if (!PropertyKey().IsMatch(filter.Key))
+        {
+            throw new LinkbaseValidationException($"Unknown property '{filter.Key}'.");
+        }
+
+        var column = filter.Key == "name" ? $"n{index}.name" : $"n{index}.props->>'{filter.Key}'";
+        switch (type)
+        {
+            case GraphValueType.Number:
+                if (!decimal.TryParse(filter.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var number))
+                {
+                    throw new LinkbaseValidationException($"'{filter.Value}' isn't a number.");
+                }
+
+                return $"({column})::numeric {Comparison(filter.Operator)} {add(number, NpgsqlDbType.Numeric)}";
+            case GraphValueType.Date:
+                if (!DateOnly.TryParse(filter.Value, CultureInfo.InvariantCulture, out var date))
+                {
+                    throw new LinkbaseValidationException($"'{filter.Value}' isn't a date. Use the form 2024-06-30.");
+                }
+
+                return $"({column})::date {Comparison(filter.Operator)} {add(date, NpgsqlDbType.Date)}";
+            case GraphValueType.Boolean:
+                return $"{column} = {add(filter.Value.Trim().ToLowerInvariant(), NpgsqlDbType.Text)}";
+            default:
+                return TextSql(column, filter, add);
+        }
+    }
+
+    // Some types take their name from another node, so they match on their own properties rather than flooding every search.
+    private static string AnyFieldSql(int index, PatternFilter filter, Func<object, NpgsqlDbType, string> add)
+    {
+        var node = $"n{index}";
+        var like = add($"%{EscapeLike(filter.Value)}%", NpgsqlDbType.Text);
+        var term = add(filter.Value, NpgsqlDbType.Text);
+        var borrowed = add(RegisteredDomains.LabelsNamedAfterParent, NpgsqlDbType.Array | NpgsqlDbType.Text);
+
+        // % is a near miss on the name, up to pg_trgm's similarity threshold. Unlike similarity(), it can use an index.
+        return $"({node}.search_text ILIKE {like} OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
+    }
+
+    private static string EscapeLike(string text) =>
+        text.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
+
+    private static string TextSql(string column, PatternFilter filter, Func<object, NpgsqlDbType, string> add)
+    {
+        var escaped = EscapeLike(filter.Value);
+        return filter.Operator switch
+        {
+            FilterOperator.Equals => $"lower({column}) = lower({add(filter.Value, NpgsqlDbType.Text)})",
+            FilterOperator.Contains => $"{column} ILIKE {add($"%{escaped}%", NpgsqlDbType.Text)}",
+            FilterOperator.StartsWith => $"{column} ILIKE {add($"{escaped}%", NpgsqlDbType.Text)}",
+            FilterOperator.EndsWith => $"{column} ILIKE {add($"%{escaped}", NpgsqlDbType.Text)}",
+            _ => throw new LinkbaseValidationException($"That comparison doesn't work on text like '{filter.Key}'."),
+        };
+    }
+
+    private static string Comparison(FilterOperator op) => op switch
+    {
+        FilterOperator.Equals => "=",
+        FilterOperator.GreaterThan => ">",
+        FilterOperator.GreaterOrEqual => ">=",
+        FilterOperator.LessThan => "<",
+        FilterOperator.LessOrEqual => "<=",
+        _ => throw new LinkbaseValidationException("That comparison only works on text."),
+    };
+
+    private static GraphValueType? ValueType(GraphSchema schema, string? label, string key)
+    {
+        var found = schema.Properties.FirstOrDefault(p => p.Key == key && (label is null || p.Label == label));
+        return found?.Type;
+    }
+
+    [GeneratedRegex("^[a-z][a-z_]*$")]
+    private static partial Regex PropertyKey();
+}

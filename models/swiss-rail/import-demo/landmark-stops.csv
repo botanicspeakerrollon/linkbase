@@ -1,0 +1,21 @@
+landmark,stop_id,stop_name
+matterhorn,8501689,Zermatt
+matterhorn,8501694,Gornergrat
+jungfrau,8507364,Jungfraujoch
+jungfrau,8507374,Kleine Scheidegg
+eiger,8507374,Kleine Scheidegg
+eiger,8507380,Grindelwald
+aletsch,8507364,Jungfraujoch
+aletsch,8501609,Brig
+rhine-falls,8503424,Schaffhausen
+chapel-bridge,8505000,Luzern
+chillon,8501300,Montreux
+zytglogge,8507000,Bern
+pilatus,8508456,Pilatus Kulm
+pilatus,8508317,Alpnachstad
+rigi,8505069,Rigi Kulm
+rigi,8508464,Vitznau
+jet-deau,8501008,Genève
+lavaux,8501120,Lausanne
+bernina,8509253,St. Moritz
+lavaux,9999999,A stop that isn't in the timetable

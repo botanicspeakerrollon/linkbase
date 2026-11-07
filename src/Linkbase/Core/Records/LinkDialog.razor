@@ -1,0 +1,83 @@
+@inject RecordRepository Records
+
+@* Links a record to another, by one of the relationships its model allows. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudSelect T="LinkOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationship" @bind-Value="_option"
+                       ToStringFunc="Describe" Required="true" RequiredError="Choose a relationship">
+                @foreach (var option in Options)
+                {
+                    <MudSelectItem Value="option">@Describe(option)</MudSelectItem>
+                }
+            </MudSelect>
+            @if (_option is not null)
+            {
+                <MudAutocomplete @key="_option" T="RecordOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@_option.OtherType" @bind-Value="_other"
+                                 SearchFunc="SearchAsync" ToStringFunc="@(o => o?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true"
+                                 Required="true" RequiredError="@($"Choose a {_option.OtherType}")">
+                    <ItemTemplate Context="option">
+                        @option.Name <MudText Typo="Typo.caption" Inline="true">@option.Key</MudText>
+                    </ItemTemplate>
+                </MudAutocomplete>
+            }
+        </MudForm>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled">Link</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const int Suggestions = 20;
+
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter] public RecordDetail Record { get; set; } = null!;
+    [Parameter] public IReadOnlyList<LinkOption> Options { get; set; } = [];
+
+    private MudForm? _form;
+    private LinkOption? _option;
+    private RecordOption? _other;
+    private string? _error;
+
+    protected override void OnInitialized() => _option = Options.Count == 1 ? Options[0] : null;
+
+    private string Describe(LinkOption? option) => option is null
+        ? ""
+        : option.Outgoing ? $"{Record.Type} {option.RelType} {option.OtherType}" : $"{option.OtherType} {option.RelType} {Record.Type}";
+
+    private async Task<IEnumerable<RecordOption>> SearchAsync(string text, CancellationToken cancellationToken) =>
+        await Records.FindAsync(_option!.OtherType, text, Suggestions, cancellationToken);
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid || _option is null || _other is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_option.Outgoing)
+            {
+                await Records.AddLinkAsync(Record.Id, _option.RelType, _other.Id);
+            }
+            else
+            {
+                await Records.AddLinkAsync(_other.Id, _option.RelType, Record.Id);
+            }
+
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}

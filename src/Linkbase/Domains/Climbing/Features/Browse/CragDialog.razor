@@ -1,0 +1,79 @@
+@inject CragRepository Crags
+@inject AreaRepository Areas
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_name" Label="Name" Required="true" RequiredError="A crag needs a name" />
+            <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="AreaOption" @bind-Value="_area" Label="Area" Required="true" RequiredError="Choose an area"
+                             SearchFunc="SearchAreasAsync" ToStringFunc="@(a => a?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true">
+                <ItemTemplate Context="option">@option.Path</ItemTemplate>
+            </MudAutocomplete>
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_rockType" Label="Rock type" />
+            <MudGrid Spacing="2">
+                <MudItem xs="6"><MudNumericField Variant="Variant.Outlined" Margin="Margin.Dense" T="double?" @bind-Value="_lat" Label="Latitude" Min="-90" Max="90" /></MudItem>
+                <MudItem xs="6"><MudNumericField Variant="Variant.Outlined" Margin="Margin.Dense" T="double?" @bind-Value="_lon" Label="Longitude" Min="-180" Max="180" /></MudItem>
+            </MudGrid>
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_aliases" Label="Other names" HelperText="Separate with commas" />
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_notes" Label="Notes" Lines="3" />
+        </MudForm>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter] public CragDetail Crag { get; set; } = null!;
+
+    private MudForm? _form;
+    private string? _name;
+    private AreaOption? _area;
+    private string? _rockType;
+    private double? _lat;
+    private double? _lon;
+    private string? _aliases;
+    private string? _notes;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _name = Crag.Name;
+        _rockType = Crag.RockType;
+        _lat = Crag.Lat;
+        _lon = Crag.Lon;
+        _aliases = string.Join(", ", Crag.Aliases);
+        _notes = Crag.Notes;
+        var path = await Areas.PathAsync(Crag.AreaId);
+        _area = new AreaOption(Crag.AreaId, path[^1].Name, string.Join(" > ", path.Select(p => p.Name)));
+    }
+
+    private async Task<IEnumerable<AreaOption>> SearchAreasAsync(string text, CancellationToken cancellationToken) =>
+        await Areas.SearchAsync(text, cancellationToken);
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid || _area is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var aliases = (_aliases ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            await Crags.UpdateAsync(Crag.Id, new CragInput(_name!, _area.Id, _rockType, _lat, _lon, aliases, _notes));
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}

@@ -1,0 +1,232 @@
+using System.Globalization;
+using CsvHelper;
+using Linkbase.Data;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
+
+namespace Linkbase.Core.Models;
+
+public sealed record ModelLoadSummary(int Types, long Nodes, long Links, TimeSpan Took);
+
+// Replaces everything in the generic store with a model file's types and data, in one transaction. Rows whose key is
+// empty are skipped, a repeated key keeps its first row, and a link whose ends aren't both loaded is left out.
+public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFactory)
+{
+    public async Task<ModelLoadSummary> LoadAsync(string path, TextWriter output, CancellationToken cancellationToken = default)
+    {
+        var model = ModelFile.Read(path);
+        var started = DateTime.UtcNow;
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
+        await connection.OpenAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+
+        async Task<long> RunAsync(string sql, params (string Name, object Value, NpgsqlDbType Type)[] parameters)
+        {
+            await using var command = new NpgsqlCommand(sql, connection, transaction) { CommandTimeout = 0 };
+            foreach (var (name, value, type) in parameters)
+            {
+                command.Parameters.Add(new NpgsqlParameter(name, type) { Value = value });
+            }
+
+            return await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        // Indexes are rebuilt once at the end, which is much faster than keeping them up to date row by row.
+        var indexes = new List<string>();
+        await using (var command = new NpgsqlCommand(
+            "SELECT indexdef FROM pg_indexes WHERE tablename IN ('node', 'node_link') AND indexname NOT LIKE 'pk_%'", connection, transaction))
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                indexes.Add(reader.GetString(0));
+            }
+        }
+
+        await RunAsync("TRUNCATE node_link, node, link_definition, field_definition, node_type");
+        foreach (var index in indexes)
+        {
+            await RunAsync($"DROP INDEX {IndexName(index)}");
+        }
+
+        for (var i = 0; i < model.Types.Count; i++)
+        {
+            var type = model.Types[i];
+            await RunAsync(
+                "INSERT INTO node_type (name, color, icon, sort_order) VALUES (@name, @color, @icon, @order)",
+                ("name", type.Name, NpgsqlDbType.Text),
+                ("color", (object?)type.Color ?? DBNull.Value, NpgsqlDbType.Text),
+                ("icon", (object?)type.Icon ?? DBNull.Value, NpgsqlDbType.Text),
+                ("order", i, NpgsqlDbType.Integer));
+            foreach (var field in type.Fields)
+            {
+                await RunAsync(
+                    "INSERT INTO field_definition (node_type_name, key, type) VALUES (@type, @key, @fieldType)",
+                    ("type", type.Name, NpgsqlDbType.Text),
+                    ("key", field.Key, NpgsqlDbType.Text),
+                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text));
+            }
+        }
+
+        foreach (var relationship in model.Relationships)
+        {
+            await RunAsync(
+                "INSERT INTO link_definition (source_type, rel_type, target_type) VALUES (@from, @rel, @to) ON CONFLICT DO NOTHING",
+                ("from", relationship.From, NpgsqlDbType.Text),
+                ("rel", relationship.Type, NpgsqlDbType.Text),
+                ("to", relationship.To, NpgsqlDbType.Text));
+        }
+
+        long nodes = 0;
+        foreach (var type in model.Types)
+        {
+            var columns = await StageAsync(connection, model, type.Source.File, cancellationToken);
+            var key = Column(columns, type.Source.File, type.Source.Key);
+            var name = type.Source.Name is null ? key : Column(columns, type.Source.File, type.Source.Name);
+            var count = await Guard($"{type.Name} from {type.Source.File}", () => RunAsync(
+                $"""
+                INSERT INTO node (id, user_id, type, key, name, props)
+                SELECT lower(@type) || ':' || {key}, @user, @type, {key}, coalesce(nullif({name}, ''), {key}),
+                       {Props(type.Fields, columns, type.Source.File)}
+                FROM staging
+                WHERE nullif({key}, '') IS NOT NULL
+                ON CONFLICT (id) DO NOTHING
+                """,
+                ("type", type.Name, NpgsqlDbType.Text),
+                ("user", AppUser.DefaultId, NpgsqlDbType.Bigint)));
+            await RunAsync("DROP TABLE staging");
+            await output.WriteLineAsync($"{type.Name}: {count:N0} from {type.Source.File}");
+            nodes += count;
+        }
+
+        long links = 0;
+        foreach (var relationship in model.Relationships)
+        {
+            var source = relationship.Source;
+            var columns = await StageAsync(connection, model, source.File, cancellationToken);
+            var from = Column(columns, source.File, source.FromColumn);
+            var to = Column(columns, source.File, source.ToColumn);
+            var count = await Guard($"{relationship.From} {relationship.Type} {relationship.To} from {source.File}", () => RunAsync(
+                $"""
+                INSERT INTO node_link (source_id, target_id, rel_type, props)
+                SELECT f.id, t.id, @rel, {Props(relationship.Fields, columns, source.File)}
+                FROM staging
+                JOIN node f ON f.id = lower(@from) || ':' || {from}
+                JOIN node t ON t.id = lower(@to) || ':' || {to}
+                """,
+                ("rel", relationship.Type, NpgsqlDbType.Text),
+                ("from", relationship.From, NpgsqlDbType.Text),
+                ("to", relationship.To, NpgsqlDbType.Text)));
+            await RunAsync("DROP TABLE staging");
+            await RunAsync(
+                "UPDATE link_definition SET links = links + @count WHERE source_type = @from AND rel_type = @rel AND target_type = @to",
+                ("count", count, NpgsqlDbType.Bigint),
+                ("from", relationship.From, NpgsqlDbType.Text),
+                ("rel", relationship.Type, NpgsqlDbType.Text),
+                ("to", relationship.To, NpgsqlDbType.Text));
+            await output.WriteLineAsync($"{relationship.From} {relationship.Type} {relationship.To}: {count:N0} from {source.File}");
+            links += count;
+        }
+
+        await output.WriteLineAsync("Rebuilding indexes");
+        foreach (var index in indexes)
+        {
+            await RunAsync(index);
+        }
+
+        await RunAsync("ANALYZE node");
+        await RunAsync("ANALYZE node_link");
+        await transaction.CommitAsync(cancellationToken);
+        return new ModelLoadSummary(model.Types.Count, nodes, links, DateTime.UtcNow - started);
+    }
+
+    private static string IndexName(string definition) =>
+        definition.Split(' ', StringSplitOptions.RemoveEmptyEntries)[definition.StartsWith("CREATE UNIQUE", StringComparison.Ordinal) ? 3 : 2];
+
+    // Copies a CSV file into a temporary table called staging, with a text column per header column, named c0, c1 and so
+    // on, so nothing from the file ever reaches the SQL text. Returns the header names in column order.
+    private static async Task<List<string>> StageAsync(NpgsqlConnection connection, ModelFile model, string file, CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(model.DataFolder, file);
+        if (!File.Exists(path))
+        {
+            throw new LinkbaseValidationException($"The model refers to {file}, which isn't in {model.DataFolder}.");
+        }
+
+        List<string> header;
+        using (var reader = new StreamReader(path, detectEncodingFromByteOrderMarks: true))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            if (!await csv.ReadAsync())
+            {
+                throw new LinkbaseValidationException($"{file} is empty.");
+            }
+
+            csv.ReadHeader();
+            header = csv.HeaderRecord!.Select(h => h.Trim()).ToList();
+        }
+
+        var columns = string.Join(", ", header.Select((_, i) => $"c{i} text"));
+        await using (var create = new NpgsqlCommand($"CREATE TEMP TABLE staging ({columns}) ON COMMIT DROP", connection))
+        {
+            await create.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await using (var import = await connection.BeginTextImportAsync("COPY staging FROM STDIN WITH (FORMAT csv, HEADER true)", cancellationToken))
+        using (var reader = new StreamReader(path, detectEncodingFromByteOrderMarks: true))
+        {
+            var buffer = new char[1 << 16];
+            int read;
+            while ((read = await reader.ReadAsync(buffer, cancellationToken)) > 0)
+            {
+                await import.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+            }
+        }
+
+        return header;
+    }
+
+    private static string Column(List<string> header, string file, string name)
+    {
+        var index = header.IndexOf(name);
+        return index >= 0 ? $"c{index}" : throw new LinkbaseValidationException($"{file} has no column '{name}'. It has: {string.Join(", ", header)}.");
+    }
+
+    // Keys were checked by ModelFile, so they're safe in the SQL text. Values come from staging columns.
+    private static string Props(IReadOnlyList<ModelField> fields, List<string> header, string file)
+    {
+        if (fields.Count == 0)
+        {
+            return "'{}'::jsonb";
+        }
+
+        var pairs = fields.Select(field =>
+        {
+            var value = $"nullif({Column(header, file, field.Column ?? field.Key)}, '')";
+            var typed = field.Type switch
+            {
+                FieldType.Number => $"{value}::numeric",
+                FieldType.Date => $"{value}::date",
+                FieldType.Boolean => $"{value}::boolean",
+                _ => value,
+            };
+            return $"'{field.Key}', {typed}";
+        });
+        return $"jsonb_strip_nulls(jsonb_build_object({string.Join(", ", pairs)}))";
+    }
+
+    // A value that doesn't fit its field's type stops the load, and says where.
+    private static async Task<long> Guard(string what, Func<Task<long>> run)
+    {
+        try
+        {
+            return await run();
+        }
+        catch (PostgresException ex) when (ex.SqlState.StartsWith("22", StringComparison.Ordinal))
+        {
+            throw new LinkbaseValidationException($"Loading {what}: {ex.MessageText}. Check that field's type in the model file.");
+        }
+    }
+}

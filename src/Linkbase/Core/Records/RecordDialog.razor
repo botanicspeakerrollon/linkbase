@@ -1,0 +1,105 @@
+@using System.Globalization
+@inject RecordRepository Records
+
+@* Adds or edits a record, with a box for each of its type's fields. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_name" Label="Name" Required="true" RequiredError="A record needs a name" />
+            @if (Record is null)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_key" Label="Key"
+                              HelperText="What identifies it, and can't change later. Made from the name if left empty." />
+            }
+
+            @foreach (var field in Type.Fields)
+            {
+                var key = field.Key;
+                var label = RecordRepository.Title(key);
+                @switch (field.Type)
+                {
+                    case FieldType.Date:
+                        <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Date="@DateOf(key)" DateChanged="@(d => SetDate(key, d))"
+                                       Clearable="true" DateFormat="yyyy-MM-dd" />
+                        break;
+                    case FieldType.Boolean:
+                        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@(_values.GetValueOrDefault(key) ?? "")"
+                                   ValueChanged="@(v => _values[key] = v)" ToStringFunc="@YesNo">
+                            <MudSelectItem Value="@("")" />
+                            <MudSelectItem Value="@("true")" />
+                            <MudSelectItem Value="@("false")" />
+                        </MudSelect>
+                        break;
+                    case FieldType.Number:
+                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@_values.GetValueOrDefault(key)"
+                                      ValueChanged="@(v => _values[key] = v)" InputMode="@(InputMode.@decimal)" />
+                        break;
+                    default:
+                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@_values.GetValueOrDefault(key)"
+                                      ValueChanged="@(v => _values[key] = v)" />
+                        break;
+                }
+            }
+        </MudForm>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter] public RecordType Type { get; set; } = null!;
+
+    // Null to add a new record.
+    [Parameter] public RecordDetail? Record { get; set; }
+
+    private MudForm? _form;
+    private string? _name;
+    private string? _key;
+    private Dictionary<string, string?> _values = [];
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        _name = Record?.Name;
+        _values = Type.Fields.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
+    }
+
+    private DateTime? DateOf(string key) =>
+        DateTime.TryParseExact(_values.GetValueOrDefault(key), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
+
+    private void SetDate(string key, DateTime? date) => _values[key] = date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static string YesNo(string? value) => value switch { "true" => "Yes", "false" => "No", _ => "" };
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        try
+        {
+            var input = new RecordInput(_name!, _values);
+            var key = Record is null ? await Records.CreateAsync(Type.Name, _key, input) : Record.Key;
+            if (Record is not null)
+            {
+                await Records.UpdateAsync(Record.Id, input);
+            }
+
+            Instance.Close(DialogResult.Ok(key));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}

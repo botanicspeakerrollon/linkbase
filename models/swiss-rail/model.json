@@ -1,0 +1,57 @@
+// The Swiss national public transport timetable, from https://gtfs.geops.ch/, as a large model to test against.
+// Download and unzip gtfs_complete.zip into data/samples/gtfs-ch/extracted first. See docs/performance.md.
+{
+  "name": "Swiss public transport",
+  "folder": "../../data/samples/gtfs-ch/extracted",
+  "types": [
+    {
+      "name": "Stop", "color": "#0f766e", "icon": "Place",
+      "source": { "file": "stops.txt", "key": "stop_id", "name": "stop_name" },
+      "fields": [
+        { "key": "lat", "type": "number", "column": "stop_lat" },
+        { "key": "lon", "type": "number", "column": "stop_lon" },
+        { "key": "elevation", "type": "number", "column": "stop_elevation" },
+        { "key": "platform", "column": "platform_code" }
+      ]
+    },
+    {
+      "name": "Line", "color": "#4338ca", "icon": "Timeline",
+      "source": { "file": "routes.txt", "key": "route_id", "name": "route_long_name" },
+      "fields": [
+        { "key": "short_name", "column": "route_short_name" },
+        { "key": "route_type", "type": "number" }
+      ]
+    },
+    {
+      "name": "Service", "color": "#be185d", "icon": "Train",
+      "source": { "file": "trips.txt", "key": "trip_id", "name": "trip_headsign" },
+      "fields": [
+        { "key": "short_name", "column": "trip_short_name" },
+        { "key": "bikes_allowed" }
+      ]
+    },
+    {
+      "name": "Agency", "color": "#a16207", "icon": "Business",
+      "source": { "file": "agency.txt", "key": "agency_id", "name": "agency_name" },
+      "fields": [ { "key": "timezone", "column": "agency_timezone" } ]
+    }
+  ],
+  "relationships": [
+    { "from": "Line", "type": "RUN_BY", "to": "Agency", "source": { "file": "routes.txt", "fromColumn": "route_id", "toColumn": "agency_id" } },
+    { "from": "Service", "type": "OF", "to": "Line", "source": { "file": "trips.txt", "fromColumn": "trip_id", "toColumn": "route_id" } },
+    { "from": "Stop", "type": "IN", "to": "Stop", "source": { "file": "stops.txt", "fromColumn": "stop_id", "toColumn": "parent_station" } },
+    {
+      "from": "Stop", "type": "TRANSFER_TO", "to": "Stop",
+      "source": { "file": "transfers.txt", "fromColumn": "from_stop_id", "toColumn": "to_stop_id" },
+      "fields": [ { "key": "seconds", "type": "number", "column": "min_transfer_time" } ]
+    },
+    {
+      "from": "Service", "type": "CALLS_AT", "to": "Stop",
+      "source": { "file": "stop_times.txt", "fromColumn": "trip_id", "toColumn": "stop_id" },
+      "fields": [
+        { "key": "sequence", "type": "number", "column": "stop_sequence" },
+        { "key": "departure", "column": "departure_time" }
+      ]
+    }
+  ]
+}

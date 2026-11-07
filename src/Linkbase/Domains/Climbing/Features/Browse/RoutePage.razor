@@ -1,0 +1,149 @@
+@page "/browse/route/{Id:long}"
+@inject RouteRepository Routes
+@inject AreaRepository Areas
+@inject AscentRepository Ascents
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@(_route?.Name ?? "Route")</PageTitle>
+
+@if (_route is null)
+{
+    @if (_missing)
+    {
+        <MudAlert Severity="Severity.Warning">This route no longer exists.</MudAlert>
+    }
+}
+else
+{
+    <MudBreadcrumbs Items="_crumbs" Class="pa-0 mb-2" />
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2" Wrap="Wrap.Wrap">
+        <MudText Typo="Typo.h4" HtmlTag="h1">@_route.Name</MudText>
+        <MudStack Row="true">
+            <MudButton Href="@($"/ascents/new?routeId={Id}")" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Log ascent</MudButton>
+            <MudButton OnClick="EditAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
+            <MudButton OnClick="DeleteAsync" Variant="Variant.Text" Color="Color.Error">Delete</MudButton>
+        </MudStack>
+    </MudStack>
+
+    <MudText Typo="Typo.body1" Class="mb-1">@string.Join(" · ", Facts())</MudText>
+    @if (_route.Description is { } description)
+    {
+        <MudText Typo="Typo.body2" Class="mb-1">@description</MudText>
+    }
+
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-4 mb-2">My ascents (@_ascents.Count)</MudText>
+    @if (_ascents.Count > 0)
+    {
+        <MudTable Items="_ascents" Dense="true" Hover="true" Elevation="1">
+            <HeaderContent>
+                <MudTh>Date</MudTh>
+                <MudTh>Style</MudTh>
+                <MudTh>Partners</MudTh>
+                <MudTh>Trip</MudTh>
+                <MudTh>Rating</MudTh>
+                <MudTh>Notes</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Date">@Labels.Date(context.Date, context.DatePrecision)</MudTd>
+                <MudTd DataLabel="Style"><span title="@context.StyleRaw">@Labels.Of(context.Style)</span></MudTd>
+                <MudTd DataLabel="Partners">@string.Join(", ", context.Partners)</MudTd>
+                <MudTd DataLabel="Trip">@context.TripName</MudTd>
+                <MudTd DataLabel="Rating">@Labels.Stars(context.MyRating)</MudTd>
+                <MudTd DataLabel="Notes">@context.Notes</MudTd>
+                <MudTd><MudIconButton Href="@($"/ascents/{context.Id}")" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit ascent" /></MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+}
+
+@code {
+    private const int MaxAscentsShown = 200;
+
+    [Parameter] public long Id { get; set; }
+
+    private RouteDetail? _route;
+    private IReadOnlyList<AscentRow> _ascents = [];
+    private List<BreadcrumbItem> _crumbs = [];
+    private bool _missing;
+
+    protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _route = await Routes.GetAsync(Id);
+        _missing = _route is null;
+        if (_route is null)
+        {
+            return;
+        }
+
+        var page = await Ascents.SearchAsync(new AscentFilter { RouteId = Id }, AscentSort.Date, true, 0, MaxAscentsShown);
+        _ascents = page.Rows;
+        _crumbs = [new BreadcrumbItem("Browse", "/browse")];
+        _crumbs.AddRange((await Areas.PathAsync(_route.AreaId)).Select(p => new BreadcrumbItem(p.Name, $"/browse/area/{p.Id}")));
+        _crumbs.Add(new BreadcrumbItem(_route.CragName, $"/browse/crag/{_route.CragId}"));
+    }
+
+    private IEnumerable<string> Facts()
+    {
+        if (_route!.Grade is { } grade)
+        {
+            yield return grade;
+        }
+
+        if (_route.GradeSystem is not null)
+        {
+            yield return Labels.Of(_route.GradeSystem);
+        }
+
+        if (_route.Discipline is not null)
+        {
+            yield return Labels.Of(_route.Discipline);
+        }
+
+        if (_route.LengthM is { } length)
+        {
+            yield return $"{length} m";
+        }
+
+        if (_route.Pitches is { } pitches)
+        {
+            yield return pitches == 1 ? "1 pitch" : $"{pitches} pitches";
+        }
+    }
+
+    private async Task EditAsync()
+    {
+        var parameters = new DialogParameters<RouteDialog> { { d => d.Route, _route } };
+        var dialog = await Dialogs.ShowAsync<RouteDialog>("Edit route", parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            Snackbar.Add("Route saved.", Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync($"Delete {_route!.Name}?", "This can't be undone.", yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Routes.DeleteAsync(Id);
+            Snackbar.Add("Route deleted.", Severity.Success);
+            Navigation.NavigateTo($"/browse/crag/{_route.CragId}");
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+}

@@ -1,0 +1,97 @@
+@page "/"
+@inject DatabaseStatusService DatabaseStatus
+@inject CurrentModel CurrentModel
+@inject GraphRepository Graph
+@inject RecordRepository Records
+@using Linkbase.Core.Explore
+@using Linkbase.Core.Records
+
+<PageTitle>@CurrentModel.Info.Name</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3" Wrap="Wrap.Wrap">
+    <MudText Typo="Typo.h4" HtmlTag="h1">@CurrentModel.Info.Name</MudText>
+    <MudButton Href="/explore" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Hub">Explore</MudButton>
+</MudStack>
+
+@if (_status is null)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (!_status.Connected)
+{
+    <MudAlert Severity="Severity.Error">Can't reach the database: @_status.Error</MudAlert>
+}
+else if (_status.PendingMigrations > 0)
+{
+    <MudAlert Severity="Severity.Warning">
+        Connected, but @_status.PendingMigrations migration(s) are pending. Run: dotnet run --project src/Linkbase -- model migrate
+    </MudAlert>
+}
+else if (_counts is not null)
+{
+    @* Every model's home is the same: what's in it, and a way in. *@
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">What's in this model</MudText>
+    @if (_counts.Count == 0)
+    {
+        <MudText Typo="Typo.body2">Nothing yet. Load a model file with: dotnet run --project src/Linkbase -- model load &lt;file&gt; @CurrentModel.Info.Key</MudText>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap" style="gap: 8px">
+            @foreach (var (label, count) in _counts.OrderByDescending(c => c.Value))
+            {
+                var defined = _types.Any(t => t.Name == label);
+                <MudChip T="string" Href="@(defined ? GraphStyle.RecordListLink(label) : "/explore")"
+                         Style="@($"background-color: {ColorOf(label)}; color: #ffffff")">@label @count.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</MudChip>
+            }
+        </div>
+
+        @if (_links.Count > 0)
+        {
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">
+                Relationships
+                <span class="record-count">@_links.Sum(l => l.Links).ToString("N0", System.Globalization.CultureInfo.InvariantCulture) links</span>
+            </MudText>
+            <MudSimpleTable Dense="true" Elevation="1" Class="home-links">
+                <thead>
+                    <tr><th>From</th><th>Relationship</th><th>To</th><th class="home-links-count">Links</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var link in _links)
+                    {
+                        <tr>
+                            <td><span class="home-links-dot" style="@($"background-color: {ColorOf(link.SourceLabel)}")"></span>@link.SourceLabel</td>
+                            <td>@link.RelType</td>
+                            <td><span class="home-links-dot" style="@($"background-color: {ColorOf(link.TargetLabel)}")"></span>@link.TargetLabel</td>
+                            <td class="home-links-count">@link.Links.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+    }
+}
+
+@code {
+    private DatabaseStatus? _status;
+    private IReadOnlyDictionary<string, int>? _counts;
+    private IReadOnlyList<RecordType> _types = [];
+    private IReadOnlyList<ConnectionCount> _links = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _status = await DatabaseStatus.GetStatusAsync();
+        if (_status is { Connected: true, PendingMigrations: 0 })
+        {
+            _counts = await Graph.NodeCountsAsync();
+            _types = await Records.TypesAsync();
+            _links = await Graph.ConnectionCountsAsync();
+        }
+    }
+
+    private string ColorOf(string label)
+    {
+        var defined = _types.FirstOrDefault(t => t.Name == label);
+        return GraphStyle.For(label, defined?.Color, defined?.Icon).Color;
+    }
+}

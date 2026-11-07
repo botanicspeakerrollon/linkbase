@@ -1,0 +1,254 @@
+@implements IDisposable
+@inject GraphRepository Graph
+
+<div style="position: relative">
+    <div class="pattern-bar" @onclick="FocusAsync">
+        <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" Style="color: var(--mud-palette-text-secondary)" />
+        @foreach (var chip in _builder?.Chips ?? [])
+        {
+            @if (chip.RelationshipBefore is { } relationship)
+            {
+                <span class="pattern-rel">@relationship</span>
+            }
+            <span class="pattern-node" style="@NodeStyle(chip.Label)">
+                @if (NodeIcon(chip.Label) is { } icon)
+                {
+                    <MudIcon Icon="@icon" Size="Size.Small" />
+                }
+                <span class="pattern-node-label">@(chip.Label ?? "Anything")</span>
+                @foreach (var filter in chip.Filters)
+                {
+                    <span class="pattern-node-filter">@filter</span>
+                }
+                @if (chip.Pending is { } pending)
+                {
+                    <span class="pattern-node-filter pattern-node-pending">@pending</span>
+                }
+            </span>
+        }
+        <input @ref="_input"
+               value="@_text"
+               @oninput="OnInputAsync"
+               @onkeydown="OnKeyDownAsync"
+               @onfocus="OnFocusAsync"
+               @onblur="OnBlur"
+               role="combobox"
+               aria-expanded="@(_open && _suggestions.Count > 0)"
+               aria-controls="pattern-suggestions"
+               aria-activedescendant="@(_highlight >= 0 ? $"pattern-suggestion-{_highlight}" : null)"
+               aria-label="Search phrase"
+               autocomplete="off"
+               spellcheck="false"
+               placeholder="@Placeholder" />
+        @if (_builder is { IsEmpty: false })
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="ClearAsync" aria-label="Clear search" />
+            <MudButton OnClick="RunAsync" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">Search</MudButton>
+        }
+    </div>
+
+    @if (_open && _suggestions.Count > 0)
+    {
+        <div id="pattern-suggestions" role="listbox" class="pattern-list">
+            @for (var i = 0; i < _suggestions.Count; i++)
+            {
+                var index = i;
+                var suggestion = _suggestions[i];
+                <div id="@($"pattern-suggestion-{index}")" role="option" aria-selected="@(index == _highlight)"
+                     class="@(index == _highlight ? "pattern-option pattern-option-active" : "pattern-option")"
+                     @onmousedown="@(() => ApplyAsync(suggestion))"
+                     @onmousedown:preventDefault="true">
+                    <span style="flex: 1">@suggestion.Text</span>
+                    @if (suggestion.Hint is { } hint)
+                    {
+                        <span class="pattern-option-hint">@hint</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public GraphSchema? Schema { get; set; }
+    [Parameter] public EventCallback<GraphPattern> OnRun { get; set; }
+    [Parameter] public EventCallback OnShowModel { get; set; }
+
+    private PatternBuilder? _builder;
+    private GraphSchema? _builderSchema;
+    private ElementReference _input;
+    private string _text = "";
+    private bool _open;
+    private int _highlight = -1;
+    private IReadOnlyList<PatternSuggestion> _suggestions = [];
+    private CancellationTokenSource? _lookup;
+
+    private string Placeholder => _builder switch
+    {
+        null => "Loading…",
+        { IsEmpty: true } => Schema?.Labels.FirstOrDefault() is { } label
+            ? $"Search for anything, start with a type such as {label}, or type graph"
+            : "Search for anything, or type graph",
+        { NeedsValues: true } => "Type a value, then press Enter",
+        { PendingKey: not null } => "Choose how to compare",
+        _ => "Add a filter or relationship, or press Enter to search",
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (Schema is not null && !ReferenceEquals(Schema, _builderSchema))
+        {
+            _builderSchema = Schema;
+            _builder = new PatternBuilder(Schema);
+        }
+    }
+
+    public async Task FocusAsync() => await _input.FocusAsync();
+
+    private async Task OnFocusAsync()
+    {
+        _open = true;
+        await RefreshAsync();
+    }
+
+    private void OnBlur() => _open = false;
+
+    private async Task OnInputAsync(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+        _open = true;
+        await RefreshAsync();
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowDown" when _suggestions.Count > 0:
+                _open = true;
+                _highlight = (_highlight + 1) % _suggestions.Count;
+                break;
+            case "ArrowUp" when _suggestions.Count > 0:
+                _open = true;
+                _highlight = _highlight <= 0 ? _suggestions.Count - 1 : _highlight - 1;
+                break;
+            case "Enter":
+                if (_open && _highlight >= 0 && _highlight < _suggestions.Count)
+                {
+                    await ApplyAsync(_suggestions[_highlight]);
+                }
+                else
+                {
+                    await RunAsync();
+                }
+
+                break;
+            case "Backspace" when _text.Length == 0 && _builder is not null:
+                _builder.RemoveLast();
+                await RefreshAsync();
+                break;
+            case "Escape":
+                _open = false;
+                break;
+        }
+    }
+
+    private async Task ApplyAsync(PatternSuggestion suggestion)
+    {
+        if (suggestion.Kind == SuggestionKind.Model)
+        {
+            _text = "";
+            _open = false;
+            await OnShowModel.InvokeAsync();
+            return;
+        }
+
+        _builder!.Apply(suggestion);
+        _text = "";
+        _open = true;
+        await RefreshAsync();
+        await FocusAsync();
+
+        // Free text is a whole search in itself, so one Enter runs it.
+        if (suggestion.Kind == SuggestionKind.FreeText)
+        {
+            await RunAsync();
+        }
+    }
+
+    private async Task RunAsync()
+    {
+        if (_builder?.ToPattern() is { } pattern)
+        {
+            _open = false;
+            await OnRun.InvokeAsync(pattern);
+        }
+    }
+
+    private async Task ClearAsync()
+    {
+        _builder?.Clear();
+        _text = "";
+        await RefreshAsync();
+        await FocusAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (_builder is null)
+        {
+            return;
+        }
+
+        _lookup?.Cancel();
+        _lookup?.Dispose();
+        var lookup = _lookup = new CancellationTokenSource();
+
+        // Show what's known straight away, then add values from the database when they arrive.
+        Update(_builder.Suggest(_text, [], []));
+        StateHasChanged();
+
+        try
+        {
+            IReadOnlyList<PropertyMatch> matches = [];
+            IReadOnlyList<string> values = [];
+            if (_builder.NeedsValues)
+            {
+                values = await Graph.PropertyValuesAsync(_builder.CurrentLabel, _builder.PendingKey!, _text, lookup.Token);
+            }
+            else if (_builder.PendingKey is null && _text.Trim().Length >= 2)
+            {
+                matches = await Graph.MatchPropertiesAsync(_builder.CurrentLabel, _text, lookup.Token);
+            }
+
+            if (!lookup.IsCancellationRequested)
+            {
+                Update(_builder.Suggest(_text, matches, values));
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by the next keystroke.
+        }
+    }
+
+    // With text typed, the first suggestion is ready for Enter. With none, Enter runs the search.
+    private void Update(IReadOnlyList<PatternSuggestion> suggestions)
+    {
+        _suggestions = suggestions;
+        _highlight = _text.Trim().Length > 0 && suggestions.Count > 0 ? 0 : -1;
+    }
+
+    // A type's chip takes the same colour and icon as its nodes on the canvas.
+    private string? NodeStyle(string? label) =>
+        label is null ? null : $"background: {GraphStyle.For(label, Schema).Color}";
+
+    private string? NodeIcon(string? label) =>
+        label is null ? null : GraphStyle.For(label, Schema).Icon;
+
+    public void Dispose()
+    {
+        _lookup?.Cancel();
+        _lookup?.Dispose();
+    }
+}

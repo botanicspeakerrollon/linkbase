@@ -1,0 +1,205 @@
+@page "/import"
+@implements IDisposable
+@inject WebImportService Imports
+@inject WebImportRepository Repository
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+
+<PageTitle>Import</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Import from the web</MudText>
+<MudText Typo="Typo.body2" Class="mb-4">
+    Add crags and routes from an article or list. You check everything before it goes in your logbook.
+    Only facts and a brief summary are kept, never the page's own text.
+</MudText>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudTabs @bind-ActivePanelIndex="_tab" Elevation="0" Rounded="false">
+        <MudTabPanel Text="Paste text">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_text" Label="Text from the page" Lines="10" Class="mt-2" Disabled="_running" Immediate="true"
+                          HelperText="The most reliable way, and it works on sites that block fetching or forbid scraping." />
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_sourceUrl" Label="Where it came from (optional)" Class="mt-2" Disabled="_running"
+                          HelperText="Stored with the rows. Importing the same address again recognises them." />
+        </MudTabPanel>
+        <MudTabPanel Text="Fetch a page">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_url" Label="Web address" Placeholder="https://" Class="mt-2" Disabled="_running" Immediate="true"
+                          HelperText="Check that the site allows this. If it doesn't, or the fetch fails, paste the text instead." />
+        </MudTabPanel>
+    </MudTabs>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-3">
+        <MudButton OnClick="StartAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_running || !CanStart)">Extract</MudButton>
+        @if (_running)
+        {
+            <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+        }
+    </MudStack>
+
+    @if (_running)
+    {
+        <MudText Typo="Typo.body2" Class="mt-3" role="status">@_progressMessage</MudText>
+        @if (_progressTotal > 1)
+        {
+            <MudProgressLinear Value="@_progressCompleted" Max="@_progressTotal" Class="mt-1" />
+        }
+        else
+        {
+            <MudProgressLinear Indeterminate="true" Class="mt-1" />
+        }
+    }
+
+    @if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mt-3">@_error</MudAlert>
+    }
+</MudPaper>
+
+@if (_undo is { } undo)
+{
+    <MudAlert Severity="@(undo.Skipped.Count == 0 ? Severity.Success : Severity.Warning)" Class="mb-4" ShowCloseIcon="true" CloseIconClicked="@(() => _undo = null)">
+        <div>Undo removed @Labels.Count(undo.RoutesDeleted, "route"), @Labels.Count(undo.CragsDeleted, "crag") and @Labels.Count(undo.AreasDeleted, "area").</div>
+        @if (undo.Skipped.Count > 0)
+        {
+            <div class="mt-1">Kept these, so the import can be undone again once they're free:</div>
+            <ul>
+                @foreach (var line in undo.Skipped)
+                {
+                    <li>@line</li>
+                }
+            </ul>
+        }
+    </MudAlert>
+}
+
+<MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Recent imports</MudText>
+@if (_batches.Count == 0)
+{
+    <MudText Typo="Typo.body2">Nothing imported yet.</MudText>
+}
+else
+{
+    <MudTable Items="_batches" Dense="true" Hover="true" Elevation="1">
+        <HeaderContent>
+            <MudTh>When</MudTh>
+            <MudTh>Source</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Found</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="When" Style="white-space: nowrap">@context.CreatedAt.LocalDateTime.ToString("d MMM HH:mm", System.Globalization.CultureInfo.InvariantCulture)</MudTd>
+            <MudTd DataLabel="Source">@(context.Title ?? context.SourceUrl ?? "Pasted text")</MudTd>
+            <MudTd DataLabel="Status">
+                @context.Status
+                @if (context.Error is { } error)
+                {
+                    <div title="@error" style="max-width: 32rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; color: var(--mud-palette-text-secondary)">@error</div>
+                }
+            </MudTd>
+            <MudTd DataLabel="Found">@Labels.Count(context.Crags, "crag"), @Labels.Count(context.Routes, "route")</MudTd>
+            <MudTd>
+                @if (context.Status == ImportStatus.Staged)
+                {
+                    <MudButton Href="@($"/import/{context.Id}")" Variant="Variant.Outlined" Size="Size.Small">Review</MudButton>
+                }
+                else if (context.Status == ImportStatus.Committed)
+                {
+                    <MudButton OnClick="@(() => UndoAsync(context.Id))" Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Undo</MudButton>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private int _tab;
+    private string? _text;
+    private string? _sourceUrl;
+    private string? _url;
+    private bool _running;
+    private string? _progressMessage;
+    private int _progressCompleted;
+    private int _progressTotal;
+    private string? _error;
+    private UndoSummary? _undo;
+    private CancellationTokenSource? _cancellation;
+    private IReadOnlyList<ImportBatchSummary> _batches = [];
+
+    private bool CanStart => _tab == 0 ? !string.IsNullOrWhiteSpace(_text) : !string.IsNullOrWhiteSpace(_url);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _batches = await Repository.RecentBatchesAsync();
+    }
+
+    private async Task StartAsync()
+    {
+        _running = true;
+        _error = null;
+        _progressMessage = "Starting";
+        _progressCompleted = 0;
+        _progressTotal = 0;
+        _cancellation = new CancellationTokenSource();
+
+        var progress = new Progress<ExtractionProgress>(report =>
+        {
+            _progressMessage = report.Message;
+            _progressCompleted = report.Completed;
+            _progressTotal = report.Total;
+            _ = InvokeAsync(StateHasChanged);
+        });
+
+        try
+        {
+            var batchId = _tab == 0
+                ? await Imports.ExtractFromTextAsync(_text!, _sourceUrl, progress, _cancellation.Token)
+                : await Imports.ExtractFromUrlAsync(_url!, progress, _cancellation.Token);
+            Navigation.NavigateTo($"/import/{batchId}");
+        }
+        catch (OperationCanceledException)
+        {
+            _error = "Cancelled.";
+        }
+        catch (Exception ex) when (ex is ExtractionFailedException or PageFetchFailedException)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _running = false;
+            _batches = await Repository.RecentBatchesAsync();
+        }
+    }
+
+    private void Cancel() => _cancellation?.Cancel();
+
+    private async Task UndoAsync(long batchId)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Undo this import?",
+            "Rows it created will be deleted, unless they've been edited or have ascents logged on them.",
+            yesText: "Undo",
+            cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            _undo = await Repository.UndoAsync(batchId);
+            _batches = await Repository.RecentBatchesAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    public void Dispose()
+    {
+        _cancellation?.Cancel();
+        _cancellation?.Dispose();
+    }
+}

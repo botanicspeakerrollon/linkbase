@@ -1,0 +1,161 @@
+@page "/data/{Type}/{*Key}"
+@inject RecordRepository Records
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* One record, its values and its links, generated from the model's definition. *@
+<PageTitle>@(_record?.Name ?? Type)</PageTitle>
+
+@if (_missing)
+{
+    <MudAlert Severity="Severity.Warning">There's no @Type with the key @Key.</MudAlert>
+}
+else if (_record is not null && _type is not null)
+{
+    <MudBreadcrumbs Items="_crumbs" Class="pa-0 mb-2" />
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudIcon Icon="@_style!.Icon" Style="@($"color: {_style.Color}")" />
+            <MudText Typo="Typo.h4" HtmlTag="h1">@_record.Name</MudText>
+        </MudStack>
+        <MudStack Row="true">
+            <MudButton OnClick="EditAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
+            <MudButton OnClick="DeleteAsync" Variant="Variant.Text" Color="Color.Error">Delete</MudButton>
+        </MudStack>
+    </MudStack>
+
+    <MudSimpleTable Dense="true" Elevation="1" Class="mb-6 record-values">
+        <tbody>
+            <tr><th scope="row">Key</th><td>@_record.Key</td></tr>
+            @foreach (var field in _type.Fields)
+            {
+                <tr><th scope="row">@RecordRepository.Title(field.Key)</th><td>@RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key))</td></tr>
+            }
+            @foreach (var (key, value) in _record.Values.Where(v => _type.Fields.All(f => f.Key != v.Key)).OrderBy(v => v.Key))
+            {
+                <tr><th scope="row">@RecordRepository.Title(key)</th><td>@value</td></tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2" Wrap="Wrap.Wrap">
+        <MudText Typo="Typo.h6" HtmlTag="h2">Links</MudText>
+        @if (_options.Count > 0)
+        {
+            <MudButton OnClick="LinkAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.AddLink" Size="Size.Small">Add link</MudButton>
+        }
+    </MudStack>
+
+    @if (_links.Count == 0)
+    {
+        <MudText Typo="Typo.body2">No links yet.</MudText>
+    }
+
+    @foreach (var group in _links)
+    {
+        <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-4 mb-1">
+            @(group.Outgoing ? $"{group.RelType} →" : $"← {group.RelType}")
+            <span class="record-count">@group.Total.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</span>
+        </MudText>
+        <MudList T="string" Dense="true" Class="record-links">
+            @foreach (var link in group.Links)
+            {
+                <MudListItem T="string">
+                    <div class="d-flex align-center" style="gap: 8px">
+                        <MudLink Href="@GraphStyle.RecordLink(link.OtherType, link.OtherKey)">@link.OtherName</MudLink>
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">@link.OtherType · @link.OtherKey</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small" Class="ml-auto"
+                                       aria-label="@($"Remove the link to {link.OtherName}")" OnClick="@(() => UnlinkAsync(link))" />
+                    </div>
+                </MudListItem>
+            }
+        </MudList>
+        @if (group.Total > group.Links.Count)
+        {
+            <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
+                The first @group.Links.Count of @group.Total.ToString("N0", System.Globalization.CultureInfo.InvariantCulture). Explore shows the rest.
+            </MudText>
+        }
+    }
+}
+
+@code {
+    [Parameter] public string Type { get; set; } = "";
+    [Parameter] public string Key { get; set; } = "";
+
+    private RecordType? _type;
+    private RecordDetail? _record;
+    private LabelStyle? _style;
+    private IReadOnlyList<RecordLinkGroup> _links = [];
+    private IReadOnlyList<LinkOption> _options = [];
+    private List<BreadcrumbItem> _crumbs = [];
+    private bool _missing;
+
+    protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _type = await Records.TypeAsync(Type);
+        _record = _type is null ? null : await Records.GetAsync(Type, Key);
+        _missing = _record is null;
+        if (_record is null)
+        {
+            return;
+        }
+
+        _style = GraphStyle.For(Type, _type!.Color, _type.Icon);
+        _links = await Records.LinksAsync(_record.Id);
+        _options = await Records.LinkOptionsAsync(Type);
+        _crumbs = [new BreadcrumbItem(Type, GraphStyle.RecordListLink(Type))];
+    }
+
+    private async Task EditAsync()
+    {
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.Record, _record } };
+        var dialog = await Dialogs.ShowAsync<RecordDialog>($"Edit {_record!.Name}", parameters);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add("Saved.", Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync($"Delete {_record!.Name}?", "This can't be undone.", yesText: "Delete", cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Records.DeleteAsync(_record.Id);
+            Snackbar.Add($"{_record.Name} deleted.", Severity.Success);
+            Navigation.NavigateTo(GraphStyle.RecordListLink(Type));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    private async Task LinkAsync()
+    {
+        var parameters = new DialogParameters<LinkDialog> { { d => d.Record, _record }, { d => d.Options, _options } };
+        var dialog = await Dialogs.ShowAsync<LinkDialog>("Add link", parameters);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add("Linked.", Severity.Success);
+            _links = await Records.LinksAsync(_record!.Id);
+        }
+    }
+
+    private async Task UnlinkAsync(RecordLink link)
+    {
+        await Records.RemoveLinkAsync(link.Id);
+        Snackbar.Add($"Removed the link to {link.OtherName}.", Severity.Success);
+        _links = await Records.LinksAsync(_record!.Id);
+    }
+}

@@ -1,0 +1,101 @@
+@page "/data/{Type}"
+@inject RecordRepository Records
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+@* Every record of one type, generated from the model's definition. *@
+<PageTitle>@Type</PageTitle>
+
+@if (_missing)
+{
+    <MudAlert Severity="Severity.Warning">This model has no type called @Type.</MudAlert>
+}
+else if (_type is not null)
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4" Wrap="Wrap.Wrap">
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudIcon Icon="@_style!.Icon" Style="@($"color: {_style.Color}")" />
+            <MudText Typo="Typo.h4" HtmlTag="h1">@Type</MudText>
+        </MudStack>
+        <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add @Type</MudButton>
+    </MudStack>
+
+    <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="_search" ValueChanged="SearchAsync" DebounceInterval="300"
+                  Label="Search" Placeholder="Any part of the name or a value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                  Clearable="true" Class="mb-3" Style="max-width: 32rem" />
+
+    <MudDataGrid @ref="_grid" T="RecordRow" ServerData="LoadAsync" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.None">
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name">
+                <CellTemplate>
+                    <MudLink Href="@GraphStyle.RecordLink(Type, context.Item.Key)">@context.Item.Name</MudLink>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Key" Title="Key" />
+            @foreach (var field in _type.Fields.Take(MaxColumns))
+            {
+                var key = field.Key;
+                <TemplateColumn T="RecordRow" Title="@RecordRepository.Title(key)">
+                    <CellTemplate>@Shown(field, context.Item.Values.GetValueOrDefault(key))</CellTemplate>
+                </TemplateColumn>
+            }
+        </Columns>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body2">@(string.IsNullOrWhiteSpace(_search) ? $"No {Type} records yet." : "Nothing matches that.")</MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudDataGridPager T="RecordRow" PageSizeOptions="@(new[] { 25, 50, 100 })" />
+        </PagerContent>
+    </MudDataGrid>
+}
+
+@code {
+    // More than this and the table gets too wide. The record page shows them all.
+    private const int MaxColumns = 6;
+
+    [Parameter] public string Type { get; set; } = "";
+
+    private MudDataGrid<RecordRow>? _grid;
+    private RecordType? _type;
+    private LabelStyle? _style;
+    private string? _search;
+    private bool _missing;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _type = await Records.TypeAsync(Type);
+        _missing = _type is null;
+        _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
+        _search = null;
+        if (_grid is not null)
+        {
+            await _grid.ReloadServerData();
+        }
+    }
+
+    private async Task<GridData<RecordRow>> LoadAsync(GridState<RecordRow> state, CancellationToken cancellationToken)
+    {
+        var page = await Records.ListAsync(Type, _search, state.Page, state.PageSize, cancellationToken);
+        return new GridData<RecordRow> { Items = page.Rows, TotalItems = page.Total };
+    }
+
+    private async Task SearchAsync(string? text)
+    {
+        _search = text;
+        await _grid!.ReloadServerData();
+    }
+
+    private async Task AddAsync()
+    {
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type } };
+        var dialog = await Dialogs.ShowAsync<RecordDialog>($"Add {Type}", parameters);
+        if (await dialog.Result is { Canceled: false, Data: string key })
+        {
+            Navigation.NavigateTo(GraphStyle.RecordLink(Type, key));
+        }
+    }
+
+    public static string Shown(RecordField field, string? value) => field.Type == FieldType.Boolean
+        ? value switch { "true" => "Yes", "false" => "No", _ => "" }
+        : value ?? "";
+}

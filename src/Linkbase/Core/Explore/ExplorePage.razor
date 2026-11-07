@@ -1,0 +1,613 @@
+@page "/explore"
+@using FilterOperator = Linkbase.Core.Graph.FilterOperator
+@implements IAsyncDisposable
+@inject GraphRepository Graph
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+
+<PageTitle>Explore</PageTitle>
+
+<div class="explore">
+    <div class="explore-top">
+        @if (_loadError is not null)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2">@_loadError</MudAlert>
+        }
+
+        <PatternSearchBar Schema="_schema" OnRun="RunPatternAsync" OnShowModel="ShowModelAsync" />
+
+        @if (_lastPattern is not null && _patternRemaining > 0)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                Showing the first @_patternShown matches. @_patternRemaining more.
+                <MudButton OnClick="ShowMorePatternAsync" Variant="Variant.Text" Size="Size.Small">Show more</MudButton>
+            </MudAlert>
+        }
+    </div>
+
+    <div class="explore-stage">
+        @* Always rendered, because Cytoscape attaches to this element once. *@
+        <div @ref="_canvas" class="explore-canvas"></div>
+
+        @if (_nodes.Count == 0)
+        {
+            <div class="explore-empty">Type anything above and press Enter, or start with a type. Type graph to see the model. Right-click a node to expand it.</div>
+        }
+
+        @if (_menu is { } menu)
+        {
+            <div class="explore-menu" style="@($"left: {menu.X:0}px; top: {menu.Y:0}px")">
+                <MudText Typo="Typo.caption" Class="px-3 py-1 d-block">@menu.Node.Name</MudText>
+                <MudDivider Class="my-1" />
+                <MudButton OnClick="@(() => ExpandFromMenuAsync(null))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Expand all (@menu.Counts.Sum(c => c.Count))</MudButton>
+                @foreach (var count in menu.Counts)
+                {
+                    <MudButton OnClick="@(() => ExpandFromMenuAsync(count.RelType))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">
+                        @PatternBuilder.RelText(count.RelType, count.Outgoing) @count.OtherLabel (@count.Count)
+                    </MudButton>
+                }
+                <MudDivider Class="my-1" />
+                <MudButton OnClick="@(() => DismissAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Dismiss</MudButton>
+                <MudButton OnClick="@(() => DismissOthersAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Dismiss others</MudButton>
+                @if (GraphStyle.Link(menu.Node) is { } menuLink)
+                {
+                    <MudButton Href="@menuLink" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Open and edit</MudButton>
+                }
+            </div>
+        }
+    </div>
+
+    <aside class="explore-panel">
+        @if (_selected is { } node)
+        {
+            <MudChip T="string" Size="Size.Small" Style="@ChipStyle(node.Label)" Class="ma-0 mb-1">@node.Label</MudChip>
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@node.Name</MudText>
+
+            @if (node.Properties.Count > 0)
+            {
+                <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
+                    <tbody>
+                        @foreach (var property in node.Properties)
+                        {
+                            <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">@GraphStyle.PropertyTitle(property.Key)</td><td>@property.Value</td></tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @if (node.IsModel)
+            {
+                <MudButton OnClick="@(() => ShowTypeAsync(node.Label))" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" FullWidth="true" Class="mb-1">Show all @node.Label nodes</MudButton>
+            }
+            else if (_remaining.GetValueOrDefault(node.Id) is > 0 and var remaining)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2">@remaining more linked here weren't added.</MudAlert>
+                <MudButton OnClick="@(() => ExpandAsync(node.Id))" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" FullWidth="true" Class="mb-1">Show more</MudButton>
+            }
+            else
+            {
+                <MudButton OnClick="@(() => ExpandAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1">@(_expanded.Contains(node.Id) ? "Expand again" : "Expand")</MudButton>
+            }
+
+            @if (!node.IsModel)
+            {
+                <MudStack Row="true" Spacing="1" Class="mb-1">
+                    <MudButton OnClick="@(() => HideAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1">Hide</MudButton>
+                    <MudButton OnClick="@(() => RemoveAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1">Remove</MudButton>
+                </MudStack>
+            }
+            @if (GraphStyle.Link(node) is { } link)
+            {
+                <MudButton Href="@link" Variant="Variant.Text" Size="Size.Small" FullWidth="true" EndIcon="@Icons.Material.Filled.OpenInNew">Open and edit</MudButton>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Click a node for its details. Right-click it to expand or dismiss, or double-click to expand everything linked to it, up to @ExpansionLimit at a time.</MudText>
+        }
+
+        <div class="explore-section-title">On the canvas</div>
+        <div class="d-flex flex-wrap" style="gap: 4px">
+            @foreach (var label in _schema?.Labels ?? [])
+            {
+                var onCanvas = VisibleNodes.Count(n => n.Label == label && !n.IsModel);
+                <MudChip T="string" Size="Size.Small" Style="@ChipStyle(label)" Class="ma-0">@label@(onCanvas > 0 ? $" {onCanvas}" : "")</MudChip>
+            }
+        </div>
+        @if (_hidden.Count > 0)
+        {
+            <MudButton OnClick="ShowHiddenAsync" Variant="Variant.Text" Size="Size.Small" FullWidth="true" Class="mt-1">Show @_hidden.Count hidden</MudButton>
+        }
+        <MudStack Row="true" Spacing="1" Class="mt-2">
+            <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0">Fit</MudButton>
+            <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0">Clear</MudButton>
+        </MudStack>
+
+        <div class="explore-section-title">Saved scenes</div>
+        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_sceneName" Label="Scene name" />
+            <MudButton OnClick="SaveSceneAsync" Variant="Variant.Outlined" Size="Size.Small" Disabled="@(_nodes.Count == 0 || _showingModel)">Save</MudButton>
+        </MudStack>
+        @foreach (var scene in _scenes)
+        {
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                <MudButton OnClick="@(() => LoadSceneAsync(scene))" Variant="Variant.Text" Size="Size.Small" Style="flex: 1; justify-content: flex-start">@scene</MudButton>
+                <MudIconButton OnClick="@(() => DeleteSceneAsync(scene))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" aria-label="@($"Delete scene {scene}")" />
+            </MudStack>
+        }
+
+        <div class="explore-section-title">When expanding, only show</div>
+        <MudStack Spacing="2">
+            <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Label="Relationships" @bind-SelectedValues="_relTypes" MultiSelection="true" Clearable="true">
+                @foreach (var relType in _schema?.RelTypes ?? [])
+                {
+                    <MudSelectItem T="string" Value="relType">@relType</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Label="Property" Value="_filterKey" ValueChanged="ChooseFilterKey" Clearable="true">
+                @foreach (var key in (_schema?.Properties ?? []).Where(p => p.Key != "name").Select(p => p.Key).Distinct().Order(StringComparer.Ordinal))
+                {
+                    <MudSelectItem T="string" Value="key">@key</MudSelectItem>
+                }
+            </MudSelect>
+            @if (_filterKey is not null)
+            {
+                <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="FilterOperator" Label="Is" @bind-Value="_filterOperator" ToStringFunc="@(op => PatternBuilder.OperatorText(op))">
+                    @foreach (var op in PatternBuilder.OperatorsFor(FilterKeyType))
+                    {
+                        <MudSelectItem T="FilterOperator" Value="op">@PatternBuilder.OperatorText(op)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filterValue" Label="Value" Immediate="true" />
+                <MudButton OnClick="AddFilter" Variant="Variant.Outlined" Size="Size.Small" Disabled="@string.IsNullOrWhiteSpace(_filterValue)">Add filter</MudButton>
+            }
+            @if (_propertyFilters.Count > 0)
+            {
+                <MudChipSet T="string" AllClosable="true" OnClose="RemoveFilter">
+                    @foreach (var filter in _propertyFilters)
+                    {
+                        <MudChip T="string" Size="Size.Small" Text="@FilterText(filter)" Value="@FilterText(filter)" />
+                    }
+                </MudChipSet>
+            }
+        </MudStack>
+    </aside>
+</div>
+
+@code {
+    private const int ExpansionLimit = 100;
+
+    private ElementReference _canvas;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<ExplorePage>? _self;
+    private GraphSchema? _schema;
+    private GraphPattern? _lastPattern;
+    private int _patternOffset;
+    private int _patternShown;
+    private int _patternRemaining;
+    private ContextMenu? _menu;
+    private string? _loadError;
+
+    // The visible graph lives here. The JavaScript module only draws it and reports clicks.
+    private readonly Dictionary<string, GraphNode> _nodes = [];
+    private readonly HashSet<string> _hidden = [];
+    private sealed record ContextMenu(GraphNode Node, double X, double Y, IReadOnlyList<RelationshipCount> Counts);
+
+    private readonly HashSet<string> _expanded = [];
+    private readonly Dictionary<string, int> _remaining = [];
+    private IReadOnlyList<GraphEdge> _edges = [];
+    private GraphNode? _selected;
+    private bool _showingModel;
+
+    private IReadOnlyCollection<string> _relTypes = [];
+    private readonly List<PatternFilter> _propertyFilters = [];
+    private string? _filterKey;
+    private FilterOperator _filterOperator;
+    private string? _filterValue;
+
+    private IReadOnlyList<string> _scenes = [];
+    private string? _sceneName;
+
+    private IEnumerable<GraphNode> VisibleNodes => _nodes.Values.Where(n => !_hidden.Contains(n.Id));
+
+    private GraphFilter Filter => new()
+    {
+        RelTypes = _relTypes.ToList(),
+        Properties = _propertyFilters.ToList(),
+    };
+
+    private GraphValueType FilterKeyType =>
+        _schema!.Properties.First(p => p.Key == _filterKey).Type;
+
+    private void ChooseFilterKey(string? key)
+    {
+        _filterKey = key;
+        _filterValue = null;
+        _filterOperator = key is null ? default : PatternBuilder.OperatorsFor(FilterKeyType).First();
+    }
+
+    private void AddFilter()
+    {
+        _propertyFilters.Add(new PatternFilter(_filterKey!, _filterOperator, _filterValue!.Trim()));
+        ChooseFilterKey(null);
+    }
+
+    private void RemoveFilter(MudChip<string> chip) => _propertyFilters.RemoveAll(f => FilterText(f) == chip.Value);
+
+    private static string FilterText(PatternFilter filter) =>
+        $"{filter.Key} {PatternBuilder.OperatorText(filter.Operator)} {filter.Value}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        _scenes = await Graph.SceneNamesAsync();
+        _schema = await Graph.SchemaAsync();
+
+        // The search bar can work before the graph libraries finish loading from the CDN.
+        StateHasChanged();
+        _self = DotNetObjectReference.Create(this);
+        try
+        {
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/graph.js");
+            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => GraphStyle.For(label, _schema)).ToList());
+        }
+        catch (JSException ex)
+        {
+            _loadError = $"The graph can't be drawn: {ex.Message}";
+        }
+
+        StateHasChanged();
+    }
+
+    // Replaces the canvas with one node per type and one link per kind of relationship, as Neo4j's schema view does.
+    private async Task ShowModelAsync()
+    {
+        var schema = await Graph.SchemaAsync();
+        var counts = await Graph.NodeCountsAsync();
+        var linkCounts = (await Graph.ConnectionCountsAsync()).ToDictionary(c => (c.SourceLabel, c.RelType, c.TargetLabel), c => c.Links);
+        long LinksOf(GraphConnection c) => linkCounts.GetValueOrDefault((c.SourceLabel, c.RelType, c.TargetLabel));
+        ForgetCanvas();
+        foreach (var label in schema.Labels)
+        {
+            var fields = schema.Properties.Where(p => p.Label == label).Select(p => GraphStyle.PropertyTitle(p.Key).ToLowerInvariant()).Distinct();
+            var links = schema.Connections
+                .Where(c => c.SourceLabel == label || c.TargetLabel == label)
+                .Select(c => (c.SourceLabel == label ? $"{PatternBuilder.RelText(c.RelType, true)} {c.TargetLabel}" : $"{PatternBuilder.RelText(c.RelType, false)} {c.SourceLabel}")
+                    + $" ({LinksOf(c).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)})");
+            var id = GraphNode.ModelPrefix + label;
+            _nodes[id] = new GraphNode(id, label, label,
+            [
+                new GraphProperty("nodes", counts.GetValueOrDefault(label).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)),
+                new GraphProperty("properties", string.Join(", ", fields)),
+                new GraphProperty("links", string.Join(", ", links)),
+            ]);
+        }
+
+        _edges = schema.Connections
+            .Select(c => new GraphEdge(GraphNode.ModelPrefix + c.SourceLabel, GraphNode.ModelPrefix + c.TargetLabel, c.RelType, $"{c.RelType} ({GraphStyle.Compact(LinksOf(c))})"))
+            .ToList();
+        _showingModel = true;
+        _lastPattern = null;
+        await DrawAsync(null);
+    }
+
+    private Task ShowTypeAsync(string label) => RunPatternAsync(new GraphPattern([new PatternNode(label, [])], []));
+
+    private void ForgetCanvas()
+    {
+        _nodes.Clear();
+        _hidden.Clear();
+        _expanded.Clear();
+        _remaining.Clear();
+        _edges = [];
+        _selected = null;
+        _menu = null;
+        _showingModel = false;
+    }
+
+    private async Task RunPatternAsync(GraphPattern pattern)
+    {
+        if (_showingModel)
+        {
+            ForgetCanvas();
+        }
+
+        _lastPattern = pattern;
+        _patternOffset = 0;
+        _patternShown = 0;
+        await AddPatternResultsAsync();
+    }
+
+    private Task ShowMorePatternAsync() => AddPatternResultsAsync();
+
+    private async Task AddPatternResultsAsync()
+    {
+        try
+        {
+            var result = await Graph.RunPatternAsync(_lastPattern!, _schema!, ExpansionLimit, _patternOffset);
+            _patternOffset += ExpansionLimit;
+            _patternRemaining = result.Remaining;
+            _patternShown = Math.Min(_patternOffset, _patternOffset + result.Remaining);
+            if (result.NodeIds.Count == 0)
+            {
+                Snackbar.Add("Nothing matches that search.", Severity.Info);
+                return;
+            }
+
+            var found = await Graph.SubgraphAsync(result.NodeIds);
+            foreach (var node in found.Nodes)
+            {
+                _nodes.TryAdd(node.Id, node);
+                _hidden.Remove(node.Id);
+            }
+
+            _selected = found.Nodes.Count == 1 ? found.Nodes[0] : _selected;
+            await RefreshEdgesAndDrawAsync(anchorId: null);
+            await SelectOnCanvasAsync(_selected?.Id);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    [JSInvokable]
+    public Task OnNodeClicked(string nodeId)
+    {
+        _menu = null;
+        _selected = _nodes.GetValueOrDefault(nodeId);
+        return InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OnNodeDoubleClicked(string nodeId)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+        {
+            _menu = null;
+            _selected = node;
+            if (node.IsModel)
+            {
+                await ShowTypeAsync(node.Label);
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                await ExpandAsync(nodeId);
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnNodeRightClicked(string nodeId, double x, double y)
+    {
+        if (_nodes.TryGetValue(nodeId, out var node))
+        {
+            _selected = node;
+            _menu = node.IsModel ? null : new ContextMenu(node, x, y, await Graph.RelationshipCountsAsync(nodeId));
+            await SelectOnCanvasAsync(nodeId);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    [JSInvokable]
+    public Task OnBackgroundClicked()
+    {
+        _menu = null;
+        _selected = null;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    // The menu is positioned on the canvas, so it would drift away from its node.
+    [JSInvokable]
+    public Task OnViewportChanged()
+    {
+        if (_menu is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        _menu = null;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ExpandFromMenuAsync(string? relType)
+    {
+        var nodeId = _menu!.Node.Id;
+        _menu = null;
+        await ExpandAsync(nodeId, relType);
+    }
+
+    private async Task DismissAsync(string nodeId)
+    {
+        _menu = null;
+        await RemoveAsync(nodeId);
+    }
+
+    private async Task DismissOthersAsync(string nodeId)
+    {
+        _menu = null;
+        var keep = _nodes[nodeId];
+        _nodes.Clear();
+        _hidden.Clear();
+        _expanded.Clear();
+        _remaining.Clear();
+        _nodes[nodeId] = keep;
+        _selected = keep;
+        await DrawAsync(null);
+    }
+
+    private async Task ExpandAsync(string nodeId, string? relType = null)
+    {
+        var filter = relType is null ? Filter : Filter with { RelTypes = [relType] };
+        // Everything already known is excluded, so hidden nodes stay hidden and "show more" gets the next batch.
+        var result = await Graph.NeighboursAsync(nodeId, filter, _nodes.Keys, ExpansionLimit);
+        foreach (var node in result.Nodes)
+        {
+            _nodes.TryAdd(node.Id, node);
+        }
+
+        _expanded.Add(nodeId);
+        _remaining[nodeId] = result.Remaining;
+        if (result.Nodes.Count == 0)
+        {
+            Snackbar.Add("Nothing new to add with the current filters.", Severity.Info);
+        }
+
+        await RefreshEdgesAndDrawAsync(nodeId);
+        await SelectOnCanvasAsync(nodeId);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshEdgesAndDrawAsync(string? anchorId)
+    {
+        var subgraph = await Graph.SubgraphAsync(_nodes.Keys.ToList());
+        _edges = subgraph.Edges;
+        await DrawAsync(anchorId);
+    }
+
+    private async Task DrawAsync(string? anchorId)
+    {
+        if (_module is not null)
+        {
+            var (nodes, edges) = CanvasElements();
+            await _module.InvokeVoidAsync("update", nodes, edges, anchorId);
+        }
+    }
+
+    private (object[] Nodes, object[] Edges) CanvasElements()
+    {
+        var visible = VisibleNodes.Select(n => n.Id).ToHashSet();
+        var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, caption = GraphStyle.Caption(n) }).ToArray();
+        var edges = _edges
+            .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId))
+            .Select(e => (object)new { id = $"{e.SourceId}|{e.RelType}|{e.TargetId}", source = e.SourceId, target = e.TargetId, relType = e.Caption ?? e.RelType })
+            .ToArray();
+        return (nodes, edges);
+    }
+
+    private async Task SelectOnCanvasAsync(string? nodeId)
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("select", nodeId);
+        }
+    }
+
+    private async Task HideAsync(string nodeId)
+    {
+        _hidden.Add(nodeId);
+        _selected = null;
+        await DrawAsync(null);
+    }
+
+    private async Task ShowHiddenAsync()
+    {
+        _hidden.Clear();
+        await DrawAsync(null);
+    }
+
+    // Unlike hiding, a removed node comes back if a neighbour is expanded again.
+    private async Task RemoveAsync(string nodeId)
+    {
+        _nodes.Remove(nodeId);
+        _expanded.Remove(nodeId);
+        _remaining.Remove(nodeId);
+        _selected = null;
+        await DrawAsync(null);
+    }
+
+    private async Task FitAsync()
+    {
+        if (_module is not null)
+        {
+            await _module.InvokeVoidAsync("fit");
+        }
+    }
+
+    private async Task ClearAsync()
+    {
+        ForgetCanvas();
+        await DrawAsync(null);
+    }
+
+    private async Task SaveSceneAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var positions = await _module.InvokeAsync<ScenePosition[]>("positions");
+            await Graph.SaveSceneAsync(_sceneName ?? "", positions);
+            _scenes = await Graph.SceneNamesAsync();
+            Snackbar.Add("Scene saved.", Severity.Success);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    private async Task LoadSceneAsync(string name)
+    {
+        var scene = await Graph.LoadSceneAsync(name);
+        if (scene is null || _module is null)
+        {
+            return;
+        }
+
+        var subgraph = await Graph.SubgraphAsync(scene.Positions.Select(p => p.NodeId).ToList());
+        ForgetCanvas();
+        foreach (var node in subgraph.Nodes)
+        {
+            _nodes[node.Id] = node;
+            _expanded.Add(node.Id);
+        }
+
+        _edges = subgraph.Edges;
+        _selected = null;
+        _sceneName = name;
+        var (nodes, edges) = CanvasElements();
+        await _module.InvokeVoidAsync("restore", nodes, edges, scene.Positions);
+
+        var missing = scene.Positions.Count - subgraph.Nodes.Count;
+        if (missing > 0)
+        {
+            Snackbar.Add($"{missing} {(missing == 1 ? "node" : "nodes")} in this scene no longer exist.", Severity.Info);
+        }
+    }
+
+    private async Task DeleteSceneAsync(string name)
+    {
+        await Graph.DeleteSceneAsync(name);
+        _scenes = await Graph.SceneNamesAsync();
+    }
+
+    private string ChipStyle(string label) =>
+        $"background-color: {GraphStyle.For(label, _schema).Color}; color: #ffffff";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("destroy");
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser has already gone, so there's nothing left to clean up.
+            }
+        }
+
+        _self?.Dispose();
+    }
+}

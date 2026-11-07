@@ -1,0 +1,6 @@
+id,name,client,started,budget,status
+pr1,Timetable app,c1,2024-02-01,85000,live
+pr2,Booking redesign,c1,2025-05-12,40000,active
+pr3,Stock forecasting,c2,2025-01-20,62000,active
+pr4,Patient portal,c3,2023-09-04,120000,live
+pr5,Repairs tracker,c4,2025-08-18,35000,active

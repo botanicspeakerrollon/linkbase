@@ -1,0 +1,101 @@
+@inherits LayoutComponentBase
+@inject CurrentModel CurrentModel
+@inject ModelCatalog Catalog
+@inject NavigationManager Navigation
+@inject RecordRepository Records
+@using Linkbase.Core.Explore
+@using Linkbase.Core.Records
+
+<MudThemeProvider Theme="AppTheme.Theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudDrawer @bind-Open="_railOpen" Variant="DrawerVariant.Mini" Breakpoint="Breakpoint.None" OpenMiniOnHover="true" Width="240px" Elevation="0" Class="app-rail">
+        @if (Catalog.Models.Count > 1)
+        {
+            @* The whole brand opens the switcher, so it's easy to find and the collapsed rail's icon works too. *@
+            <MudMenu Class="app-brand-menu" Dense="true" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                <ActivatorContent>
+                    @* MudMenu's own wrapper is display: contents and can't take focus, so this has to be a real button. *@
+                    <button type="button" class="app-brand app-brand-button" aria-label="Switch model" title="Switch model" @onclick="context.ToggleAsync">
+                        <MudIcon Icon="@BrandIcon" Color="Color.Primary" />
+                        <span class="app-brand-text">
+                            <span class="app-brand-name">@CurrentModel.Info.Name</span>
+                            <span class="app-brand-hint">Switch model</span>
+                        </span>
+                        <MudIcon Icon="@Icons.Material.Filled.UnfoldMore" Size="Size.Small" Class="app-brand-chevron" />
+                    </button>
+                </ActivatorContent>
+                <ChildContent>
+                    @foreach (var model in Catalog.Models)
+                    {
+                        <MudMenuItem OnClick="@(() => Switch(model.Key))" Icon="@(model.Key == CurrentModel.Info.Key ? Icons.Material.Filled.Check : null)">@model.Name</MudMenuItem>
+                    }
+                </ChildContent>
+            </MudMenu>
+        }
+        else
+        {
+            <div class="app-brand">
+                <MudIcon Icon="@BrandIcon" Color="Color.Primary" />
+                <span class="app-brand-name">@CurrentModel.Info.Name</span>
+            </div>
+        }
+        <MudNavMenu>
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Home">Home</MudNavLink>
+            <MudNavLink Href="explore" Icon="@Icons.Material.Filled.Hub">Explore</MudNavLink>
+            @foreach (var item in CurrentModel.Domains.SelectMany(d => d.NavItems))
+            {
+                <MudNavLink Href="@item.Href" Match="@(item.ExactMatch ? NavLinkMatch.All : NavLinkMatch.Prefix)" Icon="@item.Icon">@item.Title</MudNavLink>
+            }
+            @* A model file's types each get a list, generated from their definitions. *@
+            @foreach (var type in _types)
+            {
+                <MudNavLink Href="@GraphStyle.RecordListLink(type.Name).TrimStart('/')" Match="NavLinkMatch.Prefix" Icon="@GraphStyle.For(type.Name, type.Color, type.Icon).Icon">@type.Name</MudNavLink>
+            }
+            @* A domain has its own imports, so this is for models with none. *@
+            @if (!CurrentModel.Domains.Any())
+            {
+                <MudNavLink Href="import-csv" Icon="@Icons.Material.Filled.UploadFile">Import CSV</MudNavLink>
+            }
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="app-page">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    // The drawer opens on hover by raising OpenChanged, so this has to be two-way.
+    private bool _railOpen;
+
+    private IReadOnlyList<RecordType> _types = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        // A database that's unreachable or not migrated yet has no types to list. The home page says what's wrong.
+        try
+        {
+            _types = await Records.TypesAsync();
+        }
+        catch (Exception ex) when (ex is Npgsql.NpgsqlException or InvalidOperationException)
+        {
+            _types = [];
+        }
+    }
+
+    private string BrandIcon => CurrentModel.Domains.FirstOrDefault()?.Icon ?? Icons.Material.Filled.Hub;
+
+    // A full page load, so the new circuit starts with the new model.
+    private void Switch(string key) => Navigation.NavigateTo($"model/{key}", forceLoad: true);
+}

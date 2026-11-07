@@ -1,0 +1,21 @@
+name: linkbase
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: linkbase
+      POSTGRES_USER: linkbase
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/init-dev.ps1 to create .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - linkbase-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linkbase -d linkbase"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  linkbase-data:

@@ -1,0 +1,633 @@
+using Linkbase.Data;
+using Linkbase.Domains.Climbing.Data;
+using Linkbase.Core.Graph;
+using Linkbase.Core.Explore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Linkbase.Tests;
+
+public class PatternBuilderTests
+{
+    private static readonly GraphSchema Schema = new(
+        [
+            new GraphConnection("Crag", "IN", "Country"),
+            new GraphConnection("Route", "AT", "Crag"),
+            new GraphConnection("Ascent", "OF", "Route"),
+        ],
+        [
+            new GraphPropertyInfo("Crag", "name", GraphValueType.Text),
+            new GraphPropertyInfo("Crag", "rock_type", GraphValueType.Text),
+            new GraphPropertyInfo("Country", "name", GraphValueType.Text),
+            new GraphPropertyInfo("Route", "name", GraphValueType.Text),
+            new GraphPropertyInfo("Route", "grade", GraphValueType.Text),
+            new GraphPropertyInfo("Route", "length_m", GraphValueType.Number),
+            new GraphPropertyInfo("Ascent", "date", GraphValueType.Date),
+            new GraphPropertyInfo("Trip", "abroad", GraphValueType.Boolean),
+        ]);
+
+    private static PatternBuilder New() => new(Schema);
+
+    private static PatternSuggestion Pick(PatternBuilder builder, string text, string suggestion) =>
+        builder.Suggest(text, [], []).First(s => s.Text == suggestion);
+
+    [Fact]
+    public void Typing_c_offers_the_crag_and_country_labels()
+    {
+        // Crag comes first, so C then Enter chooses it.
+        var labels = New().Suggest("C", [], []).Where(s => s.Kind == SuggestionKind.Label).Select(s => s.Text);
+        Assert.Equal(["Crag", "Country"], labels);
+    }
+
+    [Fact]
+    public void An_empty_box_lists_every_label()
+    {
+        var suggestions = New().Suggest("", [], []);
+        Assert.Equal(Schema.Labels.Append("Graph model"), suggestions.Select(s => s.Text));
+    }
+
+    [Fact]
+    public void Types_are_called_types_in_the_suggestions()
+    {
+        Assert.All(New().Suggest("", [], []).Where(s => s.Kind == SuggestionKind.Label), s => Assert.Equal("Type", s.Hint));
+    }
+
+    [Theory]
+    [InlineData("graph")]
+    [InlineData("GRA")]
+    [InlineData("model")]
+    [InlineData("schema")]
+    public void Graph_offers_the_model_first(string typed) =>
+        Assert.Equal(SuggestionKind.Model, New().Suggest(typed, [], []).First().Kind);
+
+    [Fact]
+    public void The_model_is_only_offered_before_a_search_has_started()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        Assert.DoesNotContain(builder.Suggest("graph", [], []), s => s.Kind == SuggestionKind.Model);
+    }
+
+    [Fact]
+    public void Any_text_can_be_searched_for_across_everything()
+    {
+        var builder = New();
+        var free = builder.Suggest("no such thing", [], []).Single(s => s.Kind == SuggestionKind.FreeText);
+        Assert.Equal("Search everything for \"no such thing\"", free.Text);
+
+        builder.Apply(free);
+
+        var node = builder.ToPattern()!.Nodes.Single();
+        Assert.Null(node.Label);
+        Assert.Equal(new PatternFilter(PatternFilter.AnyField, FilterOperator.Contains, "no such thing"), node.Filters.Single());
+        Assert.Null(builder.Chips.Single().Label);
+        Assert.Equal(["contains \"no such thing\""], builder.Chips.Single().Filters);
+    }
+
+    [Fact]
+    public void Free_text_comes_after_types_so_c_then_enter_still_chooses_crag()
+    {
+        Assert.Equal("Crag", New().Suggest("C", [], []).First().Text);
+        Assert.Equal(SuggestionKind.FreeText, New().Suggest("Lar", [new PropertyMatch("Crag", "name", "Larkfield")], []).First().Kind);
+    }
+
+    [Fact]
+    public void Free_text_can_narrow_a_chosen_type()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        var free = builder.Suggest("windy", [], []).Single(s => s.Kind == SuggestionKind.FreeText);
+        Assert.Equal("Crag containing \"windy\"", free.Text);
+
+        builder.Apply(free);
+
+        Assert.Equal("Crag", builder.Chips.Single().Label);
+        Assert.Equal(["contains \"windy\""], builder.Chips.Single().Filters);
+    }
+
+    [Fact]
+    public void Choosing_a_label_makes_a_chip_and_offers_its_relationships_and_properties()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+
+        Assert.Equal("Crag", builder.Chips.Single().Label);
+        Assert.Empty(builder.Chips.Single().Filters);
+
+        var next = builder.Suggest("", [], []).Select(s => s.Text).ToList();
+        Assert.Contains("IN → Country", next);
+        Assert.Contains("← AT Route", next);
+        Assert.Contains("rock_type", next);
+        Assert.DoesNotContain("grade", next);
+    }
+
+    [Fact]
+    public void A_label_alone_is_a_complete_pattern()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        var pattern = builder.ToPattern()!;
+        Assert.Equal("Crag", pattern.Nodes.Single().Label);
+        Assert.Empty(pattern.Rels);
+    }
+
+    [Fact]
+    public void A_relationship_extends_the_pattern_to_the_next_label()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "", "← AT Route"));
+
+        var pattern = builder.ToPattern()!;
+        Assert.Equal(["Crag", "Route"], pattern.Nodes.Select(n => n.Label));
+        Assert.Equal(new PatternRel("AT", false), pattern.Rels.Single());
+
+        // Suggestions now follow from Route, not Crag.
+        Assert.Contains(builder.Suggest("", [], []), s => s.Text == "grade");
+    }
+
+    [Fact]
+    public void A_filter_goes_property_then_operator_then_value()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "rock", "rock_type"));
+        Assert.Equal("rock type", builder.Chips.Single().Pending);
+
+        builder.Apply(Pick(builder, "", "contains"));
+        Assert.True(builder.NeedsValues);
+        Assert.Equal("rock type contains", builder.Chips.Single().Pending);
+
+        builder.Apply(builder.Suggest("grit", [], []).First());
+
+        Assert.Equal(new PatternFilter("rock_type", FilterOperator.Contains, "grit"), builder.ToPattern()!.Nodes[0].Filters.Single());
+        Assert.Null(builder.Chips.Single().Pending);
+        Assert.Equal(["rock type contains \"grit\""], builder.Chips.Single().Filters);
+    }
+
+    [Fact]
+    public void Conditions_sit_inside_their_own_node()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "", "← AT Route"));
+        builder.Apply(Pick(builder, "grade", "grade"));
+        builder.Apply(Pick(builder, "", "="));
+        builder.Apply(builder.Suggest("E1", [], []).First());
+
+        Assert.Equal(
+            [new PatternChip("Crag", [], null, null), new PatternChip("Route", ["grade = \"E1\""], null, "← AT")],
+            builder.Chips,
+            new ChipComparer());
+    }
+
+    private sealed class ChipComparer : IEqualityComparer<PatternChip>
+    {
+        public bool Equals(PatternChip? a, PatternChip? b) =>
+            a!.Label == b!.Label && a.Filters.SequenceEqual(b.Filters) && a.Pending == b.Pending && a.RelationshipBefore == b.RelationshipBefore;
+
+        public int GetHashCode(PatternChip chip) => chip.Label?.GetHashCode(StringComparison.Ordinal) ?? 0;
+    }
+
+    [Fact]
+    public void Operators_depend_on_the_property_type()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Route", "Route"));
+        builder.Apply(Pick(builder, "grade", "grade"));
+        Assert.Contains(builder.Suggest("", [], []), s => s.Text == "contains");
+        Assert.DoesNotContain(builder.Suggest("", [], []), s => s.Text == ">");
+
+        builder.RemoveLast();
+        builder.Apply(Pick(builder, "length", "length_m"));
+        Assert.Contains(builder.Suggest("", [], []), s => s.Text == ">");
+        Assert.DoesNotContain(builder.Suggest("", [], []), s => s.Text == "contains");
+    }
+
+    [Fact]
+    public void A_number_filter_only_offers_a_valid_number()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Route", "Route"));
+        builder.Apply(Pick(builder, "length", "length_m"));
+        builder.Apply(Pick(builder, "", ">"));
+
+        Assert.Empty(builder.Suggest("tall", [], []));
+        Assert.Equal("50", builder.Suggest("50", [], []).Single().Value);
+    }
+
+    [Fact]
+    public void Database_values_follow_the_typed_value()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "rock", "rock_type"));
+        builder.Apply(Pick(builder, "", "="));
+
+        var suggestions = builder.Suggest("gr", [], ["Grit", "Granite"]);
+
+        Assert.Equal(["gr", "Grit", "Granite"], suggestions.Select(s => s.Value));
+    }
+
+    [Fact]
+    public void A_name_match_starts_the_pattern_with_its_label_and_filter()
+    {
+        var builder = New();
+        var match = builder.Suggest("Lar", [new PropertyMatch("Crag", "name", "Larkfield")], []).Single(s => s.Kind == SuggestionKind.Match);
+        Assert.Equal("Crag", match.Hint);
+
+        builder.Apply(match);
+
+        var node = builder.ToPattern()!.Nodes.Single();
+        Assert.Equal("Crag", node.Label);
+        Assert.Equal(new PatternFilter("name", FilterOperator.Equals, "Larkfield"), node.Filters.Single());
+    }
+
+    [Fact]
+    public void Typing_a_relationship_first_starts_from_any_node()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "AT", "AT → Crag"));
+
+        var pattern = builder.ToPattern()!;
+        Assert.Equal([null, "Crag"], pattern.Nodes.Select(n => n.Label));
+        Assert.Equal(new PatternRel("AT", true), pattern.Rels.Single());
+    }
+
+    [Fact]
+    public void Backspace_steps_back_one_pill_at_a_time()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "", "← AT Route"));
+        builder.Apply(Pick(builder, "grade", "grade"));
+        builder.Apply(Pick(builder, "", "contains"));
+        builder.Apply(builder.Suggest("E1", [], []).First());
+        Assert.Single(builder.Chips[1].Filters);
+
+        builder.RemoveLast();
+        Assert.Empty(builder.ToPattern()!.Nodes[1].Filters);
+
+        builder.RemoveLast();
+        Assert.Equal(["Crag"], builder.ToPattern()!.Nodes.Select(n => n.Label));
+
+        builder.RemoveLast();
+        Assert.True(builder.IsEmpty);
+
+        builder.RemoveLast();
+        Assert.True(builder.IsEmpty);
+    }
+
+    [Fact]
+    public void Backspace_mid_filter_undoes_the_operator_then_the_property()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "rock", "rock_type"));
+        builder.Apply(Pick(builder, "", "contains"));
+
+        builder.RemoveLast();
+        Assert.False(builder.NeedsValues);
+        Assert.Equal("rock_type", builder.PendingKey);
+
+        builder.RemoveLast();
+        Assert.Null(builder.PendingKey);
+    }
+
+    [Fact]
+    public void An_unfinished_filter_is_left_out_of_the_pattern()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "Crag", "Crag"));
+        builder.Apply(Pick(builder, "rock", "rock_type"));
+        Assert.Empty(builder.ToPattern()!.Nodes[0].Filters);
+    }
+}
+
+public class GraphPatternSqlTests
+{
+    private static readonly GraphSchema Schema = new(
+        [],
+        [
+            new GraphPropertyInfo("Crag", "name", GraphValueType.Text),
+            new GraphPropertyInfo("Route", "length_m", GraphValueType.Number),
+            new GraphPropertyInfo("Ascent", "date", GraphValueType.Date),
+            new GraphPropertyInfo("Crag", "bad'; DROP TABLE route; --", GraphValueType.Text),
+        ]);
+
+    private static GraphPattern Single(string? label, params PatternFilter[] filters) => new([new PatternNode(label, filters)], []);
+
+    [Fact]
+    public void Values_are_parameters_and_never_reach_the_sql_text()
+    {
+        var value = "x'; DROP TABLE route; --";
+        var (sql, parameters) = GraphPatternSql.Build(Single("Crag", new PatternFilter("name", FilterOperator.Contains, value)), Schema, 10, 0);
+
+        Assert.DoesNotContain("DROP", sql);
+        Assert.Contains(parameters, p => p.Value is string text && text.Contains("DROP"));
+    }
+
+    [Theory]
+    [InlineData("Crag'; DROP TABLE route; --")]
+    [InlineData("NotALabel")]
+    public void Unknown_labels_are_rejected(string label) =>
+        Assert.Throws<LinkbaseValidationException>(() => GraphPatternSql.Build(Single(label), Schema, 10, 0));
+
+    [Fact]
+    public void Unknown_relationships_are_rejected()
+    {
+        var pattern = new GraphPattern([new PatternNode("Crag", []), new PatternNode("Route", [])], [new PatternRel("AT'; --", true)]);
+        Assert.Throws<LinkbaseValidationException>(() => GraphPatternSql.Build(pattern, Schema, 10, 0));
+    }
+
+    [Theory]
+    [InlineData("nothing_like_this")]
+    [InlineData("bad'; DROP TABLE route; --")]
+    public void Unknown_or_unsafe_property_names_are_rejected(string key) =>
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Single("Crag", new PatternFilter(key, FilterOperator.Contains, "x")), Schema, 10, 0));
+
+    [Fact]
+    public void Bad_numbers_and_dates_are_rejected()
+    {
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Single("Route", new PatternFilter("length_m", FilterOperator.GreaterThan, "tall")), Schema, 10, 0));
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Single("Ascent", new PatternFilter("date", FilterOperator.GreaterThan, "soon")), Schema, 10, 0));
+    }
+
+    [Fact]
+    public void Text_comparisons_do_not_apply_to_numbers()
+    {
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Single("Route", new PatternFilter("length_m", FilterOperator.Contains, "5")), Schema, 10, 0));
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Single("Crag", new PatternFilter("name", FilterOperator.GreaterThan, "a")), Schema, 10, 0));
+    }
+
+    [Fact]
+    public void Wildcards_in_a_value_are_taken_literally()
+    {
+        var (_, parameters) = GraphPatternSql.Build(Single("Crag", new PatternFilter("name", FilterOperator.Contains, "50%_x")), Schema, 10, 0);
+        Assert.Contains(parameters, p => (p.Value as string) == @"%50\%\_x%");
+    }
+}
+
+[Trait("Category", "Database")]
+[Collection(PostgresCollection.Name)]
+public class GraphPatternQueryTests(PostgresFixture fixture)
+{
+    private static string Word() => Guid.NewGuid().ToString("N")[..12];
+
+    private GraphRepository Graph() => new(fixture.ContextFactory());
+
+    private AscentRepository Ascents()
+    {
+        var refresher = new TripRefresher(new TripService(fixture.ContextFactory()), () => "no-corrections-in-tests.json", NullLogger<TripRefresher>.Instance);
+        return new AscentRepository(fixture.ContextFactory(), new AreaRepository(fixture.ContextFactory()), refresher);
+    }
+
+    private async Task<(string Crag, string Route, long AscentId, long RouteId, long CragId)> CreateAsync(string grade = "VS 4c", int length = 20, string date = "2020-05-02")
+    {
+        var (crag, route) = ($"Crag {Word()}", $"Route {Word()}");
+        var id = await Ascents().CreateAsync(new AscentInput
+        {
+            NewRoute = new NewRouteInput(route, grade, GradeSystem.UkTrad, Discipline.Trad, length, 1, null, new NewCragInput(crag, null, $"Country {Word()}")),
+            Date = DateOnly.Parse(date),
+            DatePrecision = DatePrecision.Day,
+            Style = AscentStyle.Onsight,
+        });
+        await using var db = fixture.CreateContext();
+        var row = await db.Ascents.AsNoTracking().Where(a => a.Id == id).Select(a => new { a.RouteId, a.Route.CragId }).SingleAsync();
+        return (crag, route, id, row.RouteId, row.CragId);
+    }
+
+    [Fact]
+    public async Task Schema_describes_the_labels_links_and_property_types()
+    {
+        await CreateAsync();
+
+        var schema = await Graph().SchemaAsync();
+
+        Assert.Contains(new GraphConnection("Route", "AT", "Crag"), schema.Connections);
+        Assert.Contains(new GraphConnection("Ascent", "OF", "Route"), schema.Connections);
+        Assert.Contains(new GraphPropertyInfo("Crag", "name", GraphValueType.Text), schema.Properties);
+        Assert.Contains(new GraphPropertyInfo("Route", "grade", GraphValueType.Text), schema.Properties);
+        Assert.Contains(new GraphPropertyInfo("Route", "length_m", GraphValueType.Number), schema.Properties);
+        Assert.Contains(new GraphPropertyInfo("Ascent", "date", GraphValueType.Date), schema.Properties);
+    }
+
+    [Fact]
+    public async Task A_filtered_label_finds_its_node()
+    {
+        var s = await CreateAsync();
+        var schema = await Graph().SchemaAsync();
+
+        var result = await Graph().RunPatternAsync(
+            new GraphPattern([new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Equals, s.Crag.ToUpperInvariant())])], []),
+            schema, 10, 0);
+
+        Assert.Equal($"crag:{s.CragId}", result.NodeIds.Single());
+        Assert.Equal(0, result.Remaining);
+    }
+
+    [Fact]
+    public async Task A_pattern_follows_relationships_in_their_direction_and_returns_every_node()
+    {
+        var s = await CreateAsync();
+        var schema = await Graph().SchemaAsync();
+        var crag = new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Equals, s.Crag)]);
+
+        var result = await Graph().RunPatternAsync(
+            new GraphPattern([crag, new PatternNode("Route", []), new PatternNode("Ascent", [])], [new PatternRel("AT", false), new PatternRel("OF", false)]),
+            schema, 10, 0);
+
+        Assert.Equal([$"crag:{s.CragId}", $"route:{s.RouteId}", $"ascent:{s.AscentId}"], result.NodeIds);
+
+        var wrongWay = await Graph().RunPatternAsync(
+            new GraphPattern([crag, new PatternNode("Route", [])], [new PatternRel("AT", true)]),
+            schema, 10, 0);
+        Assert.Empty(wrongWay.NodeIds);
+    }
+
+    [Fact]
+    public async Task Number_date_and_text_filters_compare_as_their_type()
+    {
+        var s = await CreateAsync(grade: "E2 5c", length: 90, date: "2021-07-01");
+        var schema = await Graph().SchemaAsync();
+        var byName = new PatternFilter("name", FilterOperator.Equals, s.Route);
+
+        async Task<int> CountAsync(string label, params PatternFilter[] filters) =>
+            (await Graph().RunPatternAsync(new GraphPattern([new PatternNode(label, filters)], []), schema, 10, 0)).NodeIds.Count;
+
+        // As numbers, 90 is less than 100. As text it wouldn't be.
+        Assert.Equal(1, await CountAsync("Route", byName, new PatternFilter("length_m", FilterOperator.LessThan, "100")));
+        Assert.Equal(0, await CountAsync("Route", byName, new PatternFilter("length_m", FilterOperator.GreaterThan, "100")));
+        Assert.Equal(1, await CountAsync("Route", byName, new PatternFilter("grade", FilterOperator.StartsWith, "e2")));
+        Assert.Equal(0, await CountAsync("Route", byName, new PatternFilter("grade", FilterOperator.EndsWith, "e2")));
+
+        var ascentFilter = new PatternFilter("name", FilterOperator.Equals, s.Route);
+        Assert.Equal(1, await CountAsync("Ascent", ascentFilter, new PatternFilter("date", FilterOperator.GreaterOrEqual, "2021-07-01")));
+        Assert.Equal(0, await CountAsync("Ascent", ascentFilter, new PatternFilter("date", FilterOperator.LessThan, "2021-07-01")));
+    }
+
+    [Fact]
+    public async Task Limit_and_offset_page_through_matches()
+    {
+        var suffix = Word();
+        var ids = new List<string>();
+        for (var i = 0; i < 3; i++)
+        {
+            await Ascents().CreateAsync(new AscentInput
+            {
+                NewRoute = new NewRouteInput($"Page {suffix} {i}", null, null, null, null, null, null, new NewCragInput($"Crag {Word()}", null, $"Country {Word()}")),
+                Date = new DateOnly(2020, 1, 1),
+                DatePrecision = DatePrecision.Day,
+                Style = AscentStyle.Lead,
+            });
+        }
+
+        var schema = await Graph().SchemaAsync();
+        var pattern = new GraphPattern([new PatternNode("Route", [new PatternFilter("name", FilterOperator.Contains, suffix)])], []);
+
+        var first = await Graph().RunPatternAsync(pattern, schema, 2, 0);
+        Assert.Equal(2, first.NodeIds.Count);
+        Assert.Equal(1, first.Remaining);
+
+        var second = await Graph().RunPatternAsync(pattern, schema, 2, 2);
+        Assert.Single(second.NodeIds);
+        Assert.Equal(0, second.Remaining);
+        Assert.Empty(first.NodeIds.Intersect(second.NodeIds));
+    }
+
+    [Fact]
+    public async Task Typing_part_of_a_name_or_value_suggests_matches()
+    {
+        var s = await CreateAsync(grade: $"G{Word()}");
+        var word = s.Crag.Split(' ')[1];
+
+        var byName = await Graph().MatchPropertiesAsync(null, word, default);
+        Assert.Contains(new PropertyMatch("Crag", "name", s.Crag), byName);
+
+        var withinLabel = await Graph().MatchPropertiesAsync("Route", word, default);
+        Assert.DoesNotContain(withinLabel, m => m.Label == "Crag");
+
+        var grade = (await Graph().SubgraphAsync([$"route:{s.RouteId}"])).Nodes.Single().Property("grade")!;
+        Assert.Contains(await Graph().MatchPropertiesAsync("Route", grade[1..], default), m => m.Key == "grade" && m.Value == grade);
+    }
+
+    [Fact]
+    public async Task Long_notes_are_not_suggested_as_matches()
+    {
+        var word = Word();
+        await Ascents().CreateAsync(new AscentInput
+        {
+            NewRoute = new NewRouteInput($"Route {Word()}", null, null, null, null, null, null, new NewCragInput($"Crag {Word()}", null, $"Country {Word()}")),
+            Date = new DateOnly(2020, 1, 1),
+            DatePrecision = DatePrecision.Day,
+            Style = AscentStyle.Lead,
+            Notes = $"A long private note about {word}",
+        });
+
+        Assert.DoesNotContain(await Graph().MatchPropertiesAsync(null, word), m => m.Key == "notes");
+    }
+
+    private async Task<IReadOnlyList<string>> FreeTextAsync(string text, string? label = null)
+    {
+        var filter = new PatternFilter(PatternFilter.AnyField, FilterOperator.Contains, text);
+        var result = await Graph().RunPatternAsync(new GraphPattern([new PatternNode(label, [filter])], []), await Graph().SchemaAsync(), 100, 0);
+        return result.NodeIds;
+    }
+
+    [Fact]
+    public async Task Free_text_finds_names_and_any_property_including_notes()
+    {
+        var s = await CreateAsync(grade: $"G{Word()}");
+        var word = Word();
+        await using (var db = fixture.CreateContext())
+        {
+            await db.Ascents.Where(a => a.Id == s.AscentId).ExecuteUpdateAsync(u => u.SetProperty(a => a.Notes, $"Windy day {word}").SetProperty(a => a.UpdatedAt, DateTimeOffset.UtcNow));
+        }
+
+        Assert.Equal([$"crag:{s.CragId}"], await FreeTextAsync(s.Crag.Split(' ')[1].ToUpperInvariant()));
+        Assert.Equal([$"ascent:{s.AscentId}"], await FreeTextAsync(word));
+
+        var grade = (await Graph().SubgraphAsync([$"route:{s.RouteId}"])).Nodes.Single().Property("grade")!;
+        Assert.Contains($"route:{s.RouteId}", await FreeTextAsync(grade));
+    }
+
+    [Fact]
+    public async Task Free_text_doesnt_repeat_every_ascent_of_a_route_and_stays_within_a_type()
+    {
+        var s = await CreateAsync();
+        var word = s.Route.Split(' ')[1];
+
+        Assert.Equal([$"route:{s.RouteId}"], await FreeTextAsync(word));
+        Assert.Empty(await FreeTextAsync(word, "Crag"));
+    }
+
+    [Fact]
+    public async Task Free_text_tolerates_a_typo()
+    {
+        var word = Word();
+        var near = $"Zz{word}x";
+        var country = await fixture.CreateContext().Areas.Select(a => a.Id).FirstAsync();
+        await using (var db = fixture.CreateContext())
+        {
+            db.Crags.Add(new Crag { UserId = AppUser.DefaultId, Name = near, AreaId = country });
+            db.Crags.Add(new Crag { UserId = AppUser.DefaultId, Name = $"Zz{word}y", AreaId = country });
+            await db.SaveChangesAsync();
+        }
+
+        var misspelt = await FreeTextAsync($"Zz{word[..^1]}q");
+        Assert.Equal(2, misspelt.Count);
+    }
+
+    [Fact]
+    public async Task Free_text_matches_values_and_never_property_names()
+    {
+        var word = Word();
+        var s = await CreateAsync(grade: $"grade{word}");
+
+        Assert.Contains($"route:{s.RouteId}", await FreeTextAsync($"grade{word}"));
+        Assert.DoesNotContain($"route:{s.RouteId}", await FreeTextAsync("length_m"));
+    }
+
+    [Fact]
+    public async Task Free_text_takes_wildcards_literally()
+    {
+        await CreateAsync();
+        Assert.Empty(await FreeTextAsync("%%%" + Word()));
+    }
+
+    [Fact]
+    public async Task Node_counts_are_per_type()
+    {
+        await CreateAsync();
+        var counts = await Graph().NodeCountsAsync();
+        Assert.True(counts["Crag"] > 0);
+        Assert.True(counts["Ascent"] > 0);
+    }
+
+    [Fact]
+    public async Task Property_values_are_suggested_for_a_filter()
+    {
+        var grade = $"G{Word()}";
+        var s = await CreateAsync(grade: grade);
+
+        Assert.Contains(grade, await Graph().PropertyValuesAsync("Route", "grade", grade[..6]));
+        Assert.Contains(s.Crag, await Graph().PropertyValuesAsync("Crag", "name", s.Crag));
+        Assert.Empty(await Graph().PropertyValuesAsync("Route", "grade", Word()));
+    }
+
+    [Fact]
+    public async Task Relationship_counts_cover_both_directions()
+    {
+        var s = await CreateAsync();
+
+        var counts = await Graph().RelationshipCountsAsync($"route:{s.RouteId}");
+
+        Assert.Contains(new RelationshipCount("AT", true, "Crag", 1), counts);
+        Assert.Contains(new RelationshipCount("OF", false, "Ascent", 1), counts);
+    }
+}

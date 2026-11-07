@@ -1,0 +1,13 @@
+person,project,role,days_a_week
+p1,pr2,Design lead,2
+p2,pr2,Designer,4
+p2,pr5,Designer,1
+p3,pr4,Tech lead,2
+p4,pr3,Engineer,5
+p4,pr4,Engineer,1
+p5,pr2,Engineer,5
+p6,pr1,Delivery,2
+p6,pr3,Delivery,2
+p7,pr3,Data,5
+p8,pr1,Account,1
+p8,pr2,Account,1

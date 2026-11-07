@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "linkbase",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/Linkbase", "--launch-profile", "http"],
+      "port": 5173
+    },
+    {
+      "name": "linkbase-side-by-side",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "-c", "Release", "--project", "src/Linkbase", "--launch-profile", "http", "--", "--urls", "http://localhost:5174"],
+      "port": 5174
+    },
+    {
+      "name": "linkbase-fixture-extraction",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "-c", "Release", "--project", "src/Linkbase", "--launch-profile", "http", "--", "--urls", "http://localhost:5175", "--WebImport:FixtureExtraction=tests/Linkbase.Tests/Fixtures/web/crag-article.extraction.json"],
+      "port": 5175
+    }
+  ]
+}

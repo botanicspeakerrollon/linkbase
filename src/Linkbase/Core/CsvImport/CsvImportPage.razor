@@ -1,0 +1,551 @@
+@page "/import-csv"
+@using System.Globalization
+@inject CsvImportService Importer
+@inject RecordRepository Records
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* Brings records or links in from a CSV file: choose the file, say what its columns are, check, then import. *@
+<PageTitle>Import a CSV file</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Import a CSV file</MudText>
+<MudText Typo="Typo.body2" Class="mb-4" Style="color: var(--mud-palette-text-secondary)">
+    Each file is either records of one type, such as suppliers, or links between records already here, such as which supplier
+    supplies which product. Import the records first.
+</MudText>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">1. Choose a file</MudText>
+    <MudFileUpload T="IBrowserFile" Class="csv-upload" FilesChanged="UploadAsync" Accept=".csv,.txt" MaxFileSize="CsvImportService.MaxBytes">
+        <CustomContent Context="upload">
+            <MudButton OnClick="@upload.OpenFilePickerAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.UploadFile">@(_file is null ? "Choose a CSV file" : "Choose another file")</MudButton>
+        </CustomContent>
+        <SelectedTemplate />
+    </MudFileUpload>
+    @if (_reading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mt-2" />
+    }
+    @if (_file is not null)
+    {
+        <MudText Typo="Typo.body2" Class="mt-2">@_file.FileName: @_file.Rows.ToString("N0", CultureInfo.InvariantCulture) rows, @_file.Columns.Count columns.</MudText>
+        @if (_file.Preview.Count > 0)
+        {
+            @* The first rows as they are in the file, so the mapping below can be checked against them. *@
+            <div class="csv-preview mt-2">
+                <MudSimpleTable Dense="true" Elevation="0" Bordered="true">
+                    <thead>
+                        <tr>
+                            @foreach (var column in _file.Columns)
+                            {
+                                <th>@column.Header</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in _file.Preview)
+                        {
+                            <tr>
+                                @foreach (var value in row)
+                                {
+                                    <td title="@value">@value</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </div>
+            @if (_file.Rows > _file.Preview.Count)
+            {
+                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
+                    The first @_file.Preview.Count of @_file.Rows.ToString("N0", CultureInfo.InvariantCulture) rows.
+                </MudText>
+            }
+        }
+    }
+</MudPaper>
+
+@if (_file is not null)
+{
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">2. Say what it is</MudText>
+        <MudRadioGroup T="bool" Value="_links" ValueChanged="SetKind">
+            <MudRadio T="bool" Value="false">Records of one type</MudRadio>
+            <MudRadio T="bool" Value="true" Disabled="_types.Count == 0">Links between records</MudRadio>
+        </MudRadioGroup>
+
+        @if (!_links)
+        {
+            <MudGrid Spacing="2" Class="mt-1">
+                <MudItem xs="12" md="4">
+                    <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Type" Value="_typeChoice"
+                               ValueChanged="@(v => { _typeReason = null; ChooseType(v); })" HelperText="@_typeReason">
+                        <MudSelectItem Value="@NewType">A new type</MudSelectItem>
+                        @foreach (var type in _types)
+                        {
+                            <MudSelectItem Value="@type.Name">@type.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                @if (_typeChoice == NewType)
+                {
+                    <MudItem xs="12" md="4">
+                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="New type's name" Value="_newType" ValueChanged="@(v => Changed(() => _newType = v))"
+                                      HelperText="Singular, starting with a capital, such as Supplier" />
+                    </MudItem>
+                }
+            </MudGrid>
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Key column" Value="_keyColumn" ValueChanged="SetKeyColumn"
+                               ToStringFunc="Header" HelperText="What identifies each row, such as an id or code">
+                        @foreach (var column in _file.Columns)
+                        {
+                            <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Name column" Value="_nameColumn" ValueChanged="SetNameColumn"
+                               ToStringFunc="@(i => i < 0 ? "The key" : Header(i))" HelperText="What each record is called">
+                        <MudSelectItem Value="-1">The key</MudSelectItem>
+                        @foreach (var column in _file.Columns)
+                        {
+                            <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-3 mb-1">Fields</MudText>
+            <MudSimpleTable Dense="true" Elevation="0" Class="csv-columns">
+                <thead>
+                    <tr><th>Import</th><th>Column</th><th>Such as</th><th>Field</th><th>Type</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var column in _file.Columns.Where(c => c.Index != _keyColumn && c.Index != _nameColumn))
+                    {
+                        var field = _fields[column.Index];
+                        <tr>
+                            <td><MudCheckBox T="bool" Value="field.Include" ValueChanged="@(v => Changed(() => field.Include = v))" Dense="true" aria-label="@($"Import {column.Header}")" /></td>
+                            <td>@column.Header</td>
+                            <td class="csv-samples">@string.Join(", ", column.Samples)</td>
+                            <td><MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="field.Key" ValueChanged="@(v => Changed(() => field.Key = v))" Disabled="!field.Include" aria-label="@($"Field for {column.Header}")" /></td>
+                            <td>
+                                <MudSelect T="FieldType" Variant="Variant.Outlined" Margin="Margin.Dense" Value="field.Type" ValueChanged="@(v => Changed(() => field.Type = v))"
+                                           ToStringFunc="@(t => CsvImportService.Labelled(t))" Disabled="!field.Include" aria-label="@($"Type of {column.Header}")">
+                                    @foreach (var type in Enum.GetValues<FieldType>())
+                                    {
+                                        <MudSelectItem Value="type">@CsvImportService.Labelled(type)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+        else
+        {
+            <MudGrid Spacing="2" Class="mt-1">
+                <MudItem xs="12" md="3">
+                    <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="From type" Value="_fromType" ValueChanged="@(v => Changed(() => { _fromType = v; SuggestRelationship(); }))">
+                        @foreach (var type in _types)
+                        {
+                            <MudSelectItem Value="@type.Name">@type.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Its key column" Value="_fromColumn" ValueChanged="SetFromColumn" ToStringFunc="Header">
+                        @foreach (var column in _file.Columns)
+                        {
+                            <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    @* The model's relationships between the two types, or a new one typed in. *@
+                    <MudAutocomplete @key="@($"{_fromType}|{_toType}")" T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationship" Value="_relType"
+                                     ValueChanged="@(v => Changed(() => _relType = v?.Trim().ToUpperInvariant().Replace(' ', '_')))"
+                                     SearchFunc="SearchRelationshipsAsync" CoerceValue="true" Strict="false" OpenOnFocus="true" Placeholder="Choose or type a name"
+                                     HelperText="@RelationshipHelp()" />
+                </MudItem>
+            </MudGrid>
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="3">
+                    <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="To type" Value="_toType" ValueChanged="@(v => Changed(() => { _toType = v; SuggestRelationship(); }))">
+                        @foreach (var type in _types)
+                        {
+                            <MudSelectItem Value="@type.Name">@type.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Its key column" Value="_toColumn" ValueChanged="SetToColumn" ToStringFunc="Header">
+                        @foreach (var column in _file.Columns)
+                        {
+                            <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        }
+
+        <MudButton OnClick="CheckAsync" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3">Check</MudButton>
+    </MudPaper>
+}
+
+@if (_plan is not null)
+{
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">3. Import</MudText>
+        <MudText Typo="Typo.body1" Class="mb-2">
+            @Count(_plan.ToAdd) @(_links ? "new link(s)" : "new record(s)") to add.
+            @if (_plan.AlreadyThere > 0)
+            {
+                <span>@Count(_plan.AlreadyThere) already here, left as they are.</span>
+            }
+        </MudText>
+        @foreach (var note in _plan.Notes)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-1">@note</MudAlert>
+        }
+        @foreach (var problem in _plan.Problems)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-1">@problem</MudAlert>
+        }
+        <MudButton OnClick="ImportAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_plan.CanImport || _importing)" Class="mt-2">
+            Import @Count(_plan.ToAdd)
+        </MudButton>
+    </MudPaper>
+}
+
+@if (_done is not null)
+{
+    <MudAlert Severity="Severity.Success" Class="mb-4">
+        <div class="d-flex align-center flex-wrap" style="gap: 12px">
+            <span>Added @Count(_done.Value.Added) @(_done.Value.Type is null ? "link(s)" : $"{_done.Value.Type} record(s)").</span>
+            @if (_done.Value.Type is { } type)
+            {
+                @* A full load, so the rail lists a type that's new. *@
+                <MudButton OnClick="@(() => Navigation.NavigateTo(GraphStyle.RecordListLink(type), forceLoad: true))" Variant="Variant.Outlined" Size="Size.Small">See them</MudButton>
+            }
+        </div>
+    </MudAlert>
+}
+
+@if (_recent.Count > 0)
+{
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent imports</MudText>
+    <MudSimpleTable Dense="true" Elevation="1">
+        <thead>
+            <tr><th>When</th><th>File</th><th>What</th><th>Added</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var batch in _recent)
+            {
+                <tr>
+                    <td style="white-space: nowrap">@batch.At.ToLocalTime().ToString("d MMM yyyy HH:mm", CultureInfo.InvariantCulture)</td>
+                    <td>@batch.File</td>
+                    <td>@batch.What</td>
+                    <td>@Count(batch.Added)</td>
+                    <td>
+                        @if (batch.Status == ImportStatus.Committed)
+                        {
+                            <MudButton OnClick="@(() => UndoAsync(batch))" Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Undo</MudButton>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption">Undone</MudText>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+}
+
+@code {
+    private const string NewType = "\u0001new";
+    private const int RecentShown = 10;
+
+    private sealed class FieldChoice
+    {
+        public bool Include { get; set; } = true;
+        public string Key { get; set; } = "";
+        public FieldType Type { get; set; }
+    }
+
+    private CsvFile? _file;
+    private IReadOnlyList<RecordType> _types = [];
+    private IReadOnlyList<RelationshipDefinition> _relationships = [];
+    private IReadOnlyList<CsvBatch> _recent = [];
+    private Dictionary<int, FieldChoice> _fields = [];
+    private bool _reading;
+    private bool _importing;
+    private bool _links;
+    private string _typeChoice = NewType;
+    private string? _newType;
+    private string? _typeReason;
+    private int _keyColumn;
+    private int _nameColumn = -1;
+    private string? _fromType;
+    private string? _toType;
+    private int _fromColumn;
+    private int _toColumn;
+    private string? _relType;
+    private CsvImportPlan? _plan;
+    private (int Added, string? Type)? _done;
+
+    // Kept so an upload that arrives before the model has loaded waits for it, rather than guessing against nothing.
+    private Task _loaded = Task.CompletedTask;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loaded = RefreshAsync();
+        await _loaded;
+    }
+
+    private async Task RefreshAsync()
+    {
+        _types = await Records.TypesAsync();
+        _relationships = await Records.RelationshipsAsync();
+        _recent = await Importer.RecentAsync(RecentShown);
+    }
+
+    private IReadOnlyList<string> Between() =>
+        _fromType is null || _toType is null ? [] : CsvImportService.RelationshipsBetween(_relationships, _fromType, _toType);
+
+    // Fills in the relationship when the model has exactly one between the two types, unless one has been typed.
+    private void SuggestRelationship()
+    {
+        var between = Between();
+        if (between.Count == 1 && (string.IsNullOrEmpty(_relType) || _relationships.Any(r => r.RelType == _relType)))
+        {
+            _relType = between[0];
+        }
+    }
+
+    // The model's relationships between the two types first, then what's typed, then a suggested name and the names the
+    // model uses elsewhere, so the list is never empty.
+    private Task<IEnumerable<string>> SearchRelationshipsAsync(string? text, CancellationToken cancellationToken)
+    {
+        var typed = text?.Trim().ToUpperInvariant().Replace(' ', '_') ?? "";
+        var suggested = _toType is null ? [] : new[] { $"HAS_{CsvImportService.RelName(_toType)}" };
+        var options = Between()
+            .Concat(typed.Length > 0 ? [typed] : [])
+            .Concat(suggested)
+            .Concat(_relationships.Select(r => r.RelType))
+            .Where(r => r.Contains(typed, StringComparison.Ordinal))
+            .Distinct()
+            .ToList();
+        return Task.FromResult<IEnumerable<string>>(options);
+    }
+
+    private string RelationshipHelp() => Between() switch
+    {
+        [] => "None between these yet: pick a suggestion or type a name",
+        [var only] => $"The model's {only}, or type a new one",
+        var several => $"One of {several.Count} the model has, or a new one",
+    };
+
+    // Choosing a column whose header names a type chooses that type too.
+    private void SetFromColumn(int column) => Changed(() =>
+    {
+        _fromColumn = column;
+        _fromType = CsvImportService.TypeForColumn(Header(column), _types.Select(t => t.Name)) ?? _fromType;
+        SuggestRelationship();
+    });
+
+    private void SetToColumn(int column) => Changed(() =>
+    {
+        _toColumn = column;
+        _toType = CsvImportService.TypeForColumn(Header(column), _types.Select(t => t.Name)) ?? _toType;
+        SuggestRelationship();
+    });
+
+    private async Task UploadAsync(IBrowserFile? upload)
+    {
+        if (upload is null)
+        {
+            return;
+        }
+
+        _reading = true;
+        _plan = null;
+        _done = null;
+        try
+        {
+            await _loaded;
+            if (upload.Size > CsvImportService.MaxBytes)
+            {
+                throw new LinkbaseValidationException($"{upload.Name} is over {CsvImportService.MaxBytes / 1024 / 1024} MB. Split it into smaller files.");
+            }
+
+            await using var stream = upload.OpenReadStream(CsvImportService.MaxBytes);
+            var path = await CsvImportService.SaveAsync(stream);
+            _file = CsvImportService.Read(path, upload.Name);
+            // A column naming another type holds its keys, for linking afterwards, so it isn't a field.
+            var typeNames = _types.Select(t => t.Name).ToList();
+            _fields = _file.Columns.ToDictionary(c => c.Index, c => new FieldChoice
+            {
+                Key = CsvImportService.FieldKey(c.Header),
+                Type = c.Guess,
+                Include = CsvImportService.TypeForColumn(c.Header, typeNames) is null,
+            });
+            _newType = TypeFromFile(upload.Name);
+            _keyColumn = CsvImportService.GuessKeyColumn(_file, _newType);
+
+            // Records of a type that's already here go to it, judged by their fields, keys and the file's name.
+            var typeGuess = await Importer.GuessTypeAsync(_file, _keyColumn, _newType, _types);
+            _typeChoice = typeGuess?.Type ?? NewType;
+            _typeReason = typeGuess?.Reason;
+            if (typeGuess is not null)
+            {
+                ChooseType(typeGuess.Type);
+                _keyColumn = CsvImportService.GuessKeyColumn(_file, typeGuess.Type);
+            }
+
+            _nameColumn = _file.Columns.FirstOrDefault(c => c.Index != _keyColumn && c.Header.Contains("name", StringComparison.OrdinalIgnoreCase))?.Index ?? -1;
+
+            // Two columns naming types here means links between them.
+            var guess = CsvImportService.GuessLinks(_file, _types.Select(t => t.Name).ToList(), _relationships);
+            _links = guess is not null;
+            _fromType = guess?.FromType;
+            _toType = guess?.ToType;
+            _fromColumn = guess?.FromColumn ?? 0;
+            _toColumn = guess?.ToColumn ?? Math.Min(1, _file.Columns.Count - 1);
+            _relType = guess?.RelType;
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _file = null;
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _reading = false;
+        }
+    }
+
+    private string Header(int index) => _file?.Columns.FirstOrDefault(c => c.Index == index)?.Header ?? "";
+
+    private static string Count(int count) => count.ToString("N0", CultureInfo.InvariantCulture);
+
+    // Any change to the mapping means it needs checking again.
+    private void Changed(Action change)
+    {
+        change();
+        _plan = null;
+    }
+
+    private void SetKind(bool links) => Changed(() => _links = links);
+
+    private void SetKeyColumn(int column) => Changed(() => _keyColumn = column);
+
+    private void SetNameColumn(int column) => Changed(() => _nameColumn = column);
+
+    // An existing type's fields keep the types it already has.
+    private void ChooseType(string choice) => Changed(() =>
+    {
+        _typeChoice = choice;
+        var type = _types.FirstOrDefault(t => t.Name == choice);
+        foreach (var field in _fields.Values)
+        {
+            if (type?.Fields.FirstOrDefault(f => f.Key == field.Key) is { } defined)
+            {
+                field.Type = defined.Type;
+            }
+        }
+    });
+
+    private async Task CheckAsync()
+    {
+        try
+        {
+            _plan = _links
+                ? await Importer.PlanAsync(_file!, LinkMapping())
+                : await Importer.PlanAsync(_file!, RecordMapping());
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    private async Task ImportAsync()
+    {
+        _importing = true;
+        try
+        {
+            var result = _links
+                ? await Importer.ImportAsync(_file!, LinkMapping())
+                : await Importer.ImportAsync(_file!, RecordMapping());
+            _done = (result.Added, _links ? null : RecordMapping().Type);
+            _plan = null;
+            _file = null;
+            await RefreshAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _importing = false;
+        }
+    }
+
+    private async Task UndoAsync(CsvBatch batch)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            $"Undo importing {batch.File}?",
+            $"This removes the {Count(batch.Added)} {batch.What} it added, including any changes made to them since. Types and fields it added stay.",
+            yesText: "Undo", cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Importer.UndoAsync(batch.Id);
+            Snackbar.Add("Import undone.", Severity.Success);
+            await RefreshAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    private CsvRecordMapping RecordMapping() => new(
+        (_typeChoice == NewType ? _newType : _typeChoice)?.Trim() ?? "",
+        _keyColumn,
+        _nameColumn < 0 ? null : _nameColumn,
+        _fields.Where(f => f.Key != _keyColumn && f.Key != _nameColumn && f.Value.Include)
+            .Select(f => new CsvFieldMapping(f.Key, f.Value.Key.Trim(), f.Value.Type))
+            .ToList());
+
+    private CsvLinkMapping LinkMapping() =>
+        _fromType is null || _toType is null
+            ? throw new LinkbaseValidationException("Choose the types at both ends.")
+            : new(_fromType, _fromColumn, _relType ?? "", _toType, _toColumn);
+
+    // suppliers.csv suggests Supplier.
+    private static string TypeFromFile(string fileName)
+    {
+        var stem = Path.GetFileNameWithoutExtension(fileName);
+        var words = stem.Split(['_', '-', ' ', '.'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => new string(w.Where(char.IsAsciiLetterOrDigit).ToArray()))
+            .Where(w => w.Length > 0)
+            .Select(w => char.ToUpperInvariant(w[0]) + w[1..].ToLowerInvariant());
+        var name = string.Concat(words);
+        name = name.EndsWith("ies", StringComparison.Ordinal) ? name[..^3] + "y"
+            : name.EndsWith('s') && !name.EndsWith("ss", StringComparison.Ordinal) ? name[..^1]
+            : name;
+        return name.Length > 0 && char.IsAsciiLetterUpper(name[0]) ? name : "";
+    }
+}

@@ -1,0 +1,285 @@
+@page "/insights"
+@inject InsightsRepository Insights
+
+<PageTitle>Insights</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-4">Insights</MudText>
+
+@if (_tripsAbroad is null)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else
+{
+    <MudTabs Elevation="1" ApplyEffectsToContainer="true" TabPanelsClass="pt-4">
+        <MudTabPanel Text="Trips">
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Trips abroad</MudText>
+            <MudTable Items="_tripsAbroad" Dense="true" Hover="true" Elevation="1" Class="mb-6" Breakpoint="Breakpoint.Sm">
+                <HeaderContent><MudTh>Trip</MudTh><MudTh>Dates</MudTh><MudTh>Days</MudTh><MudTh>Ascents</MudTh><MudTh>Crags</MudTh><MudTh>Partners</MudTh></HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Trip">@context.Name</MudTd>
+                    <MudTd DataLabel="Dates">@DateRange(context.StartDate, context.EndDate)</MudTd>
+                    <MudTd DataLabel="Days">@context.DatedDays</MudTd>
+                    <MudTd DataLabel="Ascents">@context.Ascents</MudTd>
+                    <MudTd DataLabel="Crags">@string.Join(", ", context.Crags)</MudTd>
+                    <MudTd DataLabel="Partners">@string.Join(", ", context.Partners)</MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Biggest trips by climbing days</MudText>
+                    <MudTable Items="_biggest" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Trip</MudTh><MudTh>Days</MudTh><MudTh>Ascents</MudTh><MudTh>Per day</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Trip">@context.Name</MudTd>
+                            <MudTd DataLabel="Days">@context.Days</MudTd>
+                            <MudTd DataLabel="Ascents">@context.Ascents</MudTd>
+                            <MudTd DataLabel="Per day">@context.AscentsPerDay</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Countries you keep going back to</MudText>
+                    <MudTable Items="_countries" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Country</MudTh><MudTh>Trips</MudTh><MudTh>First</MudTh><MudTh>Last</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Country">@context.Country</MudTd>
+                            <MudTd DataLabel="Trips">@context.Trips</MudTd>
+                            <MudTd DataLabel="First">@context.FirstYear</MudTd>
+                            <MudTd DataLabel="Last">@context.LastYear</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Trips abroad per year</MudText>
+                    <MudTable Items="_perYear" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Year</MudTh><MudTh>Trips</MudTh><MudTh>Days</MudTh><MudTh>Where</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Year">@context.Year</MudTd>
+                            <MudTd DataLabel="Trips">@context.Trips</MudTd>
+                            <MudTd DataLabel="Days">@context.Days</MudTd>
+                            <MudTd DataLabel="Where">@string.Join(", ", context.Names)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Two-day trips</MudText>
+                    <MudTable Items="_twoDay" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Trip</MudTh><MudTh>Dates</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Trip">@context.Name</MudTd>
+                            <MudTd DataLabel="Dates">@DateRange(context.StartDate, context.EndDate)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Places">
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Crags you return to year after year</MudText>
+            <MudTable Items="_loyalty" Dense="true" Hover="true" Elevation="1" Class="mb-6">
+                <HeaderContent><MudTh>Crag</MudTh><MudTh>Country</MudTh><MudTh>Years</MudTh><MudTh>First</MudTh><MudTh>Last</MudTh><MudTh>Days</MudTh><MudTh>Climbs</MudTh><MudTh>Repeats</MudTh></HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Crag">@context.Crag</MudTd>
+                    <MudTd DataLabel="Country">@context.Country</MudTd>
+                    <MudTd DataLabel="Years">@context.Years</MudTd>
+                    <MudTd DataLabel="First">@context.FirstYear</MudTd>
+                    <MudTd DataLabel="Last">@context.LastYear</MudTd>
+                    <MudTd DataLabel="Days">@context.Days</MudTd>
+                    <MudTd DataLabel="Climbs">@context.Climbs</MudTd>
+                    <MudTd DataLabel="Repeats">@context.Repeats</MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">One visit or regular, by country</MudText>
+                    <MudTable Items="_visits" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Country</MudTh><MudTh>Crags</MudTh><MudTh>One visit</MudTh><MudTh>5+ days</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Country">@context.Country</MudTd>
+                            <MudTd DataLabel="Crags">@context.Crags</MudTd>
+                            <MudTd DataLabel="One visit">@context.OneVisit</MudTd>
+                            <MudTd DataLabel="5+ days">@context.Regulars</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Crags where you repeat most</MudText>
+                    <MudTable Items="_repeats" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Crag</MudTh><MudTh>Ascents</MudTh><MudTh>Climbs</MudTh><MudTh>Repeats</MudTh><MudTh>%</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Crag">@context.Crag</MudTd>
+                            <MudTd DataLabel="Ascents">@context.Ascents</MudTd>
+                            <MudTd DataLabel="Climbs">@context.Climbs</MudTd>
+                            <MudTd DataLabel="Repeats">@context.Repeats</MudTd>
+                            <MudTd DataLabel="%">@context.RepeatPercent.ToString("0")</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Not visited for 5+ years</MudText>
+                    <MudTable Items="_notVisited" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Crag</MudTh><MudTh>Country</MudTh><MudTh>Days</MudTh><MudTh>Last</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Crag">@context.Crag</MudTd>
+                            <MudTd DataLabel="Country">@context.Country</MudTd>
+                            <MudTd DataLabel="Days">@context.Days</MudTd>
+                            <MudTd DataLabel="Last">@context.LastYear</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Seasons">
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Climbing days per month</MudText>
+            <MudSimpleTable Dense="true" Elevation="1" Class="mb-6">
+                <thead><tr><th>Year</th>@foreach (var month in MonthNames) { <th>@month</th> }<th>Total</th></tr></thead>
+                <tbody>
+                    @foreach (var row in _daysByMonth!)
+                    {
+                        <tr><td>@row.Year</td>@foreach (var count in row.Months) { <td>@(count == 0 ? "" : count)</td> }<td><strong>@row.Total</strong></td></tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Ascents per month, by country</MudText>
+            <MudSimpleTable Dense="true" Elevation="1" Class="mb-6">
+                <thead><tr><th>Country</th>@foreach (var month in MonthNames) { <th>@month</th> }<th>Total</th></tr></thead>
+                <tbody>
+                    @foreach (var row in _byMonth!)
+                    {
+                        <tr><td>@row.Country</td>@foreach (var count in row.Months) { <td>@(count == 0 ? "" : count)</td> }<td><strong>@row.Total</strong></td></tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">By season</MudText>
+                    <MudText Typo="Typo.caption">Southern hemisphere seasons are shifted six months.</MudText>
+                    <MudTable Items="_seasons" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Season</MudTh><MudTh>Discipline</MudTh><MudTh>Ascents</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Season">@context.Season</MudTd>
+                            <MudTd DataLabel="Discipline">@context.Discipline</MudTd>
+                            <MudTd DataLabel="Ascents">@context.Ascents</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="8">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Discipline mix by year</MudText>
+                    <MudTable Items="_mix" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Year</MudTh><MudTh>Ascents</MudTh><MudTh>Mix</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Year">@context.Year</MudTd>
+                            <MudTd DataLabel="Ascents">@context.Total</MudTd>
+                            <MudTd DataLabel="Mix">@string.Join(", ", context.Mix)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="Partners">
+            <MudGrid>
+                <MudItem xs="12" md="8">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">By trips</MudText>
+                    <MudTable Items="_partnersByTrips" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Partner</MudTh><MudTh>Trips</MudTh><MudTh>Countries</MudTh><MudTh>Some trips</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Partner">@context.Partner</MudTd>
+                            <MudTd DataLabel="Trips">@context.Trips</MudTd>
+                            <MudTd DataLabel="Countries">@string.Join(", ", context.Countries)</MudTd>
+                            <MudTd DataLabel="Some trips">@string.Join(", ", context.SomeTrips)</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">By ascents</MudText>
+                    <MudTable Items="_partnersByAscents" Dense="true" Hover="true" Elevation="1">
+                        <HeaderContent><MudTh>Partner</MudTh><MudTh>Ascents</MudTh></HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Partner">@context.Partner</MudTd>
+                            <MudTd DataLabel="Ascents">@context.Ascents</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+
+        <MudTabPanel Text="On this day">
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@Today.ToString("d MMMM", System.Globalization.CultureInfo.InvariantCulture) in past years</MudText>
+            @if (_onThisDay!.Count == 0)
+            {
+                <MudText Typo="Typo.body2">Nothing logged on this date yet.</MudText>
+            }
+            else
+            {
+                <MudTable Items="_onThisDay" Dense="true" Hover="true" Elevation="1">
+                    <HeaderContent><MudTh>Year</MudTh><MudTh>Route</MudTh><MudTh>Grade</MudTh><MudTh>Crag</MudTh><MudTh>Style</MudTh><MudTh>Partners</MudTh><MudTh>Notes</MudTh></HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Year">@context.Year</MudTd>
+                        <MudTd DataLabel="Route"><MudLink Href="@($"/browse/route/{context.RouteId}")">@context.Route</MudLink></MudTd>
+                        <MudTd DataLabel="Grade">@context.Grade</MudTd>
+                        <MudTd DataLabel="Crag"><MudLink Href="@($"/browse/crag/{context.CragId}")">@context.Crag</MudLink></MudTd>
+                        <MudTd DataLabel="Style">@Labels.Of(SnakeCaseEnumConverter<AscentStyle>.FromStore(context.Style))</MudTd>
+                        <MudTd DataLabel="Partners">@string.Join(", ", context.Partners)</MudTd>
+                        <MudTd DataLabel="Notes">@context.Notes</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+    </MudTabs>
+}
+
+@code {
+    private static readonly string[] MonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Today, unless a test asks for another date.
+    [Parameter] public DateOnly? OnDate { get; set; }
+
+    private DateOnly Today => OnDate ?? DateOnly.FromDateTime(DateTime.Today);
+
+    private List<OnThisDayRow>? _onThisDay;
+    private List<TripAbroadRow>? _tripsAbroad;
+    private List<BiggestTripRow>? _biggest;
+    private List<TripsPerYearRow>? _perYear;
+    private List<CountryReturnRow>? _countries;
+    private List<TwoDayTripRow>? _twoDay;
+    private List<CragLoyaltyRow>? _loyalty;
+    private List<CragVisitsRow>? _visits;
+    private List<CragRepeatsRow>? _repeats;
+    private List<NotVisitedRow>? _notVisited;
+    private List<CountryMonthsRow>? _byMonth;
+    private List<YearMonthsRow>? _daysByMonth;
+    private List<SeasonRow>? _seasons;
+    private List<DisciplineMixRow>? _mix;
+    private List<PartnerTripsRow>? _partnersByTrips;
+    private List<PartnerAscentsRow>? _partnersByAscents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _biggest = await Insights.BiggestTripsAsync();
+        _perYear = await Insights.TripsAbroadPerYearAsync();
+        _countries = await Insights.CountriesRevisitedAsync();
+        _twoDay = await Insights.TwoDayTripsAsync();
+        _loyalty = await Insights.CragLoyaltyAsync();
+        _visits = await Insights.CragVisitsByCountryAsync();
+        _repeats = await Insights.MostRepeatedCragsAsync();
+        _notVisited = await Insights.NotVisitedLatelyAsync(DateTime.Today.Year);
+        _byMonth = await Insights.AscentsByMonthAndCountryAsync();
+        _daysByMonth = await Insights.ClimbingDaysByMonthAsync();
+        _seasons = await Insights.SeasonsByDisciplineAsync();
+        _mix = await Insights.DisciplineMixByYearAsync();
+        _partnersByTrips = await Insights.PartnersByTripsAsync();
+        _partnersByAscents = await Insights.PartnersByAscentsAsync();
+        _onThisDay = await Insights.OnThisDayAsync(Today.Month, Today.Day);
+        _tripsAbroad = await Insights.TripsAbroadAsync();
+    }
+
+    private static string DateRange(DateOnly? start, DateOnly? end) =>
+        start is { } s && end is { } e ? $"{Labels.Date(s, DatePrecision.Day)} to {Labels.Date(e, DatePrecision.Day)}" : "Dates unknown";
+}

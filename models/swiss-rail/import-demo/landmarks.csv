@@ -1,0 +1,14 @@
+id,name,kind,elevation_m,lat,lon,unesco
+matterhorn,Matterhorn,mountain,4478,45.9763,7.6586,false
+jungfrau,Jungfrau,mountain,4158,46.5367,7.9625,true
+eiger,Eiger,mountain,3967,46.5776,8.0053,true
+aletsch,Aletsch Glacier,glacier,,46.4500,8.0500,true
+rhine-falls,Rhine Falls,waterfall,,47.6779,8.6155,false
+chapel-bridge,Chapel Bridge,bridge,,47.0516,8.3076,false
+chillon,Chillon Castle,castle,,46.4142,6.9275,false
+zytglogge,Zytglogge,clock tower,,46.9480,7.4474,true
+pilatus,Pilatus,mountain,2128,46.9790,8.2550,false
+rigi,Rigi,mountain,1798,47.0567,8.4850,false
+jet-deau,Jet d'Eau,fountain,,46.2074,6.1557,false
+lavaux,Lavaux vineyards,vineyards,,46.4920,6.7460,true
+bernina,Bernina railway,railway,,46.4100,10.0200,true

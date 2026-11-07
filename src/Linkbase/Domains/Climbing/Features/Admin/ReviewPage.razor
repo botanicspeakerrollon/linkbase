@@ -1,0 +1,113 @@
+@page "/admin/review"
+@inject ReviewRepository Reviews
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>Possible duplicates</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Possible duplicates</MudText>
+<MudText Typo="Typo.body2" Class="mb-4">
+    The import kept these as separate rows rather than guessing. Merge the ones that are the same place or climb.
+</MudText>
+
+@if (_items is null)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (_items.Count == 0)
+{
+    <MudAlert Severity="Severity.Success">Nothing left to review.</MudAlert>
+}
+else
+{
+    <MudTable Items="_items" Dense="true" Hover="true" Elevation="1" RowsPerPage="50">
+        <HeaderContent>
+            <MudTh>Type</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Looks like</MudTh>
+            <MudTh>In</MudTh>
+            <MudTh>Similarity</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Type">@context.EntityType</MudTd>
+            @if (context.EntityType == ExternalEntityType.Ascent)
+            {
+                <MudTd DataLabel="Reason" colspan="3">@context.Reason</MudTd>
+            }
+            else
+            {
+                <MudTd DataLabel="Name">
+                    <MudLink Href="@Link(context, context.EntityId)">@context.EntityName</MudLink>
+                    <MudText Typo="Typo.caption" Inline="true">(@Count(context, context.EntityChildren))</MudText>
+                </MudTd>
+                <MudTd DataLabel="Looks like">
+                    <MudLink Href="@Link(context, context.CandidateId)">@context.CandidateName</MudLink>
+                    <MudText Typo="Typo.caption" Inline="true">(@Count(context, context.CandidateChildren))</MudText>
+                </MudTd>
+                <MudTd DataLabel="In">@context.Place</MudTd>
+            }
+            <MudTd DataLabel="Similarity">@context.Similarity.ToString("0.00")</MudTd>
+            <MudTd>
+                <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@(() => MarkDifferentAsync(context))">Different</MudButton>
+                    @if (context.EntityType != ExternalEntityType.Ascent)
+                    {
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => MergeAsync(context, context.EntityId, context.EntityName, context.CandidateName))">Keep first</MudButton>
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => MergeAsync(context, context.CandidateId, context.CandidateName, context.EntityName))">Keep second</MudButton>
+                    }
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+    private List<ReviewEntry>? _items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = (await Reviews.OpenItemsAsync()).ToList();
+    }
+
+    private static string Link(ReviewEntry item, long id) =>
+        item.EntityType == ExternalEntityType.Crag ? $"/browse/crag/{id}" : $"/browse/route/{id}";
+
+    private static string Count(ReviewEntry item, int count) =>
+        Labels.Count(count, item.EntityType == ExternalEntityType.Crag ? "route" : "ascent");
+
+    private async Task MarkDifferentAsync(ReviewEntry item)
+    {
+        await Reviews.MarkDifferentAsync(item.Id);
+        _items!.Remove(item);
+    }
+
+    private async Task MergeAsync(ReviewEntry item, long keepId, string keepName, string removeName)
+    {
+        var moved = item.EntityType == ExternalEntityType.Crag ? "routes" : "ascents";
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            $"Merge into {keepName}?",
+            $"{removeName} will be deleted, and its {moved} moved to {keepName}. This can't be undone.",
+            yesText: "Merge",
+            cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Reviews.MergeAsync(item.Id, keepId);
+            Snackbar.Add($"Merged into {keepName}.", Severity.Success);
+            // Other items may have pointed at the deleted row, so reload the list.
+            _items = (await Reviews.OpenItemsAsync()).ToList();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+}
