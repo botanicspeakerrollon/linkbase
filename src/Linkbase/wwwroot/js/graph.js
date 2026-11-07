@@ -1,10 +1,11 @@
 // Draws the graph and reports clicks. The Explore page owns which nodes and edges are visible.
-// In load order: fcose's two dependencies must come before it, and Cytoscape before them all.
+// In load order: fcose's two dependencies must come before it, and Cytoscape before them all. They're served from
+// wwwroot/lib, so Explore works offline. See README.md for how to update one.
 const scriptUrls = [
-    'https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js',
-    'https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js',
-    'https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js',
-    'https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js',
+    'lib/cytoscape-3.30.4/cytoscape.min.js',
+    'lib/layout-base-2.0.1/layout-base.js',
+    'lib/cose-base-2.2.0/cose-base.js',
+    'lib/cytoscape-fcose-2.2.0/cytoscape-fcose.js',
 ];
 const maxFitZoom = 1.2;
 const menuWidth = 240;

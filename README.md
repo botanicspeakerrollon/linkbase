@@ -52,8 +52,7 @@ up to date. `docker compose down` keeps your data; adding `-v` deletes it.
 
 There are three kinds. Unit tests need nothing. Database tests, including those that render pages with bUnit, start
 their own Postgres and Neo4j in Docker, so they never touch your data. Browser tests start the real app against that
-same test database and drive it in Chromium. They load Cytoscape from jsDelivr, so they need a network connection,
-and Chromium has to be installed once, after a build:
+same test database and drive it in Chromium, which has to be installed once, after a build:
 
 ```
 powershell -ExecutionPolicy Bypass -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium
@@ -114,8 +113,13 @@ dotnet run --project src/Linkbase -- --WebImport:FixtureExtraction=tests/Linkbas
 
 ## Graph explorer
 
-The Explore page loads Cytoscape.js and its fcose layout from the jsDelivr CDN, so it needs an internet connection.
-The versions are pinned at the top of `src/Linkbase/wwwroot/js/graph.js`.
+The Explore page draws with Cytoscape.js and its fcose layout, which come with the app in `src/Linkbase/wwwroot/lib`,
+each in a folder named with its version, beside its MIT licence. So Explore works offline and depends on no third party.
+
+To update one, download the new version's file and licence from `https://cdn.jsdelivr.net/npm/<package>@<version>/`,
+check the file against the SHA-256 that `https://data.jsdelivr.com/v1/packages/npm/<package>@<version>?structure=flat`
+lists for it, put both in a new versioned folder, and change its path at the top of `src/Linkbase/wwwroot/js/graph.js`.
+fcose needs layout-base and cose-base at the versions its own package names.
 
 ## Configuration
 

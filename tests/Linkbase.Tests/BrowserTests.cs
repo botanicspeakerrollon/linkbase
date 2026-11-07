@@ -670,7 +670,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     [Fact]
     public async Task Without_the_graph_libraries_explore_says_so()
     {
-        await _page.RouteAsync("**/cdn.jsdelivr.net/**", route => route.AbortAsync());
+        await _page.RouteAsync("**/lib/cytoscape-*/**", route => route.AbortAsync());
 
         await _page.GotoAsync($"{_url}/explore");
 
