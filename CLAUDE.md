@@ -41,6 +41,9 @@ choice between clever and boring, choose boring. See `README.md` for commands.
 ## Working style
 
 - Small commits, one per meaningful step.
+- The repo is anonymous: nothing in it may identify its owner. Commits use the repo's own `Linkbase` identity and are made
+  with `TZ=UTC0` (`$env:TZ = 'UTC0'` in PowerShell), or git records the PC's time zone. Test data uses made-up people,
+  places and dates, never anything from the real logbook.
 - Build, run the tests and run the app before saying something works. Warnings are errors.
 - Database tests use Testcontainers against real Postgres and carry `[Trait("Category", "Database")]`.
   Mock the LLM client; tests never hit the API.
