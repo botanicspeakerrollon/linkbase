@@ -120,6 +120,18 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         _playwright.Dispose();
     }
 
+    [Fact]
+    public async Task Probes_say_the_app_is_live_and_ready()
+    {
+        using var client = new HttpClient();
+
+        var live = await client.GetAsync($"{_url}/health/live");
+        var ready = await client.GetAsync($"{_url}/health/ready");
+
+        Assert.Equal((System.Net.HttpStatusCode.OK, "Healthy"), (live.StatusCode, await live.Content.ReadAsStringAsync()));
+        Assert.Equal((System.Net.HttpStatusCode.OK, "Healthy"), (ready.StatusCode, await ready.Content.ReadAsStringAsync()));
+    }
+
     private async Task<(string Crag, string Route, long CragId, long RouteId)> SeedAsync()
     {
         var factory = fixture.ContextFactory();

@@ -12,9 +12,9 @@ describe how to run that image.
 | Logs | stdout only. JSON lines outside Development (`Logging__Console__FormatterName=json`), with trace ids, and a line per request: method, path, status and time, never bodies or personal data |
 | Configuration | Environment variables only, listed in [operations](operations.md#configuration). Secrets come from the platform's Secrets |
 | Health | `/health/live` says the process is up. `/health/ready` says every model's database is reachable and migrated. They map onto liveness, readiness and startup probes |
-| Behind a proxy | `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` honours `X-Forwarded-Proto` and `-For` from a Route or ingress that terminates TLS. `PathBase` hosts it under a prefix such as `/linkbase` |
+| Behind a proxy | `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true` honours `X-Forwarded-Proto` and `-For` from a Route or ingress that terminates TLS, and `HttpsRedirection=false` leaves TLS to it. The app runs at the root of its host: serving it under a path such as `/linkbase` needs every link made relative first |
 | Restarts and replicas | Data Protection keys, which sign cookies and anti-forgery tokens, are kept in the database, so restarts don't sign anyone out. Blazor Server holds a live connection to one pod, so more than one replica needs sticky sessions: OpenShift Routes have them by default, and an ingress needs an annotation. One replica is the default |
-| No internet | The graph libraries come with the app. Web import, which calls Anthropic, is off unless switched on. Corporate proxies and CA bundles work through the standard `HTTPS_PROXY` and `SSL_CERT_DIR` |
+| No internet | The graph libraries come with the app. Web import is the only thing that calls out, to Anthropic, and only when used with a key. Corporate proxies and CA bundles work through the standard `HTTPS_PROXY` and `SSL_CERT_DIR` |
 | Disk | Only `/tmp` is written, so the root filesystem can be read-only with an `emptyDir` at `/tmp` |
 | Telemetry | OpenTelemetry traces and metrics over OTLP, for Dynatrace, Elastic, Grafana or anything else that speaks it, when `OTEL_EXPORTER_OTLP_ENDPOINT` is set |
 

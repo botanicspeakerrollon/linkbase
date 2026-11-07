@@ -92,6 +92,32 @@ both matched exactly.
 The restore into the real database hasn't been run for real, on purpose. The rehearsal runs the same script against the
 throwaway container, which skips the prompt and the safety backup.
 
+## Configuration
+
+Everything is set by environment variable in a container, or by user secrets and `appsettings.Development.json` locally.
+A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Linkbase` is `ConnectionStrings__Linkbase`.
+
+| Variable | What it does | Default |
+| --- | --- | --- |
+| `ConnectionStrings__Linkbase` | The main database. A secret | None, so required |
+| `Models__<key>__Name`, `__ConnectionString`, `__Domains__0`, `__Order` | The models in the switcher, as in [models](models.md#configuring-models) | One model on the main database |
+| `ConnectionStrings__<name>` | Each other model's database. A secret if it has a password | None |
+| `Anthropic__ApiKey` | Web import's extraction. A secret | None, so web import can't extract |
+| `ASPNETCORE_ENVIRONMENT` | `Development` for plain-text logs and detailed errors | `Production` |
+| `ASPNETCORE_HTTP_PORTS` | The port to listen on | `8080` in the image |
+| `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | Trust `X-Forwarded-Proto` and `-For` from the Route or ingress in front | `true` in the image |
+| `HttpsRedirection` | Redirect HTTP to HTTPS. Off behind a proxy that ends TLS | `true`, `false` in the image |
+| `Logging__Console__FormatterName` | `json` for one JSON object per line on stdout, or `simple` | `json`, `simple` in Development |
+| `Logging__LogLevel__Default` | How much to log | `Information` |
+
+The app writes logs only to stdout, and files only to `/tmp`. It runs at the root of its host, so give it its own hostname
+rather than a path such as `/linkbase`.
+
+| Endpoint | Says | Use it for |
+| --- | --- | --- |
+| `/health/live` | The process is up. Checks nothing else | Liveness probe |
+| `/health/ready` | Every model's database is reachable and migrated | Readiness and startup probes |
+
 ## Secrets
 
 Secret values are never in the repo, and backups don't include them. This is the record of which ones exist and how to get

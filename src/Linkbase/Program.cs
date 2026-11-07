@@ -5,6 +5,8 @@ using Linkbase.Core.Models;
 using Linkbase.Core.Records;
 using Linkbase.Data;
 using Linkbase.Domains;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -16,12 +18,22 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddMudServices();
 
+// One log line per request, on stdout like every other log: what was asked for and how it went, never bodies, headers
+// or query strings, which can hold personal data. appsettings.json makes the console JSON outside Development.
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath
+        | HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.Duration;
+    options.CombineLogs = true;
+});
+
 // Each model has its own database, and the factory connects to whichever model is current.
 builder.Services.AddSingleton<ModelCatalog>();
 builder.Services.AddScoped<CurrentModel>();
 builder.Services.AddScoped<IDbContextFactory<LinkbaseDbContext>, ModelDbContextFactory>();
 
 builder.Services.AddScoped<DatabaseStatusService>();
+builder.Services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("databases", tags: ["ready"]);
 builder.Services.AddScoped<GraphRepository>();
 builder.Services.AddScoped<ModelLoader>();
 builder.Services.AddScoped<RecordRepository>();
@@ -48,6 +60,8 @@ foreach (var domain in RegisteredDomains.All)
     }
 }
 
+app.UseHttpLogging();
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -56,11 +70,22 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
+
+// In a container, TLS ends at the Route or ingress in front of the app, which has no HTTPS port of its own, so the image
+// turns this off. ASPNETCORE_FORWARDEDHEADERS_ENABLED tells the app the original request was HTTPS.
+if (app.Configuration.GetValue("HttpsRedirection", true))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+// For a platform's probes. Live runs no checks, so a slow database never gets a working pod restarted; ready checks every
+// model's database. Neither writes a request log line, as probes call them every few seconds.
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).WithHttpLogging(HttpLoggingFields.None);
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") }).WithHttpLogging(HttpLoggingFields.None);
 
 // The switcher in the rail comes here. The choice is kept in a cookie, and a fresh page load starts a circuit with it.
 app.MapGet("/model/{key}", (string key, ModelCatalog catalog, HttpContext context) =>
