@@ -56,15 +56,14 @@ test:
     - dotnet restore Linkbase.sln
     # Warnings are errors, from Directory.Build.props.
     - dotnet build Linkbase.sln -c Release --no-restore
-    # Neo4j's tests start their own container, which needs Docker. Neo4j is being retired anyway.
     - |
-      filter="Category!=Neo4j"
+      filter_args=""
       if [ "$RUN_BROWSER_TESTS" = "true" ]; then
         pwsh tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
       else
-        filter="$filter&Category!=Browser"
+        filter_args="--filter Category!=Browser"
       fi
-      dotnet test tests/Linkbase.Tests -c Release --no-build --filter "$filter" --logger "trx;LogFileName=results.trx" --results-directory TestResults
+      dotnet test tests/Linkbase.Tests -c Release --no-build $filter_args --logger "trx;LogFileName=results.trx" --results-directory TestResults
   artifacts:
     when: always
     expire_in: 14 days

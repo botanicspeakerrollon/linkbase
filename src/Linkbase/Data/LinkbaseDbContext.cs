@@ -20,7 +20,6 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<Partner> Partners => Set<Partner>();
     public DbSet<AscentPartner> AscentPartners => Set<AscentPartner>();
     public DbSet<Trip> Trips => Set<Trip>();
-    public DbSet<ReviewItem> ReviewItems => Set<ReviewItem>();
     public DbSet<GraphScene> GraphScenes => Set<GraphScene>();
     public DbSet<NodeType> NodeTypes => Set<NodeType>();
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
@@ -52,7 +51,6 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         configurationBuilder.Properties<ExternalEntityType>().HaveConversion<SnakeCaseEnumConverter<ExternalEntityType>>();
         configurationBuilder.Properties<ImportStatus>().HaveConversion<SnakeCaseEnumConverter<ImportStatus>>();
         configurationBuilder.Properties<DatePrecision>().HaveConversion<SnakeCaseEnumConverter<DatePrecision>>();
-        configurationBuilder.Properties<ReviewStatus>().HaveConversion<SnakeCaseEnumConverter<ReviewStatus>>();
         configurationBuilder.Properties<FieldType>().HaveConversion<SnakeCaseEnumConverter<FieldType>>();
     }
 
@@ -115,11 +113,6 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         modelBuilder.Entity<Trip>(trip =>
         {
             trip.HasIndex(t => new { t.UserId, t.Key }).IsUnique();
-        });
-
-        modelBuilder.Entity<ReviewItem>(item =>
-        {
-            item.HasIndex(i => i.Status);
         });
 
         modelBuilder.Entity<GraphScene>(scene =>

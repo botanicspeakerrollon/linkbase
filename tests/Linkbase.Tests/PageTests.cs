@@ -3,7 +3,6 @@ using Linkbase.Components.Pages;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
-using Linkbase.Domains.Climbing.Features.Admin;
 using Linkbase.Domains.Climbing.Features.Ascents;
 using Linkbase.Domains.Climbing.Features.Browse;
 using Linkbase.Domains.Climbing.Features.Insights;
@@ -637,99 +636,6 @@ public class RoutePageTests(PostgresFixture fixture) : UiTestBase(fixture)
         Press(Dialogs, "Delete");
         Told("Route deleted.");
         NavigatedTo($"/browse/crag/{s.CragId}");
-    }
-}
-
-[Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class ReviewPageTests(PostgresFixture fixture) : UiTestBase(fixture)
-{
-    private async Task<long> AddAsync(ExternalEntityType type, long entityId, long candidateId, string reason = "Alike")
-    {
-        await using var db = Fixture.CreateContext();
-        var item = new ReviewItem { EntityType = type, EntityId = entityId, CandidateId = candidateId, Similarity = 0.9, Reason = reason, Status = ReviewStatus.Open };
-        db.ReviewItems.Add(item);
-        await db.SaveChangesAsync();
-        return item.Id;
-    }
-
-    private async Task ClearAsync()
-    {
-        await using var db = Fixture.CreateContext();
-        await db.ReviewItems.ExecuteDeleteAsync();
-    }
-
-    [Fact]
-    public async Task Says_when_nothing_is_left()
-    {
-        await ClearAsync();
-        var cut = RenderPage<ReviewPage>();
-        Sees(cut, "Nothing left to review.");
-    }
-
-    [Fact]
-    public async Task Different_clears_an_item()
-    {
-        await ClearAsync();
-        var (one, two) = (await SeedAsync(), await SeedAsync());
-        var reason = Unique("Same day");
-        await AddAsync(ExternalEntityType.Ascent, one.AscentId, two.AscentId, reason);
-
-        var cut = RenderPage<ReviewPage>();
-        Sees(cut, reason);
-        Assert.False(HasControl(cut, "Keep first"));
-
-        Press(cut, "Different");
-
-        cut.WaitForAssertion(() => Assert.DoesNotContain(reason, cut.Markup));
-    }
-
-    [Fact]
-    public async Task Merges_routes_and_crags_after_asking()
-    {
-        await ClearAsync();
-        var (one, two) = (await SeedAsync(), await SeedAsync());
-        await AddAsync(ExternalEntityType.Route, one.RouteId, two.RouteId);
-
-        var cut = RenderPage<ReviewPage>();
-        Sees(cut, one.Route);
-        Sees(cut, "1 ascent");
-
-        Press(cut, "Keep first");
-        Press(Dialogs, "Cancel");
-        Dialogs.WaitForAssertion(() => Assert.False(HasControl(Dialogs, "Cancel")));
-        Sees(cut, two.Route);
-
-        Press(cut, "Keep second");
-        Sees(Dialogs, "ascents moved to");
-        Press(Dialogs, "Merge");
-        Told($"Merged into {two.Route}.");
-
-        var (three, four) = (await SeedAsync(), await SeedAsync());
-        await AddAsync(ExternalEntityType.Crag, three.CragId, four.CragId);
-        var crags = RenderPage<ReviewPage>();
-        Sees(crags, three.Crag);
-        Sees(crags, "1 route");
-        Press(crags, "Keep first");
-        Sees(Dialogs, "routes moved to");
-        Press(Dialogs, "Merge");
-        Told($"Merged into {three.Crag}.");
-    }
-
-    [Fact]
-    public async Task A_rejected_merge_is_reported()
-    {
-        await ClearAsync();
-        var (one, two) = (await SeedAsync(), await SeedAsync());
-        await AddAsync(ExternalEntityType.Route, one.RouteId, two.RouteId);
-        var cut = RenderPage<ReviewPage>();
-        Sees(cut, one.Route);
-        await ClearAsync();
-
-        Press(cut, "Keep first");
-        Press(Dialogs, "Merge");
-
-        cut.WaitForAssertion(() => Assert.NotEmpty(Snackbar.ShownSnackbars));
     }
 }
 

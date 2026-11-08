@@ -78,7 +78,6 @@ Every database has the same tables, because there's one schema. A model only fil
 | `ascent` | Your ascents: `route_id`, `date`, `date_precision`, `style`, `notes`, `my_rating` and `trip_id` |
 | `partner`, `ascent_partner` | Who you climbed with, and on which ascents |
 | `trip` | Trips, worked out from ascents. Hand edits are lost when they're rebuilt |
-| `review_item` | Possible duplicates waiting for a decision |
 | `external_ref` | Ids in other systems such as UKC. It has no foreign key, so it can point at anything |
 | `crag_country`, `ascent_facts` | Views that save repeating joins |
 

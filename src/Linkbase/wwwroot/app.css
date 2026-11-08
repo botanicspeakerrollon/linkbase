@@ -227,7 +227,7 @@ h1:focus {
     font-size: 0.8125rem;
 }
 
-/* Explore: the graph fills the screen beside the rail, as in Bloom. */
+/* Explore: the graph fills the screen beside the rail. */
 /* It stays in the page's normal flow, so it moves with the rail like every other page. */
 .app-page.mud-container:has(.explore) {
     max-width: none;

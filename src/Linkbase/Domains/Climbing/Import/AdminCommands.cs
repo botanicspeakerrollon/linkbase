@@ -1,6 +1,5 @@
 using Linkbase.Core;
 using System.Text;
-using System.Text.Json;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 
@@ -11,27 +10,21 @@ public sealed class AdminCommands(
     AscentImportService importer,
     TripService trips,
     ReconciliationService reconciliation,
-    IConfiguration configuration,
     TextWriter output,
     Func<string, string>? resolvePath = null)
 {
     private const string DefaultUkcPath = "data/samples/import.csv";
     private const string DefaultMountainProjectPath = "data/samples/ticks.csv";
     private const string DefaultCorrectionsPath = "data/corrections.json";
-    private const string DefaultExportPath = "data/samples/neo4j-export.json";
     private const string ReportPath = "data/samples/reconciliation.md";
 
     public static bool IsCommand(string[] args) => args is
-        ["inspect", "neo4j"] or ["export", "neo4j", ..] or ["import", "ukc" or "mp" or "all", ..] or ["rebuild", "trips"] or ["report"];
+        ["import", "ukc" or "mp" or "all", ..] or ["rebuild", "trips"] or ["report"];
 
     public async Task<int> RunAsync(string[] args)
     {
         switch (args)
         {
-            case ["inspect", "neo4j"]:
-                return await Neo4jInspector.RunAsync(configuration, output);
-            case ["export", "neo4j", .. var rest]:
-                return await Neo4jExporter.RunAsync(configuration, rest.FirstOrDefault() ?? Resolve(DefaultExportPath), output);
             case ["import", "ukc", .. var rest]:
                 await ImportUkcAsync(rest.FirstOrDefault() ?? Resolve(DefaultUkcPath), LoadCorrections());
                 return 0;
@@ -90,7 +83,6 @@ public sealed class AdminCommands(
         output.WriteLine($"  Routes:   {summary.Routes.Created} created, {summary.Routes.Matched} matched");
         output.WriteLine($"  Ascents:  {summary.Ascents.Created} created, {summary.Ascents.Matched} already imported");
         output.WriteLine($"  Partners: {summary.PartnersCreated} created");
-        output.WriteLine($"  To review: {summary.ReviewItems}");
     }
 
     private async Task WriteReportAsync()
@@ -110,38 +102,6 @@ public sealed class AdminCommands(
         text.AppendLine($"- Partners: {report.Partners}, with {report.PartnerLinks} ascent links");
         text.AppendLine($"- Trips: {report.Trips}, with {report.TripLinks} ascent links, {report.InferredTripLinks} inferred");
         text.AppendLine($"- Partial dates: {report.MonthOnlyAscents} month-only, {report.YearOnlyAscents} year-only");
-        text.AppendLine();
-        text.AppendLine($"## To review ({report.OpenReviews.Count})");
-        text.AppendLine();
-        text.AppendLine("Possible duplicates, kept as separate rows and not merged.");
-        text.AppendLine();
-        foreach (var r in report.OpenReviews)
-        {
-            text.AppendLine($"- {r.EntityType}, similarity {r.Similarity:0.00}: {r.Reason}");
-        }
-
-        text.AppendLine();
-        text.AppendLine("## Neo4j comparison");
-        text.AppendLine();
-        var exportPath = Resolve(DefaultExportPath);
-        if (File.Exists(exportPath))
-        {
-            var export = JsonSerializer.Deserialize<Neo4jExport>(await File.ReadAllTextAsync(exportPath), Neo4jExport.JsonOptions)
-                ?? throw new FormatException($"{exportPath} is empty.");
-            var comparison = await reconciliation.CompareWithNeo4jAsync(export);
-            text.AppendLine($"- Ascents identical: {comparison.AscentsIdentical} of {comparison.AscentsCompared}");
-            text.AppendLine($"- Trips identical: {comparison.TripsIdentical} of {comparison.TripsCompared}");
-            text.AppendLine($"- Differences: {comparison.Differences.Count}");
-            text.AppendLine();
-            foreach (var difference in comparison.Differences)
-            {
-                text.AppendLine($"- {difference}");
-            }
-        }
-        else
-        {
-            text.AppendLine($"Not run: {DefaultExportPath} doesn't exist yet.");
-        }
 
         var reportPath = Resolve(ReportPath);
         await File.WriteAllTextAsync(reportPath, text.ToString());

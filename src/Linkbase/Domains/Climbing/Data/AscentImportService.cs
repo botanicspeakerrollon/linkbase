@@ -14,12 +14,10 @@ public sealed record ImportSummary(
     ImportCounts Crags,
     ImportCounts Routes,
     ImportCounts Ascents,
-    int PartnersCreated,
-    int ReviewItems);
+    int PartnersCreated);
 
 // Loads parsed exports in one transaction. A row is matched by external_ref first, then by an
-// identical name in the same place. Similar names are never merged: the new row is created and
-// flagged for review.
+// identical name in the same place. Similar names are never merged: the new row is created.
 public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
     private const double SimilarityThreshold = 0.5;
@@ -59,8 +57,7 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
             new ImportCounts(run.CragsCreated, run.CragsMatched),
             new ImportCounts(run.RoutesCreated, run.RoutesMatched),
             new ImportCounts(run.AscentsCreated, run.AscentsMatched),
-            run.PartnersCreated,
-            run.ReviewItems);
+            run.PartnersCreated);
     }
 
     private sealed class ImportRun(LinkbaseDbContext db, DataSource source, long batchId, CancellationToken cancellationToken)
@@ -82,7 +79,6 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
         public int AscentsCreated { get; private set; }
         public int AscentsMatched { get; private set; }
         public int PartnersCreated { get; private set; }
-        public int ReviewItems { get; private set; }
 
         public async Task LoadCachesAsync()
         {
@@ -167,7 +163,7 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
             var scope = AreasInSameCountry(areaId);
             var candidates = await db.Crags.AsNoTracking()
                 .Where(c => scope.Contains(c.AreaId) && EF.Functions.TrigramsSimilarity(c.Name, row.CragName) >= SimilarityThreshold)
-                .Select(c => new Candidate(c.Id, c.Name, c.AreaId, EF.Functions.TrigramsSimilarity(c.Name, row.CragName)))
+                .Select(c => new Candidate(c.Id, c.Name, c.AreaId))
                 .ToListAsync(cancellationToken);
 
             var normalised = NameMatching.Normalise(row.CragName);
@@ -183,7 +179,6 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
             db.Crags.Add(crag);
             await SaveAsync();
             await AddRefAsync(ExternalEntityType.Crag, crag.Id, externalId);
-            await AddReviewsAsync(ExternalEntityType.Crag, crag.Id, row.CragName, candidates, $"Crag '{row.CragName}' looks like");
             CragsCreated++;
             return crag.Id;
         }
@@ -198,7 +193,7 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
 
             var candidates = await db.Routes.AsNoTracking()
                 .Where(r => r.CragId == cragId && EF.Functions.TrigramsSimilarity(r.Name, row.RouteName) >= SimilarityThreshold)
-                .Select(r => new Candidate(r.Id, r.Name, r.CragId, EF.Functions.TrigramsSimilarity(r.Name, row.RouteName)))
+                .Select(r => new Candidate(r.Id, r.Name, r.CragId))
                 .ToListAsync(cancellationToken);
 
             var normalised = NameMatching.Normalise(row.RouteName);
@@ -225,7 +220,6 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
             db.Routes.Add(route);
             await SaveAsync();
             await AddRefAsync(ExternalEntityType.Route, route.Id, row.RouteExternalId, row.RouteUrl);
-            await AddReviewsAsync(ExternalEntityType.Route, route.Id, row.RouteName, candidates, $"Route '{row.RouteName}' looks like");
             RoutesCreated++;
             return route.Id;
         }
@@ -255,20 +249,9 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
                 ascent.Partners.Add(new AscentPartner { PartnerId = await ResolvePartnerAsync(name) });
             }
 
-            var sameDayFromOtherSource = await db.Ascents.AsNoTracking()
-                .Where(a => a.RouteId == routeId && a.Date == row.Date && a.Source != source)
-                .Select(a => a.Id)
-                .ToListAsync(cancellationToken);
-
             db.Ascents.Add(ascent);
             await SaveAsync();
             await AddRefAsync(ExternalEntityType.Ascent, ascent.Id, row.AscentExternalId);
-            foreach (var candidateId in sameDayFromOtherSource)
-            {
-                db.ReviewItems.Add(NewReview(ExternalEntityType.Ascent, ascent.Id, candidateId, 1, $"Ascent of '{row.RouteName}' on {row.Date:yyyy-MM-dd} is also logged in another source"));
-            }
-
-            await SaveAsync();
             AscentsCreated++;
         }
 
@@ -302,31 +285,6 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
             _refs[(type, externalId)] = entityId;
         }
 
-        private async Task AddReviewsAsync(ExternalEntityType type, long entityId, string name, List<Candidate> candidates, string reason)
-        {
-            foreach (var candidate in candidates.Where(c => !NameMatching.OnlyNumberingDiffers(name, c.Name)))
-            {
-                db.ReviewItems.Add(NewReview(type, entityId, candidate.Id, candidate.Similarity, $"{reason} '{candidate.Name}'"));
-            }
-
-            await SaveAsync();
-        }
-
-        private ReviewItem NewReview(ExternalEntityType type, long entityId, long candidateId, double similarity, string reason)
-        {
-            ReviewItems++;
-            return new ReviewItem
-            {
-                EntityType = type,
-                EntityId = entityId,
-                CandidateId = candidateId,
-                Similarity = similarity,
-                Reason = reason,
-                Status = ReviewStatus.Open,
-                ImportBatchId = batchId,
-            };
-        }
-
         private List<long> AreasInSameCountry(long areaId)
         {
             var root = RootOf(areaId);
@@ -350,6 +308,7 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
             db.ChangeTracker.Clear();
         }
 
-        private sealed record Candidate(long Id, string Name, long ParentId, double Similarity);
+        // Names close enough to be worth comparing after normalising. The trigram filter can use an index.
+        private sealed record Candidate(long Id, string Name, long ParentId);
     }
 }

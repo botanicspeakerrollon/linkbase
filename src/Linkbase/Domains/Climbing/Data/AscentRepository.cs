@@ -414,12 +414,7 @@ public sealed class AscentRepository(
 
 internal static class EntityLinks
 {
-    // external_ref and review_item are polymorphic and have no foreign keys, so deletes clear them by hand.
-    public static async Task RemoveAsync(LinkbaseDbContext db, ExternalEntityType type, long id, CancellationToken cancellationToken)
-    {
-        await db.ExternalRefs.Where(r => r.EntityType == type && r.EntityId == id).ExecuteDeleteAsync(cancellationToken);
-        await db.ReviewItems
-            .Where(i => i.EntityType == type && (i.EntityId == id || i.CandidateId == id))
-            .ExecuteDeleteAsync(cancellationToken);
-    }
+    // external_ref is polymorphic and has no foreign key, so deletes clear it by hand.
+    public static Task RemoveAsync(LinkbaseDbContext db, ExternalEntityType type, long id, CancellationToken cancellationToken) =>
+        db.ExternalRefs.Where(r => r.EntityType == type && r.EntityId == id).ExecuteDeleteAsync(cancellationToken);
 }

@@ -77,7 +77,6 @@ public class ImportServiceTests(PostgresFixture fixture)
         Assert.Equal(new ImportCounts(0, 1), second.Crags);
         Assert.Equal(new ImportCounts(0, 1), second.Routes);
         Assert.Equal(new ImportCounts(0, 1), second.Ascents);
-        Assert.Equal(0, second.ReviewItems);
     }
 
     [Fact]
@@ -119,7 +118,7 @@ public class ImportServiceTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task Similar_route_names_are_kept_separate_and_flagged_for_review()
+    public async Task Similar_route_names_are_kept_separate()
     {
         var (country, crag) = (Unique("Country"), Unique("Crag"));
         var suffix = Guid.NewGuid().ToString("N")[..8];
@@ -131,17 +130,10 @@ public class ImportServiceTests(PostgresFixture fixture)
         ]);
 
         Assert.Equal(new ImportCounts(2, 0), summary.Routes);
-        Assert.Equal(1, summary.ReviewItems);
-
-        await using var db = fixture.CreateContext();
-        var item = await db.ReviewItems.AsNoTracking().SingleAsync(i => i.ImportBatchId == summary.BatchId);
-        Assert.Equal(ExternalEntityType.Route, item.EntityType);
-        Assert.Equal(ReviewStatus.Open, item.Status);
-        Assert.Contains(one, item.Reason);
     }
 
     [Fact]
-    public async Task Same_route_and_date_from_another_source_is_flagged_for_review()
+    public async Task The_same_route_and_date_from_another_source_is_kept_as_its_own_ascent()
     {
         var (country, crag, route) = (Unique("Country"), Unique("Crag"), Unique("Route"));
         await Importer().ImportAsync(DataSource.Ukc, null, [Row(country, crag, route, Unique("a"))]);
@@ -150,7 +142,8 @@ public class ImportServiceTests(PostgresFixture fixture)
             DataSource.MountainProject, null, [Row(country, crag, route, Unique("b"), DataSource.MountainProject)]);
 
         Assert.Equal(1, summary.Ascents.Created);
-        Assert.Equal(1, summary.ReviewItems);
+        await using var db = fixture.CreateContext();
+        Assert.Equal(2, await db.Ascents.CountAsync(a => a.Route.Name == route));
     }
 
     [Fact]

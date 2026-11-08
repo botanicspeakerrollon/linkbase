@@ -312,7 +312,7 @@
         StateHasChanged();
     }
 
-    // Replaces the canvas with one node per type and one link per kind of relationship, as Neo4j's schema view does.
+    // Replaces the canvas with the model itself: one node per type and one link per kind of relationship.
     private async Task ShowModelAsync()
     {
         var schema = await Graph.SchemaAsync();

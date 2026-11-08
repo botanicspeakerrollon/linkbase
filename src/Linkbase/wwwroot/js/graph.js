@@ -113,7 +113,7 @@ export async function create(element, dotNetRef, labelStyles) {
         ],
     });
 
-    // As in Bloom: a click selects, and a right-click opens the menu. A double-click expands, as a shortcut.
+    // A click selects, and a right-click opens the menu. A double-click expands, as a shortcut.
     element.addEventListener('contextmenu', event => event.preventDefault());
     cy.on('tap', 'node', event => dotNetRef.invokeMethodAsync('OnNodeClicked', event.target.id()));
     cy.on('dbltap', 'node', event => dotNetRef.invokeMethodAsync('OnNodeDoubleClicked', event.target.id()));

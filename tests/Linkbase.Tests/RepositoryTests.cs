@@ -21,7 +21,6 @@ public class RepositoryTests(PostgresFixture fixture)
     private AscentRepository Ascents() => new(fixture.ContextFactory(), Areas(), Refresher());
     private CragRepository Crags() => new(fixture.ContextFactory(), Refresher());
     private RouteRepository Routes() => new(fixture.ContextFactory(), Refresher());
-    private ReviewRepository Reviews() => new(fixture.ContextFactory());
     private InsightsRepository Insights() => new(fixture.ContextFactory());
 
     private static AscentInput NewAscent(string route, string crag, string country, string date = "2020-05-02", AscentStyle style = AscentStyle.Lead) => new()
@@ -266,68 +265,6 @@ public class RepositoryTests(PostgresFixture fixture)
         Assert.Equal(1, country.SubAreas.Single().Ascents);
 
         Assert.Null(await Areas().GetContentsAsync(-1));
-    }
-
-    private async Task<(long ItemId, long KeepRoute, long RemoveRoute, long RemoveAscent)> SetUpRouteReviewAsync()
-    {
-        var created = await CreateAsync(NewAscent(Unique("Keep"), Unique("Crag"), Unique("Country")));
-        var other = await Ascents().CreateAsync(new AscentInput
-        {
-            NewRoute = new NewRouteInput(Unique("Remove"), null, null, null, null, null, created.CragId, null),
-            Date = new DateOnly(2020, 6, 1),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Lead,
-        });
-
-        await using var db = fixture.CreateContext();
-        var removeRoute = await db.Ascents.AsNoTracking().Where(a => a.Id == other).Select(a => a.RouteId).SingleAsync();
-        var item = new ReviewItem
-        {
-            EntityType = ExternalEntityType.Route,
-            EntityId = removeRoute,
-            CandidateId = created.RouteId,
-            Similarity = 0.8,
-            Reason = "Looks alike",
-            Status = ReviewStatus.Open,
-        };
-        db.ReviewItems.Add(item);
-        db.ExternalRefs.Add(new ExternalRef { EntityType = ExternalEntityType.Route, EntityId = removeRoute, Source = DataSource.Ukc, ExternalId = Unique("ref") });
-        await db.SaveChangesAsync();
-        return (item.Id, created.RouteId, removeRoute, other);
-    }
-
-    [Fact]
-    public async Task Review_merge_moves_ascents_and_refs_then_deletes_the_other_route()
-    {
-        var setup = await SetUpRouteReviewAsync();
-
-        await Reviews().MergeAsync(setup.ItemId, setup.KeepRoute);
-
-        await using var db = fixture.CreateContext();
-        Assert.False(await db.Routes.AnyAsync(r => r.Id == setup.RemoveRoute));
-        Assert.Equal(setup.KeepRoute, await db.Ascents.AsNoTracking().Where(a => a.Id == setup.RemoveAscent).Select(a => a.RouteId).SingleAsync());
-        Assert.True(await db.ExternalRefs.AnyAsync(r => r.EntityType == ExternalEntityType.Route && r.EntityId == setup.KeepRoute));
-        Assert.False(await db.ReviewItems.AnyAsync(i => i.Id == setup.ItemId));
-    }
-
-    [Fact]
-    public async Task Review_can_mark_rows_as_different()
-    {
-        var setup = await SetUpRouteReviewAsync();
-        Assert.Contains(await Reviews().OpenItemsAsync(), i => i.Id == setup.ItemId);
-
-        await Reviews().MarkDifferentAsync(setup.ItemId);
-
-        Assert.DoesNotContain(await Reviews().OpenItemsAsync(), i => i.Id == setup.ItemId);
-        await using var db = fixture.CreateContext();
-        Assert.True(await db.Routes.AnyAsync(r => r.Id == setup.RemoveRoute));
-    }
-
-    [Fact]
-    public async Task Review_merge_rejects_a_row_outside_the_pair()
-    {
-        var setup = await SetUpRouteReviewAsync();
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Reviews().MergeAsync(setup.ItemId, -1));
     }
 
     [Fact]

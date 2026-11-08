@@ -57,7 +57,7 @@ the generic store. A module can't have tables of its own.
 | Grade rank, worked out in queries | A read-only `grade_rank` number, kept by the module | Module-owned fields (G4) |
 | `external_ref`: UKC and MP ids and URLs, by entity type and row id | The same table, keyed by node id | External refs by node id (G6) |
 | `import_batch` | Already shared with the CSV import | — |
-| `review_item` (possible duplicates) | Removed beforehand | — |
+| `review_item` (possible duplicates) | Removed in step 0 | — |
 | `graph_scene` | Unchanged. Node ids stay `crag:12` and so on, so saved scenes still line up | — |
 
 Node keys are today's row ids, and the relationship names are the ones Explore already shows (`IN`, `AT`, `OF`, `WITH`,
@@ -72,7 +72,7 @@ keep working.
 | `TripBuilder` (pure logic) and `data/corrections.json` | Unchanged. `TripService` rewrites the `Trip` nodes and links instead of the `trip` table (G5) |
 | `TripRefresher` called from `AscentRepository` | Called by a hook when an ascent's date or country changes (G4) |
 | An ascent's caption is its route's name, by a check on the type name in Core | The climbing module supplies captions. Core loses the check |
-| `ReconciliationService`, the Neo4j comparison | Removed beforehand |
+| `ReconciliationService` (the counts report after an import) | Unchanged in purpose, counting nodes instead of rows. Its Neo4j comparison was removed in step 0 |
 
 ### Pages
 
@@ -84,7 +84,7 @@ keep working.
 | Insights: ten SQL reports | A module page with its queries rewritten over `node` and `node_link`. Replaced later by saved searches and dashboards (G10) |
 | Climbing home page stats | Generic home page stats, as the other models have |
 | Web import (`/import`, staging, review, undo) | A module page on generic staging (G9), then made generic for any model |
-| Duplicates (`/admin/review`) | Removed beforehand |
+| Duplicates (`/admin/review`) | Removed in step 0 |
 
 ### Imports and operations
 
@@ -121,7 +121,7 @@ the fix.
 
 Each step leaves the app working, and the real data isn't touched until step 6.
 
-0. **Delete what's going anyway.**
+0. **Delete what's going anyway.** Done.
    - Neo4j: the driver package, the exporter, inspector and comparison, their commands, tests and docs, and the `neo4j`
      source value. The real database has no rows using it.
    - The Duplicates page, `review_item`, and the import step that flags duplicates.

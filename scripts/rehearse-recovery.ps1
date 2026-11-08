@@ -12,7 +12,7 @@ $real = Resolve-DbContainer ''
 if (-not $Backup) { $Backup = & (Join-Path $PSScriptRoot 'backup-db.ps1') }
 
 $climbing = 'area', 'crag', 'route', 'ascent', 'partner', 'ascent_partner', 'trip', 'external_ref'
-$other = 'graph_scene', 'review_item', 'import_batch'
+$other = 'graph_scene', 'import_batch'
 
 function Get-Counts([string]$Container, [string]$Database = '$POSTGRES_DB') {
     $sql = (($climbing + $other) | ForEach-Object { "SELECT '$_', count(*) FROM $_" }) -join ' UNION ALL '
@@ -115,9 +115,6 @@ try {
     foreach ($table in $other) {
         Write-Host ('       {0,-16} real {1,6}   rebuilt {2,6}' -f $table, $realCounts[$table], $rebuilt[$table])
     }
-    Write-Host ('       decided duplicates: real {0}, rebuilt {1}' -f
-        (Invoke-Sql $real "SELECT count(*) FROM review_item WHERE status <> 'open';"),
-        (Invoke-Sql $name "SELECT count(*) FROM review_item WHERE status <> 'open';" 'rebuild'))
 } finally {
     docker rm -f $name | Out-Null
 

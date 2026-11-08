@@ -1,7 +1,7 @@
 # Import mapping
 
-Status: implemented and verified. The UKC and Mountain Project CSVs load into Postgres, and a row-by-row
-comparison with the Neo4j graph found no differences in ascents or trips, including every `VISITED` link.
+Status: implemented and verified. The UKC and Mountain Project CSVs load into Postgres. Before the logbook's earlier store
+was retired, a row-by-row comparison with it found no differences in ascents or trips.
 
 ## Decisions made
 
@@ -97,28 +97,17 @@ Rating Code could help with grade sort keys in Phase 4.
 The two exports are loaded side by side with no matching between them, as a route's name rarely matches across the two
 sites.
 
-## Neo4j
+## Partners and trips
 
-### The graph is derived from the CSVs
-
-`rebuild.cypher` wipes the graph and rebuilds it from the two CSVs plus hand-written corrections. Replaying its
-partner and trip rules over the CSVs gives the same ascents, partners, trips and links as the live graph.
-
-The live graph differs from the script in two ways, so it was probably built by an earlier version: it has integer
-ascent IDs, and `Trip -VISITED-> Country` links the script doesn't create. Those links match the countries derived
-from each trip's ascents, so nothing is lost by not storing them.
+Neither export has partners as people or trips. They're derived by the rules below, with hand-written corrections.
 
 ### Load order
 
 1. Import the UKC and Mountain Project CSVs, as mapped above.
 2. Apply the corrections.
 3. Derive trips.
-4. Compare against the graph once, as a final check (see below).
 
-Neither Neo4j's data nor its connection is needed for the load, and `external_ref` has no `neo4j` rows, because
-the graph's ascent IDs are line numbers that change with each export.
-
-### Rules to port from `rebuild.cypher`
+### Rules
 
 - **Partners:** split on `,` and ` and `, then trim. Names are case-sensitive.
 - **Corrections:** the partner rename, the partners added to Mountain Project ticks (for all ticks, and by area),
@@ -133,14 +122,13 @@ the graph's ascent IDs are line numbers that change with each export.
 - **Seasons:** computed in queries from the month and country, with southern-hemisphere countries shifted 6 months.
   Not stored.
 
-The script also settles these Mountain Project rules, which replace the versions above where they differ:
+These Mountain Project rules replace the versions above where they differ:
 
 - **Bouldering:** a tick is bouldering when Route Type contains Boulder and Style is Send, Flash or Attempt.
   Otherwise the discipline is the first listed type.
 - **Grade:** from a Rating with both kinds of grade, such as `5.12a V5`, use the V grade for bouldering and the
   `5.x` grade otherwise. A protection rating such as `R` or `PG13` is kept in `route.grade`.
-- **Style:** Pinkpoint counts as `redpoint`. `Lead β` as `flash`, Attempt as `dnf` and Length in feet are all
-  confirmed by the script.
+- **Style:** Pinkpoint counts as `redpoint`, `Lead β` as `flash` and Attempt as `dnf`. Length is in feet.
 
 ### Schema additions
 
@@ -149,26 +137,19 @@ The script also settles these Mountain Project rules, which replace the versions
 - `trip` (id, user_id, key, name, start_date, end_date, sort_date, notes, abroad, home, approximate,
   dates_partly_unknown, manual, timestamps, import_batch_id). `key` keeps a trip's id stable across rebuilds, and
   `sort_date` orders trips with unknown dates, which have no start date.
-- `ascent.trip_id` (nullable) and `ascent.trip_inferred`. The script's rules give an ascent at most one trip.
-- `review_item` holds possible duplicates that weren't merged. Partners need no `external_ref`, since their name
-  is unique per user.
+- `ascent.trip_id` (nullable) and `ascent.trip_inferred`. The trip rules give an ascent at most one trip.
+- Partners need no `external_ref`, since their name is unique per user.
 
 There's no table for a trip's countries, since they're derived from its ascents.
 
 ### Not stored
 
-- `Climb.stars` and `Climb.mpAvgStars`: community stars, as decided. No query in `queries.cypher` uses them.
-- `Ascent.year`, `month`, `day`, `season`, `styleBase`, and `Trip.year`, `month`: can be derived.
-
-### Final check against the graph
-
-Counts can't reveal a property edited by hand. An `export neo4j` command would write the graph to
-`data/samples/neo4j-export.json` using read-only queries, and the reconciliation report would compare it row by
-row. It runs once, from your terminal.
+- Community stars, from either site, as decided.
+- An ascent's year, month, day, season and base style, and a trip's year and month: they can be derived.
 
 ## Queries to keep
 
-`queries.cypher` has 19 queries. They aren't in the original Phase 2 list, but they show how the logbook is used:
+Insights comes from 19 reports that show how the logbook is used:
 
 - **Trips (5):** abroad, biggest, most-travelled partners, per year, countries revisited.
 - **Places (4):** crag loyalty, one-visit crags versus regulars, repeats, places not visited for years.
@@ -177,5 +158,5 @@ row. It runs once, from your terminal.
 - **Lookups (4):** two-day trips, crag name search, ascents per source, schema view. The last two are replaced by
   the reconciliation report and the graph explorer.
 
-These can all run on the proposed schema. Those that group by country need a recursive area lookup, because
+They all run on this schema. Those that group by country need a recursive area lookup, because
 Mountain Project crags sit up to 7 levels below the country. A small `crag_country` view handles that.

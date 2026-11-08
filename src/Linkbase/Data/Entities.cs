@@ -147,17 +147,6 @@ public class GraphScene : ITimestamped
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
-// A possible duplicate the importer wouldn't guess at. The new row exists and isn't merged.
-public class ReviewItem : ImportedEntity
-{
-    public ExternalEntityType EntityType { get; set; }
-    public long EntityId { get; set; }
-    public long CandidateId { get; set; }
-    public double Similarity { get; set; }
-    public required string Reason { get; set; }
-    public ReviewStatus Status { get; set; }
-}
-
 public class ExternalRef : ImportedEntity
 {
     public ExternalEntityType EntityType { get; set; }

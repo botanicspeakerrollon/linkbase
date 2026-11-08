@@ -25,7 +25,6 @@ public sealed class ClimbingDomain : IDomainModule
         new("browse", "Browse", Icons.Material.Outlined.AccountTree),
         new("import", "Import", Icons.Material.Outlined.CloudDownload),
         new("insights", "Insights", Icons.Material.Outlined.Insights),
-        new("admin/review", "Duplicates", Icons.Material.Filled.CompareArrows),
     ];
 
     public IReadOnlyList<LabelStyle> LabelStyles { get; } =
@@ -64,7 +63,6 @@ public sealed class ClimbingDomain : IDomainModule
         services.AddScoped<CragRepository>();
         services.AddScoped<RouteRepository>();
         services.AddScoped<PartnerRepository>();
-        services.AddScoped<ReviewRepository>();
         services.AddScoped<InsightsRepository>();
         services.AddScoped<WebImportRepository>();
         services.AddScoped<WebImportService>();
@@ -91,7 +89,6 @@ public sealed class ClimbingDomain : IDomainModule
             scope.ServiceProvider.GetRequiredService<AscentImportService>(),
             scope.ServiceProvider.GetRequiredService<TripService>(),
             scope.ServiceProvider.GetRequiredService<ReconciliationService>(),
-            configuration,
             Console.Out);
         return await commands.RunAsync(args);
     }

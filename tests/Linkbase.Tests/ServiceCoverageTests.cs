@@ -335,55 +335,6 @@ public class GradeRankingEdgeCaseTests
     public void Leaves_unrecognised_grades_unranked(GradeSystem system, string grade) => Assert.Null(GradeRanking.Rank(system, grade));
 }
 
-public class Neo4jComparisonEdgeCaseTests
-{
-    private static Neo4jAscent Mp(string? lead, string? grade = "5.9", string? protection = null, long? feet = null, params Neo4jTripLink[] trips) => new(
-        "mp-1", "MountainProject", "Lead", "Lead", lead, null, "2023-01-02", "Slab", "Crag", grade, protection, feet, [], trips);
-
-    private static ComparisonAscent App(string? style, string? grade = "5.9", int? length = null, string? trip = null, bool inferred = false) => new(
-        DataSource.MountainProject, "Crag", "Slab", new DateOnly(2023, 1, 2), DatePrecision.Day, style, null, grade, length, [], trip, inferred);
-
-    [Fact]
-    public void Mountain_project_rows_pair_on_their_raw_style_and_recombine_grade_and_protection()
-    {
-        var result = Neo4jComparison.Compare(
-            new Neo4jExport([Mp("Onsight", "5.9", "R", 100, new Neo4jTripLink("T", true))], []),
-            [App("Lead / Onsight", "5.9 R", 30, "T", true)],
-            []);
-        Assert.Empty(result.Differences);
-    }
-
-    [Fact]
-    public void Reports_grade_length_and_trip_differences()
-    {
-        var result = Neo4jComparison.Compare(new Neo4jExport([Mp(null, "5.9", null, 100)], []), [App("Lead", "5.10", 99, "T")], []);
-        Assert.Contains(result.Differences, d => d.Contains("grade differs"));
-        Assert.Contains(result.Differences, d => d.Contains("length differs"));
-        Assert.Contains(result.Differences, d => d.Contains("trip differs"));
-    }
-
-    [Fact]
-    public void Reports_partner_differences()
-    {
-        var graph = new Neo4jAscent("u", "UKC", "Lead", null, null, null, "20/Aug/26", "S", "C", "HS", null, null, ["A"], []);
-        var app = new ComparisonAscent(DataSource.Ukc, "C", "S", new DateOnly(2026, 8, 20), DatePrecision.Day, "Lead", null, "HS", null, ["B"], null, false);
-        Assert.Contains(Neo4jComparison.Compare(new Neo4jExport([graph], []), [app], []).Differences, d => d.Contains("partners differ"));
-    }
-
-    [Fact]
-    public void Reports_trips_on_only_one_side_and_differences_in_name_and_dates()
-    {
-        var result = Neo4jComparison.Compare(
-            new Neo4jExport([], [new Neo4jTrip("only-graph", "G", null, null, []), new Neo4jTrip("both", "Old", "2020-01-01", "2020-01-02", [])]),
-            [],
-            [new ComparisonTrip("only-app", "A", null, null, []), new ComparisonTrip("both", "New", new DateOnly(2020, 1, 1), new DateOnly(2020, 1, 3), [])]);
-        Assert.Contains(result.Differences, d => d.Contains("only in the graph"));
-        Assert.Contains(result.Differences, d => d.Contains("only in the import"));
-        Assert.Contains(result.Differences, d => d.Contains("name differs"));
-        Assert.Contains(result.Differences, d => d.Contains("dates differ"));
-    }
-}
-
 public class PatternBuilderEdgeCaseTests
 {
     private static readonly GraphSchema Schema = new(
@@ -575,7 +526,6 @@ public class RepositoryCoverageTests(PostgresFixture fixture)
     private AscentRepository Ascents() => new(fixture.ContextFactory(), Areas(), Refresher());
     private CragRepository Crags() => new(fixture.ContextFactory(), Refresher());
     private RouteRepository Routes() => new(fixture.ContextFactory(), Refresher());
-    private ReviewRepository Reviews() => new(fixture.ContextFactory());
     private PartnerRepository Partners() => new(fixture.ContextFactory());
     private ReconciliationService Reconciliation() => new(fixture.ContextFactory());
 
@@ -717,35 +667,6 @@ public class RepositoryCoverageTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task Review_lists_and_merges_crags_and_lists_ascent_items()
-    {
-        var keep = await CreateAsync();
-        var remove = await CreateAsync();
-        await using var db = fixture.CreateContext();
-        var cragItem = new ReviewItem { EntityType = ExternalEntityType.Crag, EntityId = remove.CragId, CandidateId = keep.CragId, Similarity = 0.7, Reason = "Alike", Status = ReviewStatus.Open };
-        var ascentItem = new ReviewItem { EntityType = ExternalEntityType.Ascent, EntityId = remove.AscentId, CandidateId = keep.AscentId, Similarity = 1, Reason = Unique("Same day"), Status = ReviewStatus.Open };
-        var staleItem = new ReviewItem { EntityType = ExternalEntityType.Route, EntityId = -1, CandidateId = -2, Similarity = 1, Reason = "Gone", Status = ReviewStatus.Open };
-        db.ReviewItems.AddRange(cragItem, ascentItem, staleItem);
-        db.ExternalRefs.Add(new ExternalRef { EntityType = ExternalEntityType.Crag, EntityId = remove.CragId, Source = DataSource.Ukc, ExternalId = Unique("r") });
-        await db.SaveChangesAsync();
-
-        var items = await Reviews().OpenItemsAsync();
-        Assert.Contains(items, i => i.Id == cragItem.Id && i.EntityName == remove.Crag && i.CandidateName == keep.Crag);
-        Assert.Contains(items, i => i.Id == ascentItem.Id);
-        Assert.DoesNotContain(items, i => i.Id == staleItem.Id);
-
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Reviews().MergeAsync(ascentItem.Id, keep.AscentId));
-        await Reviews().MergeAsync(cragItem.Id, keep.CragId);
-
-        Assert.False(await db.Crags.AnyAsync(c => c.Id == remove.CragId));
-        Assert.Equal(keep.CragId, await db.Routes.AsNoTracking().Where(r => r.Id == remove.RouteId).Select(r => r.CragId).SingleAsync());
-        Assert.True(await db.ExternalRefs.AnyAsync(r => r.EntityType == ExternalEntityType.Crag && r.EntityId == keep.CragId));
-
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Reviews().MergeAsync(-1, keep.CragId));
-        await db.ReviewItems.Where(i => i.Id == staleItem.Id || i.Id == ascentItem.Id).ExecuteDeleteAsync();
-    }
-
-    [Fact]
     public async Task Trip_refresher_rebuilds_when_the_file_exists_and_skips_when_it_does_not()
     {
         var s = await CreateAsync();
@@ -867,13 +788,12 @@ public class RepositoryCoverageTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task Reconciliation_report_and_comparison_run_on_real_rows()
+    public async Task Reconciliation_report_runs_on_real_rows()
     {
         var partner = Unique("Partner");
         var s = await CreateAsync(partner);
         await using (var db = fixture.CreateContext())
         {
-            db.ReviewItems.Add(new ReviewItem { EntityType = ExternalEntityType.Route, EntityId = s.RouteId, CandidateId = s.RouteId, Similarity = 0.9, Reason = Unique("Reason"), Status = ReviewStatus.Open });
             db.ExternalRefs.Add(new ExternalRef { EntityType = ExternalEntityType.Route, EntityId = s.RouteId, Source = DataSource.Ukc, ExternalId = Unique("r") });
             await db.SaveChangesAsync();
         }
@@ -884,10 +804,5 @@ public class RepositoryCoverageTests(PostgresFixture fixture)
         Assert.True(report.Partners > 0);
         Assert.True(report.Trips > 0);
         Assert.Contains(report.Entities, e => e.Entity == "Routes" && e.Total > 0 && e.Ukc > 0);
-        Assert.NotEmpty(report.OpenReviews);
-
-        var result = await Reconciliation().CompareWithNeo4jAsync(new Neo4jExport([], []));
-        Assert.Contains(result.Differences, d => d.Contains(s.Route));
-        Assert.Contains(result.Differences, d => d.Contains("only in the import"));
     }
 }

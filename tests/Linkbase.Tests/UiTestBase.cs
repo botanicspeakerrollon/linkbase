@@ -38,7 +38,6 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<CragRepository>();
         Services.AddSingleton<RouteRepository>();
         Services.AddSingleton<PartnerRepository>();
-        Services.AddSingleton<ReviewRepository>();
         Services.AddSingleton<InsightsRepository>();
         Services.AddSingleton<GraphRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();

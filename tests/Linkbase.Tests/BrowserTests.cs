@@ -214,7 +214,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     public async Task Every_page_is_dark_and_free_of_console_errors()
     {
         var s = await SeedAsync();
-        foreach (var path in new[] { "/", "/logbook", "/ascents/new", "/browse", $"/browse/crag/{s.CragId}", "/explore", "/insights", "/import", "/admin/review" })
+        foreach (var path in new[] { "/", "/logbook", "/ascents/new", "/browse", $"/browse/crag/{s.CragId}", "/explore", "/insights", "/import" })
         {
             await _page.GotoAsync(_url + path, new() { WaitUntil = WaitUntilState.NetworkIdle });
 
@@ -756,14 +756,12 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     }
 
     [Fact]
-    public void Admin_commands_run_instead_of_the_web_app()
+    public void Commands_run_instead_of_the_web_app()
     {
-        // No password, so this stops before connecting to anything.
-        var output = Path.Combine(Path.GetTempPath(), $"logbook-{Guid.NewGuid():N}.json");
-        var exitCode = RunningApp.RunEntryPoint("export", "neo4j", output, "--Neo4j:Password=", $"--ConnectionStrings:Linkbase={fixture.ConnectionString}");
+        // A model that doesn't exist, so this stops before reading the file or connecting to anything.
+        var exitCode = RunningApp.RunEntryPoint("model", "load", "models/none.json", "no-such-model");
 
         Assert.Equal(1, exitCode);
-        Assert.False(File.Exists(output));
     }
 
     [Fact]

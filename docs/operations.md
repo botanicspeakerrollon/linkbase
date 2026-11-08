@@ -6,7 +6,7 @@ How to back up, restore and rebuild the database. Everything runs from the repo 
 
 | Kept in | Holds | Backed up by |
 | --- | --- | --- |
-| Postgres (`linkbase_linkbase-data` Docker volume) | Everything the app shows, including ascents added or edited in the app, saved scenes, duplicate decisions and staged imports | `backup-db.ps1` |
+| Postgres (`linkbase_linkbase-data` Docker volume) | Everything the app shows, including ascents added or edited in the app, saved scenes and staged imports | `backup-db.ps1` |
 | `data/samples/import.csv`, `ticks.csv`, `data/corrections.json` (git-ignored) | The source for a rebuild, and the only copy of the corrections | `backup-db.ps1` copies them |
 | `.env` and user secrets (git-ignored) | Database password, API keys | Nothing. `init-dev.ps1` makes a new database password, and the Anthropic key has to be added again |
 | Git | The code | A remote, once one is set up. There isn't one yet |
@@ -65,7 +65,6 @@ A rebuild brings back everything in the export files, and nothing else:
 | --- | --- |
 | Ascents, routes, crags, areas, partners and refs from the two CSVs | Anything added or edited in the app, including committed web imports |
 | Trips, rebuilt from the ascents and `data/corrections.json` | Saved scenes |
-| Possible duplicates, flagged again as open | Decisions on those duplicates |
 | | Staged, failed and undone web imports |
 
 Row ids can change, so a saved scene from before a rebuild won't line up with the new rows. Prefer a restore when you have
@@ -134,7 +133,6 @@ each one back.
 | --- | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | The app's connection to Postgres | Always | Run `./scripts/init-dev.ps1`, which rebuilds it from the password in `.env` |
 | `Anthropic:ApiKey` | Web import's extraction | Only for web import | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
-| `Neo4j:Password` | Reading the old Neo4j graph | Only for `inspect neo4j`, `export neo4j`, and until Neo4j is retired | Reset it in Neo4j. You can delete it once Neo4j is gone |
 
 `POSTGRES_PASSWORD` in `.env` is the other secret. It sets the password when the database volume is first created.
 
@@ -148,7 +146,7 @@ To set or remove one:
 
 ```powershell
 dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
-dotnet user-secrets remove Neo4j:Password --project src/Linkbase
+dotnet user-secrets remove Anthropic:ApiKey --project src/Linkbase
 ```
 
 Plain `dotnet user-secrets list` prints the values, so don't paste its output anywhere.

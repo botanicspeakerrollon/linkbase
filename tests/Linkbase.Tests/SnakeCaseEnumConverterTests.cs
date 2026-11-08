@@ -15,7 +15,6 @@ public class SnakeCaseEnumConverterTests
         Assert.Equal("top_rope", SnakeCaseEnumConverter<AscentStyle>.ToStore(AscentStyle.TopRope));
         Assert.Equal("dnf", SnakeCaseEnumConverter<AscentStyle>.ToStore(AscentStyle.Dnf));
         Assert.Equal("mountain_project", SnakeCaseEnumConverter<DataSource>.ToStore(DataSource.MountainProject));
-        Assert.Equal("neo4j", SnakeCaseEnumConverter<DataSource>.ToStore(DataSource.Neo4j));
         Assert.Equal("web_import", SnakeCaseEnumConverter<DataSource>.ToStore(DataSource.WebImport));
     }
 

@@ -802,70 +802,6 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("partner");
                 });
 
-            modelBuilder.Entity("Linkbase.Data.ReviewItem", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("CandidateId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("candidate_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<long>("EntityId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("entity_id");
-
-                    b.Property<string>("EntityType")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("entity_type");
-
-                    b.Property<long?>("ImportBatchId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("import_batch_id");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("reason");
-
-                    b.Property<double>("Similarity")
-                        .HasColumnType("double precision")
-                        .HasColumnName("similarity");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_review_item");
-
-                    b.HasIndex("ImportBatchId")
-                        .HasDatabaseName("ix_review_item_import_batch_id");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_review_item_status");
-
-                    b.ToTable("review_item");
-                });
-
             modelBuilder.Entity("Linkbase.Data.Route", b =>
                 {
                     b.Property<long>("Id")
@@ -1319,17 +1255,6 @@ namespace Linkbase.Data.Migrations
                     b.Navigation("ImportBatch");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Linkbase.Data.ReviewItem", b =>
-                {
-                    b.HasOne("Linkbase.Data.ImportBatch", "ImportBatch")
-                        .WithMany()
-                        .HasForeignKey("ImportBatchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_review_item_import_batch_import_batch_id");
-
-                    b.Navigation("ImportBatch");
                 });
 
             modelBuilder.Entity("Linkbase.Data.Route", b =>

@@ -20,7 +20,7 @@ public sealed record PatternSuggestion(SuggestionKind Kind, string Text, string?
 // Focused is the node new conditions go to: the last one, unless the arrow keys or a click chose an earlier one.
 public sealed record PatternChip(string? Label, IReadOnlyList<string> Filters, string? Pending, string? RelationshipBefore, bool Focused = false);
 
-// The search phrase being built, as in Neo4j Bloom. Each step changes what's suggested next:
+// The search phrase being built, one step at a time. Each step changes what's suggested next:
 // a type, then relationships and properties, a property's operators, then its values. Plain text can go in at any point.
 public sealed class PatternBuilder(GraphSchema schema)
 {

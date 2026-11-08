@@ -4,7 +4,7 @@ Load any connected data, such as people and projects, suppliers, a rail network 
 graph and edit it, with no query language and no graph database. One ASP.NET Core app (Blazor Interactive Server) and
 Postgres, with a database per model.
 
-It started as a personal climbing logbook moved out of Neo4j, which is still its one model with code of its own. See
+It started as a personal climbing logbook, which is still its one model with code of its own. See
 [models](docs/models.md) for the rest.
 
 ## Prerequisites
@@ -51,19 +51,19 @@ up to date. `docker compose down` keeps your data; adding `-v` deletes it.
 ### Tests
 
 There are three kinds. Unit tests need nothing. Database tests, including those that render pages with bUnit, start
-their own Postgres and Neo4j in Docker, so they never touch your data. Browser tests start the real app against that
+their own Postgres in Docker, so they never touch your data. Browser tests start the real app against that
 same test database and drive it in Chromium, which has to be installed once, after a build:
 
 ```
 powershell -ExecutionPolicy Bypass -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium
 ```
 
-Without Docker, point the tests at any Postgres server whose user can create databases, and leave out Neo4j's tests,
-which need their own container. Each run creates its own databases there and drops them all at the end:
+Without Docker, point the tests at any Postgres server whose user can create databases. Each run creates its own databases
+there and drops them all at the end:
 
 ```powershell
 $env:LINKBASE_TEST_CONNECTION = "Host=...;Database=postgres;Username=...;Password=..."
-dotnet test -c Release --filter "Category!=Neo4j"
+dotnet test -c Release
 ```
 
 **CI** runs the same build and every test on GitHub Actions for each push to `main` and each pull request
@@ -88,21 +88,7 @@ corrections at `data/corrections.json`. All are git-ignored. `docs/import-mappin
 | Recalculate trips | `dotnet run --project src/Linkbase -- rebuild trips` |
 | Rewrite the report | `dotnet run --project src/Linkbase -- report` |
 
-The report goes to `data/samples/reconciliation.md`, and lists possible duplicates for review.
-
-### Checking against Neo4j
-
-To compare the import with the old graph, set the password, then run the read-only commands below. `report` picks
-up the export automatically.
-
-```powershell
-dotnet user-secrets set Neo4j:Password "<your password>" --project src/Linkbase
-dotnet run --project src/Linkbase -- inspect neo4j
-dotnet run --project src/Linkbase -- export neo4j
-```
-
-`Neo4j:Uri` (default `bolt://localhost:7687`), `Neo4j:User` (default `neo4j`) and `Neo4j:Database`
-(default `neo4j`) are optional.
+The report goes to `data/samples/reconciliation.md`, and counts what was loaded and where it came from.
 
 ## Importing from web pages
 
@@ -161,9 +147,7 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | Postgres connection | user secrets or environment variable |
 | `Anthropic:ApiKey` | LLM extraction for web import | user secrets or environment variable |
-| `Neo4j:Password` | Reading the old Neo4j graph | user secrets or environment variable |
 | `Anthropic:Model` | Model for extraction | `appsettings.json` |
-| `Neo4j:Uri`, `Neo4j:User`, `Neo4j:Database` | Where the old graph is, if not the defaults | user secrets or environment variable |
 | `WebImport:FixtureExtraction` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
 
 Environment variables use a double underscore, for example `ConnectionStrings__Linkbase`. See
