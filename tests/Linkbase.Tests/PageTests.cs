@@ -56,15 +56,7 @@ public class HomePageTests(PostgresFixture fixture) : UiTestBase(fixture)
     [Fact]
     public async Task Says_when_migrations_are_pending()
     {
-        var name = $"empty_{Guid.NewGuid():N}";
-        await using (var db = Fixture.CreateContext())
-        {
-#pragma warning disable EF1002 // The name is a generated GUID, and CREATE DATABASE can't take a parameter.
-            await db.Database.ExecuteSqlRawAsync($"CREATE DATABASE {name}");
-#pragma warning restore EF1002
-        }
-
-        UseDatabase(new NpgsqlConnectionStringBuilder(Fixture.ConnectionString) { Database = name }.ConnectionString);
+        UseDatabase(await Fixture.CreateEmptyDatabaseAsync());
         var cut = RenderPage<Home>();
 
         Sees(cut, "are pending");

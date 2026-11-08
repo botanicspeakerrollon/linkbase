@@ -176,7 +176,9 @@ public sealed class Neo4jFixture : IAsyncLifetime
     public Task DisposeAsync() => _container.DisposeAsync().AsTask();
 }
 
+// Neo4j as well as Database, so a runner without Docker can leave these out and still run the Postgres tests.
 [Trait("Category", "Database")]
+[Trait("Category", "Neo4j")]
 public sealed class Neo4jCommandTests(Neo4jFixture neo4j) : IClassFixture<Neo4jFixture>
 {
     private IConfiguration Configuration(string? uri = null, string password = Neo4jFixture.Password) => new ConfigurationBuilder()

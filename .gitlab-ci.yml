@@ -1,0 +1,106 @@
+# The GitLab equivalent of .github/workflows/ci.yml, for self-hosted GitLab, such as an on-prem bank's with Kubernetes or
+# OpenShift runners. It needs no Docker daemon and no Docker-in-Docker:
+#   - tests use a `services: postgres` container instead of Testcontainers, through LINKBASE_TEST_CONNECTION;
+#   - the image is built with Buildah and pushed to this project's registry;
+#   - Trivy scans the image and keeps an SBOM.
+#
+# Behind a registry mirror, set SDK_IMAGE, RUNTIME_IMAGE, POSTGRES_IMAGE, BUILDAH_IMAGE and TRIVY_IMAGE as CI/CD
+# variables. An air-gapped Trivy also needs TRIVY_DB_REPOSITORY pointing at a mirror of its vulnerability database.
+
+variables:
+  SDK_IMAGE: mcr.microsoft.com/dotnet/sdk:10.0
+  RUNTIME_IMAGE: mcr.microsoft.com/dotnet/aspnet:10.0
+  POSTGRES_IMAGE: postgres:16-alpine
+  BUILDAH_IMAGE: quay.io/buildah/stable:latest
+  TRIVY_IMAGE: aquasec/trivy:latest
+  IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  # Set to "true" to run the browser tests too. They download Chromium, which an air-gapped runner can't.
+  RUN_BROWSER_TESTS: "false"
+
+stages:
+  - test
+  - build
+  - scan
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# A throwaway Postgres beside the job. Its password is a test-only value for a container that lives as long as the job.
+.postgres:
+  services:
+    - name: $POSTGRES_IMAGE
+      alias: postgres
+      variables:
+        POSTGRES_USER: linkbase
+        POSTGRES_PASSWORD: linkbase-ci-only
+        POSTGRES_DB: postgres
+  variables:
+    LINKBASE_TEST_CONNECTION: "Host=postgres;Port=5432;Database=postgres;Username=linkbase;Password=linkbase-ci-only"
+
+test:
+  stage: test
+  extends: .postgres
+  image: $SDK_IMAGE
+  cache:
+    key:
+      files: [src/Linkbase/Linkbase.csproj, tests/Linkbase.Tests/Linkbase.Tests.csproj]
+    paths: [.nuget/packages]
+  variables:
+    NUGET_PACKAGES: $CI_PROJECT_DIR/.nuget/packages
+  script:
+    - dotnet restore Linkbase.sln
+    # Warnings are errors, from Directory.Build.props.
+    - dotnet build Linkbase.sln -c Release --no-restore
+    # Neo4j's tests start their own container, which needs Docker. Neo4j is being retired anyway.
+    - |
+      filter="Category!=Neo4j"
+      if [ "$RUN_BROWSER_TESTS" = "true" ]; then
+        pwsh tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      else
+        filter="$filter&Category!=Browser"
+      fi
+      dotnet test tests/Linkbase.Tests -c Release --no-build --filter "$filter" --logger "trx;LogFileName=results.trx" --results-directory TestResults
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths: [TestResults/]
+
+image:
+  stage: build
+  image: $BUILDAH_IMAGE
+  needs: [test]
+  variables:
+    # Unprivileged runners: no overlay mounts or user namespaces needed.
+    STORAGE_DRIVER: vfs
+    BUILDAH_ISOLATION: chroot
+  script:
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - buildah build --build-arg SDK_IMAGE="$SDK_IMAGE" --build-arg RUNTIME_IMAGE="$RUNTIME_IMAGE" -t "$IMAGE" .
+    - buildah push "$IMAGE"
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        buildah tag "$IMAGE" "$CI_REGISTRY_IMAGE:latest"
+        buildah push "$CI_REGISTRY_IMAGE:latest"
+      fi
+
+scan:
+  stage: scan
+  image:
+    name: $TRIVY_IMAGE
+    entrypoint: [""]
+  needs: [image]
+  variables:
+    TRIVY_USERNAME: $CI_REGISTRY_USER
+    TRIVY_PASSWORD: $CI_REGISTRY_PASSWORD
+  script:
+    # Reports known vulnerabilities without failing the pipeline, since most come from the base image and are fixed by
+    # rebuilding when it's updated. Raise --exit-code to 1 to make them block.
+    - trivy image --exit-code 0 --severity CRITICAL,HIGH --ignore-unfixed "$IMAGE"
+    - trivy image --format cyclonedx --output sbom.cdx.json "$IMAGE"
+  artifacts:
+    expire_in: 90 days
+    paths: [sbom.cdx.json]

@@ -7,16 +7,33 @@ using Testcontainers.PostgreSql;
 
 namespace Linkbase.Tests;
 
-// One container per test run, with the real migrations applied. Tests share the database,
-// so each one creates its own uniquely named rows rather than assuming an empty table.
+// One database per test run, with the real migrations applied. Tests share it, so each one creates its own uniquely named
+// rows rather than assuming an empty table.
+//
+// Normally it's a Postgres container from Testcontainers. Where Docker isn't available, such as a CI runner without
+// Docker-in-Docker, LINKBASE_TEST_CONNECTION names a Postgres server instead (a GitLab `services: postgres`, say), whose
+// user can create databases. The run then creates its own databases there and drops them all at the end.
 public sealed class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
+    public const string ServerVariable = "LINKBASE_TEST_CONNECTION";
 
-    public string ConnectionString => _container.GetConnectionString();
+    private readonly string? _server = Environment.GetEnvironmentVariable(ServerVariable) is { Length: > 0 } server ? server : null;
+    private readonly PostgreSqlContainer? _container;
+    private readonly List<string> _created = [];
+    private string _connectionString = "";
+
+    public PostgresFixture()
+    {
+        if (_server is null)
+        {
+            _container = new PostgreSqlBuilder("postgres:16-alpine").Build();
+        }
+    }
+
+    public string ConnectionString => _connectionString;
 
     public LinkbaseDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(_container.GetConnectionString()).Options);
+        new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(_connectionString).Options);
 
     public IDbContextFactory<LinkbaseDbContext> ContextFactory() => new TestContextFactory(this);
 
@@ -29,15 +46,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     // Nothing in it reaches the shared database that other tests use.
     public async Task<string> CreateModelDatabaseAsync(string insertRowsSql)
     {
-        var name = $"model_{Guid.NewGuid():N}";
-        await using (var admin = CreateContext())
-        {
-#pragma warning disable EF1002 // The name is a generated GUID, and CREATE DATABASE can't take a parameter.
-            await admin.Database.ExecuteSqlRawAsync($"CREATE DATABASE {name}");
-#pragma warning restore EF1002
-        }
-
-        var connectionString = new NpgsqlConnectionStringBuilder(ConnectionString) { Database = name }.ConnectionString;
+        var connectionString = await CreateDatabaseAsync($"model_{Guid.NewGuid():N}");
         await using var db = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
         await db.Database.MigrateAsync();
 
@@ -50,14 +59,62 @@ public sealed class PostgresFixture : IAsyncLifetime
         return connectionString;
     }
 
+    // A database with no tables at all, as an app pointed at a new server would find.
+    public Task<string> CreateEmptyDatabaseAsync() => CreateDatabaseAsync($"empty_{Guid.NewGuid():N}");
+
     public async Task InitializeAsync()
     {
-        await _container.StartAsync();
+        if (_container is not null)
+        {
+            await _container.StartAsync();
+            _connectionString = _container.GetConnectionString();
+        }
+        else
+        {
+            _connectionString = await CreateDatabaseAsync($"linkbase_test_{Guid.NewGuid():N}");
+        }
+
         await using var db = CreateContext();
         await db.Database.MigrateAsync();
     }
 
-    public Task DisposeAsync() => _container.DisposeAsync().AsTask();
+    public async Task DisposeAsync()
+    {
+        if (_container is not null)
+        {
+            await _container.DisposeAsync();
+            return;
+        }
+
+        // Everything this run created, so a shared server is left as it was found.
+        await using var connection = new NpgsqlConnection(_server);
+        await connection.OpenAsync();
+        foreach (var name in _created)
+        {
+            await using var drop = new NpgsqlCommand($"DROP DATABASE IF EXISTS {name} WITH (FORCE)", connection);
+            await drop.ExecuteNonQueryAsync();
+        }
+    }
+
+    // On the container, or on the given server, connecting through whichever database is already there.
+    private async Task<string> CreateDatabaseAsync(string name)
+    {
+        var admin = _server ?? _connectionString;
+        await using (var connection = new NpgsqlConnection(admin))
+        {
+            await connection.OpenAsync();
+            // The name is a generated GUID, and CREATE DATABASE can't take a parameter.
+            await using var create = new NpgsqlCommand($"CREATE DATABASE {name}", connection);
+            await create.ExecuteNonQueryAsync();
+        }
+
+        if (_container is null)
+        {
+            _created.Add(name);
+        }
+
+        return new NpgsqlConnectionStringBuilder(admin) { Database = name }.ConnectionString;
+    }
 }
 
 [CollectionDefinition(Name)]

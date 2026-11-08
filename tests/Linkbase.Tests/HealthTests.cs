@@ -38,18 +38,10 @@ public sealed class HealthTests(PostgresFixture fixture)
     [Fact]
     public async Task Not_ready_when_a_database_cant_be_reached_or_needs_migrating()
     {
-        var empty = $"empty_{Guid.NewGuid():N}";
-        await using (var db = fixture.CreateContext())
-        {
-#pragma warning disable EF1002 // The name is a generated GUID, and CREATE DATABASE can't take a parameter.
-            await db.Database.ExecuteSqlRawAsync($"CREATE DATABASE {empty}");
-#pragma warning restore EF1002
-        }
-
         var result = await CheckAsync(Catalog(
             ("main", fixture.ConnectionString),
             ("down", "Host=127.0.0.1;Port=1;Database=x;Username=x;Timeout=1"),
-            ("new", new NpgsqlConnectionStringBuilder(fixture.ConnectionString) { Database = empty }.ConnectionString)));
+            ("new", await fixture.CreateEmptyDatabaseAsync())));
 
         Assert.Equal(HealthStatus.Unhealthy, result.Status);
         Assert.Equal(("ready", "unreachable"), (result.Data["main"], result.Data["down"]));

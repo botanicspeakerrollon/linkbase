@@ -38,11 +38,14 @@ Real environments use the platform's own Postgres, given to the app as a Secret.
 
 ## Pipelines
 
-- **GitHub Actions** builds, tests, and builds the image.
-- **GitLab CI** does the same, pushes the image to the GitLab registry, and can update an overlay's image tag for Argo CD
-  to roll out. On-prem runners often can't run Docker-in-Docker, so the tests can use an existing Postgres given by
-  `LINKBASE_TEST_CONNECTION`, such as a GitLab `services: postgres`, instead of Testcontainers.
-- Both produce an SBOM and scan the image with Trivy.
+- **GitHub Actions** (`.github/workflows/ci.yml`) builds and tests, including the Postgres and browser tests through
+  Testcontainers, then builds the image, scans it and keeps an SBOM.
+- **GitLab CI** (`.gitlab-ci.yml`) needs no Docker daemon. Tests use a `services: postgres` container through
+  `LINKBASE_TEST_CONNECTION`, leaving out Neo4j's, and the browser tests only with `RUN_BROWSER_TESTS=true`, as they
+  download Chromium. Buildah builds the image and pushes it to the project's registry, and Trivy scans it and keeps an
+  SBOM. Every image it uses can point at a mirror through CI/CD variables. It hasn't run on a real GitLab yet.
+- Both report known vulnerabilities without failing, since most come from the base image. Making them block is one
+  setting each.
 
 ## Order
 

@@ -58,6 +58,14 @@ same test database and drive it in Chromium, which has to be installed once, aft
 powershell -ExecutionPolicy Bypass -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium
 ```
 
+Without Docker, point the tests at any Postgres server whose user can create databases, and leave out Neo4j's tests,
+which need their own container. Each run creates its own databases there and drops them all at the end:
+
+```powershell
+$env:LINKBASE_TEST_CONNECTION = "Host=...;Database=postgres;Username=...;Password=..."
+dotnet test -c Release --filter "Category!=Neo4j"
+```
+
 **CI** runs the same build and every test on GitHub Actions for each push to `main` and each pull request
 (`.github/workflows/ci.yml`), on Ubuntu with the runner's Docker. Results are kept with each run for two weeks. The
 performance test is skipped there, as it is locally unless `LINKBASE_PERF_CONNECTION` is set.
@@ -132,8 +140,10 @@ docker compose --profile app run --rm app model migrate
 docker compose --profile app up -d --build
 ```
 
-CI builds the image on every push, scans it with Trivy and keeps an SBOM. See [the deployment plan](docs/deployment-plan.md)
-for Kubernetes, OpenShift and GitLab.
+CI builds the image on every push, scans it with Trivy and keeps an SBOM. `.gitlab-ci.yml` does the same on a
+self-hosted GitLab without Docker-in-Docker: tests against a `services: postgres` container, the image built with
+Buildah and pushed to the project's registry, then scanned. See [the deployment plan](docs/deployment-plan.md) for
+Kubernetes and OpenShift.
 
 ## Graph explorer
 
