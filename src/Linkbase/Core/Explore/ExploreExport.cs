@@ -8,7 +8,7 @@ using Linkbase.Core.Graph;
 namespace Linkbase.Core.Explore;
 
 // What's on the Explore canvas, as files: nodes and links as CSV for a spreadsheet, or both as JSON. Only what's shown is
-// exported, so hidden nodes and links to them are left out.
+// exported, so links to nodes that were removed are left out.
 public static class ExploreExport
 {
     // A cell starting with =, +, - or @ is escaped, so a spreadsheet opening the file shows it rather than running it.

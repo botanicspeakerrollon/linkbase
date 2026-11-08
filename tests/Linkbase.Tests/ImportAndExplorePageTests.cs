@@ -565,7 +565,7 @@ public class ExplorePageTests : UiTestBase
         DoesNotSee(cut, "explore-menu");
         Sees(cut, "Show all Crag nodes");
         Sees(cut, "← AT Route (");
-        Assert.False(HasControl(cut, "Hide"));
+        Assert.False(HasControl(cut, "Remove"));
         Assert.False(HasControl(cut, "Open and edit"));
 
         Press(cut, "Show all Crag nodes");
@@ -652,7 +652,7 @@ public class ExplorePageTests : UiTestBase
     }
 
     [Fact]
-    public async Task The_right_click_menu_expands_dismisses_and_links()
+    public async Task The_right_click_menu_expands_removes_and_links()
     {
         var s = await SeedAsync();
         var cut = Render(s);
@@ -662,7 +662,7 @@ public class ExplorePageTests : UiTestBase
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
         Sees(cut, "left: 10px; top: 20px");
-        Sees(cut, "Dismiss others");
+        Sees(cut, "Remove others");
         ClickFresh(cut, () => cut.FindAll(".explore-menu button").First(b => b.TextContent.Contains("Route", StringComparison.Ordinal)));
         DoesNotSee(cut, "explore-menu");
         Sees(cut, "Route 1");
@@ -678,11 +678,11 @@ public class ExplorePageTests : UiTestBase
         await cut.InvokeAsync(() => cut.Instance.OnViewportChanged());
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
-        Press(cut, "Dismiss others");
+        Press(cut, "Remove others");
         DoesNotSee(cut, "Route 1");
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
-        Press(cut, "Dismiss");
+        Press(cut, "Remove");
         Sees(cut, "Type anything above");
     }
 
@@ -821,15 +821,14 @@ public class ExplorePageTests : UiTestBase
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
         Sees(cut, "Click a node for its details");
 
-        // With nothing selected, the keys that act on a node do nothing.
-        await cut.InvokeAsync(() => cut.Instance.OnHotkey("h"));
+        // With nothing selected, the keys that act on a node do nothing, and h no longer hides anything.
+        var drawn = _graph.Invocations.Count(i => i.Identifier == "update");
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("q"));
-        DoesNotSee(cut, "hidden</");
-
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("h"));
-        Sees(cut, "Show 1 hidden");
+        Assert.Equal(drawn, _graph.Invocations.Count(i => i.Identifier == "update"));
+        Sees(cut, s.Crag + "</h2>");
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
@@ -913,26 +912,37 @@ public class ExplorePageTests : UiTestBase
         ClickFresh(Popovers, () => Popovers.FindAll(".mud-menu-item").First(i => i.TextContent.Contains("Picture", StringComparison.Ordinal)));
         cut.WaitForAssertion(() => Assert.Matches(@"^linkbase-graph-.*\.png$", (string)_graph.Invocations.Last(i => i.Identifier == "savePng").Arguments[0]!));
 
-        // Hidden nodes aren't shown, so they aren't exported either.
+        // A removed node isn't shown, so it isn't exported either.
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
-        Press(cut, "Hide");
+        Press(cut, "Remove");
         Assert.DoesNotContain(s.Route, Saved("Nodes (CSV)"), StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task Hide_show_remove_fit_and_clear()
+    public async Task Remove_fit_and_clear()
     {
         var s = await SeedAsync();
         var cut = Render(s);
+        Assert.False(HasControl(cut, "Hide"));
 
         Press(cut, "Fit");
         cut.WaitForAssertion(() => Assert.Contains("fit", GraphCalls));
 
-        Press(cut, "Hide");
-        Sees(cut, "Show 1 hidden");
-        Press(cut, "Show 1 hidden");
-        DoesNotSee(cut, "Show 1 hidden");
+        // Removing what an expand brought in, then expanding again, brings it back.
+        bool OnGraph(string id) => ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!)
+            .Any(n => n.ToString()!.Contains($"id = {id},", StringComparison.Ordinal));
+        Press(cut, "Expand");
+        cut.WaitForAssertion(() => Assert.True(OnGraph($"route:{s.RouteId}")));
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
+        Press(cut, "Remove");
+        cut.WaitForAssertion(() => Assert.False(OnGraph($"route:{s.RouteId}")));
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
+        Press(cut, "Expand again");
+        cut.WaitForAssertion(() => Assert.True(OnGraph($"route:{s.RouteId}")));
 
+        await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
+        Press(cut, "Remove others");
+        cut.WaitForAssertion(() => Assert.False(OnGraph($"route:{s.RouteId}")));
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
         Press(cut, "Remove");
         Sees(cut, "Type anything above");

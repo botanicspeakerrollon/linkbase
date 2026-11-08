@@ -888,12 +888,13 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await _page.GetByRole(AriaRole.Button, new() { Name = $"Delete scene {scene}" }).ClickAsync();
         await Assertions.Expect(Button(scene)).ToHaveCountAsync(0);
 
-        // Dismissing, from the menu.
+        // Removing, from the menu.
+        var menu = _page.Locator(".explore-menu");
         await RightClickAsync(cragNode);
-        await Button("Dismiss others").ClickAsync();
+        await menu.GetByRole(AriaRole.Button, new() { Name = "Remove others", Exact = true }).ClickAsync();
         await WaitForExactNodesAsync(1);
         await RightClickAsync(cragNode);
-        await Button("Dismiss").ClickAsync();
+        await menu.GetByRole(AriaRole.Button, new() { Name = "Remove", Exact = true }).ClickAsync();
         await WaitForExactNodesAsync(0);
         await Assertions.Expect(_page.Locator(".explore-empty")).ToBeVisibleAsync();
 

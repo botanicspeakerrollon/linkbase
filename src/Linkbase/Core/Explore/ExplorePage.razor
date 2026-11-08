@@ -76,8 +76,8 @@
                     </MudButton>
                 }
                 <MudDivider Class="my-1" />
-                <MudButton OnClick="@(() => DismissAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Dismiss</MudButton>
-                <MudButton OnClick="@(() => DismissOthersAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Dismiss others</MudButton>
+                <MudButton OnClick="@(() => RemoveFromMenuAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Remove</MudButton>
+                <MudButton OnClick="@(() => RemoveOthersAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Remove others</MudButton>
                 @if (GraphStyle.Link(menu.Node) is { } menuLink)
                 {
                     <MudButton Href="@menuLink" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Open and edit</MudButton>
@@ -120,10 +120,8 @@
 
             @if (!node.IsModel)
             {
-                <MudStack Row="true" Spacing="1" Class="mb-1">
-                    <MudButton OnClick="@(() => HideAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1">Hide</MudButton>
-                    <MudButton OnClick="@(() => RemoveAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1">Remove</MudButton>
-                </MudStack>
+                <MudButton OnClick="@(() => RemoveAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
+                           title="Takes it off the graph. Expanding a neighbour brings it back. (Delete)">Remove</MudButton>
             }
             @if (GraphStyle.Link(node) is { } link)
             {
@@ -132,7 +130,7 @@
         }
         else
         {
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Click a node for its details. Right-click it to expand or dismiss, or double-click to expand everything linked to it, up to @ExpansionLimit at a time.</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Click a node for its details. Right-click it to expand or remove, or double-click to expand everything linked to it, up to @ExpansionLimit at a time.</MudText>
         }
 
         <div class="explore-section-title">On the canvas</div>
@@ -143,10 +141,6 @@
                 <MudChip T="string" Size="Size.Small" Style="@ChipStyle(label)" Class="ma-0">@label@(onCanvas > 0 ? $" {onCanvas}" : "")</MudChip>
             }
         </div>
-        @if (_hidden.Count > 0)
-        {
-            <MudButton OnClick="ShowHiddenAsync" Variant="Variant.Text" Size="Size.Small" FullWidth="true" Class="mt-1">Show @_hidden.Count hidden</MudButton>
-        }
         <MudStack Row="true" Spacing="1" Class="mt-2">
             <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Fit (f)">Fit</MudButton>
             <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Clear (c)">Clear</MudButton>
@@ -222,14 +216,13 @@
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "h", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "Delete", "Escape"];
 
     // Set when the keyboard picks a node in the table, so its row is scrolled to once it's drawn.
     private bool _revealRow;
 
     // The visible graph lives here. The JavaScript module only draws it and reports clicks.
     private readonly Dictionary<string, GraphNode> _nodes = [];
-    private readonly HashSet<string> _hidden = [];
     private sealed record ContextMenu(GraphNode Node, double X, double Y, IReadOnlyList<RelationshipCount> Counts);
 
     private readonly HashSet<string> _expanded = [];
@@ -247,7 +240,7 @@
     private IReadOnlyList<string> _scenes = [];
     private string? _sceneName;
 
-    private IEnumerable<GraphNode> VisibleNodes => _nodes.Values.Where(n => !_hidden.Contains(n.Id));
+    private IEnumerable<GraphNode> VisibleNodes => _nodes.Values;
 
     private GraphFilter Filter => new()
     {
@@ -356,7 +349,6 @@
     private void ForgetCanvas()
     {
         _nodes.Clear();
-        _hidden.Clear();
         _expanded.Clear();
         _remaining.Clear();
         _edges = [];
@@ -398,7 +390,6 @@
             foreach (var node in found.Nodes)
             {
                 _nodes.TryAdd(node.Id, node);
-                _hidden.Remove(node.Id);
             }
 
             _selected = found.Nodes.Count == 1 ? found.Nodes[0] : _selected;
@@ -478,18 +469,17 @@
         await ExpandAsync(nodeId, relType);
     }
 
-    private async Task DismissAsync(string nodeId)
+    private async Task RemoveFromMenuAsync(string nodeId)
     {
         _menu = null;
         await RemoveAsync(nodeId);
     }
 
-    private async Task DismissOthersAsync(string nodeId)
+    private async Task RemoveOthersAsync(string nodeId)
     {
         _menu = null;
         var keep = _nodes[nodeId];
         _nodes.Clear();
-        _hidden.Clear();
         _expanded.Clear();
         _remaining.Clear();
         _nodes[nodeId] = keep;
@@ -500,7 +490,7 @@
     private async Task ExpandAsync(string nodeId, string? relType = null)
     {
         var filter = relType is null ? Filter : Filter with { RelTypes = [relType] };
-        // Everything already known is excluded, so hidden nodes stay hidden and "show more" gets the next batch.
+        // What's on the graph is excluded, so "show more" gets the next batch. Removed nodes aren't on it, so they come back.
         var result = await Graph.NeighboursAsync(nodeId, filter, _nodes.Keys, ExpansionLimit);
         foreach (var node in result.Nodes)
         {
@@ -554,20 +544,7 @@
         }
     }
 
-    private async Task HideAsync(string nodeId)
-    {
-        _hidden.Add(nodeId);
-        _selected = null;
-        await DrawAsync(null);
-    }
-
-    private async Task ShowHiddenAsync()
-    {
-        _hidden.Clear();
-        await DrawAsync(null);
-    }
-
-    // Unlike hiding, a removed node comes back if a neighbour is expanded again.
+    // Takes a node off the graph and forgets it, so expanding any of its neighbours brings it back.
     private async Task RemoveAsync(string nodeId)
     {
         _nodes.Remove(nodeId);
@@ -673,9 +650,6 @@
                 break;
             case "e" when _selected is { } node:
                 await ExpandAsync(node.Id);
-                break;
-            case "h" when _selected is { IsModel: false } node:
-                await HideAsync(node.Id);
                 break;
             case "Delete" when _selected is { IsModel: false } node:
                 await RemoveAsync(node.Id);
