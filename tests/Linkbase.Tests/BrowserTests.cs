@@ -603,16 +603,33 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         var search = _page.GetByRole(AriaRole.Combobox, new() { Name = "Search phrase" });
         await Assertions.Expect(search).Not.ToHaveAttributeAsync("placeholder", "Loading…");
 
-        // / reaches the search box from anywhere, and a key typed there is just typing.
-        await _page.Keyboard.PressAsync("/");
+        // The search box is ready to type into as the page opens, with no suggestions over the page yet, and a key typed
+        // there is just typing.
         await Assertions.Expect(search).ToBeFocusedAsync();
+        await Assertions.Expect(_page.Locator(".pattern-list")).ToHaveCountAsync(0);
         await _page.Keyboard.TypeAsync("t");
         await Assertions.Expect(search).ToHaveValueAsync("t");
         await search.FillAsync("");
+
+        // Search, leave the box with Esc, then pick and expand a node, all from the keyboard.
         await SearchForAsync(s.Crag);
         await WaitForExactNodesAsync(1);
-        await Button("Expand").ClickAsync();
+        await _page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(_page.Locator(".explore-canvas")).ToBeFocusedAsync();
+        await _page.Keyboard.PressAsync("n");
+        await Assertions.Expect(_page.Locator("aside h2")).ToHaveTextAsync(s.Crag);
+        await _page.Keyboard.PressAsync("e");
         await WaitForNodesAsync(2);
+
+        // / goes back to the box from anywhere, with its suggestions open. Esc closes them, then leaves again.
+        await _page.Keyboard.PressAsync("/");
+        await Assertions.Expect(search).ToBeFocusedAsync();
+        await _page.Locator(".pattern-list").WaitForAsync();
+        await _page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(_page.Locator(".pattern-list")).ToHaveCountAsync(0);
+        await Assertions.Expect(search).ToBeFocusedAsync();
+        await _page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(_page.Locator(".explore-canvas")).ToBeFocusedAsync();
 
         // The search suggestions drop down over the graph's toolbar, not under it.
         await search.FocusAsync();
@@ -626,7 +643,10 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
                 return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.closest('.pattern-list') != null;
             }
             """), "The toolbar covers the search suggestions");
-        await _page.EvaluateAsync("() => document.activeElement?.blur()");
+        await _page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(_page.Locator(".pattern-list")).ToHaveCountAsync(0);
+        await Assertions.Expect(search).ToBeFocusedAsync();
+        await _page.Keyboard.PressAsync("Escape");
 
         await _page.Keyboard.PressAsync("t");
         await Assertions.Expect(_page.Locator(".explore-table-wrap")).ToBeVisibleAsync();
@@ -890,6 +910,24 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await _page.Mouse.UpAsync();
         Assert.Empty(await OverlapsAsync());
 
+        // A node chosen from the keyboard is brought into view if it's off screen, and left alone if it isn't.
+        await _page.EvaluateAsync("() => import('/js/graph.js').then(m => m.reveal('no-such-node'))");
+        var onScreen = await OnScreenAsync("x");
+        await _page.EvaluateAsync("() => import('/js/graph.js').then(m => m.reveal('x'))");
+        Assert.Equal(onScreen, await OnScreenAsync("x"));
+
+        // Dragging the background pans the view until the node is off the right-hand edge.
+        var canvasBox = (await _page.Locator(".explore-canvas").BoundingBoxAsync())!;
+        await _page.Mouse.MoveAsync(canvasBox.X + 20, canvasBox.Y + 20);
+        await _page.Mouse.DownAsync();
+        await _page.Mouse.MoveAsync(canvasBox.X + 20 + canvasBox.Width, canvasBox.Y + 20, new() { Steps = 8 });
+        await _page.Mouse.UpAsync();
+        Assert.True((await OnScreenAsync("x")).X > canvasBox.X + canvasBox.Width, "Panning didn't move the node off screen");
+        await _page.EvaluateAsync("() => import('/js/graph.js').then(m => m.reveal('x'))");
+        var revealed = await OnScreenAsync("x");
+        Assert.InRange(revealed.X, canvasBox.X, canvasBox.X + canvasBox.Width);
+        Assert.InRange(revealed.Y, canvasBox.Y, canvasBox.Y + canvasBox.Height);
+
         // The picture export draws what's on the canvas.
         var picture = await _page.RunAndWaitForDownloadAsync(() => _page.EvaluateAsync("() => import('/js/graph.js').then(m => m.savePng('scene.png'))"));
         Assert.Equal("scene.png", picture.SuggestedFilename);
@@ -900,7 +938,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await WaitForExactNodesAsync(0);
         Assert.True(await _page.EvaluateAsync<bool>("() => import('/js/graph.js').then(m => m.renderedPosition('x') === null)"));
         Assert.Empty(await OverlapsAsync());
-        await _page.EvaluateAsync("() => import('/js/graph.js').then(m => { m.update([], [], null); m.select(null); m.restore([], [], []); m.fit(); })");
+        await _page.EvaluateAsync("() => import('/js/graph.js').then(m => { m.update([], [], null); m.select(null); m.restore([], [], []); m.fit(); m.reveal('x'); })");
         Assert.False(await _page.EvaluateAsync<bool>("() => import('/js/graph.js').then(m => m.savePng('nothing.png'))"));
         await Assertions.Expect(_page.GetByRole(AriaRole.Heading, new() { Name = "Logbook" })).ToBeVisibleAsync();
 

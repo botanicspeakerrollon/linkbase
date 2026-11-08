@@ -47,7 +47,29 @@ function goToRailLink(index) {
     return true;
 }
 
+// Esc in a search box whose suggestions are closed leaves it for the page's marked home, or just leaves it, so the
+// page's keys work straight away. Done here rather than on the server, so a key pressed just after can't land in the box.
+function leaveSearch(event) {
+    const box = event.target;
+    if (event.key !== 'Escape' || !(box instanceof Element) || !box.matches('[data-hotkey-search]') || box.getAttribute('aria-expanded') === 'true') {
+        return false;
+    }
+
+    const home = document.querySelector('[data-hotkey-home]');
+    if (home) {
+        home.focus({ preventScroll: true });
+    } else {
+        box.blur();
+    }
+
+    return true;
+}
+
 function onKeyDown(event) {
+    if (leaveSearch(event)) {
+        return;
+    }
+
     if (event.defaultPrevented || event.ctrlKey || event.altKey || event.metaKey || typingInto(event.target)) {
         return;
     }
@@ -118,6 +140,11 @@ export function uninstall() {
     document.removeEventListener('keydown', onKeyDown);
     layout = null;
     pages = [];
+}
+
+// Brings what the keyboard just chose into view, such as a table row.
+export function scrollIntoView(selector) {
+    document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
 }
 
 export function register(dotnet, keys) {

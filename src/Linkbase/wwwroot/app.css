@@ -269,6 +269,16 @@ html:has(.explore) {
     inset: 0;
 }
 
+/* Says the keyboard is on the graph, after Esc leaves the search box. */
+.explore-canvas:focus {
+    outline: none;
+}
+
+.explore-canvas:focus-visible {
+    outline: 1px solid var(--mud-palette-lines-inputs);
+    outline-offset: -1px;
+}
+
 .explore-empty {
     position: absolute;
     inset: 0;

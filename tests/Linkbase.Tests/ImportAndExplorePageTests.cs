@@ -663,8 +663,7 @@ public class ExplorePageTests : UiTestBase
         await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
         Sees(cut, "left: 10px; top: 20px");
         Sees(cut, "Dismiss others");
-        var rel = cut.FindAll(".explore-menu button").First(b => b.TextContent.Contains("Route", StringComparison.Ordinal));
-        rel.Click();
+        ClickFresh(cut, () => cut.FindAll(".explore-menu button").First(b => b.TextContent.Contains("Route", StringComparison.Ordinal)));
         DoesNotSee(cut, "explore-menu");
         Sees(cut, "Route 1");
 
@@ -790,6 +789,30 @@ public class ExplorePageTests : UiTestBase
         Sees(cut, "Expand again");
         Sees(cut, "Route 1");
 
+        // n and p step through what's shown, in the table's order, wrapping round and bringing each into view.
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
+        Sees(cut, "Click a node for its details");
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
+        var first = cut.Find("aside h2").TextContent;
+        Assert.Equal(_graph.Invocations.Last(i => i.Identifier == "select").Arguments[0], _graph.Invocations.Last(i => i.Identifier == "reveal").Arguments[0]);
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
+        Assert.NotEqual(first, cut.Find("aside h2").TextContent);
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("p"));
+        Assert.Equal(first, cut.Find("aside h2").TextContent);
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("p"));
+        var last = cut.Find("aside h2").TextContent;
+        Assert.NotEqual(first, last);
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("p"));
+        Assert.Equal(last, cut.Find("aside h2").TextContent);
+
+        // In the table, the chosen row is scrolled to.
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
+        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "scrollIntoView"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
+
         await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
         Sees(cut, "explore-menu");
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
@@ -823,7 +846,31 @@ public class ExplorePageTests : UiTestBase
         DoesNotSee(cut, "explore-table-wrap");
         Assert.Empty((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!);
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("c"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
         Sees(cut, "Type anything above");
+    }
+
+    [Fact]
+    public async Task The_search_box_starts_focused_and_esc_closes_its_suggestions()
+    {
+        var s = await SeedAsync();
+        var cut = RenderPage<ExplorePage>();
+        var focuses = () => JSInterop.Invocations.Count(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal));
+
+        // Focused as it opens, without the suggestions covering the page.
+        cut.WaitForAssertion(() => Assert.Equal(1, focuses()));
+        cut.Find("input[role=combobox]").Focus();
+        Assert.Empty(cut.FindAll("[role=option]"));
+
+        // Esc closes the suggestions and says so, which is how hotkeys.js knows the next Esc leaves the box. The browser
+        // test covers leaving.
+        Search(cut, s.Crag);
+        WaitForOption(cut, s.Crag);
+        Assert.Equal("true", cut.Find("input[role=combobox]").GetAttribute("aria-expanded"));
+        Key(cut, "Escape");
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[role=option]")));
+        Assert.Equal("false", cut.Find("input[role=combobox]").GetAttribute("aria-expanded"));
+        Assert.Equal(1, focuses());
     }
 
     [Fact]

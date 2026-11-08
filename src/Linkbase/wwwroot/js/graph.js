@@ -375,6 +375,23 @@ export function select(nodeId) {
     }
 }
 
+// Pans the view to a node chosen from the keyboard, if it's off screen. The node itself stays where it is.
+export function reveal(nodeId) {
+    if (!cy) {
+        return;
+    }
+
+    const node = cy.getElementById(nodeId);
+    if (node.empty()) {
+        return;
+    }
+
+    const box = node.renderedBoundingBox();
+    if (box.x1 < 0 || box.y1 < 0 || box.x2 > cy.width() || box.y2 > cy.height()) {
+        cy.center(node);
+    }
+}
+
 export function positions() {
     return cy ? cy.nodes().map(n => ({ nodeId: n.id(), x: n.position('x'), y: n.position('y') })) : [];
 }

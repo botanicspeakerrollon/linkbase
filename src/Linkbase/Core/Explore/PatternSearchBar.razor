@@ -39,7 +39,7 @@
                @onfocus="OnFocusAsync"
                @onblur="OnBlur"
                role="combobox"
-               aria-expanded="@(_open && _suggestions.Count > 0)"
+               aria-expanded="@(SuggestionsShown ? "true" : "false")"
                aria-controls="pattern-suggestions"
                aria-activedescendant="@(_highlight >= 0 ? $"pattern-suggestion-{_highlight}" : null)"
                aria-label="Search phrase"
@@ -54,14 +54,14 @@
         }
     </div>
 
-    @if (_open && _suggestions.Count > 0)
+    @if (SuggestionsShown)
     {
         <div id="pattern-suggestions" role="listbox" class="pattern-list">
             @for (var i = 0; i < _suggestions.Count; i++)
             {
                 var index = i;
                 var suggestion = _suggestions[i];
-                <div id="@($"pattern-suggestion-{index}")" role="option" aria-selected="@(index == _highlight)"
+                <div id="@($"pattern-suggestion-{index}")" role="option" aria-selected="@(index == _highlight ? "true" : "false")"
                      class="@(index == _highlight ? "pattern-option pattern-option-active" : "pattern-option")"
                      @onmousedown="@(() => ApplyAsync(suggestion))"
                      @onmousedown:preventDefault="true">
@@ -80,6 +80,16 @@
     [Parameter, EditorRequired] public GraphSchema? Schema { get; set; }
     [Parameter] public EventCallback<GraphPattern> OnRun { get; set; }
     [Parameter] public EventCallback OnShowModel { get; set; }
+
+    // Takes focus once it's ready, so typing can start straight away. The suggestions wait for a key, so they don't cover
+    // the page as it opens.
+    [Parameter] public bool AutoFocus { get; set; }
+
+    // ARIA wants the words true and false, which a C# bool doesn't render as. hotkeys.js reads this too.
+    private bool SuggestionsShown => _open && _suggestions.Count > 0;
+
+    private bool _autoFocused;
+    private bool _quietFocus;
 
     private PatternBuilder? _builder;
     private GraphSchema? _builderSchema;
@@ -113,9 +123,20 @@
 
     public async Task FocusAsync() => await _input.FocusAsync();
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (AutoFocus && !_autoFocused && _builder is not null)
+        {
+            _autoFocused = true;
+            _quietFocus = true;
+            await FocusAsync();
+        }
+    }
+
     private async Task OnFocusAsync()
     {
-        _open = true;
+        _open = !_quietFocus;
+        _quietFocus = false;
         await RefreshAsync();
     }
 
@@ -170,6 +191,7 @@
                 _builder.RemoveLast();
                 await RefreshAsync();
                 break;
+            // Esc closes the suggestions. With them closed, hotkeys.js moves focus out of the box instead.
             case "Escape":
                 _open = false;
                 break;
