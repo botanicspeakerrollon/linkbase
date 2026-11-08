@@ -253,6 +253,41 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable
     }
 
     [Fact]
+    public async Task A_required_field_needs_a_column_and_a_value_in_every_row()
+    {
+        var (_, importer) = await ExampleAsync();
+
+        var noColumn = await importer.PlanAsync(Csv("projects.csv", "id,name\npr8,Intranet\n"), new CsvRecordMapping("Project", 0, 1, []));
+        var empty = await importer.PlanAsync(Csv("projects.csv", "id,name,status\npr8,Intranet,active\npr9,Chatbot, \n"),
+            new CsvRecordMapping("Project", 0, 1, [new CsvFieldMapping(2, "status", FieldType.Choice)]));
+
+        Assert.Equal(["Project requires status, so choose a column for it."], noColumn.Problems);
+        Assert.Equal(["Row 3: status is empty, and Project requires it."], empty.Problems);
+    }
+
+    [Fact]
+    public async Task A_type_that_requires_links_cant_take_an_import_of_records_and_undo_keeps_one()
+    {
+        var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        var importer = new CsvImportService(factory);
+        var records = new RecordRepository(factory);
+
+        var plan = await importer.PlanAsync(Csv("books.csv", "id,title,isbn\nb9,New,999\n"),
+            new CsvRecordMapping("Book", 0, 1, [new CsvFieldMapping(2, "isbn", FieldType.Text)]));
+        Assert.Equal(["Each Book needs at least one Book WRITTEN_BY Author link, which an import of records can't add. Add Book records in the app instead."], plan.Problems);
+
+        // b1's first author goes once the import gives it another, so undoing the import would leave it with none.
+        var result = await importer.ImportAsync(Csv("more.csv", "book,author\nb1,a3\n"), new CsvLinkMapping("Book", 0, "WRITTEN_BY", "Author", 1));
+        var first = (await records.LinksAsync("book:b1")).Single().Links.Single(l => l.OtherKey == "a1");
+        await records.RemoveLinkAsync(first.Id);
+
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => importer.UndoAsync(result.BatchId));
+        Assert.Equal("Undoing would leave 1 Book record(s) with no Book WRITTEN_BY Author link, which each needs. Link them another way first.", ex.Message);
+        Assert.Equal("Pia Lark", (await records.LinksAsync("book:b1")).Single().Links.Single().OtherName);
+    }
+
+    [Fact]
     public async Task A_choice_needs_a_few_different_values()
     {
         var (_, importer) = await ExampleAsync();

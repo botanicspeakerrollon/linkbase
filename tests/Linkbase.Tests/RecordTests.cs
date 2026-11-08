@@ -103,7 +103,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
 
         var key = await records.CreateAsync("Person", null, new RecordInput(" Zoë Adams ", new Dictionary<string, string?> { ["title"] = "Designer", ["joined"] = "2026-01-05" }));
         var again = await records.CreateAsync("Person", "", new RecordInput("Zoë Adams", new Dictionary<string, string?>()));
-        var given = await records.CreateAsync("Project", "x-1", new RecordInput("Website", new Dictionary<string, string?> { ["budget"] = "12500.50" }));
+        var given = await records.CreateAsync("Project", "x-1", new RecordInput("Website", new Dictionary<string, string?> { ["budget"] = "12500.50", ["status"] = "proposed" }));
 
         Assert.Equal(("zoe-adams", "zoe-adams-2", "x-1"), (key, again, given));
         var zoe = (await records.GetAsync("Person", key))!;
@@ -122,6 +122,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
     [InlineData("Person", null, "Someone", "joined", "5 May", "must be a date")]
     [InlineData("Project", null, "Something", "budget", "lots", "must be a number")]
     [InlineData("Project", null, "Something", "status", "paused", "Status must be one of proposed, active, live or closed")]
+    [InlineData("Project", null, "Something", "status", " ", "Status is required")]
     [InlineData("Nope", null, "Something", "x", "y", "no type called Nope")]
     public async Task Explains_why_a_record_cant_be_created(string type, string? key, string name, string field, string value, string message)
     {
@@ -142,7 +143,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
 
         Assert.Equal("live", (await records.GetAsync("Project", key))!.Values["status"]);
         var status = (await records.TypeAsync("Project"))!.Fields.Single(f => f.Key == "status");
-        Assert.Equal(new RecordField("status", FieldType.Choice, ["proposed", "active", "live", "closed"]), status);
+        Assert.Equal(new RecordField("status", FieldType.Choice, ["proposed", "active", "live", "closed"]) { Required = true }, status);
     }
 
     [Fact]
@@ -163,6 +164,56 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
         var stored = await db.Database.SqlQuery<string>($"SELECT props->>'skills' AS \"Value\" FROM node WHERE id = {"person:" + key}").SingleAsync();
         Assert.Equal("""["Figma", "SQL, Postgres"]""", stored);
         Assert.Equal(1, (await records.ListAsync("Person", "user research", 0, 50)).Total);
+    }
+
+    [Fact]
+    public async Task A_required_value_cant_be_removed_by_editing()
+    {
+        var (_, records) = await ExampleAsync();
+        var project = (await records.GetAsync("Project", "pr1"))!;
+
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() =>
+            records.UpdateAsync(project.Id, new RecordInput(project.Name, new Dictionary<string, string?> { ["status"] = "" })));
+
+        Assert.Equal("Status is required.", ex.Message);
+        Assert.Equal("live", (await records.GetAsync("Project", "pr1"))!.Values["status"]);
+    }
+
+    [Fact]
+    public async Task A_new_record_brings_the_links_its_type_requires_and_keeps_one()
+    {
+        var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        var records = new RecordRepository(factory);
+        var graph = new GraphRepository(factory);
+        long WrittenBy(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WRITTEN_BY").Links;
+        Dictionary<string, string?> Isbn() => new() { ["isbn"] = "333" };
+
+        var none = await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.CreateAsync("Book", null, new RecordInput("Quiet Ice", Isbn())));
+        Assert.Equal("Each Book needs at least one Book WRITTEN_BY Author link.", none.Message);
+        var wrong = await Assert.ThrowsAsync<LinkbaseValidationException>(() =>
+            records.CreateAsync("Book", null, new RecordInput("Quiet Ice", Isbn()) { Links = [new NewLink("WRITTEN_BY", "book:b1")] }));
+        Assert.Contains("no Book WRITTEN_BY Book relationship", wrong.Message);
+        Assert.Null(await records.GetAsync("Book", "quiet-ice"));
+
+        var key = await records.CreateAsync("Book", null, new RecordInput("Quiet Ice", Isbn()) { Links = [new NewLink("WRITTEN_BY", "author:a3")] });
+        var id = (await records.GetAsync("Book", key))!.Id;
+        Assert.Equal("Pia Lark", (await records.LinksAsync(id)).Single().Links.Single().OtherName);
+        Assert.Equal(3, WrittenBy(await graph.ConnectionCountsAsync()));
+
+        // Its only author can't be taken away, but one of two can.
+        var only = (await records.LinksAsync(id)).Single().Links.Single();
+        var last = await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.RemoveLinkAsync(only.Id));
+        Assert.Equal("Each Book needs at least one Book WRITTEN_BY Author link, and this is Quiet Ice's only one. Add another first.", last.Message);
+        await records.AddLinkAsync(id, "WRITTEN_BY", "author:a1");
+        await records.RemoveLinkAsync(only.Id);
+        Assert.Equal("Mara Quill", (await records.LinksAsync(id)).Single().Links.Single().OtherName);
+
+        // Deleting the book takes its author link with it. Deleting an author who still has books doesn't happen.
+        Assert.Contains("still has 2 link(s)", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.DeleteAsync("author:a1"))).Message);
+        await records.DeleteAsync(id);
+        Assert.Null(await records.GetAsync("Book", key));
+        Assert.Equal(2, WrittenBy(await graph.ConnectionCountsAsync()));
     }
 
     [Fact]
@@ -368,6 +419,30 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
         Told("Linked.");
         Sees(cut, "Repairs tracker");
         Sees(cut, "← FOR");
+    }
+
+    [Fact]
+    public async Task A_new_record_chooses_the_links_its_type_requires()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
+        var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Book"));
+
+        Press(cut, "Add Book");
+        Sees(Dialogs, "Book WRITTEN_BY Author");
+        Type(Dialogs, "Name", "Quiet Ice");
+        Press(Dialogs, "Save");
+        Sees(Dialogs, "Isbn is required");
+        Sees(Dialogs, "Choose its Author");
+
+        Type(Dialogs, "Isbn", "333");
+        Pick(Dialogs, "Author", "pia", "Pia Lark");
+        Press(Dialogs, "Save");
+
+        NavigatedTo("/data/Book/quiet-ice");
+        var book = (await Records.GetAsync("Book", "quiet-ice"))!;
+        Assert.Equal("Pia Lark", (await Records.LinksAsync(book.Id)).Single().Links.Single().OtherName);
     }
 
     [Fact]

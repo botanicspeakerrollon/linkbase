@@ -63,21 +63,27 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             foreach (var field in type.Fields)
             {
                 await RunAsync(
-                    "INSERT INTO field_definition (node_type_name, key, type, options) VALUES (@type, @key, @fieldType, @options)",
+                    "INSERT INTO field_definition (node_type_name, key, type, options, required) VALUES (@type, @key, @fieldType, @options, @required)",
                     ("type", type.Name, NpgsqlDbType.Text),
                     ("key", field.Key, NpgsqlDbType.Text),
                     ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
-                    ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text));
+                    ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text),
+                    ("required", field.Required, NpgsqlDbType.Boolean));
             }
         }
 
         foreach (var relationship in model.Relationships)
         {
+            // The same relationship can come from more than one file. It's required if any of them says so.
             await RunAsync(
-                "INSERT INTO link_definition (source_type, rel_type, target_type) VALUES (@from, @rel, @to) ON CONFLICT DO NOTHING",
+                """
+                INSERT INTO link_definition (source_type, rel_type, target_type, required) VALUES (@from, @rel, @to, @required)
+                ON CONFLICT (source_type, rel_type, target_type) DO UPDATE SET required = link_definition.required OR excluded.required
+                """,
                 ("from", relationship.From, NpgsqlDbType.Text),
                 ("rel", relationship.Type, NpgsqlDbType.Text),
-                ("to", relationship.To, NpgsqlDbType.Text));
+                ("to", relationship.To, NpgsqlDbType.Text),
+                ("required", relationship.Required, NpgsqlDbType.Boolean));
         }
 
         long nodes = 0;
@@ -87,6 +93,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             var key = Column(columns, type.Source.File, type.Source.Key);
             var name = type.Source.Name is null ? key : Column(columns, type.Source.File, type.Source.Name);
             await CheckChoicesAsync(connection, transaction, type.Fields, columns, type.Source.File, cancellationToken);
+            await CheckRequiredAsync(connection, transaction, type.Fields, columns, type.Source.File, $"nullif({key}, '') IS NOT NULL", cancellationToken);
             var count = await Guard($"{type.Name} from {type.Source.File}", () => RunAsync(
                 $"""
                 INSERT INTO node (id, user_id, type, key, name, props)
@@ -111,6 +118,8 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             var from = Column(columns, source.File, source.FromColumn);
             var to = Column(columns, source.File, source.ToColumn);
             await CheckChoicesAsync(connection, transaction, relationship.Fields, columns, source.File, cancellationToken);
+            await CheckRequiredAsync(connection, transaction, relationship.Fields, columns, source.File,
+                $"nullif({from}, '') IS NOT NULL AND nullif({to}, '') IS NOT NULL", cancellationToken);
             var count = await Guard($"{relationship.From} {relationship.Type} {relationship.To} from {source.File}", () => RunAsync(
                 $"""
                 INSERT INTO node_link (source_id, target_id, rel_type, props)
@@ -141,6 +150,11 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
 
         await RunAsync("ANALYZE node");
         await RunAsync("ANALYZE node_link");
+        foreach (var relationship in model.Relationships.Where(r => r.Required))
+        {
+            await CheckRequiredLinksAsync(connection, transaction, relationship, cancellationToken);
+        }
+
         await transaction.CommitAsync(cancellationToken);
         return new ModelLoadSummary(model.Types.Count, nodes, links, DateTime.UtcNow - started);
     }
@@ -247,6 +261,74 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                 throw new LinkbaseValidationException(
                     $"{file}: {field.Key} has {string.Join(", ", wrong.Select(w => $"\"{w}\""))}, which {(wrong.Count == 1 ? "isn't one" : "aren't any")} of its options: {FieldValues.Listed(field.Options ?? [])}.");
             }
+        }
+    }
+
+    // A row without a value for a required field stops the load, and says which rows, counting the header as row 1. Rows
+    // the load skips don't count.
+    private static async Task CheckRequiredAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList<ModelField> fields, List<string> header, string file,
+        string loaded, CancellationToken cancellationToken)
+    {
+        foreach (var field in fields.Where(f => f.Required))
+        {
+            var column = Column(header, file, field.Column ?? field.Key);
+            var empty = field.Type == FieldType.List
+                ? $"NOT EXISTS (SELECT 1 FROM unnest(string_to_array({column}, '{FieldValues.ListSeparator}')) v WHERE btrim(v) <> '')"
+                : $"nullif({column}, '') IS NULL";
+            await using var command = new NpgsqlCommand(
+                $"SELECT count(*) OVER (), line FROM (SELECT row_number() OVER () + 1 AS line, * FROM staging) s WHERE {loaded} AND {empty} ORDER BY line LIMIT 5",
+                connection, transaction);
+            var lines = new List<long>();
+            long total = 0;
+            await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    total = reader.GetInt64(0);
+                    lines.Add(reader.GetInt64(1));
+                }
+            }
+
+            if (total > 0)
+            {
+                throw new LinkbaseValidationException(
+                    $"{file}: {field.Key} is required, but {total:N0} row(s) have none, such as row {string.Join(", ", lines)}.");
+            }
+        }
+    }
+
+    // A record with none of a required relationship's links stops the load, and says which.
+    private static async Task CheckRequiredLinksAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, ModelRelationship relationship, CancellationToken cancellationToken)
+    {
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT count(*) OVER (), n.key
+            FROM node n
+            WHERE n.type = @from
+              AND NOT EXISTS (SELECT 1 FROM node_link l JOIN node t ON t.id = l.target_id WHERE l.source_id = n.id AND l.rel_type = @rel AND t.type = @to)
+            ORDER BY n.key
+            LIMIT 5
+            """, connection, transaction);
+        command.Parameters.Add(new NpgsqlParameter("from", NpgsqlDbType.Text) { Value = relationship.From });
+        command.Parameters.Add(new NpgsqlParameter("rel", NpgsqlDbType.Text) { Value = relationship.Type });
+        command.Parameters.Add(new NpgsqlParameter("to", NpgsqlDbType.Text) { Value = relationship.To });
+        var keys = new List<string>();
+        long total = 0;
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                total = reader.GetInt64(0);
+                keys.Add(reader.GetString(1));
+            }
+        }
+
+        if (total > 0)
+        {
+            throw new LinkbaseValidationException(
+                $"Each {relationship.From} needs at least one {relationship.From} {relationship.Type} {relationship.To} link, but {total:N0} have none, such as {string.Join(", ", keys)}.");
         }
     }
 

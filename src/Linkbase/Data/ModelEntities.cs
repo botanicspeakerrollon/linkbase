@@ -30,6 +30,9 @@ public class FieldDefinition
 
     // A choice field's values, in the order to offer them. Null for every other type.
     public List<string>? Options { get; set; }
+
+    // A record of the type can't be saved without a value for it.
+    public bool Required { get; set; }
 }
 
 // A relationship that may exist between two types, such as Service CALLS_AT Stop.
@@ -41,6 +44,9 @@ public class LinkDefinition
     public required string RelType { get; set; }
     public required string TargetType { get; set; }
     public NodeType Target { get; set; } = null!;
+
+    // Every record of the source type needs at least one link of this kind, such as an ascent's route.
+    public bool Required { get; set; }
 
     // How many links of this kind there are, kept by the loader and RecordRepository, because counting tens of millions
     // of links each time the home page opens takes too long.

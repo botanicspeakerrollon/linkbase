@@ -16,14 +16,23 @@ public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<strin
     {
     }
 
+    // A record can't be saved without a value for it.
+    public bool Required { get; init; }
+
     // Records compare lists by reference, so compare the options by value.
     public bool Equals(RecordField? other) =>
-        other is not null && Key == other.Key && Type == other.Type && Options.SequenceEqual(other.Options);
+        other is not null && Key == other.Key && Type == other.Type && Required == other.Required && Options.SequenceEqual(other.Options);
 
-    public override int GetHashCode() => HashCode.Combine(Key, Type, Options.Count);
+    public override int GetHashCode() => HashCode.Combine(Key, Type, Required, Options.Count);
 }
 
-public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields);
+// A kind of link every record of a type needs at least one of, such as an ascent's OF link to a Route.
+public sealed record RequiredLink(string RelType, string OtherType);
+
+public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields)
+{
+    public IReadOnlyList<RequiredLink> RequiredLinks { get; init; } = [];
+}
 
 // Values are shown as text: numbers as written, dates as yyyy-MM-dd, booleans as true or false, and a list's values one
 // per line.
@@ -34,8 +43,15 @@ public sealed record RecordRows(int Total, IReadOnlyList<RecordRow> Rows);
 public sealed record RecordDetail(
     string Id, string Type, string Key, string Name, IReadOnlyDictionary<string, string> Values, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
 
-// What a form sends: the name, and each field's value as typed, empty for none.
-public sealed record RecordInput(string Name, IReadOnlyDictionary<string, string?> Values);
+// What a form sends: the name, and each field's value as typed, empty for none. A new record also brings its links, at
+// least those its type requires.
+public sealed record RecordInput(string Name, IReadOnlyDictionary<string, string?> Values)
+{
+    public IReadOnlyList<NewLink> Links { get; init; } = [];
+}
+
+// A link from a new record to one already here.
+public sealed record NewLink(string RelType, string TargetId);
 
 public sealed record RecordLink(long Id, string OtherId, string OtherType, string OtherKey, string OtherName);
 
@@ -66,10 +82,19 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 t.Name,
                 t.Color,
                 t.Icon,
-                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options }).ToList(),
+                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options, f.Required }).ToList(),
             })
             .ToListAsync(cancellationToken);
-        return types.Select(t => new RecordType(t.Name, t.Color, t.Icon, t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? [])).ToList())).ToList();
+        var required = await db.LinkDefinitions.AsNoTracking()
+            .Where(l => l.Required)
+            .OrderBy(l => l.RelType).ThenBy(l => l.TargetType)
+            .Select(l => new { l.SourceType, l.RelType, l.TargetType })
+            .ToListAsync(cancellationToken);
+        return types.Select(t => new RecordType(t.Name, t.Color, t.Icon,
+            t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? []) { Required = f.Required }).ToList())
+        {
+            RequiredLinks = required.Where(l => l.SourceType == t.Name).Select(l => new RequiredLink(l.RelType, l.TargetType)).ToList(),
+        }).ToList();
     }
 
     public async Task<RecordType?> TypeAsync(string name, CancellationToken cancellationToken = default) =>
@@ -192,6 +217,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
     }
 
     // The key is made from the name when none is given, and can't change afterwards, because the record's id is made from it.
+    // The record and its links are saved together, so a record never exists without the links its type requires.
     public async Task<string> CreateAsync(string type, string? key, RecordInput input, CancellationToken cancellationToken = default)
     {
         var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
@@ -199,6 +225,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         var props = Props(definition, input);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var links = await NewLinksAsync(db, definition, input.Links, cancellationToken);
         if (string.IsNullOrWhiteSpace(key))
         {
             key = await FreeKeyAsync(db, type, Slug(name), cancellationToken);
@@ -212,17 +239,61 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
             }
         }
 
+        var id = $"{type.ToLowerInvariant()}:{key}";
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         db.Nodes.Add(new Node
         {
-            Id = $"{type.ToLowerInvariant()}:{key}",
+            Id = id,
             UserId = AppUser.DefaultId,
             Type = type,
             Key = key,
             Name = name,
             Props = props,
         });
+        db.NodeLinks.AddRange(links.Select(l => new NodeLink { SourceId = id, RelType = l.RelType, TargetId = l.TargetId }));
         await db.SaveChangesAsync(cancellationToken);
+        foreach (var group in links.GroupBy(l => (l.RelType, l.TargetType)))
+        {
+            await CountAsync(db, type, group.Key.RelType, group.Key.TargetType, group.Count(), cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
         return key;
+    }
+
+    // A new record's links, checked: each goes where the model has a relationship, and every required one is there.
+    private static async Task<List<(string RelType, string TargetId, string TargetType)>> NewLinksAsync(
+        LinkbaseDbContext db, RecordType type, IReadOnlyList<NewLink> requested, CancellationToken cancellationToken)
+    {
+        var ids = requested.Select(l => l.TargetId).Distinct().ToList();
+        var targets = await db.Nodes.AsNoTracking()
+            .Where(n => ids.Contains(n.Id) && n.UserId == AppUser.DefaultId)
+            .Select(n => new { n.Id, n.Type })
+            .ToDictionaryAsync(n => n.Id, n => n.Type, cancellationToken);
+        var defined = await db.LinkDefinitions.AsNoTracking()
+            .Where(d => d.SourceType == type.Name)
+            .Select(d => new { d.RelType, d.TargetType })
+            .ToListAsync(cancellationToken);
+
+        var links = new List<(string RelType, string TargetId, string TargetType)>();
+        foreach (var link in requested.Distinct())
+        {
+            var targetType = targets.GetValueOrDefault(link.TargetId)
+                ?? throw new LinkbaseValidationException("The record to link to no longer exists.");
+            if (!defined.Any(d => d.RelType == link.RelType && d.TargetType == targetType))
+            {
+                throw new LinkbaseValidationException($"The model has no {type.Name} {link.RelType} {targetType} relationship.");
+            }
+
+            links.Add((link.RelType, link.TargetId, targetType));
+        }
+
+        foreach (var needed in type.RequiredLinks.Where(r => !links.Any(l => l.RelType == r.RelType && l.TargetType == r.OtherType)))
+        {
+            throw new LinkbaseValidationException($"Each {type.Name} needs at least one {type.Name} {needed.RelType} {needed.OtherType} link.");
+        }
+
+        return links;
     }
 
     public async Task UpdateAsync(string id, RecordInput input, CancellationToken cancellationToken = default)
@@ -237,24 +308,51 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         await db.SaveChangesAsync(cancellationToken);
     }
 
-    // Like everything else, a record that still has links can't be deleted. Remove its links first.
+    // Like everything else, a record that still has links can't be deleted. Remove its links first. The links its type
+    // requires can't be removed on their own, so they go with it.
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var links = await db.NodeLinks.CountAsync(l => l.SourceId == id || l.TargetId == id, cancellationToken);
+        var type = await db.Nodes.AsNoTracking().Where(n => n.Id == id && n.UserId == AppUser.DefaultId).Select(n => n.Type).SingleOrDefaultAsync(cancellationToken);
+        if (type is null)
+        {
+            return;
+        }
+
+        var required = await db.LinkDefinitions.AsNoTracking()
+            .Where(d => d.SourceType == type && d.Required)
+            .Select(d => new { d.RelType, d.TargetType })
+            .ToListAsync(cancellationToken);
+        var own = new List<(string RelType, string TargetType, int Count)>();
+        foreach (var definition in required)
+        {
+            var count = await db.NodeLinks.CountAsync(l => l.SourceId == id && l.RelType == definition.RelType && l.Target.Type == definition.TargetType, cancellationToken);
+            own.Add((definition.RelType, definition.TargetType, count));
+        }
+
+        var links = await db.NodeLinks.CountAsync(l => l.SourceId == id || l.TargetId == id, cancellationToken) - own.Sum(o => o.Count);
         if (links > 0)
         {
             throw new LinkbaseValidationException($"This record still has {links:N0} link(s). Remove them first.");
         }
 
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
+            foreach (var (relType, targetType, _) in own)
+            {
+                var removed = await db.NodeLinks.Where(l => l.SourceId == id && l.RelType == relType && l.Target.Type == targetType).ExecuteDeleteAsync(cancellationToken);
+                await CountAsync(db, type, relType, targetType, -removed, cancellationToken);
+            }
+
             await db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.ForeignKeyViolation)
         {
             throw new LinkbaseValidationException("This record was linked to something else while deleting it. Remove its links first.");
         }
+
+        await transaction.CommitAsync(cancellationToken);
     }
 
     // Links only go where the model has a relationship, either way round.
@@ -290,11 +388,19 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var link = await db.NodeLinks.AsNoTracking()
             .Where(l => l.Id == linkId)
-            .Select(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
+            .Select(l => new { l.SourceId, SourceName = l.Source.Name, SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
             .SingleOrDefaultAsync(cancellationToken);
         if (link is null)
         {
             return;
+        }
+
+        // The last of a required kind of link has to stay. Deleting the record takes it too.
+        if (await db.LinkDefinitions.AnyAsync(d => d.SourceType == link.SourceType && d.RelType == link.RelType && d.TargetType == link.TargetType && d.Required, cancellationToken)
+            && !await db.NodeLinks.AnyAsync(l => l.SourceId == link.SourceId && l.RelType == link.RelType && l.Target.Type == link.TargetType && l.Id != linkId, cancellationToken))
+        {
+            throw new LinkbaseValidationException(
+                $"Each {link.SourceType} needs at least one {link.SourceType} {link.RelType} {link.TargetType} link, and this is {link.SourceName}'s only one. Add another first.");
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -320,9 +426,19 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         foreach (var field in type.Fields)
         {
             var text = input.Values.GetValueOrDefault(field.Key)?.Trim();
+            if (field.Type == FieldType.List && FieldValues.SplitList(text ?? "", '\n', '\r').Count == 0)
+            {
+                text = null;
+            }
+
             if (string.IsNullOrEmpty(text))
             {
                 props.Remove(field.Key);
+                if (field.Required)
+                {
+                    throw new LinkbaseValidationException($"{Title(field.Key)} is required.");
+                }
+
                 continue;
             }
 

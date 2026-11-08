@@ -74,9 +74,13 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean`, `choice` or `list`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. A list is several text values in one cell, split by `|`, such as `Figma|User research`. `column` is the CSV column, the key if left out |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
 | `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files |
+| `required` | On a field, `true` means every record needs a value. On a relationship, it means every record of the `from` type needs at least one of its links, such as each ascent's route |
 
 In Explore, a filter on a list matches when any of its values does, so `skills = postgres` finds everyone with Postgres
 among their skills.
+
+A row without a value for a required field stops the load, and so does a record left without a required relationship's
+link, once every link is in. Both say which rows or records.
 
 While loading, a row with an empty key is skipped, a repeated key keeps its first row, and a link whose ends aren't both
 loaded is left out. A value that doesn't fit its field's type stops the load and says which field.
@@ -124,6 +128,9 @@ of two things:
 - **Links between records already here**, such as which supplier supplies which project: the type and key column at each end,
   and the relationship's name. Import the records first.
 
+A type's required fields each need a column, and a row with nothing in one stops the import. Records of a type that requires
+links can't be imported this way, because an import of records adds no links: add them in the app.
+
 It guesses what it can from the headers and the model. A column called `stop`, `stop_id`, `Stop ID`, `stops` or `from_stop_id`
 holds Stop keys when there's a Stop type, so a file with two such columns opens as links between them, swapped round if the
 model has the relationship the other way. The relationship lists those the model has between the two types, filling in
@@ -142,8 +149,8 @@ choose and what Check should say.
 
 Each import is one transaction, and **Recent imports** can undo it. Undoing removes the records and links it added,
 including changes made to them since, and a type or relationship it added once nothing is left of it. It's refused while
-something added since links to one of its records. Files can be up to 100 MB, with commas or semicolons. The batch records the
-file's name and what it added, never its contents.
+something added since links to one of its records, or if it would leave a record without a link its type requires. Files
+can be up to 100 MB, with commas or semicolons. The batch records the file's name and what it added, never its contents.
 
 ## Lists and records
 
@@ -153,10 +160,13 @@ Each type in a model file gets a place in the rail, and pages generated from its
   part of the name or a value.
 - **The record** (`/data/<Type>/<key>`) shows all its values and its links, grouped by relationship and either way round. A
   group shows its first 25 links and how many there are. Explore's "Open and edit" comes here too.
-- **Adding and editing** use a form with a box for each field, checked against its type. A list takes one value per line. A new record's key is made from its
-  name, such as `zoe-adams`, unless one is given, and can't change afterwards, because the record's id is made from it.
-- **Links** can be added only where the model has a relationship, and removed one at a time. A record that still has links
-  can't be deleted, like anything else in the app.
+- **Adding and editing** use a form with a box for each field, checked against its type. A list takes one value per line,
+  and a required field can't be left empty. A new record's key is made from its name, such as `zoe-adams`, unless one is
+  given, and can't change afterwards, because the record's id is made from it. A new record also chooses the records its
+  required links go to, and is saved with them.
+- **Links** can be added only where the model has a relationship, and removed one at a time, except a record's last link of
+  a kind its type requires. A record that still has links can't be deleted, like anything else in the app. Its own required
+  links don't count: they go with it.
 
 The home page lists how many records there are of each type and how many links of each kind, and so does the graph
 model in Explore (type `graph`), on its types and links. Counting tens of millions of links takes too long to do each time,

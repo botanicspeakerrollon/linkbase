@@ -154,8 +154,15 @@ else if (_record is not null && _type is not null)
 
     private async Task UnlinkAsync(RecordLink link)
     {
-        await Records.RemoveLinkAsync(link.Id);
-        Snackbar.Add($"Removed the link to {link.OtherName}.", Severity.Success);
-        _links = await Records.LinksAsync(_record!.Id);
+        try
+        {
+            await Records.RemoveLinkAsync(link.Id);
+            Snackbar.Add($"Removed the link to {link.OtherName}.", Severity.Success);
+            _links = await Records.LinksAsync(_record!.Id);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
     }
 }

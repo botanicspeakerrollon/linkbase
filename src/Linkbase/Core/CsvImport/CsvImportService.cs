@@ -392,6 +392,23 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             .GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
             .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
             .ToListAsync(cancellationToken);
+        // A record keeps at least one of each link its type requires, so undoing can't take away its last one.
+        foreach (var group in links)
+        {
+            var required = await db.LinkDefinitions.AnyAsync(
+                d => d.SourceType == group.SourceType && d.RelType == group.RelType && d.TargetType == group.TargetType && d.Required, cancellationToken);
+            var stranded = !required ? 0 : await db.NodeLinks
+                .Where(l => l.ImportBatchId == batchId && l.RelType == group.RelType && l.Source.Type == group.SourceType && l.Target.Type == group.TargetType)
+                .Select(l => l.SourceId)
+                .Distinct()
+                .CountAsync(source => !db.NodeLinks.Any(o => o.SourceId == source && o.RelType == group.RelType && o.Target.Type == group.TargetType && o.ImportBatchId != batchId), cancellationToken);
+            if (stranded > 0)
+            {
+                throw new LinkbaseValidationException(
+                    $"Undoing would leave {stranded:N0} {group.SourceType} record(s) with no {group.SourceType} {group.RelType} {group.TargetType} link, which each needs. Link them another way first.");
+            }
+        }
+
         foreach (var group in links)
         {
             await db.LinkDefinitions
@@ -479,13 +496,32 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             problems.Add($"Two columns are both going into {repeated.Key}.");
         }
 
-        // A field the type already has keeps its type, and a choice field its options.
+        // A field the type already has keeps its type, and a choice field its options. A required field needs a column, and
+        // a type that requires links can't be imported, because a records import adds no links.
         var notes = new List<string>();
         var choices = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        var required = new HashSet<string>(StringComparer.Ordinal);
         await using (var db = await contextFactory.CreateDbContextAsync(cancellationToken))
         {
             var defined = await db.FieldDefinitions.AsNoTracking().Where(f => f.NodeTypeName == mapping.Type)
-                .Select(f => new { f.Key, f.Type, f.Options }).ToListAsync(cancellationToken);
+                .Select(f => new { f.Key, f.Type, f.Options, f.Required }).ToListAsync(cancellationToken);
+            foreach (var field in defined.Where(d => d.Required))
+            {
+                required.Add(field.Key);
+                if (mapping.Fields.All(f => f.Key != field.Key))
+                {
+                    problems.Add($"{mapping.Type} requires {field.Key}, so choose a column for it.");
+                }
+            }
+
+            var links = await db.LinkDefinitions.AsNoTracking().Where(l => l.SourceType == mapping.Type && l.Required)
+                .OrderBy(l => l.RelType).ThenBy(l => l.TargetType)
+                .Select(l => new { l.RelType, l.TargetType }).ToListAsync(cancellationToken);
+            foreach (var link in links)
+            {
+                problems.Add($"Each {mapping.Type} needs at least one {mapping.Type} {link.RelType} {link.TargetType} link, which an import of records can't add. Add {mapping.Type} records in the app instead.");
+            }
+
             foreach (var field in mapping.Fields)
             {
                 var existing = defined.FirstOrDefault(d => d.Key == field.Key);
@@ -550,6 +586,11 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
                     var text = reader.GetField(field.Column)?.Trim() ?? "";
                     if (text.Length == 0 || (field.Type == FieldType.List && FieldValues.SplitList(text, FieldValues.ListSeparator).Count == 0))
                     {
+                        if (required.Contains(field.Key) && ++bad <= ProblemsShown)
+                        {
+                            problems.Add($"Row {line}: {field.Key} is empty, and {mapping.Type} requires it.");
+                        }
+
                         continue;
                     }
 
@@ -572,7 +613,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
 
         if (bad > ProblemsShown)
         {
-            problems.Add($"And {bad - ProblemsShown:N0} more values that don't fit their field's type.");
+            problems.Add($"And {bad - ProblemsShown:N0} more values that are missing or don't fit their field's type.");
         }
 
         if (empty > 0)

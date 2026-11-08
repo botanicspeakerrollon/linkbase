@@ -193,6 +193,9 @@ public sealed class ModelField
 
     // A choice field's values, in the order to offer them. Only for "type": "choice".
     public IReadOnlyList<string>? Options { get; init; }
+
+    // Every row needs a value. On a relationship's field, every link does.
+    public bool Required { get; init; }
 }
 
 public sealed class ModelRelationship
@@ -202,6 +205,9 @@ public sealed class ModelRelationship
     public required string To { get; init; }
     public required ModelRelationshipSource Source { get; init; }
     public IReadOnlyList<ModelField> Fields { get; init; } = [];
+
+    // Every record of the From type needs at least one of these links, such as an ascent's route.
+    public bool Required { get; init; }
 }
 
 public sealed class ModelRelationshipSource

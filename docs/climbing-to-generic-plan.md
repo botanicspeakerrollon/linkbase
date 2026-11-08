@@ -125,7 +125,7 @@ Each step leaves the app working, and the real data isn't touched until step 6.
    - Neo4j: the driver package, the exporter, inspector and comparison, their commands, tests and docs, and the `neo4j`
      source value. The real database has no rows using it.
    - The Duplicates page, `review_item`, and the import step that flags duplicates.
-1. **Generic features for storage: G1 to G6.** Each one is useful to model files straight away.
+1. **Generic features for storage: G1 to G6.** Each one is useful to model files straight away. G1 to G3 are done.
 2. **The climbing model file and a converter.**
    - `climbing to-generic` copies the typed tables into a model's generic store.
    - It's checked against the typed tables: counts per type, every ascent's fields, links and refs.

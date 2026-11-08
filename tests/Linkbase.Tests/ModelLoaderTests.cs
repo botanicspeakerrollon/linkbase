@@ -2,6 +2,7 @@ using Npgsql;
 using Linkbase.Core;
 using Linkbase.Core.Graph;
 using Linkbase.Core.Models;
+using Linkbase.Core.Records;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Import;
 using Microsoft.EntityFrameworkCore;
@@ -158,6 +159,34 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
         Assert.Equal(20, await db.Nodes.CountAsync());
     }
 
+    [Fact]
+    public async Task Required_fields_and_links_are_kept_with_the_model()
+    {
+        var factory = await NewDatabaseAsync();
+
+        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+
+        var book = (await new RecordRepository(factory).TypeAsync("Book"))!;
+        Assert.Equal([new RecordField("isbn", FieldType.Text) { Required = true }], book.Fields);
+        Assert.Equal([new RequiredLink("WRITTEN_BY", "Author")], book.RequiredLinks);
+        Assert.Empty((await new RecordRepository(factory).TypeAsync("Author"))!.RequiredLinks);
+    }
+
+    [Theory]
+    [InlineData("id,title,isbn,author\nb1,Tidal Atlas,111,a1\nb2,Salt Roads,,a2\n,No key,,a1\n", "books.csv: isbn is required, but 1 row(s) have none, such as row 3.")]
+    [InlineData("id,title,isbn,author\nb1,Tidal Atlas,111,a1\nb2,Salt Roads,222,\nb3,Lost,333,a9\n", "Each Book needs at least one Book WRITTEN_BY Author link, but 2 have none, such as b2, b3.")]
+    public async Task A_required_value_or_link_thats_missing_stops_the_load(string books, string message)
+    {
+        var factory = await NewDatabaseAsync();
+        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => new ModelLoader(factory).LoadAsync(Library.Write(books), TextWriter.Null));
+
+        Assert.Equal(message, ex.Message);
+        await using var db = factory.CreateDbContext();
+        Assert.Equal(20, await db.Nodes.CountAsync());
+    }
+
     private static ServiceProvider Services(params (string Key, string Connection)[] models)
     {
         var settings = new Dictionary<string, string?>();
@@ -264,5 +293,40 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
         {
             Directory.Delete(_folder, recursive: true);
         }
+    }
+}
+
+// A small made-up library, where every book needs an author.
+internal static class Library
+{
+    public const string Model = """
+        {
+          "name": "Library",
+          "types": [
+            { "name": "Book", "source": { "file": "books.csv", "key": "id", "name": "title" }, "fields": [ { "key": "isbn", "required": true } ] },
+            { "name": "Author", "source": { "file": "authors.csv", "key": "id", "name": "name" } }
+          ],
+          "relationships": [
+            { "from": "Book", "type": "WRITTEN_BY", "to": "Author", "required": true, "source": { "file": "books.csv", "fromColumn": "id", "toColumn": "author" } }
+          ]
+        }
+        """;
+
+    public static (string Name, string Content)[] Files(string books = "id,title,isbn,author\nb1,Tidal Atlas,111,a1\nb2,Salt Roads,222,a2\n") =>
+        [("books.csv", books), ("authors.csv", "id,name\na1,Mara Quill\na2,Odo Venn\na3,Pia Lark\n")];
+
+    // Writes the model to a new folder and returns the model file's path.
+    public static string Write(string? books = null)
+    {
+        var folder = Path.Combine(Path.GetTempPath(), $"linkbase-library-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(folder);
+        foreach (var (name, content) in books is null ? Files() : Files(books))
+        {
+            File.WriteAllText(Path.Combine(folder, name), content);
+        }
+
+        var path = Path.Combine(folder, "model.json");
+        File.WriteAllText(path, Model);
+        return path;
     }
 }

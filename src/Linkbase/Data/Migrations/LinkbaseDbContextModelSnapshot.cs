@@ -391,6 +391,10 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text[]")
                         .HasColumnName("options");
 
+                    b.Property<bool>("Required")
+                        .HasColumnType("boolean")
+                        .HasColumnName("required");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text")
@@ -578,6 +582,10 @@ namespace Linkbase.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("rel_type");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("boolean")
+                        .HasColumnName("required");
 
                     b.Property<string>("SourceType")
                         .IsRequired()
