@@ -17,8 +17,16 @@ else if (_type is not null)
             <MudIcon Icon="@_style!.Icon" Style="@($"color: {_style.Color}")" />
             <MudText Typo="Typo.h4" HtmlTag="h1">@Type</MudText>
         </MudStack>
-        <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add @Type</MudButton>
+        @if (_type.Owner is null)
+        {
+            <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add @Type</MudButton>
+        }
     </MudStack>
+
+    @if (_type.Owner is not null)
+    {
+        <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">@RecordListPage.DerivedNote(_type)</MudAlert>
+    }
 
     <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="_search" ValueChanged="SearchAsync" DebounceInterval="300"
                   Label="Search" Placeholder="Any part of the name or a value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
@@ -94,6 +102,9 @@ else if (_type is not null)
             Navigation.NavigateTo(GraphStyle.RecordLink(Type, key));
         }
     }
+
+    public static string DerivedNote(RecordType type) =>
+        $"{type.Name} records are derived by {type.Owner} from other records, so they can't be added, edited or linked here.";
 
     public static string Shown(RecordField field, string? value) => field.Type switch
     {

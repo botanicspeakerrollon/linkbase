@@ -48,9 +48,12 @@ public sealed record CsvTypeGuess(string Type, string Reason);
 public sealed record CsvBatch(long Id, string File, string What, int Added, ImportStatus Status, DateTimeOffset At);
 
 // Imports records or links from a CSV file into the generic store, in one transaction, and undoes an import. Records whose
-// key is already there are left as they are, so undoing an import only ever removes what it added. See docs/models.md.
-public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contextFactory)
+// key is already there are left as they are, so undoing an import only ever removes what it added. Domain modules' hooks
+// run on what it adds and removes. A module's derived records and the fields it keeps can't be imported. See docs/models.md.
+public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks? hooks = null)
 {
+    private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
+
     public const long MaxBytes = 100L * 1024 * 1024;
     private const int Samples = 5;
     private const int GuessRows = 1000;
@@ -309,6 +312,18 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
                 ("options", choices.TryGetValue(field.Key, out var options) ? options.ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text));
         }
 
+        if (_hooks.Watch(mapping.Type))
+        {
+            var type = await new RecordRepository(contextFactory).TypeAsync(mapping.Type, cancellationToken)
+                ?? new RecordType(mapping.Type, null, null, mapping.Fields.Select(f => new RecordField(f.Key, f.Type)).ToList());
+            rows = rows.Select(row =>
+            {
+                var props = JsonNode.Parse(row.Props) as JsonObject ?? [];
+                _hooks.BeforeSave(type, row.Name, props);
+                return row with { Props = props.ToJsonString() };
+            }).ToList();
+        }
+
         var batch = await NewBatchAsync(connection, transaction, file, $"{mapping.Type} records", newType ? new { type = mapping.Type } : null, cancellationToken);
         await ExecuteAsync(connection, transaction, "CREATE TEMP TABLE staging_node (id text, key text, name text, props jsonb) ON COMMIT DROP");
         await using (var import = await connection.BeginBinaryImportAsync("COPY staging_node (id, key, name, props) FROM STDIN (FORMAT BINARY)", cancellationToken))
@@ -336,6 +351,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             ("batch", batch, NpgsqlDbType.Bigint));
         await FinishBatchAsync(connection, transaction, batch, added, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        await _hooks.AfterChangeAsync(await ChangesAsync(db, batch, removing: false, cancellationToken), cancellationToken);
         return new CsvImportResult(batch, added);
     }
 
@@ -372,7 +388,46 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             ("to", mapping.ToType, NpgsqlDbType.Text));
         await FinishBatchAsync(connection, transaction, batch, added, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        await _hooks.AfterChangeAsync(await ChangesAsync(db, batch, removing: false, cancellationToken), cancellationToken);
         return new CsvImportResult(batch, added);
+    }
+
+    // What an import added or is about to remove, for the hooks of the types they watch. Nothing is read when no hook
+    // watches anything, as for most models.
+    private async Task<List<RecordChange>> ChangesAsync(LinkbaseDbContext db, long batch, bool removing, CancellationToken cancellationToken)
+    {
+        var watched = _hooks.Watched;
+        var changes = new List<RecordChange>();
+        if (watched.Count == 0)
+        {
+            return changes;
+        }
+
+        var none = new Dictionary<string, string>();
+        var nodes = await db.Nodes.AsNoTracking()
+            .Where(n => n.ImportBatchId == batch && watched.Contains(n.Type))
+            .Select(n => new { n.Id, n.Type, n.Props })
+            .ToListAsync(cancellationToken);
+        foreach (var node in nodes)
+        {
+            var values = RecordRepository.Values(node.Props);
+            changes.Add(removing
+                ? new RecordChange(RecordChangeKind.Deleted, node.Type, node.Id, values, none)
+                : new RecordChange(RecordChangeKind.Created, node.Type, node.Id, none, values));
+        }
+
+        var links = await db.NodeLinks.AsNoTracking()
+            .Where(l => l.ImportBatchId == batch && (watched.Contains(l.Source.Type) || watched.Contains(l.Target.Type)))
+            .Select(l => new { l.SourceId, SourceType = l.Source.Type, l.RelType, l.TargetId, TargetType = l.Target.Type })
+            .ToListAsync(cancellationToken);
+        var kind = removing ? RecordChangeKind.Unlinked : RecordChangeKind.Linked;
+        foreach (var link in links)
+        {
+            changes.Add(new RecordChange(kind, link.SourceType, link.SourceId, none, none, link.RelType, link.TargetId));
+            changes.Add(new RecordChange(kind, link.TargetType, link.TargetId, none, none, link.RelType, link.SourceId));
+        }
+
+        return changes;
     }
 
     // Removes everything the import added: its links, then its records, including changes made to them since. Types,
@@ -388,6 +443,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var changes = await ChangesAsync(db, batchId, removing: true, cancellationToken);
         var links = await db.NodeLinks.Where(l => l.ImportBatchId == batchId)
             .GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
             .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
@@ -421,6 +477,24 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         // The import's own records first, then their links one side at a time, so both lookups use an index. Joining every
         // link to its ends took minutes on the Swiss sample's 45M links.
         var added = db.Nodes.Where(n => n.ImportBatchId == batchId).Select(n => n.Id);
+
+        // Links from a module's derived records are the module's, so they go with the records, and its hooks hear of it.
+        if (await db.NodeTypes.AnyAsync(t => t.Owner != null, cancellationToken))
+        {
+            var derived = db.NodeLinks.Where(l =>
+                (added.Contains(l.SourceId) && l.Target.NodeType.Owner != null) || (added.Contains(l.TargetId) && l.Source.NodeType.Owner != null));
+            foreach (var group in await derived.GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
+                         .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
+                         .ToListAsync(cancellationToken))
+            {
+                await db.LinkDefinitions
+                    .Where(d => d.SourceType == group.SourceType && d.RelType == group.RelType && d.TargetType == group.TargetType)
+                    .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links - group.Count), cancellationToken);
+            }
+
+            await derived.ExecuteDeleteAsync(cancellationToken);
+        }
+
         var linked = await db.NodeLinks.CountAsync(l => added.Contains(l.SourceId), cancellationToken)
             + await db.NodeLinks.CountAsync(l => added.Contains(l.TargetId), cancellationToken);
         if (linked > 0)
@@ -433,6 +507,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         batch.Status = ImportStatus.Undone;
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        await _hooks.AfterChangeAsync(changes, cancellationToken);
     }
 
     // A type the import added goes too, with its fields, once nothing is left of it. So does a relationship it added, once
@@ -503,9 +578,16 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         var required = new HashSet<string>(StringComparer.Ordinal);
         await using (var db = await contextFactory.CreateDbContextAsync(cancellationToken))
         {
+            if (await db.NodeTypes.AsNoTracking().Where(t => t.Name == mapping.Type).Select(t => t.Owner).SingleOrDefaultAsync(cancellationToken) is { } owner)
+            {
+                problems.Add($"{mapping.Type} records are derived by {owner} from other records, so they can't be imported.");
+            }
+
             var defined = await db.FieldDefinitions.AsNoTracking().Where(f => f.NodeTypeName == mapping.Type)
-                .Select(f => new { f.Key, f.Type, f.Options, f.Required }).ToListAsync(cancellationToken);
-            foreach (var field in defined.Where(d => d.Required))
+                .Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner }).ToListAsync(cancellationToken);
+
+            // A kept field's module fills it in, so it needs no column.
+            foreach (var field in defined.Where(d => d.Required && d.Owner is null))
             {
                 required.Add(field.Key);
                 if (mapping.Fields.All(f => f.Key != field.Key))
@@ -525,7 +607,11 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             foreach (var field in mapping.Fields)
             {
                 var existing = defined.FirstOrDefault(d => d.Key == field.Key);
-                if (existing is not null && existing.Type != field.Type)
+                if (existing?.Owner is not null)
+                {
+                    problems.Add($"{mapping.Type}'s {field.Key} is kept by {existing.Owner}, so it can't be imported. Untick its column.");
+                }
+                else if (existing is not null && existing.Type != field.Type)
                 {
                     problems.Add($"{mapping.Type} already has {field.Key} as {Labelled(existing.Type)}, not {Labelled(field.Type)}.");
                 }
@@ -638,10 +724,17 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             problems.Add("A relationship's name is capitals, digits and underscores, such as SUPPLIES.");
         }
 
-        var types = await db.NodeTypes.AsNoTracking().Select(t => t.Name).ToListAsync(cancellationToken);
-        foreach (var type in new[] { mapping.FromType, mapping.ToType }.Where(t => !types.Contains(t)))
+        var owners = await db.NodeTypes.AsNoTracking().Select(t => new { t.Name, t.Owner }).ToDictionaryAsync(t => t.Name, t => t.Owner, cancellationToken);
+        foreach (var type in new[] { mapping.FromType, mapping.ToType }.Distinct())
         {
-            problems.Add($"There's no type called {type}. Import its records first.");
+            if (!owners.TryGetValue(type, out var owner))
+            {
+                problems.Add($"There's no type called {type}. Import its records first.");
+            }
+            else if (owner is not null)
+            {
+                problems.Add($"{type} records are derived by {owner} from other records, so links to them can't be imported.");
+            }
         }
 
         var pairs = new List<(string, string)>();

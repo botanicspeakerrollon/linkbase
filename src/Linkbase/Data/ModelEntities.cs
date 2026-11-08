@@ -17,6 +17,11 @@ public class NodeType
     public string? Icon { get; set; }
 
     public int SortOrder { get; set; }
+
+    // The domain module that writes this type's records, such as Climbing for trips it derives from ascents. People can't
+    // add, edit or delete them, or link them by hand. Null for a type people keep. See docs/models.md.
+    public string? Owner { get; set; }
+
     public List<FieldDefinition> Fields { get; set; } = [];
 }
 
@@ -33,6 +38,10 @@ public class FieldDefinition
 
     // A record of the type can't be saved without a value for it.
     public bool Required { get; set; }
+
+    // The domain module that keeps this field's value, such as Climbing for a route's grade rank. People can't edit it.
+    // Null for a field people fill in.
+    public string? Owner { get; set; }
 }
 
 // A relationship that may exist between two types, such as Service CALLS_AT Stop.

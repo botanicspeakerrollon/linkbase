@@ -391,6 +391,10 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text[]")
                         .HasColumnName("options");
 
+                    b.Property<string>("Owner")
+                        .HasColumnType("text")
+                        .HasColumnName("owner");
+
                     b.Property<bool>("Required")
                         .HasColumnType("boolean")
                         .HasColumnName("required");
@@ -756,6 +760,10 @@ namespace Linkbase.Data.Migrations
                     b.Property<string>("Icon")
                         .HasColumnType("text")
                         .HasColumnName("icon");
+
+                    b.Property<string>("Owner")
+                        .HasColumnType("text")
+                        .HasColumnName("owner");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")

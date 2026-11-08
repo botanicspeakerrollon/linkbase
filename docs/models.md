@@ -72,6 +72,7 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `types[].color`, `icon` | Optional. A colour such as `#0f766e`, and a [Material icon](https://fonts.google.com/icons)'s name in PascalCase, such as `Train` |
 | `types[].source` | The CSV file, the column identifying a row (`key`), and the column to show as its name (`name`, the key if left out) |
 | `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean`, `choice` or `list`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. A list is several text values in one cell, split by `|`, such as `Figma|User research`. `column` is the CSV column, the key if left out |
+| `types[].owner`, `types[].fields[].owner` | Optional. The domain module that writes these records or keeps this value, by its key, such as `Climbing`. See [owned by a module](#owned-by-a-module) |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
 | `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files |
 | `required` | On a field, `true` means every record needs a value. On a relationship, it means every record of the `from` type needs at least one of its links, such as each ascent's route |
@@ -84,6 +85,40 @@ link, once every link is in. Both say which rows or records.
 
 While loading, a row with an empty key is skipped, a repeated key keeps its first row, and a link whose ends aren't both
 loaded is left out. A value that doesn't fit its field's type stops the load and says which field.
+
+### Owned by a module
+
+Some data is worked out by a domain module rather than typed in, such as a route's grade rank or the trips made from a
+logbook's ascents. The model file says so with `owner`:
+
+```json
+{ "name": "Route", "fields": [ { "key": "grade" }, { "key": "grade_rank", "type": "number", "owner": "Climbing" } ] },
+{ "name": "Trip", "owner": "Climbing", "fields": [ { "key": "country" } ] }
+```
+
+- **A kept field** is shown on the record page, marked "kept by Climbing", but the edit form has no box for it and the CSV
+  import won't take a column for it. Saving keeps its value, and the module's hook sets it.
+- **A derived type**'s records are shown like any others, marked as derived, but can't be added, edited, deleted or imported.
+  Links to and from them are the module's too: the record page offers none to add or remove, and the CSV import refuses
+  them. Deleting a record, or undoing the import that added it, takes its links to derived records with it.
+
+The loader loads owned data from the CSV files like any other, since loading replaces everything anyway. An owner must be
+one of the app's domains, and only a type's fields can have one. A kept field that's required needs no column in a CSV
+import, since its module fills it in, and a relationship to a derived type can't be required, as nobody could add the
+records that need it.
+
+**Hooks.** A module can register an `IRecordHook` in its `AddServices`, naming the types it watches. It runs only for models
+that list the module under `Domains`:
+
+- `BeforeSave` runs before a record of a watched type is saved by the edit form or the CSV import, in the same transaction,
+  and sets the fields the module keeps.
+- `AfterChangeAsync` runs once the changes are saved, with every change one action made to the watched types: records
+  created, updated or deleted, with their values before and after, and links added or removed, once for each end. It's
+  for keeping derived records up to date.
+
+Hooks don't run when a model file is loaded. A module writes its derived records with `RecordRepository.ReplaceDerivedAsync`,
+which replaces all of a type's records and their links in one transaction, keeps the relationships' counts, and runs no
+hooks.
 
 ## Configuring models
 

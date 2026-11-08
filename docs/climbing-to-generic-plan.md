@@ -103,8 +103,8 @@ Each of these is something customers will want too. That's the test for building
 | G1 | **Choice fields**: a fixed list of values in the model file, shown as a select, checked on save and import | S | Style, discipline, grade system, area kind, date precision, source |
 | G2 | **List fields**: several text values, such as aliases | S | Crag aliases |
 | G3 | **Required fields and links**: a record can't be saved without them | S–M | An ascent's route and date |
-| G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit | M | Grade rank, refreshing trips |
-| G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived | M | Trips |
+| G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit. Done, see [models](models.md#owned-by-a-module) | M | Grade rank, refreshing trips |
+| G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived. Done, see [models](models.md#owned-by-a-module) | M | Trips |
 | G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows | S | UKC and MP ids, web import sources |
 | G7 | **Creating linked records from a form**: pick a route, or create one, and its crag, without leaving the page | M–L | Later: replaces the custom Add ascent page |
 | G8 | **Sorting and filtering record lists by field** | M | Later: replaces the custom Logbook page |

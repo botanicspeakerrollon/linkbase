@@ -19,18 +19,35 @@ else if (_record is not null && _type is not null)
             <MudIcon Icon="@_style!.Icon" Style="@($"color: {_style.Color}")" />
             <MudText Typo="Typo.h4" HtmlTag="h1">@_record.Name</MudText>
         </MudStack>
-        <MudStack Row="true">
-            <MudButton OnClick="EditAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
-            <MudButton OnClick="DeleteAsync" Variant="Variant.Text" Color="Color.Error">Delete</MudButton>
-        </MudStack>
+        @if (_type.Owner is null)
+        {
+            <MudStack Row="true">
+                <MudButton OnClick="EditAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
+                <MudButton OnClick="DeleteAsync" Variant="Variant.Text" Color="Color.Error">Delete</MudButton>
+            </MudStack>
+        }
     </MudStack>
+
+    @if (_type.Owner is not null)
+    {
+        <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">@RecordListPage.DerivedNote(_type)</MudAlert>
+    }
 
     <MudSimpleTable Dense="true" Elevation="1" Class="mb-6 record-values">
         <tbody>
             <tr><th scope="row">Key</th><td>@_record.Key</td></tr>
             @foreach (var field in _type.Fields)
             {
-                <tr><th scope="row">@RecordRepository.Title(field.Key)</th><td>@RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key))</td></tr>
+                <tr>
+                    <th scope="row">@RecordRepository.Title(field.Key)</th>
+                    <td>
+                        @RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key))
+                        @if (field.Owner is not null && _type.Owner is null)
+                        {
+                            <MudText Typo="Typo.caption" Inline="true" Class="ml-2" Style="color: var(--mud-palette-text-secondary)">kept by @field.Owner</MudText>
+                        }
+                    </td>
+                </tr>
             }
             @foreach (var (key, value) in _record.Values.Where(v => _type.Fields.All(f => f.Key != v.Key)).OrderBy(v => v.Key))
             {
@@ -41,7 +58,7 @@ else if (_record is not null && _type is not null)
 
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2" Wrap="Wrap.Wrap">
         <MudText Typo="Typo.h6" HtmlTag="h2">Links</MudText>
-        @if (_options.Count > 0)
+        @if (_options.Count > 0 && _type.Owner is null)
         {
             <MudButton OnClick="LinkAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.AddLink" Size="Size.Small">Add link</MudButton>
         }
@@ -65,8 +82,11 @@ else if (_record is not null && _type is not null)
                     <div class="d-flex align-center" style="gap: 8px">
                         <MudLink Href="@GraphStyle.RecordLink(link.OtherType, link.OtherKey)">@link.OtherName</MudLink>
                         <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">@link.OtherType · @link.OtherKey</MudText>
-                        <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small" Class="ml-auto"
-                                       aria-label="@($"Remove the link to {link.OtherName}")" OnClick="@(() => UnlinkAsync(link))" />
+                        @if (_type.Owner is null && !_derived.Contains(link.OtherType))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small" Class="ml-auto"
+                                           aria-label="@($"Remove the link to {link.OtherName}")" OnClick="@(() => UnlinkAsync(link))" />
+                        }
                     </div>
                 </MudListItem>
             }
@@ -92,11 +112,16 @@ else if (_record is not null && _type is not null)
     private List<BreadcrumbItem> _crumbs = [];
     private bool _missing;
 
+    // Types a module derives. Links to them are its own, so they can't be removed here.
+    private HashSet<string> _derived = [];
+
     protected override Task OnParametersSetAsync() => LoadAsync();
 
     private async Task LoadAsync()
     {
-        _type = await Records.TypeAsync(Type);
+        var types = await Records.TypesAsync();
+        _derived = types.Where(t => t.Owner is not null).Select(t => t.Name).ToHashSet();
+        _type = types.FirstOrDefault(t => t.Name == Type);
         _record = _type is null ? null : await Records.GetAsync(Type, Key);
         _missing = _record is null;
         if (_record is null)
