@@ -17,7 +17,8 @@ public sealed record PatternSuggestion(SuggestionKind Kind, string Text, string?
 }
 
 // One node of the search phrase with its conditions inside it. A null label matches any type of node.
-public sealed record PatternChip(string? Label, IReadOnlyList<string> Filters, string? Pending, string? RelationshipBefore);
+// Focused is the node new conditions go to: the last one, unless the arrow keys or a click chose an earlier one.
+public sealed record PatternChip(string? Label, IReadOnlyList<string> Filters, string? Pending, string? RelationshipBefore, bool Focused = false);
 
 // The search phrase being built, as in Neo4j Bloom. Each step changes what's suggested next:
 // a type, then relationships and properties, a property's operators, then its values. Plain text can go in at any point.
@@ -30,6 +31,9 @@ public sealed class PatternBuilder(GraphSchema schema)
     private string? _pendingKey;
     private FilterOperator? _pendingOperator;
 
+    // An earlier node chosen to take the next condition. Null means the last one, where the phrase grows.
+    private int? _focus;
+
     private sealed class PatternNodeState
     {
         public string? Label { get; init; }
@@ -41,7 +45,12 @@ public sealed class PatternBuilder(GraphSchema schema)
     // Whether a suggestion needs values from the database for the current step.
     public bool NeedsValues => _pendingOperator is not null;
 
-    public string? CurrentLabel => _nodes.LastOrDefault()?.Label;
+    private int FocusIndex => _focus ?? _nodes.Count - 1;
+
+    // Whether conditions go to the end of the phrase, where relationships can be added too.
+    public bool AtEnd => _focus is null;
+
+    public string? CurrentLabel => IsEmpty ? null : _nodes[FocusIndex].Label;
 
     public string? PendingKey => _pendingKey;
 
@@ -49,8 +58,9 @@ public sealed class PatternBuilder(GraphSchema schema)
         .Select((node, i) => new PatternChip(
             node.Label,
             node.Filters.Select(FilterText).ToList(),
-            i == _nodes.Count - 1 ? PendingText() : null,
-            i > 0 ? RelText(_rels[i - 1].RelType, _rels[i - 1].Outgoing) : null))
+            i == FocusIndex ? PendingText() : null,
+            i > 0 ? RelText(_rels[i - 1].RelType, _rels[i - 1].Outgoing) : null,
+            !AtEnd && i == FocusIndex))
         .ToList();
 
     public GraphPattern? ToPattern() =>
@@ -87,7 +97,11 @@ public sealed class PatternBuilder(GraphSchema schema)
             }
         }
 
-        suggestions.AddRange(RelationshipSuggestions(term));
+        // A relationship links onward from the end, so it's only offered there.
+        if (AtEnd)
+        {
+            suggestions.AddRange(RelationshipSuggestions(term));
+        }
 
         if (!IsEmpty)
         {
@@ -130,7 +144,7 @@ public sealed class PatternBuilder(GraphSchema schema)
                 _pendingOperator = suggestion.Operator;
                 break;
             case SuggestionKind.Value:
-                _nodes[^1].Filters.Add(new PatternFilter(_pendingKey!, _pendingOperator!.Value, suggestion.Value!));
+                _nodes[FocusIndex].Filters.Add(new PatternFilter(_pendingKey!, _pendingOperator!.Value, suggestion.Value!));
                 _pendingKey = null;
                 _pendingOperator = null;
                 break;
@@ -140,7 +154,7 @@ public sealed class PatternBuilder(GraphSchema schema)
                     _nodes.Add(new PatternNodeState { Label = null });
                 }
 
-                _nodes[^1].Filters.Add(new PatternFilter(PatternFilter.AnyField, FilterOperator.Contains, suggestion.Value!));
+                _nodes[FocusIndex].Filters.Add(new PatternFilter(PatternFilter.AnyField, FilterOperator.Contains, suggestion.Value!));
                 break;
             case SuggestionKind.Match:
                 if (IsEmpty)
@@ -148,7 +162,7 @@ public sealed class PatternBuilder(GraphSchema schema)
                     _nodes.Add(new PatternNodeState { Label = suggestion.Label });
                 }
 
-                _nodes[^1].Filters.Add(new PatternFilter(suggestion.Key!, FilterOperator.Equals, suggestion.Value!));
+                _nodes[FocusIndex].Filters.Add(new PatternFilter(suggestion.Key!, FilterOperator.Equals, suggestion.Value!));
                 break;
         }
     }
@@ -163,6 +177,16 @@ public sealed class PatternBuilder(GraphSchema schema)
         else if (_pendingKey is not null)
         {
             _pendingKey = null;
+        }
+        else if (_focus is { } focus)
+        {
+            // On an earlier node, Backspace takes off its own conditions. It never removes the node, because the ones after
+            // it depend on it.
+            var filters = _nodes[focus].Filters;
+            if (filters.Count > 0)
+            {
+                filters.RemoveAt(filters.Count - 1);
+            }
         }
         else if (_nodes.Count > 0)
         {
@@ -194,6 +218,52 @@ public sealed class PatternBuilder(GraphSchema schema)
         _rels.Clear();
         _pendingKey = null;
         _pendingOperator = null;
+        _focus = null;
+    }
+
+    // Chooses which node the next condition goes to. A half-made condition is dropped, since it was for another node.
+    public void FocusOn(int index)
+    {
+        if (index < 0 || index >= _nodes.Count)
+        {
+            return;
+        }
+
+        _focus = index == _nodes.Count - 1 ? null : index;
+        _pendingKey = null;
+        _pendingOperator = null;
+    }
+
+    // The arrow keys, with nothing typed. Returns false at either end, so the key does nothing.
+    public bool FocusPrevious()
+    {
+        if (FocusIndex <= 0 || _pendingKey is not null)
+        {
+            return false;
+        }
+
+        FocusOn(FocusIndex - 1);
+        return true;
+    }
+
+    public bool FocusNext()
+    {
+        if (AtEnd || _pendingKey is not null)
+        {
+            return false;
+        }
+
+        FocusOn(FocusIndex + 1);
+        return true;
+    }
+
+    // Takes one condition off any node, without touching the rest of the phrase.
+    public void RemoveFilter(int nodeIndex, int filterIndex)
+    {
+        if (nodeIndex >= 0 && nodeIndex < _nodes.Count && filterIndex >= 0 && filterIndex < _nodes[nodeIndex].Filters.Count)
+        {
+            _nodes[nodeIndex].Filters.RemoveAt(filterIndex);
+        }
     }
 
     public static string RelText(string relType, bool outgoing) => outgoing ? $"{relType} →" : $"← {relType}";

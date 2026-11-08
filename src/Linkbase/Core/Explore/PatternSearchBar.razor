@@ -4,21 +4,27 @@
 <div style="position: relative">
     <div class="pattern-bar" @onclick="FocusAsync">
         <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" Style="color: var(--mud-palette-text-secondary)" />
-        @foreach (var chip in _builder?.Chips ?? [])
+        @foreach (var (chip, nodeIndex) in (_builder?.Chips ?? []).Select((c, i) => (c, i)))
         {
             @if (chip.RelationshipBefore is { } relationship)
             {
                 <span class="pattern-rel">@relationship</span>
             }
-            <span class="pattern-node" style="@NodeStyle(chip.Label)">
+            @* Clicking a node, or reaching it with the arrow keys, sends the next condition to it. *@
+            <span class="@(chip.Focused ? "pattern-node pattern-node-focused" : "pattern-node")" style="@NodeStyle(chip.Label)"
+                  title="Click to add conditions here" @onclick="@(() => FocusChipAsync(nodeIndex))" @onclick:stopPropagation="true">
                 @if (NodeIcon(chip.Label) is { } icon)
                 {
                     <MudIcon Icon="@icon" Size="Size.Small" />
                 }
                 <span class="pattern-node-label">@(chip.Label ?? "Anything")</span>
-                @foreach (var filter in chip.Filters)
+                @foreach (var (filter, filterIndex) in chip.Filters.Select((f, i) => (f, i)))
                 {
-                    <span class="pattern-node-filter">@filter</span>
+                    <span class="pattern-node-filter">
+                        @filter
+                        <button type="button" class="pattern-filter-remove" aria-label="@($"Remove {filter}")"
+                                @onclick="@(() => RemoveFilterAsync(nodeIndex, filterIndex))" @onclick:stopPropagation="true">×</button>
+                    </span>
                 }
                 @if (chip.Pending is { } pending)
                 {
@@ -92,6 +98,7 @@
             : "Search for anything, or type graph",
         { NeedsValues: true } => "Type a value, then press Enter",
         { PendingKey: not null } => "Choose how to compare",
+        { AtEnd: false } => $"Add a filter to {_builder.CurrentLabel ?? "Anything"}, or press → to go back to the end",
         _ => "Add a filter or relationship, or press Enter to search",
     };
 
@@ -144,6 +151,21 @@
                 }
 
                 break;
+            // With nothing typed, the arrows move between the nodes, so a condition can go on an earlier one.
+            case "ArrowLeft" when _text.Length == 0 && _builder is not null:
+                if (_builder.FocusPrevious())
+                {
+                    await RefreshAsync();
+                }
+
+                break;
+            case "ArrowRight" when _text.Length == 0 && _builder is not null:
+                if (_builder.FocusNext())
+                {
+                    await RefreshAsync();
+                }
+
+                break;
             case "Backspace" when _text.Length == 0 && _builder is not null:
                 _builder.RemoveLast();
                 await RefreshAsync();
@@ -184,6 +206,22 @@
             _open = false;
             await OnRun.InvokeAsync(pattern);
         }
+    }
+
+    private async Task FocusChipAsync(int index)
+    {
+        _builder?.FocusOn(index);
+        _text = "";
+        _open = true;
+        await RefreshAsync();
+        await FocusAsync();
+    }
+
+    private async Task RemoveFilterAsync(int nodeIndex, int filterIndex)
+    {
+        _builder?.RemoveFilter(nodeIndex, filterIndex);
+        await RefreshAsync();
+        await FocusAsync();
     }
 
     private async Task ClearAsync()

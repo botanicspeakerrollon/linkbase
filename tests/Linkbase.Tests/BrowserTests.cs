@@ -613,6 +613,19 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await WaitForExactNodesAsync(1);
         await Button("Expand").ClickAsync();
         await WaitForNodesAsync(2);
+
+        // The search suggestions drop down over the graph's toolbar, not under it.
+        await search.FocusAsync();
+        await _page.Locator(".pattern-list").WaitForAsync();
+        var export = (await Button("Export").BoundingBoxAsync())!;
+        var list = (await _page.Locator(".pattern-list").BoundingBoxAsync())!;
+        Assert.True(list.Y + list.Height > export.Y + export.Height / 2 && list.X + list.Width > export.X, "The suggestions don't reach the toolbar, so this checks nothing");
+        Assert.True(await _page.EvaluateAsync<bool>("""
+            () => {
+                const box = document.querySelector('.explore-tools .mud-menu button').getBoundingClientRect();
+                return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.closest('.pattern-list') != null;
+            }
+            """), "The toolbar covers the search suggestions");
         await _page.EvaluateAsync("() => document.activeElement?.blur()");
 
         await _page.Keyboard.PressAsync("t");

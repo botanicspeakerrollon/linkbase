@@ -3,17 +3,31 @@
 @* What's on the canvas as tables: one per type, with that type's fields as columns, then the links between them. Clicking
    a row selects the node, as clicking it on the canvas does. *@
 <div class="explore-table">
-    <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filter" Immediate="true" DebounceInterval="150"
-                  Placeholder="Filter by any part of a name or value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.FilterList"
-                  Clearable="true" Class="mb-3 explore-table-filter" aria-label="Filter the table" />
+    <div class="explore-table-bar mb-3">
+        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filter" Immediate="true" DebounceInterval="150"
+                      Placeholder="Filter by any part of a name or value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.FilterList"
+                      Clearable="true" Class="explore-table-filter" aria-label="Filter the table" />
+        @if (!AllCollapsed)
+        {
+            <MudButton OnClick="CollapseAll" Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Filled.UnfoldLess">Collapse all</MudButton>
+        }
+        @if (_collapsed.Count > 0)
+        {
+            <MudButton OnClick="@(() => _collapsed.Clear())" Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Filled.UnfoldMore">Expand all</MudButton>
+        }
+    </div>
 
     @foreach (var group in Groups())
     {
         var keys = group.Rows.SelectMany(n => n.Properties.Select(p => p.Key)).Distinct(StringComparer.Ordinal).ToList();
-        <div class="explore-table-heading">
+        var open = !_collapsed.Contains(group.Label);
+        <button type="button" class="explore-table-heading" aria-expanded="@(open ? "true" : "false")" @onclick="@(() => Toggle(group.Label))">
+            <MudIcon Icon="@(open ? Icons.Material.Filled.ExpandMore : Icons.Material.Filled.ChevronRight)" Size="Size.Small" />
             <MudChip T="string" Size="Size.Small" Style="@ChipStyle(group.Label)" Class="ma-0">@group.Label</MudChip>
             <span>@Count(group.Rows.Count, group.Total)</span>
-        </div>
+        </button>
+        @if (open)
+        {
         <MudTable T="GraphNode" Items="group.Rows" Dense="true" Hover="true" Elevation="0" Class="mb-4" OnRowClick="RowClickedAsync"
                   RowClass="explore-table-row" RowClassFunc="@((node, _) => node.Id == SelectedId ? "explore-table-selected" : "")">
             <HeaderContent>
@@ -32,11 +46,18 @@
                 }
             </RowTemplate>
         </MudTable>
+        }
     }
 
     @if (Links().ToList() is { Count: > 0 } links)
     {
-        <div class="explore-table-heading"><span class="explore-table-links">Links</span><span>@links.Count.ToString("N0", CultureInfo.InvariantCulture)</span></div>
+        var linksOpen = !_collapsed.Contains(LinksKey);
+        <button type="button" class="explore-table-heading" aria-expanded="@(linksOpen ? "true" : "false")" @onclick="@(() => Toggle(LinksKey))">
+            <MudIcon Icon="@(linksOpen ? Icons.Material.Filled.ExpandMore : Icons.Material.Filled.ChevronRight)" Size="Size.Small" />
+            <span class="explore-table-links">Links</span><span>@links.Count.ToString("N0", CultureInfo.InvariantCulture)</span>
+        </button>
+        @if (linksOpen)
+        {
         <MudTable T="LinkRow" Items="links" Dense="true" Hover="true" Elevation="0">
             <HeaderContent>
                 <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.Source.Name)">From</MudTableSortLabel></MudTh>
@@ -49,6 +70,7 @@
                 <MudTd DataLabel="To"><MudLink OnClick="@(() => OnSelect.InvokeAsync(context.Target))">@context.Target.Name</MudLink> <span class="explore-table-type">@context.Target.Label</span></MudTd>
             </RowTemplate>
         </MudTable>
+        }
     }
 
     @if (Nodes.Count > 0 && !Groups().Any())
@@ -69,6 +91,27 @@
     private sealed record LinkRow(GraphNode Source, string RelType, GraphNode Target);
 
     private string? _filter;
+
+    // Types folded away, by name, and the links table under a name no type can have. Kept while the canvas changes, so
+    // expanding a node doesn't unfold everything again.
+    private const string LinksKey = "\0links";
+    private readonly HashSet<string> _collapsed = [];
+
+    private void Toggle(string key)
+    {
+        if (!_collapsed.Remove(key))
+        {
+            _collapsed.Add(key);
+        }
+    }
+
+    private bool AllCollapsed => _collapsed.Contains(LinksKey) && Nodes.All(n => _collapsed.Contains(n.Label));
+
+    private void CollapseAll()
+    {
+        _collapsed.UnionWith(Nodes.Select(n => n.Label));
+        _collapsed.Add(LinksKey);
+    }
 
     private bool Matches(GraphNode node) =>
         string.IsNullOrWhiteSpace(_filter)

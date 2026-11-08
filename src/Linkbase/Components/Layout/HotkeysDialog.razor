@@ -22,7 +22,7 @@
                 </tbody>
             </MudSimpleTable>
         }
-        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Shortcuts don't work while you're typing in a field. Press Esc or click away first.</MudText>
+        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Apart from the search box's own keys, shortcuts don't work while you're typing in a field. Press Esc or click away first.</MudText>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Close" Variant="Variant.Text">Close</MudButton>
@@ -41,6 +41,12 @@
             ("g e", "Go to Explore"),
             ("g 1…9", "Go to that item in the menu on the left"),
             ("?", "Show these shortcuts"),
+        ]),
+        ("Explore search box, with nothing typed",
+        [
+            ("← →", "Move between the steps, to add a filter to an earlier one"),
+            ("Backspace", "Take off the last condition of the chosen step"),
+            ("Enter", "Search"),
         ]),
         ("Explore",
         [

@@ -470,6 +470,94 @@ public class PatternBuilderEdgeCaseTests
         builder.RemoveLast();
         Assert.True(builder.IsEmpty);
     }
+
+    // Route, then AT Crag, each with a condition, as someone would build it.
+    private static PatternBuilder RouteAtCrag()
+    {
+        var builder = Start("Route");
+        Choose(builder, "length_m", FilterOperator.GreaterThan);
+        builder.Apply(new PatternSuggestion(SuggestionKind.Value, "") { Value = "20" });
+        builder.Apply(builder.Suggest("AT", [], []).First(s => s.Kind == SuggestionKind.Relationship));
+        Choose(builder, "name", FilterOperator.Contains);
+        builder.Apply(new PatternSuggestion(SuggestionKind.Value, "") { Value = "Ridge" });
+        return builder;
+    }
+
+    [Fact]
+    public void The_arrows_move_to_an_earlier_node_and_conditions_go_there_without_losing_the_rest()
+    {
+        var builder = RouteAtCrag();
+        Assert.True(builder.AtEnd);
+        Assert.False(builder.FocusNext());
+
+        Assert.True(builder.FocusPrevious());
+        Assert.False(builder.FocusPrevious());
+        Assert.False(builder.AtEnd);
+        Assert.Equal("Route", builder.CurrentLabel);
+        Assert.Equal([true, false], builder.Chips.Select(c => c.Focused));
+
+        // Only the earlier node's own properties are offered, and no relationships, which link from the end.
+        var suggestions = builder.Suggest("", [], []);
+        Assert.Contains(suggestions, s => s is { Kind: SuggestionKind.Property, Key: "length_m" });
+        Assert.DoesNotContain(suggestions, s => s.Kind == SuggestionKind.Relationship);
+
+        builder.Apply(new PatternSuggestion(SuggestionKind.FreeText, "") { Value = "slab" });
+        Assert.Equal("Route", builder.CurrentLabel);
+
+        var pattern = builder.ToPattern()!;
+        Assert.Equal(2, pattern.Nodes[0].Filters.Count);
+        Assert.Equal("slab", pattern.Nodes[0].Filters[1].Value);
+        Assert.Equal("Ridge", pattern.Nodes[1].Filters.Single().Value);
+        Assert.Single(pattern.Rels);
+
+        Assert.True(builder.FocusNext());
+        Assert.True(builder.AtEnd);
+        Assert.Equal("Crag", builder.CurrentLabel);
+        Assert.All(builder.Chips, c => Assert.False(c.Focused));
+    }
+
+    [Fact]
+    public void A_half_made_condition_shows_on_the_focused_node_and_moving_away_drops_it()
+    {
+        var builder = RouteAtCrag();
+        builder.FocusOn(0);
+        builder.Apply(new PatternSuggestion(SuggestionKind.Property, "length_m") { Key = "length_m" });
+        Assert.Equal(["length m", null], builder.Chips.Select(c => c.Pending));
+        Assert.False(builder.FocusNext());
+
+        builder.FocusOn(1);
+        Assert.Null(builder.PendingKey);
+        Assert.True(builder.AtEnd);
+        builder.FocusOn(9);
+        Assert.True(builder.AtEnd);
+    }
+
+    [Fact]
+    public void Backspace_on_an_earlier_node_takes_only_its_conditions()
+    {
+        var builder = RouteAtCrag();
+        builder.FocusOn(0);
+
+        builder.RemoveLast();
+        builder.RemoveLast();
+
+        var pattern = builder.ToPattern()!;
+        Assert.Equal(2, pattern.Nodes.Count);
+        Assert.Empty(pattern.Nodes[0].Filters);
+        Assert.Single(pattern.Nodes[1].Filters);
+    }
+
+    [Fact]
+    public void One_condition_can_come_off_any_node()
+    {
+        var builder = RouteAtCrag();
+
+        builder.RemoveFilter(0, 0);
+        builder.RemoveFilter(0, 5);
+        builder.RemoveFilter(7, 0);
+
+        Assert.Equal([0, 1], builder.ToPattern()!.Nodes.Select(n => n.Filters.Count));
+    }
 }
 
 [Trait("Category", "Database")]

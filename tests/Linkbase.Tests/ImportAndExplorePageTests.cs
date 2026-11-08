@@ -717,9 +717,58 @@ public class ExplorePageTests : UiTestBase
         cut.Find(".explore-table-filter input").Input("nothing has this " + Guid.NewGuid());
         Sees(cut, "Nothing on the canvas matches that.");
 
+        cut.Find(".explore-table-filter input").Input("");
+        cut.WaitForAssertion(() => Assert.Contains(cut.FindAll("tr.explore-table-row"), r => r.TextContent.Contains(s.Route, StringComparison.Ordinal)));
+
+        // A type's heading folds its table away, and stays folded as the canvas changes.
+        ClickFresh(cut, () => cut.FindAll("button.explore-table-heading").First(h => h.TextContent.Contains("Route", StringComparison.Ordinal)));
+        cut.WaitForAssertion(() => Assert.DoesNotContain(cut.FindAll("tr.explore-table-row"), r => r.TextContent.Contains(s.Route, StringComparison.Ordinal)));
+        Assert.Equal("false", cut.FindAll("button.explore-table-heading").First(h => h.TextContent.Contains("Route", StringComparison.Ordinal)).GetAttribute("aria-expanded"));
+        Assert.Contains(cut.FindAll("tr.explore-table-row"), r => r.TextContent.Contains(s.Crag, StringComparison.Ordinal));
+
+        Assert.True(HasControl(cut, "Expand all"));
+        Press(cut, "Collapse all");
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("tr.explore-table-row")));
+        Assert.False(HasControl(cut, "Collapse all"));
+        Press(cut, "Expand all");
+        cut.WaitForAssertion(() => Assert.Contains(cut.FindAll("tr.explore-table-row"), r => r.TextContent.Contains(s.Route, StringComparison.Ordinal)));
+
         Press(cut, "Graph");
         DoesNotSee(cut, "explore-table-wrap");
         cut.WaitForAssertion(() => Assert.Contains("fit", GraphCalls));
+    }
+
+    [Fact]
+    public async Task The_search_bar_can_go_back_to_an_earlier_node_and_drop_one_condition()
+    {
+        var s = await SeedAsync();
+        var cut = RenderPage<ExplorePage>();
+        Search(cut, s.Crag);
+        WaitForOption(cut, s.Crag);
+        Key(cut, "Enter");
+        cut.WaitForAssertion(() => Assert.Contains("pattern-node-filter", cut.Markup));
+        Search(cut, "AT");
+        WaitForOption(cut, "← AT Route");
+        Key(cut, "Enter");
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll(".pattern-node").Count));
+        Assert.Empty(cut.FindAll(".pattern-node-focused"));
+
+        Key(cut, "ArrowLeft");
+        cut.WaitForAssertion(() => Assert.Contains("Crag", cut.Find(".pattern-node-focused").TextContent, StringComparison.Ordinal));
+        Assert.StartsWith("Add a filter to Anything", cut.Find("input[role=combobox]").GetAttribute("placeholder"), StringComparison.Ordinal);
+        Assert.DoesNotContain(cut.FindAll("[role=option]"), o => o.TextContent.Contains("AT", StringComparison.Ordinal));
+
+        Key(cut, "ArrowRight");
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".pattern-node-focused")));
+
+        // Clicking a node chooses it too.
+        ClickFresh(cut, () => cut.FindAll(".pattern-node")[0]);
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".pattern-node-focused")));
+
+        // One condition comes off, and the rest of the phrase stays.
+        ClickFresh(cut, () => cut.Find(".pattern-filter-remove"));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".pattern-node-filter")));
+        Assert.Equal(2, cut.FindAll(".pattern-node").Count);
     }
 
     [Fact]
