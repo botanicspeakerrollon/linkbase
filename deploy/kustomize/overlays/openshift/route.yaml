@@ -1,0 +1,16 @@
+# TLS ends here, at the router, which tells the app with X-Forwarded-Proto. Routes keep a browser on one pod with a
+# cookie by default, which Blazor Server needs once there's more than one replica. Leave host empty for the cluster's
+# default hostname, or set your own. The app must be at the root of its host, not under a path.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: linkbase
+spec:
+  to:
+    kind: Service
+    name: linkbase
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

@@ -1,0 +1,14 @@
+Linkbase is starting. Each pod applies migrations first, in its migrate init container.
+
+{{- if .Values.route.enabled }}
+It's served by the Route {{ include "linkbase.fullname" . }}:
+  oc get route {{ include "linkbase.fullname" . }}
+{{- else if .Values.ingress.enabled }}
+It's served at https://{{ .Values.ingress.host }}
+{{- else }}
+Reach it with:
+  kubectl port-forward svc/{{ include "linkbase.fullname" . }} 8080:{{ .Values.service.port }}
+{{- end }}
+
+Probes: /health/live and /health/ready. Logs are JSON on stdout:
+  kubectl logs deploy/{{ include "linkbase.fullname" . }}

@@ -1,0 +1,28 @@
+# Set the host, the TLS secret and your ingress class. The annotations keep a browser on one pod with a cookie, which
+# Blazor Server needs once there's more than one replica, and allow its long-lived connection; they're for ingress-nginx,
+# so use your controller's equivalents if it's another. The app must be at the root of its host, not under a path.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: linkbase
+  annotations:
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/session-cookie-name: linkbase-route
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [linkbase.example.com]
+      secretName: linkbase-tls
+  rules:
+    - host: linkbase.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: linkbase
+                port:
+                  name: http

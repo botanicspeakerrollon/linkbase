@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkbase
+spec:
+  # Blazor Server keeps each browser connected to one pod. More than one replica needs sticky sessions, which an OpenShift
+  # Route gives by default and the Kubernetes overlay's Ingress asks for.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: web
+    spec:
+      # No runAsUser, so OpenShift can pick its own; anywhere else the image's own non-root user is used.
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      # Migrations run before the app starts, from the same image, with the same settings. EF Core holds a database lock
+      # while it migrates, so pods starting together take turns, and an up-to-date database takes a moment.
+      initContainers:
+        - name: migrate
+          image: linkbase
+          args: [model, migrate]
+          envFrom:
+            - configMapRef:
+                name: linkbase-config
+            - secretRef:
+                name: linkbase-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: linkbase
+          image: linkbase
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: linkbase-config
+            - secretRef:
+                name: linkbase-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          # Ready means every model's database is reachable and migrated. Live only means the process is up, so a slow
+          # database never gets a working pod restarted.
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            # The only place the app writes: uploads waiting to be imported.
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 512Mi

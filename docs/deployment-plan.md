@@ -22,19 +22,21 @@ describe how to run that image.
 
 A multi-stage `Dockerfile` that Docker, Podman, Buildah and Kaniko all build. It runs as a non-root user and works under
 OpenShift's random user id: files are readable by group 0, nothing is written outside `/tmp`, and it listens on 8080. The
-base images are build arguments, so a bank can use its own registry mirror or Red Hat's UBI .NET images. Migrations run as
-a separate job from the same image (`model migrate`), never at start-up: an Argo CD PreSync hook, a Helm hook, or by hand.
+base images are build arguments, so a bank can use its own registry mirror or Red Hat's UBI .NET images. Migrations run
+from the same image as a separate step (`model migrate`), never inside the app process.
 
 ## Deploying
 
-`deploy/` holds both styles, as examples to copy:
+`deploy/` holds both styles, as examples to copy. See [deploy/README.md](../deploy/README.md).
 
-- **Kustomize**: a base with the Deployment, Service, ConfigMap, a Secret with no values, the migration Job, a
-  NetworkPolicy and probes, and overlays for OpenShift (a Route), Kubernetes (an Ingress) and a throwaway dev Postgres.
+- **Kustomize**: a base with the Deployment, Service, ConfigMap, NetworkPolicy and probes, and overlays for OpenShift (a
+  Route), Kubernetes (an Ingress) and a throwaway dev Postgres.
 - **Helm**: a chart with the same pieces, chosen by values.
 - **Argo CD**: an `Application` for each.
 
-Real environments use the platform's own Postgres, given to the app as a Secret.
+Migrations run in each pod's init container, before the app starts. That needs no Helm or Argo CD hook, whose pre-install
+and PreSync phases would run before the ConfigMap and Secret exist on a first install. EF Core's migration lock keeps pods
+starting together from clashing. Real environments use the platform's own Postgres, given to the app as a Secret.
 
 ## Pipelines
 
@@ -47,9 +49,12 @@ Real environments use the platform's own Postgres, given to the app as a Secret.
 - Both report known vulnerabilities without failing, since most come from the base image. Making them block is one
   setting each.
 
-## Order
+## State
 
-1. The app: logs, health, proxies and path prefix, Data Protection keys, OpenTelemetry.
-2. The image, built in CI.
-3. Tests against an existing Postgres, and the GitLab pipeline.
-4. `deploy/`: Kustomize, Helm and Argo CD.
+All four steps are done: the app (logs, health, proxies, Data Protection keys, OpenTelemetry), the image built and
+scanned in GitHub's CI, tests against an existing Postgres with the GitLab pipeline, and `deploy/`. The GitHub workflow
+runs on every push. The GitLab pipeline and the manifests are checked offline but haven't run on a real GitLab or
+cluster.
+
+Still to do: serving under a path prefix, which needs every link made relative, and encrypting the Data Protection keys
+with a certificate if a platform asks for it.

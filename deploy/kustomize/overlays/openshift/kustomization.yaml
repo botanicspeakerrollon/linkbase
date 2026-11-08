@@ -1,0 +1,14 @@
+# OpenShift: a Route terminates TLS and keeps each browser on one pod. The restricted security policy works as it is,
+# since nothing pins a user id.
+#   kubectl apply -k deploy/kustomize/overlays/openshift     (or oc apply -k)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - route.yaml
+
+images:
+  - name: linkbase
+    newName: image-registry.openshift-image-registry.svc:5000/linkbase/linkbase
+    newTag: latest

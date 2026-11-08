@@ -1,0 +1,6 @@
+apiVersion: v2
+name: linkbase
+description: Load any connected data, explore it as a graph and edit it.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

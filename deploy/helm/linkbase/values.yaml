@@ -1,0 +1,71 @@
+# The same deployment as deploy/kustomize, as a Helm chart. Every app setting is in docs/operations.md#configuration.
+
+image:
+  repository: ghcr.io/example/linkbase
+  tag: latest
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# Blazor Server keeps each browser connected to one pod, so more than one replica needs sticky sessions: an OpenShift Route
+# has them by default, and the Ingress below asks ingress-nginx for them.
+replicaCount: 1
+
+# Settings that aren't secret, as environment variables.
+config:
+  Logging__Console__FormatterName: json
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability:4317
+
+# Secret settings. Prefer an existing Secret, made by hand or your platform's secret store, holding at least
+# ConnectionStrings__Linkbase. Otherwise the chart makes one from `secrets`, which then lives in your values.
+existingSecret: ""
+secrets: {}
+  # ConnectionStrings__Linkbase: Host=postgres.example;Port=5432;Database=linkbase;Username=linkbase;Password=...
+
+# Applies migrations in an init container before the app starts in each pod, so no hooks are needed with Helm or Argo CD.
+migrations:
+  enabled: true
+
+service:
+  port: 8080
+
+# OpenShift. TLS ends at the router. Leave host empty for the cluster's default hostname.
+route:
+  enabled: false
+  host: ""
+
+# Plain Kubernetes. The annotations are for ingress-nginx; use your controller's equivalents otherwise.
+ingress:
+  enabled: false
+  className: nginx
+  host: linkbase.example.com
+  tlsSecretName: linkbase-tls
+  annotations:
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/session-cookie-name: linkbase-route
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+
+networkPolicy:
+  enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+# No runAsUser, so OpenShift can pick its own; anywhere else the image's non-root user is used.
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

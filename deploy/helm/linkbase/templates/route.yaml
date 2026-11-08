@@ -1,0 +1,21 @@
+{{- if .Values.route.enabled }}
+# TLS ends at the router, which keeps each browser on one pod with a cookie by default.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "linkbase.fullname" . }}
+  labels:
+    {{- include "linkbase.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.route.host }}
+  host: {{ . }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "linkbase.fullname" . }}
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+{{- end }}

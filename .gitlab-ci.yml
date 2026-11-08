@@ -23,6 +23,7 @@ stages:
   - test
   - build
   - scan
+  - deploy
 
 workflow:
   rules:
@@ -104,3 +105,22 @@ scan:
   artifacts:
     expire_in: 90 days
     paths: [sbom.cdx.json]
+
+# GitOps: points an overlay at the image just built and pushes that, for Argo CD to roll out. Only on the default branch,
+# and only once GITOPS_TOKEN is set: a project access token with write_repository, as a masked CI/CD variable.
+# GITOPS_OVERLAY picks the overlay. The commit says [skip ci], so it doesn't start another pipeline.
+deploy-tag:
+  stage: deploy
+  image: alpine:3.20
+  needs: [scan]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $GITOPS_TOKEN
+  variables:
+    GITOPS_OVERLAY: deploy/kustomize/overlays/openshift
+  script:
+    - apk add --no-cache git kustomize
+    - cd "$GITOPS_OVERLAY" && kustomize edit set image "linkbase=$IMAGE" && cd "$CI_PROJECT_DIR"
+    - git config user.name "Linkbase CI"
+    - git config user.email "ci@linkbase.invalid"
+    - git commit -am "Deploy $CI_COMMIT_SHORT_SHA to $GITOPS_OVERLAY [skip ci]"
+    - git push "https://oauth2:${GITOPS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "HEAD:${CI_DEFAULT_BRANCH}"

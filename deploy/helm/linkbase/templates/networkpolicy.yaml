@@ -1,0 +1,19 @@
+{{- if .Values.networkPolicy.enabled }}
+# Only the app's HTTP port takes traffic. Outbound isn't limited, as the database can be anywhere.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "linkbase.fullname" . }}
+  labels:
+    {{- include "linkbase.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "linkbase.selector" . | nindent 6 }}
+      app.kubernetes.io/component: web
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8080
+{{- end }}

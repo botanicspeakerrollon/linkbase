@@ -1,0 +1,9 @@
+# Settings that aren't secret. Every setting is listed in docs/operations.md#configuration.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linkbase-config
+data:
+  Logging__Console__FormatterName: json
+  # To send traces, metrics and logs to an OpenTelemetry collector:
+  # OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability:4317

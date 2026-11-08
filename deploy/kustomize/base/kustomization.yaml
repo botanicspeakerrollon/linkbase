@@ -1,0 +1,20 @@
+# What every Linkbase deployment has. Overlays add how traffic gets in (a Route or an Ingress) and set the image.
+# Secrets are never here: create linkbase-secrets yourself (see secret.example.yaml), or through your platform's secret
+# store, before deploying.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: linkbase
+      app.kubernetes.io/part-of: linkbase
+    includeSelectors: true
+
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - networkpolicy.yaml
+
+# The containers say `image: linkbase`, and each overlay sets the real one with an `images` entry for that name. Setting it
+# here too would rename it first, and the overlays' entries would then match nothing.
