@@ -110,6 +110,10 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `Logging__Console__FormatterName` | `json` for one JSON object per line on stdout, or `simple` | `json`, `simple` in Development |
 | `Logging__LogLevel__Default` | How much to log | `Information` |
 
+The keys that sign the app's cookies and anti-forgery tokens are in the default model's database, in `data_protection_key`,
+so restarts don't sign anyone out and every pod shares them. They're stored unencrypted, so treat database access as
+access to them; encrypting them with a certificate given to every pod is possible later.
+
 The app writes logs only to stdout, and files only to `/tmp`. It runs at the root of its host, so give it its own hostname
 rather than a path such as `/linkbase`.
 

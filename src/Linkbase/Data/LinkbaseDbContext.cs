@@ -1,10 +1,15 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Linkbase.Data;
 
-public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : DbContext(options)
+public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : DbContext(options), IDataProtectionKeyContext
 {
+    // The keys that sign cookies and anti-forgery tokens, so a restart or another pod can still read them. Only the
+    // default model's database is used for these. See Program.cs.
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
     public DbSet<AppUser> Users => Set<AppUser>();
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<Crag> Crags => Set<Crag>();

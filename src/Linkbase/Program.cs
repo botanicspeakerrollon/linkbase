@@ -5,6 +5,7 @@ using Linkbase.Core.Models;
 using Linkbase.Core.Records;
 using Linkbase.Data;
 using Linkbase.Domains;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,16 @@ builder.Services.AddHttpLogging(options =>
 builder.Services.AddSingleton<ModelCatalog>();
 builder.Services.AddScoped<CurrentModel>();
 builder.Services.AddScoped<IDbContextFactory<LinkbaseDbContext>, ModelDbContextFactory>();
+
+// Data Protection signs cookies and anti-forgery tokens. Its keys live in the default model's database, so they survive
+// restarts and every pod shares them. It resolves a context from the container, so one is registered for it alone; pages
+// and repositories still use the factory above.
+builder.Services.AddScoped<LinkbaseDbContext>(services =>
+{
+    var catalog = services.GetRequiredService<ModelCatalog>();
+    return new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(catalog.ConnectionString(catalog.Default)).Options);
+});
+builder.Services.AddDataProtection().SetApplicationName("Linkbase").PersistKeysToDbContext<LinkbaseDbContext>();
 
 builder.Services.AddScoped<DatabaseStatusService>();
 builder.Services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("databases", tags: ["ready"]);

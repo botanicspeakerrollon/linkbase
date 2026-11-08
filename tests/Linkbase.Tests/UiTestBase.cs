@@ -91,17 +91,30 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
     }
 
     protected static void ClickFresh<T>(IRenderedComponent<T> cut, Func<IElement> find)
-        where T : IComponent
-    {
-        Settle(cut);
-        find().Click();
-    }
+        where T : IComponent =>
+        Retrying(cut, () => find().Click());
 
     protected static void MouseDownFresh<T>(IRenderedComponent<T> cut, Func<IElement> find)
+        where T : IComponent =>
+        Retrying(cut, () => find().MouseDown());
+
+    // A page still loading can sit unchanged long enough to look settled, then re-render between finding an element and
+    // using it, which retires its handler. Finding it again and retrying is then safe, because the event never fired.
+    private static void Retrying<T>(IRenderedComponent<T> cut, Action act)
         where T : IComponent
     {
-        Settle(cut);
-        find().MouseDown();
+        for (var attempt = 1; ; attempt++)
+        {
+            Settle(cut);
+            try
+            {
+                act();
+                return;
+            }
+            catch (Bunit.Rendering.UnknownEventHandlerIdException) when (attempt < 5)
+            {
+            }
+        }
     }
 
     // A re-render retires an element's event handlers, including one still arriving when it's clicked.

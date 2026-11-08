@@ -123,10 +123,16 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     [Fact]
     public async Task Probes_say_the_app_is_live_and_ready()
     {
+        // Development's settings add the sample models, whose databases aren't here, so this instance points them at the
+        // test database, or it would rightly say it isn't ready.
+        var url = await RunningApp.StartAsync(
+            fixture.ConnectionString,
+            $"--ConnectionStrings:Consultancy={fixture.ConnectionString}",
+            $"--ConnectionStrings:SwissRail={fixture.ConnectionString}");
         using var client = new HttpClient();
 
-        var live = await client.GetAsync($"{_url}/health/live");
-        var ready = await client.GetAsync($"{_url}/health/ready");
+        var live = await client.GetAsync($"{url}/health/live");
+        var ready = await client.GetAsync($"{url}/health/ready");
 
         Assert.Equal((System.Net.HttpStatusCode.OK, "Healthy"), (live.StatusCode, await live.Content.ReadAsStringAsync()));
         Assert.Equal((System.Net.HttpStatusCode.OK, "Healthy"), (ready.StatusCode, await ready.Content.ReadAsStringAsync()));
