@@ -328,6 +328,16 @@ public sealed class PatternBuilder(GraphSchema schema)
     private List<PatternSuggestion> SuggestValues(string term, FilterOperator op, IReadOnlyList<string> values)
     {
         var type = TypeOf(_pendingKey!);
+
+        // A choice offers its options, used or not, and nothing else.
+        if (type == GraphValueType.Choice)
+        {
+            return Property(_pendingKey!)!.Options
+                .Where(o => Matches(o, term))
+                .Select(o => new PatternSuggestion(SuggestionKind.Value, o) { Value = o })
+                .ToList();
+        }
+
         var suggestions = new List<PatternSuggestion>();
 
         // What's typed is always usable, so a filter isn't limited to values already in the logbook.
@@ -342,13 +352,15 @@ public sealed class PatternBuilder(GraphSchema schema)
         return suggestions;
     }
 
-    private GraphValueType TypeOf(string key) =>
-        schema.Properties.FirstOrDefault(p => p.Key == key && (CurrentLabel is null || p.Label == CurrentLabel))?.Type ?? GraphValueType.Text;
+    private GraphValueType TypeOf(string key) => Property(key)?.Type ?? GraphValueType.Text;
+
+    private GraphPropertyInfo? Property(string key) =>
+        schema.Properties.FirstOrDefault(p => p.Key == key && (CurrentLabel is null || p.Label == CurrentLabel));
 
     public static IEnumerable<FilterOperator> OperatorsFor(GraphValueType type) => type switch
     {
         GraphValueType.Text => [FilterOperator.Contains, FilterOperator.Equals, FilterOperator.StartsWith, FilterOperator.EndsWith],
-        GraphValueType.Boolean => [FilterOperator.Equals],
+        GraphValueType.Boolean or GraphValueType.Choice => [FilterOperator.Equals],
         _ => [FilterOperator.Equals, FilterOperator.GreaterThan, FilterOperator.GreaterOrEqual, FilterOperator.LessThan, FilterOperator.LessOrEqual],
     };
 

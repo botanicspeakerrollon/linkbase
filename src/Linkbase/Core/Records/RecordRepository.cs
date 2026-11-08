@@ -1,13 +1,27 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Linkbase.Core.Models;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace Linkbase.Core.Records;
 
-public sealed record RecordField(string Key, FieldType Type);
+// Options are a choice field's values, in the order to offer them, and empty for every other type.
+public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<string> Options)
+{
+    public RecordField(string key, FieldType type)
+        : this(key, type, [])
+    {
+    }
+
+    // Records compare lists by reference, so compare the options by value.
+    public bool Equals(RecordField? other) =>
+        other is not null && Key == other.Key && Type == other.Type && Options.SequenceEqual(other.Options);
+
+    public override int GetHashCode() => HashCode.Combine(Key, Type, Options.Count);
+}
 
 public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields);
 
@@ -51,10 +65,10 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 t.Name,
                 t.Color,
                 t.Icon,
-                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type }).ToList(),
+                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options }).ToList(),
             })
             .ToListAsync(cancellationToken);
-        return types.Select(t => new RecordType(t.Name, t.Color, t.Icon, t.Fields.Select(f => new RecordField(f.Key, f.Type)).ToList())).ToList();
+        return types.Select(t => new RecordType(t.Name, t.Color, t.Icon, t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? [])).ToList())).ToList();
     }
 
     public async Task<RecordType?> TypeAsync(string name, CancellationToken cancellationToken = default) =>
@@ -322,6 +336,9 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 FieldType.Boolean => bool.TryParse(text, out var flag)
                     ? JsonValue.Create(flag)
                     : throw new LinkbaseValidationException($"{Title(field.Key)} must be true or false."),
+                FieldType.Choice => FieldValues.MatchChoice(text, field.Options) is { } option
+                    ? JsonValue.Create(option)
+                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."),
                 _ => JsonValue.Create(text),
             };
         }

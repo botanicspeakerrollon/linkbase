@@ -271,7 +271,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
 
     public async Task<CsvImportPlan> PlanAsync(CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken = default)
     {
-        var (rows, problems, notes, skipped) = await ReadRecordsAsync(file, mapping, cancellationToken);
+        var (rows, problems, notes, skipped, _) = await ReadRecordsAsync(file, mapping, cancellationToken);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var existing = await ExistingKeysAsync(db, mapping.Type, rows.Select(r => r.Key).ToList(), cancellationToken);
         return new CsvImportPlan(file.Rows, rows.Count(r => !existing.Contains(r.Key)), rows.Count(r => existing.Contains(r.Key)), skipped, problems, notes);
@@ -287,7 +287,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
 
     public async Task<CsvImportResult> ImportAsync(CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken = default)
     {
-        var (rows, problems, _, _) = await ReadRecordsAsync(file, mapping, cancellationToken);
+        var (rows, problems, _, _, choices) = await ReadRecordsAsync(file, mapping, cancellationToken);
         Stop(problems);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -302,10 +302,11 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         foreach (var field in mapping.Fields)
         {
             await ExecuteAsync(connection, transaction,
-                "INSERT INTO field_definition (node_type_name, key, type) VALUES (@type, @key, @fieldType) ON CONFLICT (node_type_name, key) DO NOTHING",
+                "INSERT INTO field_definition (node_type_name, key, type, options) VALUES (@type, @key, @fieldType, @options) ON CONFLICT (node_type_name, key) DO NOTHING",
                 ("type", mapping.Type, NpgsqlDbType.Text),
                 ("key", field.Key, NpgsqlDbType.Text),
-                ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text));
+                ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
+                ("options", choices.TryGetValue(field.Key, out var options) ? options.ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text));
         }
 
         var batch = await NewBatchAsync(connection, transaction, file, $"{mapping.Type} records", newType ? new { type = mapping.Type } : null, cancellationToken);
@@ -455,7 +456,8 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
 
     private sealed record RecordRow(string Key, string Name, string Props);
 
-    private async Task<(List<RecordRow> Rows, List<string> Problems, List<string> Notes, int Skipped)> ReadRecordsAsync(
+    // Choices are each choice field's options: the ones it already has, or, for a new field, the values in its column.
+    private async Task<(List<RecordRow> Rows, List<string> Problems, List<string> Notes, int Skipped, Dictionary<string, List<string>> Choices)> ReadRecordsAsync(
         CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken)
     {
         var problems = new List<string>();
@@ -477,16 +479,40 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             problems.Add($"Two columns are both going into {repeated.Key}.");
         }
 
-        // A field the type already has keeps its type.
+        // A field the type already has keeps its type, and a choice field its options.
+        var notes = new List<string>();
+        var choices = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         await using (var db = await contextFactory.CreateDbContextAsync(cancellationToken))
         {
             var defined = await db.FieldDefinitions.AsNoTracking().Where(f => f.NodeTypeName == mapping.Type)
-                .Select(f => new { f.Key, f.Type }).ToListAsync(cancellationToken);
+                .Select(f => new { f.Key, f.Type, f.Options }).ToListAsync(cancellationToken);
             foreach (var field in mapping.Fields)
             {
-                if (defined.FirstOrDefault(d => d.Key == field.Key) is { } existing && existing.Type != field.Type)
+                var existing = defined.FirstOrDefault(d => d.Key == field.Key);
+                if (existing is not null && existing.Type != field.Type)
                 {
                     problems.Add($"{mapping.Type} already has {field.Key} as {Labelled(existing.Type)}, not {Labelled(field.Type)}.");
+                }
+                else if (field.Type == FieldType.Choice && existing is not null)
+                {
+                    choices[field.Key] = existing.Options ?? [];
+                }
+                else if (field.Type == FieldType.Choice)
+                {
+                    var found = ChoicesIn(file.Path, field.Column);
+                    if (found.Count == 0)
+                    {
+                        problems.Add($"{field.Key} has no values to make choices from.");
+                    }
+                    else if (found.Count > FieldValues.MaxOptions)
+                    {
+                        problems.Add($"{field.Key} has more than {FieldValues.MaxOptions} different values, too many for a choice. Import it as text.");
+                    }
+                    else
+                    {
+                        choices[field.Key] = found;
+                        notes.Add($"{field.Key} becomes a choice of {FieldValues.Listed(found)}.");
+                    }
                 }
             }
         }
@@ -526,13 +552,16 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
                         continue;
                     }
 
-                    if (Typed(text, field.Type) is { } value)
+                    var options = choices.GetValueOrDefault(field.Key) ?? [];
+                    if (Typed(text, field.Type, options) is { } value)
                     {
                         props[field.Key] = value;
                     }
                     else if (++bad <= ProblemsShown)
                     {
-                        problems.Add($"Row {line}: {field.Key} is \"{text}\", which isn't {Labelled(field.Type)}.");
+                        problems.Add(field.Type == FieldType.Choice
+                            ? $"Row {line}: {field.Key} is \"{text}\", which isn't one of {FieldValues.Listed(options)}."
+                            : $"Row {line}: {field.Key} is \"{text}\", which isn't {Labelled(field.Type)}.");
                     }
                 }
 
@@ -545,7 +574,6 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             problems.Add($"And {bad - ProblemsShown:N0} more values that don't fit their field's type.");
         }
 
-        var notes = new List<string>();
         if (empty > 0)
         {
             notes.Add($"{empty:N0} row(s) with no key are skipped.");
@@ -556,7 +584,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             notes.Add($"{repeats:N0} row(s) repeat a key already in the file, so only the first of each is used.");
         }
 
-        return (rows, problems, notes, empty + repeats);
+        return (rows, problems, notes, empty + repeats, choices);
     }
 
     private static async Task<(List<(string Source, string Target)> Pairs, List<string> Problems, List<string> Notes, int Skipped)> ReadLinksAsync(
@@ -737,6 +765,24 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             MissingFieldFound = null,
         });
 
+    // A column's different values, ignoring case, in the spelling first seen, sorted. Stops counting just past the limit.
+    private static List<string> ChoicesIn(string path, int column)
+    {
+        using var reader = Open(path);
+        reader.Read();
+        reader.ReadHeader();
+        var found = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        while (found.Count <= FieldValues.MaxOptions && reader.Read())
+        {
+            if (reader.GetField(column)?.Trim() is { Length: > 0 } value)
+            {
+                found.TryAdd(value, value);
+            }
+        }
+
+        return found.Values.Order(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     private static FieldType Guess(List<string> values) =>
         values.Count == 0 ? FieldType.Text
         : values.All(v => Typed(v, FieldType.Number) is not null) ? FieldType.Number
@@ -745,8 +791,9 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         : FieldType.Text;
 
     // The value as its field's type, as the loader stores it, or null if it isn't one.
-    private static JsonNode? Typed(string text, FieldType type) => type switch
+    private static JsonNode? Typed(string text, FieldType type, IReadOnlyList<string>? options = null) => type switch
     {
+        FieldType.Choice => FieldValues.MatchChoice(text, options ?? []) is { } option ? JsonValue.Create(option) : null,
         FieldType.Number => decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? JsonValue.Create(number) : null,
         FieldType.Date => DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
             ? JsonValue.Create(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
@@ -760,6 +807,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         FieldType.Number => "a number",
         FieldType.Date => "a date (yyyy-mm-dd)",
         FieldType.Boolean => "true or false",
+        FieldType.Choice => "a choice",
         _ => "text",
     };
 }

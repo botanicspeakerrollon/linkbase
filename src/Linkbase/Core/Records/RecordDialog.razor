@@ -30,6 +30,15 @@
                             <MudSelectItem Value="@("false")" />
                         </MudSelect>
                         break;
+                    case FieldType.Choice:
+                        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@(_values.GetValueOrDefault(key) ?? "")"
+                                   ValueChanged="@(v => _values[key] = v)" ToStringFunc="@(v => v ?? "")" Clearable="true">
+                            @foreach (var option in field.Options)
+                            {
+                                <MudSelectItem Value="@option">@option</MudSelectItem>
+                            }
+                        </MudSelect>
+                        break;
                     case FieldType.Number:
                         <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@_values.GetValueOrDefault(key)"
                                       ValueChanged="@(v => _values[key] = v)" InputMode="@(InputMode.@decimal)" />

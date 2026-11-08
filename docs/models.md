@@ -71,7 +71,7 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `types[].name` | Letters and digits, starting with a capital, such as `Stop` |
 | `types[].color`, `icon` | Optional. A colour such as `#0f766e`, and a [Material icon](https://fonts.google.com/icons)'s name in PascalCase, such as `Train` |
 | `types[].source` | The CSV file, the column identifying a row (`key`), and the column to show as its name (`name`, the key if left out) |
-| `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date` or `boolean`. `column` is the CSV column, the key if left out |
+| `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean` or `choice`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. `column` is the CSV column, the key if left out |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
 | `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files |
 

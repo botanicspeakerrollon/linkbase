@@ -8,13 +8,23 @@ using NpgsqlTypes;
 
 namespace Linkbase.Core.Graph;
 
-public enum GraphValueType { Text, Number, Date, Boolean }
+public enum GraphValueType { Text, Number, Date, Boolean, Choice }
 
 public enum FilterOperator { Equals, Contains, StartsWith, EndsWith, GreaterThan, GreaterOrEqual, LessThan, LessOrEqual }
 
 public sealed record GraphConnection(string SourceLabel, string RelType, string TargetLabel);
 
-public sealed record GraphPropertyInfo(string Label, string Key, GraphValueType Type);
+public sealed record GraphPropertyInfo(string Label, string Key, GraphValueType Type)
+{
+    // A choice field's values, in the order to offer them. Empty for every other type.
+    public IReadOnlyList<string> Options { get; init; } = [];
+
+    // Records compare lists by reference, so compare the options by value.
+    public bool Equals(GraphPropertyInfo? other) =>
+        other is not null && Label == other.Label && Key == other.Key && Type == other.Type && Options.SequenceEqual(other.Options);
+
+    public override int GetHashCode() => HashCode.Combine(Label, Key, Type, Options.Count);
+}
 
 // What exists in the graph: which labels link to which, and which properties each label has.
 public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IReadOnlyList<GraphPropertyInfo> Properties)

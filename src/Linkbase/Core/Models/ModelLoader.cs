@@ -63,10 +63,11 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             foreach (var field in type.Fields)
             {
                 await RunAsync(
-                    "INSERT INTO field_definition (node_type_name, key, type) VALUES (@type, @key, @fieldType)",
+                    "INSERT INTO field_definition (node_type_name, key, type, options) VALUES (@type, @key, @fieldType, @options)",
                     ("type", type.Name, NpgsqlDbType.Text),
                     ("key", field.Key, NpgsqlDbType.Text),
-                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text));
+                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
+                    ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text));
             }
         }
 
@@ -85,6 +86,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             var columns = await StageAsync(connection, model, type.Source.File, cancellationToken);
             var key = Column(columns, type.Source.File, type.Source.Key);
             var name = type.Source.Name is null ? key : Column(columns, type.Source.File, type.Source.Name);
+            await CheckChoicesAsync(connection, transaction, type.Fields, columns, type.Source.File, cancellationToken);
             var count = await Guard($"{type.Name} from {type.Source.File}", () => RunAsync(
                 $"""
                 INSERT INTO node (id, user_id, type, key, name, props)
@@ -108,6 +110,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             var columns = await StageAsync(connection, model, source.File, cancellationToken);
             var from = Column(columns, source.File, source.FromColumn);
             var to = Column(columns, source.File, source.ToColumn);
+            await CheckChoicesAsync(connection, transaction, relationship.Fields, columns, source.File, cancellationToken);
             var count = await Guard($"{relationship.From} {relationship.Type} {relationship.To} from {source.File}", () => RunAsync(
                 $"""
                 INSERT INTO node_link (source_id, target_id, rel_type, props)
@@ -215,6 +218,35 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             return $"'{field.Key}', {typed}";
         });
         return $"jsonb_strip_nulls(jsonb_build_object({string.Join(", ", pairs)}))";
+    }
+
+    // A value that isn't one of its choice field's options stops the load, and says which values. The model file's author
+    // owns the data, so the match is exact: a value spelled differently from its option is a mistake to fix in the file.
+    private static async Task CheckChoicesAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList<ModelField> fields, List<string> header, string file, CancellationToken cancellationToken)
+    {
+        foreach (var field in fields.Where(f => f.Type == FieldType.Choice))
+        {
+            var column = Column(header, file, field.Column ?? field.Key);
+            await using var command = new NpgsqlCommand(
+                $"SELECT DISTINCT {column} FROM staging WHERE nullif({column}, '') IS NOT NULL AND NOT ({column} = ANY(@options)) ORDER BY 1 LIMIT 5",
+                connection, transaction);
+            command.Parameters.Add(new NpgsqlParameter("options", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = (field.Options ?? []).Select(o => o.Trim()).ToArray() });
+            var wrong = new List<string>();
+            await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    wrong.Add(reader.GetString(0));
+                }
+            }
+
+            if (wrong.Count > 0)
+            {
+                throw new LinkbaseValidationException(
+                    $"{file}: {field.Key} has {string.Join(", ", wrong.Select(w => $"\"{w}\""))}, which {(wrong.Count == 1 ? "isn't one" : "aren't any")} of its options: {FieldValues.Listed(field.Options ?? [])}.");
+            }
+        }
     }
 
     // A value that doesn't fit its field's type stops the load, and says where.

@@ -153,7 +153,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         // Types from a model file say what fields and links they have, so they need no sampling.
         var defined = await db.NodeTypes.AsNoTracking()
             .OrderBy(t => t.SortOrder)
-            .Select(t => new { t.Name, t.Color, t.Icon, Fields = t.Fields.Select(f => new { f.Key, f.Type }).ToList() })
+            .Select(t => new { t.Name, t.Color, t.Icon, Fields = t.Fields.Select(f => new { f.Key, f.Type, f.Options }).ToList() })
             .ToListAsync(cancellationToken);
         var links = await db.LinkDefinitions.AsNoTracking()
             .OrderBy(l => l.SourceType).ThenBy(l => l.RelType).ThenBy(l => l.TargetType)
@@ -186,7 +186,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             """).ToListAsync(cancellationToken);
 
         var infos = labels.Select(label => new GraphPropertyInfo(label, "name", GraphValueType.Text)).ToList();
-        infos.AddRange(defined.SelectMany(t => t.Fields.Select(f => new GraphPropertyInfo(t.Name, f.Key, TypeOf(f.Type)))));
+        infos.AddRange(defined.SelectMany(t => t.Fields.Select(f => new GraphPropertyInfo(t.Name, f.Key, TypeOf(f.Type)) { Options = f.Options ?? [] })));
         infos.AddRange(properties.Select(p => new GraphPropertyInfo(p.Label, p.Key, TypeOf(p.Key, p.JsonType))));
         return new GraphSchema(links.Concat(connections.Select(c => new GraphConnection(c.SourceLabel, c.RelType, c.TargetLabel))).ToList(), infos)
         {
@@ -419,6 +419,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         FieldType.Number => GraphValueType.Number,
         FieldType.Date => GraphValueType.Date,
         FieldType.Boolean => GraphValueType.Boolean,
+        FieldType.Choice => GraphValueType.Choice,
         _ => GraphValueType.Text,
     };
 

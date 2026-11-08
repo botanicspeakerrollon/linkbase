@@ -20,7 +20,9 @@
     {
       "name": "Project", "color": "#a16207", "icon": "Assignment",
       "source": { "file": "projects.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "started", "type": "date" }, { "key": "budget", "type": "number" }, { "key": "status" } ]
+      "fields": [ { "key": "started", "type": "date" }, { "key": "budget", "type": "number" },
+        { "key": "status", "type": "choice", "options": [ "proposed", "active", "live", "closed" ] }
+      ]
     }
   ],
   "relationships": [

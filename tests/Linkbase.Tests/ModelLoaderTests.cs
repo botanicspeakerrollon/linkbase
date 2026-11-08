@@ -57,6 +57,8 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
         Assert.Contains(new GraphConnection("Person", "WORKS_ON", "Project"), schema.Connections);
         Assert.Contains(new GraphPropertyInfo("Project", "budget", GraphValueType.Number), schema.Properties);
         Assert.Contains(new GraphTypeInfo("Team", "#4338ca", "Groups"), schema.Types);
+        var status = schema.Properties.Single(p => p.Label == "Project" && p.Key == "status");
+        Assert.Equal(new GraphPropertyInfo("Project", "status", GraphValueType.Choice) { Options = ["proposed", "active", "live", "closed"] }, status);
 
         var dev = (await graph.SubgraphAsync(["person:p4"])).Nodes.Single();
         Assert.Equal("Dev Raman", dev.Name);
@@ -126,6 +128,10 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
     [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "a.csv", "key": "nope" } }] }""", "has no column 'nope'")]
     [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "missing.csv", "key": "id" } }] }""", "isn't in")]
     [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "a.csv", "key": "id" }, "fields": [{ "key": "n", "type": "number", "column": "word" }] }] }""", "Check that field's type")]
+    [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "a.csv", "key": "id" }, "fields": [{ "key": "word", "type": "choice" }] }] }""", "needs between 1 and 50 options")]
+    [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "a.csv", "key": "id" }, "fields": [{ "key": "word", "type": "choice", "options": ["hi", "Hi"] }] }] }""", "the option 'hi' more than once")]
+    [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "a.csv", "key": "id" }, "fields": [{ "key": "word", "options": ["hello"] }] }] }""", "only a choice field can have")]
+    [InlineData("""{ "name": "X", "types": [{ "name": "A", "source": { "file": "a.csv", "key": "id" }, "fields": [{ "key": "word", "type": "choice", "options": ["Hello", "Bye"] }] }] }""", "word has \"hello\", which isn't one of its options: Hello or Bye")]
     [InlineData("not json", "isn't a valid model file")]
     public async Task Explains_what_is_wrong_and_changes_nothing(string json, string message)
     {

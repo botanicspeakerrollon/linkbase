@@ -3,7 +3,8 @@ namespace Linkbase.Data;
 // The generic store: any model's types, fields, relationships and data, as loaded from a model file. Climbing keeps its
 // own typed tables. See docs/models.md.
 
-public enum FieldType { Text, Number, Date, Boolean }
+// Choice is one of a fixed list of values, kept in FieldDefinition.Options and stored as text.
+public enum FieldType { Text, Number, Date, Boolean, Choice }
 
 // A type of node, such as Stop or Line.
 public class NodeType
@@ -25,6 +26,9 @@ public class FieldDefinition
     public NodeType NodeType { get; set; } = null!;
     public required string Key { get; set; }
     public FieldType Type { get; set; }
+
+    // A choice field's values, in the order to offer them. Null for every other type.
+    public List<string>? Options { get; set; }
 }
 
 // A relationship that may exist between two types, such as Service CALLS_AT Stop.

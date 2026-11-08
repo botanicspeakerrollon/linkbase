@@ -181,7 +181,19 @@
                         <MudSelectItem T="FilterOperator" Value="op">@PatternBuilder.OperatorText(op)</MudSelectItem>
                     }
                 </MudSelect>
-                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filterValue" Label="Value" Immediate="true" />
+                @if (FilterKeyType == GraphValueType.Choice)
+                {
+                    <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filterValue" Label="Value" ToStringFunc="@(v => v ?? "")">
+                        @foreach (var option in _schema!.Properties.First(p => p.Key == _filterKey).Options)
+                        {
+                            <MudSelectItem Value="@option">@option</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                else
+                {
+                    <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filterValue" Label="Value" Immediate="true" />
+                }
                 <MudButton OnClick="AddFilter" Variant="Variant.Outlined" Size="Size.Small" Disabled="@string.IsNullOrWhiteSpace(_filterValue)">Add filter</MudButton>
             }
             @if (_propertyFilters.Count > 0)

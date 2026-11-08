@@ -344,6 +344,7 @@ public class PatternBuilderEdgeCaseTests
             new GraphPropertyInfo("Ascent", "date", GraphValueType.Date),
             new GraphPropertyInfo("Trip", "abroad", GraphValueType.Boolean),
             new GraphPropertyInfo("Route", "length_m", GraphValueType.Number),
+            new GraphPropertyInfo("Route", "style", GraphValueType.Choice) { Options = ["sport", "trad", "boulder"] },
         ]);
 
     private static PatternBuilder Start(string label)
@@ -380,6 +381,19 @@ public class PatternBuilderEdgeCaseTests
         builder.Apply(new PatternSuggestion(SuggestionKind.Operator, "=") { Operator = FilterOperator.Equals });
         Assert.Empty(builder.Suggest("maybe", [], []));
         Assert.Single(builder.Suggest("true", [], []));
+    }
+
+    [Fact]
+    public void A_choice_compares_with_equals_and_offers_only_its_options()
+    {
+        var builder = Start("Route");
+        builder.Apply(new PatternSuggestion(SuggestionKind.Property, "style") { Key = "style" });
+        Assert.Equal(["="], builder.Suggest("", [], []).Select(s => s.Text));
+
+        builder.Apply(new PatternSuggestion(SuggestionKind.Operator, "=") { Operator = FilterOperator.Equals });
+        Assert.Equal(["sport", "trad", "boulder"], builder.Suggest("", [], ["sport"]).Select(s => s.Value));
+        Assert.Equal(["trad"], builder.Suggest("TR", [], []).Select(s => s.Value));
+        Assert.Empty(builder.Suggest("aid", [], []));
     }
 
     [Fact]

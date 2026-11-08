@@ -387,6 +387,10 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("node_type_name");
 
+                    b.PrimitiveCollection<List<string>>("Options")
+                        .HasColumnType("text[]")
+                        .HasColumnName("options");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text")

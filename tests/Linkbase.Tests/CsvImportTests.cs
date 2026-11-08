@@ -221,6 +221,51 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable
     }
 
     [Fact]
+    public async Task A_new_choice_field_takes_its_options_from_the_column()
+    {
+        var (factory, importer) = await ExampleAsync();
+        var file = Csv("suppliers.csv", "id,name,tier\ns1,Acme,Gold\ns2,Brill,silver\ns3,Cobb,gold\ns4,Dent,\n");
+        var mapping = new CsvRecordMapping("Supplier", 0, 1, [new CsvFieldMapping(2, "tier", FieldType.Choice)]);
+
+        var plan = await importer.PlanAsync(file, mapping);
+        Assert.Contains("tier becomes a choice of Gold or silver.", plan.Notes);
+
+        await importer.ImportAsync(file, mapping);
+
+        var records = new RecordRepository(factory);
+        Assert.Equal(["Gold", "silver"], (await records.TypeAsync("Supplier"))!.Fields.Single().Options);
+        Assert.Equal("Gold", (await records.GetAsync("Supplier", "s3"))!.Values["tier"]);
+        Assert.False((await records.GetAsync("Supplier", "s4"))!.Values.ContainsKey("tier"));
+    }
+
+    [Fact]
+    public async Task An_existing_choice_field_keeps_its_options_and_any_capitalisation_matches()
+    {
+        var (factory, importer) = await ExampleAsync();
+        var file = Csv("projects.csv", "id,name,status\npr8,Intranet,Proposed\npr9,Chatbot,paused\n");
+        var mapping = new CsvRecordMapping("Project", 0, 1, [new CsvFieldMapping(2, "status", FieldType.Choice)]);
+
+        var plan = await importer.PlanAsync(file, mapping);
+        Assert.Equal(["Row 3: status is \"paused\", which isn't one of proposed, active, live or closed."], plan.Problems);
+
+        await importer.ImportAsync(Csv("projects.csv", "id,name,status\npr8,Intranet,Proposed\n"), mapping);
+        Assert.Equal("proposed", (await new RecordRepository(factory).GetAsync("Project", "pr8"))!.Values["status"]);
+    }
+
+    [Fact]
+    public async Task A_choice_needs_a_few_different_values()
+    {
+        var (_, importer) = await ExampleAsync();
+        var many = string.Concat(Enumerable.Range(1, 51).Select(i => $"s{i},Name {i},v{i}\n"));
+
+        var tooMany = await importer.PlanAsync(Csv("a.csv", "id,name,tier\n" + many), new CsvRecordMapping("Supplier", 0, 1, [new CsvFieldMapping(2, "tier", FieldType.Choice)]));
+        var none = await importer.PlanAsync(Csv("b.csv", "id,name,tier\ns1,Acme,\n"), new CsvRecordMapping("Supplier", 0, 1, [new CsvFieldMapping(2, "tier", FieldType.Choice)]));
+
+        Assert.Contains(tooMany.Problems, p => p.Contains("more than 50 different values", StringComparison.Ordinal));
+        Assert.Contains(none.Problems, p => p.Contains("no values to make choices from", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task Imports_links_between_records_already_here_and_counts_them()
     {
         var (factory, importer) = await ExampleAsync();

@@ -119,6 +119,29 @@ public sealed partial class ModelFile
             {
                 problems.Add($"{owner} has a field '{field.Key}', which needs to be lower case letters, digits and underscores, and not 'name'.");
             }
+
+            var options = field.Options ?? [];
+            if (field.Type == FieldType.Choice)
+            {
+                if (options.Count == 0 || options.Count > FieldValues.MaxOptions)
+                {
+                    problems.Add($"{owner}'s field '{field.Key}' is a choice, so it needs between 1 and {FieldValues.MaxOptions} options.");
+                }
+
+                if (options.Any(string.IsNullOrWhiteSpace))
+                {
+                    problems.Add($"{owner}'s field '{field.Key}' has an empty option.");
+                }
+
+                if (options.GroupBy(o => o.Trim(), StringComparer.OrdinalIgnoreCase).FirstOrDefault(g => g.Count() > 1) is { } repeated)
+                {
+                    problems.Add($"{owner}'s field '{field.Key}' has the option '{repeated.Key}' more than once.");
+                }
+            }
+            else if (options.Count > 0)
+            {
+                problems.Add($"{owner}'s field '{field.Key}' has options, which only a choice field can have.");
+            }
         }
 
         foreach (var duplicate in fields.GroupBy(f => f.Key).Where(g => g.Count() > 1))
@@ -167,6 +190,9 @@ public sealed class ModelField
 
     // The column the value comes from. A column with the same name as the key, if left out.
     public string? Column { get; init; }
+
+    // A choice field's values, in the order to offer them. Only for "type": "choice".
+    public IReadOnlyList<string>? Options { get; init; }
 }
 
 public sealed class ModelRelationship

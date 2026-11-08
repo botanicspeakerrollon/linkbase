@@ -121,6 +121,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
     [InlineData("Person", null, "  ", "title", "x", "needs a name")]
     [InlineData("Person", null, "Someone", "joined", "5 May", "must be a date")]
     [InlineData("Project", null, "Something", "budget", "lots", "must be a number")]
+    [InlineData("Project", null, "Something", "status", "paused", "Status must be one of proposed, active, live or closed")]
     [InlineData("Nope", null, "Something", "x", "y", "no type called Nope")]
     public async Task Explains_why_a_record_cant_be_created(string type, string? key, string name, string field, string value, string message)
     {
@@ -130,6 +131,18 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
             records.CreateAsync(type, key, new RecordInput(name, new Dictionary<string, string?> { [field] = value })));
 
         Assert.Contains(message, ex.Message);
+    }
+
+    [Fact]
+    public async Task A_choice_is_stored_in_its_options_spelling_and_offers_them_in_order()
+    {
+        var (_, records) = await ExampleAsync();
+
+        var key = await records.CreateAsync("Project", null, new RecordInput("Website", new Dictionary<string, string?> { ["status"] = " LIVE " }));
+
+        Assert.Equal("live", (await records.GetAsync("Project", key))!.Values["status"]);
+        var status = (await records.TypeAsync("Project"))!.Fields.Single(f => f.Key == "status");
+        Assert.Equal(new RecordField("status", FieldType.Choice, ["proposed", "active", "live", "closed"]), status);
     }
 
     [Fact]
