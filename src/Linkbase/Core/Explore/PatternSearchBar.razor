@@ -129,7 +129,10 @@
         {
             _autoFocused = true;
             _quietFocus = true;
-            await FocusAsync();
+
+            // Without preventScroll the browser may nudge the page to show the box, which moves things under a still
+            // pointer: the rail opens as if hovered, and the graph's menu closes as if the view had moved.
+            await _input.FocusAsync(preventScroll: true);
         }
     }
 
