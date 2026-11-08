@@ -62,3 +62,38 @@ jobs:
           name: test-results
           path: TestResults
           retention-days: 14
+
+  # The same image a platform would run, built from the Dockerfile, scanned, and described by an SBOM. Nothing is pushed.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t linkbase:${{ github.sha }} .
+
+      # Reports known vulnerabilities without failing the build, since most come from the base image and are fixed by
+      # rebuilding when Microsoft updates it.
+      - name: Scan the image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: linkbase:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Describe the image as an SBOM
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: linkbase:${{ github.sha }}
+          format: cyclonedx
+          output: sbom.cdx.json
+
+      - name: Keep the SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          retention-days: 90

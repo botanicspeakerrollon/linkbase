@@ -111,6 +111,30 @@ To try the whole flow without a key or any API cost, run the app with canned res
 dotnet run --project src/Linkbase -- --WebImport:FixtureExtraction=tests/Linkbase.Tests/Fixtures/web/crag-article.extraction.json
 ```
 
+## Running in a container
+
+The `Dockerfile` builds the image a platform runs. It works with Docker, Podman, Buildah and Kaniko, and under OpenShift's
+restricted policy: any user id, a read-only root filesystem with `/tmp` mounted, port 8080. Logs are JSON on stdout, the
+probes are `/health/live` and `/health/ready`, and everything is configured by environment variable (see
+[operations](docs/operations.md#configuration)).
+
+```powershell
+docker build -t linkbase .
+docker run --rm -e ConnectionStrings__Linkbase="<connection string>" linkbase model migrate
+docker run -p 8080:8080 -e ConnectionStrings__Linkbase="<connection string>" linkbase
+```
+
+Migrations are that separate step, never part of start-up. To run the image against the compose database, use the `app`
+profile, which `docker compose up` leaves out:
+
+```powershell
+docker compose --profile app run --rm app model migrate
+docker compose --profile app up -d --build
+```
+
+CI builds the image on every push, scans it with Trivy and keeps an SBOM. See [the deployment plan](docs/deployment-plan.md)
+for Kubernetes, OpenShift and GitLab.
+
 ## Graph explorer
 
 The Explore page draws with Cytoscape.js and its fcose layout, which come with the app in `src/Linkbase/wwwroot/lib`,

@@ -17,5 +17,22 @@ services:
       timeout: 3s
       retries: 10
 
+  # The app as a container, only with --profile app, so `docker compose up` still starts just the database:
+  #   docker compose --profile app run --rm app model migrate
+  #   docker compose --profile app up -d --build
+  app:
+    profiles: [app]
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Linkbase: Host=db;Port=5432;Database=linkbase;Username=linkbase;Password=${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+
 volumes:
   linkbase-data:

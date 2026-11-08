@@ -1,0 +1,16 @@
+# Only src/ and the build settings go into the image. Data, backups, secrets and tests never do.
+**/bin/
+**/obj/
+**/TestResults/
+.git/
+.github/
+.claude/
+.env
+backups/
+data/
+docs/
+models/
+scripts/
+tests/
+deploy/
+*.md
