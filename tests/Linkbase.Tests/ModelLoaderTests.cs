@@ -60,9 +60,21 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
         var status = schema.Properties.Single(p => p.Label == "Project" && p.Key == "status");
         Assert.Equal(new GraphPropertyInfo("Project", "status", GraphValueType.Choice) { Options = ["proposed", "active", "live", "closed"] }, status);
 
+        Assert.Contains(new GraphPropertyInfo("Person", "skills", GraphValueType.List), schema.Properties);
+
+        // A list matches when any of its values does.
+        GraphPattern People(FilterOperator op, string value) =>
+            new([new PatternNode("Person", [new PatternFilter("skills", op, value)])], []);
+        Assert.Equal(["person:p3", "person:p4", "person:p7"], (await graph.RunPatternAsync(People(FilterOperator.Equals, "postgres"), schema, 10, 0)).NodeIds.Order());
+        Assert.Equal(["person:p1", "person:p2"], (await graph.RunPatternAsync(People(FilterOperator.Contains, "fig"), schema, 10, 0)).NodeIds.Order());
+        Assert.Empty((await graph.RunPatternAsync(People(FilterOperator.Equals, "post"), schema, 10, 0)).NodeIds);
+        Assert.Equal(["Postgres"], await graph.PropertyValuesAsync("Person", "skills", "post", list: true));
+        Assert.Contains(new PropertyMatch("Person", "skills", "User research"), await graph.MatchPropertiesAsync(null, "research"));
+
         var dev = (await graph.SubgraphAsync(["person:p4"])).Nodes.Single();
         Assert.Equal("Dev Raman", dev.Name);
         Assert.Equal("2021-06-01", dev.Property("joined"));
+        Assert.Equal("C#, Postgres", dev.Property("skills"));
 
         var projects = await graph.NeighboursAsync("person:p4", new GraphFilter { Properties = [new PatternFilter("budget", FilterOperator.GreaterThan, "100000")] }, [], 10);
         Assert.Equal(["Patient portal", "Engineering"], projects.Nodes.Select(n => n.Name).Order().Reverse());

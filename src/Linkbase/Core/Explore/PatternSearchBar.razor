@@ -278,7 +278,7 @@
             IReadOnlyList<string> values = [];
             if (_builder.NeedsValues)
             {
-                values = await Graph.PropertyValuesAsync(_builder.CurrentLabel, _builder.PendingKey!, _text, lookup.Token);
+                values = await Graph.PropertyValuesAsync(_builder.CurrentLabel, _builder.PendingKey!, _text, lookup.Token, _builder.PendingIsList);
             }
             else if (_builder.PendingKey is null && _text.Trim().Length >= 2)
             {

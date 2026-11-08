@@ -38,7 +38,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
         var types = await records.TypesAsync();
 
         Assert.Equal(["Person", "Team", "Client", "Project"], types.Select(t => t.Name));
-        Assert.Equal([new RecordField("title", FieldType.Text), new RecordField("joined", FieldType.Date)], types[0].Fields);
+        Assert.Equal([new RecordField("title", FieldType.Text), new RecordField("joined", FieldType.Date), new RecordField("skills", FieldType.List)], types[0].Fields);
         Assert.Equal("#4338ca", (await records.TypeAsync("Team"))!.Color);
         Assert.Null(await records.TypeAsync("Nope"));
     }
@@ -143,6 +143,26 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
         Assert.Equal("live", (await records.GetAsync("Project", key))!.Values["status"]);
         var status = (await records.TypeAsync("Project"))!.Fields.Single(f => f.Key == "status");
         Assert.Equal(new RecordField("status", FieldType.Choice, ["proposed", "active", "live", "closed"]), status);
+    }
+
+    [Fact]
+    public async Task A_list_keeps_each_line_once_and_shows_them_one_per_line()
+    {
+        var (factory, records) = await ExampleAsync();
+
+        var key = await records.CreateAsync("Person", null, new RecordInput("Zoë Adams", new Dictionary<string, string?> { ["skills"] = " Figma \r\n\nSQL, Postgres\nfigma" }));
+
+        var zoe = (await records.GetAsync("Person", key))!;
+        Assert.Equal("Figma\nSQL, Postgres", zoe.Values["skills"]);
+        var skills = (await records.TypeAsync("Person"))!.Fields.Single(f => f.Key == "skills");
+        Assert.Equal("Figma, SQL, Postgres", RecordListPage.Shown(skills, zoe.Values["skills"]));
+        Assert.Equal("Python\nPostgres", (await records.GetAsync("Person", "p7"))!.Values["skills"]);
+        Assert.False((await records.GetAsync("Person", "p6"))!.Values.ContainsKey("skills"));
+
+        await using var db = factory.CreateDbContext();
+        var stored = await db.Database.SqlQuery<string>($"SELECT props->>'skills' AS \"Value\" FROM node WHERE id = {"person:" + key}").SingleAsync();
+        Assert.Equal("""["Figma", "SQL, Postgres"]""", stored);
+        Assert.Equal(1, (await records.ListAsync("Person", "user research", 0, 50)).Total);
     }
 
     [Fact]

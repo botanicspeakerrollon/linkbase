@@ -51,7 +51,7 @@ JSON, with comments allowed. Paths are relative to the model file.
       "color": "#c2410c",
       "icon": "Person",
       "source": { "file": "people.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "title" }, { "key": "joined", "type": "date" } ]
+      "fields": [ { "key": "title" }, { "key": "joined", "type": "date" }, { "key": "skills", "type": "list" } ]
     }
   ],
   "relationships": [
@@ -71,9 +71,12 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `types[].name` | Letters and digits, starting with a capital, such as `Stop` |
 | `types[].color`, `icon` | Optional. A colour such as `#0f766e`, and a [Material icon](https://fonts.google.com/icons)'s name in PascalCase, such as `Train` |
 | `types[].source` | The CSV file, the column identifying a row (`key`), and the column to show as its name (`name`, the key if left out) |
-| `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean` or `choice`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. `column` is the CSV column, the key if left out |
+| `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean`, `choice` or `list`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. A list is several text values in one cell, split by `|`, such as `Figma|User research`. `column` is the CSV column, the key if left out |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
 | `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files |
+
+In Explore, a filter on a list matches when any of its values does, so `skills = postgres` finds everyone with Postgres
+among their skills.
 
 While loading, a row with an empty key is skipped, a repeated key keeps its first row, and a link whose ends aren't both
 loaded is left out. A value that doesn't fit its field's type stops the load and says which field.
@@ -132,7 +135,7 @@ file, to check the choices against.
 
 **Check** says how many rows would be added, and why any are skipped: no key, a key repeated in the file, a link to a
 record that isn't there, or one that's already here. A value that doesn't fit its field's type stops the import, and the
-first ten are listed. A record whose key is already here is left as it is, never updated.
+first ten are listed. A list field's values are split by `|`, as in a model file. A record whose key is already here is left as it is, never updated.
 
 To try it, `models/consultancy/import-demo/` and `models/swiss-rail/import-demo/` have files and a README each, saying what to
 choose and what Check should say.
@@ -150,7 +153,7 @@ Each type in a model file gets a place in the rail, and pages generated from its
   part of the name or a value.
 - **The record** (`/data/<Type>/<key>`) shows all its values and its links, grouped by relationship and either way round. A
   group shows its first 25 links and how many there are. Explore's "Open and edit" comes here too.
-- **Adding and editing** use a form with a box for each field, checked against its type. A new record's key is made from its
+- **Adding and editing** use a form with a box for each field, checked against its type. A list takes one value per line. A new record's key is made from its
   name, such as `zoe-adams`, unless one is given, and can't change afterwards, because the record's id is made from it.
 - **Links** can be added only where the model has a relationship, and removed one at a time. A record that still has links
   can't be deleted, like anything else in the app.

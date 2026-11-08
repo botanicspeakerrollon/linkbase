@@ -95,7 +95,10 @@ else if (_type is not null)
         }
     }
 
-    public static string Shown(RecordField field, string? value) => field.Type == FieldType.Boolean
-        ? value switch { "true" => "Yes", "false" => "No", _ => "" }
-        : value ?? "";
+    public static string Shown(RecordField field, string? value) => field.Type switch
+    {
+        FieldType.Boolean => value switch { "true" => "Yes", "false" => "No", _ => "" },
+        FieldType.List => string.Join(", ", (value ?? "").Split('\n')),
+        _ => value ?? "",
+    };
 }

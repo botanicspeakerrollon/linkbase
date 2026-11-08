@@ -8,7 +8,8 @@ using NpgsqlTypes;
 
 namespace Linkbase.Core.Graph;
 
-public enum GraphValueType { Text, Number, Date, Boolean, Choice }
+// A list is several text values, held as a JSON array.
+public enum GraphValueType { Text, Number, Date, Boolean, Choice, List }
 
 public enum FilterOperator { Equals, Contains, StartsWith, EndsWith, GreaterThan, GreaterOrEqual, LessThan, LessOrEqual }
 
@@ -187,6 +188,8 @@ public static partial class GraphPatternSql
                 return $"({column})::date {Comparison(filter.Operator)} {add(date, NpgsqlDbType.Date)}";
             case GraphValueType.Boolean:
                 return $"{column} = {add(filter.Value.Trim().ToLowerInvariant(), NpgsqlDbType.Text)}";
+            case GraphValueType.List when filter.Key != "name":
+                return ListSql(index, filter, add);
             default:
                 return TextSql(column, filter, add);
         }
@@ -218,6 +221,14 @@ public static partial class GraphPatternSql
             FilterOperator.EndsWith => $"{column} ILIKE {add($"%{escaped}", NpgsqlDbType.Text)}",
             _ => throw new LinkbaseValidationException($"That comparison doesn't work on text like '{filter.Key}'."),
         };
+    }
+
+    // A list matches when any of its values does. A value that isn't an array, from sampled data, counts as one value.
+    private static string ListSql(int index, PatternFilter filter, Func<object, NpgsqlDbType, string> add)
+    {
+        var json = $"n{index}.props->'{filter.Key}'";
+        var values = $"jsonb_array_elements_text(CASE jsonb_typeof({json}) WHEN 'array' THEN {json} ELSE jsonb_build_array({json}) END)";
+        return $"EXISTS (SELECT 1 FROM {values} item WHERE {TextSql("item", filter, add)})";
     }
 
     private static string Comparison(FilterOperator op) => op switch

@@ -25,7 +25,8 @@ public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<strin
 
 public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields);
 
-// Values are shown as text: numbers as written, dates as yyyy-MM-dd and booleans as true or false.
+// Values are shown as text: numbers as written, dates as yyyy-MM-dd, booleans as true or false, and a list's values one
+// per line.
 public sealed record RecordRow(string Id, string Key, string Name, IReadOnlyDictionary<string, string> Values);
 
 public sealed record RecordRows(int Total, IReadOnlyList<RecordRow> Rows);
@@ -339,6 +340,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 FieldType.Choice => FieldValues.MatchChoice(text, field.Options) is { } option
                     ? JsonValue.Create(option)
                     : throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."),
+                FieldType.List => new JsonArray(FieldValues.SplitList(text, '\n', '\r').Select(v => (JsonNode?)JsonValue.Create(v)).ToArray()),
                 _ => JsonValue.Create(text),
             };
         }
@@ -356,6 +358,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 JsonValueKind.String => p.Value.GetString()!,
                 JsonValueKind.True => "true",
                 JsonValueKind.False => "false",
+                JsonValueKind.Array => string.Join('\n', p.Value.EnumerateArray().Select(v => v.ValueKind == JsonValueKind.String ? v.GetString() : v.GetRawText())),
                 _ => p.Value.GetRawText(),
             });
     }

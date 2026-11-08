@@ -5,7 +5,7 @@
     {
       "name": "Person", "color": "#c2410c", "icon": "Person",
       "source": { "file": "people.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "title" }, { "key": "joined", "type": "date" } ]
+      "fields": [ { "key": "title" }, { "key": "joined", "type": "date" }, { "key": "skills", "type": "list" } ]
     },
     {
       "name": "Team", "color": "#4338ca", "icon": "Groups",

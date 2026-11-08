@@ -256,13 +256,13 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
                   AND ({labelParameter} IS NULL OR n.label = {labelParameter})
                   AND (n.name ILIKE {pattern} OR n.name % {term})
                 UNION ALL
-                SELECT n.label, kv.key, n.props->>kv.key, 1::float8
-                FROM graph_nodes n, jsonb_each(n.props) kv
+                SELECT n.label, kv.key, item.value, 1::float8
+                FROM graph_nodes n, jsonb_each(n.props) kv,
+                     jsonb_array_elements_text(CASE jsonb_typeof(kv.value) WHEN 'array' THEN kv.value WHEN 'string' THEN jsonb_build_array(kv.value) ELSE '[]' END) item(value)
                 WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
                   AND n.search_text ILIKE {pattern}
                   AND kv.key <> ALL({RegisteredDomains.LongTextProperties})
-                  AND jsonb_typeof(kv.value) = 'string'
-                  AND n.props->>kv.key ILIKE {pattern}
+                  AND item.value ILIKE {pattern}
             ) m
             ORDER BY m."Score" DESC, m."Label", m."Value"
             LIMIT {MatchLimit}
@@ -271,12 +271,28 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         return rows.Select(r => new PropertyMatch(r.Label, r.Key, r.Value)).ToList();
     }
 
-    // Values of one property, for suggestions once a filter's operator is chosen.
-    public async Task<IReadOnlyList<string>> PropertyValuesAsync(string? label, string key, string? text, CancellationToken cancellationToken = default)
+    // Values of one property, for suggestions once a filter's operator is chosen. A list's values come one at a time.
+    // Only a list looks inside arrays, because doing so for every property made each keystroke five times slower on swiss_rail.
+    public async Task<IReadOnlyList<string>> PropertyValuesAsync(
+        string? label, string key, string? text, CancellationToken cancellationToken = default, bool list = false)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var pattern = string.IsNullOrWhiteSpace(text) ? "%" : $"%{EscapeLike(text.Trim())}%";
         var labelParameter = new NpgsqlParameter("label", NpgsqlDbType.Text) { Value = (object?)label ?? DBNull.Value };
+
+        if (list)
+        {
+            return await db.Database.SqlQuery<string>(
+                $"""
+                SELECT DISTINCT item.value AS "Value"
+                FROM graph_nodes n,
+                     jsonb_array_elements_text(CASE jsonb_typeof(n.props->{key}) WHEN 'array' THEN n.props->{key} ELSE jsonb_build_array(n.props->{key}) END) item(value)
+                WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
+                  AND item.value ILIKE {pattern}
+                ORDER BY 1
+                LIMIT {MatchLimit}
+                """).ToListAsync(cancellationToken);
+        }
 
         return await db.Database.SqlQuery<string>(
             $"""
@@ -420,6 +436,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         FieldType.Date => GraphValueType.Date,
         FieldType.Boolean => GraphValueType.Boolean,
         FieldType.Choice => GraphValueType.Choice,
+        FieldType.List => GraphValueType.List,
         _ => GraphValueType.Text,
     };
 
@@ -429,6 +446,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         (_, _) when key.EndsWith("_date", StringComparison.Ordinal) => GraphValueType.Date,
         (_, "number") => GraphValueType.Number,
         (_, "boolean") => GraphValueType.Boolean,
+        (_, "array") => GraphValueType.List,
         _ => GraphValueType.Text,
     };
 

@@ -54,6 +54,9 @@ public sealed class PatternBuilder(GraphSchema schema)
 
     public string? PendingKey => _pendingKey;
 
+    // Whether the property being filtered is a list, whose values are suggested one at a time.
+    public bool PendingIsList => _pendingKey is not null && TypeOf(_pendingKey) == GraphValueType.List;
+
     public IReadOnlyList<PatternChip> Chips => _nodes
         .Select((node, i) => new PatternChip(
             node.Label,
@@ -361,6 +364,7 @@ public sealed class PatternBuilder(GraphSchema schema)
     {
         GraphValueType.Text => [FilterOperator.Contains, FilterOperator.Equals, FilterOperator.StartsWith, FilterOperator.EndsWith],
         GraphValueType.Boolean or GraphValueType.Choice => [FilterOperator.Equals],
+        GraphValueType.List => [FilterOperator.Contains, FilterOperator.Equals],
         _ => [FilterOperator.Equals, FilterOperator.GreaterThan, FilterOperator.GreaterOrEqual, FilterOperator.LessThan, FilterOperator.LessOrEqual],
     };
 

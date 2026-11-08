@@ -213,6 +213,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                 FieldType.Number => $"{value}::numeric",
                 FieldType.Date => $"{value}::date",
                 FieldType.Boolean => $"{value}::boolean",
+                FieldType.List => $"(SELECT jsonb_agg(btrim(v) ORDER BY i) FROM unnest(string_to_array({value}, '{FieldValues.ListSeparator}')) WITH ORDINALITY u(v, i) WHERE btrim(v) <> '')",
                 _ => value,
             };
             return $"'{field.Key}', {typed}";

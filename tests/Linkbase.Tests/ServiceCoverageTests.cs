@@ -345,6 +345,7 @@ public class PatternBuilderEdgeCaseTests
             new GraphPropertyInfo("Trip", "abroad", GraphValueType.Boolean),
             new GraphPropertyInfo("Route", "length_m", GraphValueType.Number),
             new GraphPropertyInfo("Route", "style", GraphValueType.Choice) { Options = ["sport", "trad", "boulder"] },
+            new GraphPropertyInfo("Crag", "aliases", GraphValueType.List),
         ]);
 
     private static PatternBuilder Start(string label)
@@ -381,6 +382,14 @@ public class PatternBuilderEdgeCaseTests
         builder.Apply(new PatternSuggestion(SuggestionKind.Operator, "=") { Operator = FilterOperator.Equals });
         Assert.Empty(builder.Suggest("maybe", [], []));
         Assert.Single(builder.Suggest("true", [], []));
+    }
+
+    [Fact]
+    public void A_list_compares_its_values_as_text()
+    {
+        var builder = Start("Crag");
+        builder.Apply(new PatternSuggestion(SuggestionKind.Property, "aliases") { Key = "aliases" });
+        Assert.Equal(["contains", "="], builder.Suggest("", [], []).Select(s => s.Text));
     }
 
     [Fact]

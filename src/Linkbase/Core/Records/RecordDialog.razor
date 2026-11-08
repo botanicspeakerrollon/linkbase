@@ -39,6 +39,10 @@
                             }
                         </MudSelect>
                         break;
+                    case FieldType.List:
+                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@_values.GetValueOrDefault(key)"
+                                      ValueChanged="@(v => _values[key] = v)" Lines="2" AutoGrow="true" HelperText="One per line" />
+                        break;
                     case FieldType.Number:
                         <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Value="@_values.GetValueOrDefault(key)"
                                       ValueChanged="@(v => _values[key] = v)" InputMode="@(InputMode.@decimal)" />

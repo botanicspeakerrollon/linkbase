@@ -546,8 +546,9 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
                 var props = new JsonObject();
                 foreach (var field in mapping.Fields)
                 {
+                    // A list of nothing, such as "|", is no value, like an empty cell.
                     var text = reader.GetField(field.Column)?.Trim() ?? "";
-                    if (text.Length == 0)
+                    if (text.Length == 0 || (field.Type == FieldType.List && FieldValues.SplitList(text, FieldValues.ListSeparator).Count == 0))
                     {
                         continue;
                     }
@@ -794,6 +795,9 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
     private static JsonNode? Typed(string text, FieldType type, IReadOnlyList<string>? options = null) => type switch
     {
         FieldType.Choice => FieldValues.MatchChoice(text, options ?? []) is { } option ? JsonValue.Create(option) : null,
+        FieldType.List => FieldValues.SplitList(text, FieldValues.ListSeparator) is { Count: > 0 } values
+            ? new JsonArray(values.Select(v => (JsonNode?)JsonValue.Create(v)).ToArray())
+            : null,
         FieldType.Number => decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? JsonValue.Create(number) : null,
         FieldType.Date => DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
             ? JsonValue.Create(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
@@ -808,6 +812,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         FieldType.Date => "a date (yyyy-mm-dd)",
         FieldType.Boolean => "true or false",
         FieldType.Choice => "a choice",
+        FieldType.List => "a list, split by |",
         _ => "text",
     };
 }

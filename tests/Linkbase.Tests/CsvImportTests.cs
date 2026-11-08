@@ -266,6 +266,20 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable
     }
 
     [Fact]
+    public async Task A_list_field_splits_its_values_at_bars()
+    {
+        var (factory, importer) = await ExampleAsync();
+        var file = Csv("suppliers.csv", "id,name,aliases\ns1,Acme,Acme Ltd | ACME|acme ltd\ns2,Brill,\ns3,Cobb,|\n");
+
+        await importer.ImportAsync(file, new CsvRecordMapping("Supplier", 0, 1, [new CsvFieldMapping(2, "aliases", FieldType.List)]));
+
+        var records = new RecordRepository(factory);
+        Assert.Equal("Acme Ltd\nACME", (await records.GetAsync("Supplier", "s1"))!.Values["aliases"]);
+        Assert.False((await records.GetAsync("Supplier", "s2"))!.Values.ContainsKey("aliases"));
+        Assert.False((await records.GetAsync("Supplier", "s3"))!.Values.ContainsKey("aliases"));
+    }
+
+    [Fact]
     public async Task Imports_links_between_records_already_here_and_counts_them()
     {
         var (factory, importer) = await ExampleAsync();

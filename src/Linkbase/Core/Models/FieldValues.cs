@@ -10,6 +10,15 @@ public static class FieldValues
     public static string? MatchChoice(string text, IReadOnlyList<string> options) =>
         options.FirstOrDefault(o => string.Equals(o, text.Trim(), StringComparison.OrdinalIgnoreCase));
 
+    // What separates a list field's values in a CSV cell, such as "Stanage|Stanage Edge".
+    public const char ListSeparator = '|';
+
+    // A list field's values: each one trimmed, without empty ones or repeats, in the order given.
+    public static List<string> SplitList(string text, params char[] separators) =>
+        text.Split(separators, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
     // Options in a readable list for messages, such as "lead, second or top rope".
     public static string Listed(IReadOnlyList<string> options) => options.Count switch
     {
