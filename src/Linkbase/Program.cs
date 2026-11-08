@@ -1,4 +1,5 @@
 using Linkbase.Components;
+using Linkbase.Core;
 using Linkbase.Core.Graph;
 using Linkbase.Core.CsvImport;
 using Linkbase.Core.Models;
@@ -42,6 +43,8 @@ builder.Services.AddScoped<LinkbaseDbContext>(services =>
     return new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(catalog.ConnectionString(catalog.Default)).Options);
 });
 builder.Services.AddDataProtection().SetApplicationName("Linkbase").PersistKeysToDbContext<LinkbaseDbContext>();
+
+Telemetry.Add(builder.Services, builder.Configuration);
 
 builder.Services.AddScoped<DatabaseStatusService>();
 builder.Services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("databases", tags: ["ready"]);

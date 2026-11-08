@@ -109,6 +109,9 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `HttpsRedirection` | Redirect HTTP to HTTPS. Off behind a proxy that ends TLS | `true`, `false` in the image |
 | `Logging__Console__FormatterName` | `json` for one JSON object per line on stdout, or `simple` | `json`, `simple` in Development |
 | `Logging__LogLevel__Default` | How much to log | `Information` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Send OpenTelemetry traces, metrics and logs to this collector, such as `http://otel-collector:4317`. Logs still go to stdout too | None, so nothing is sent |
+| `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES` | The standard OpenTelemetry settings, such as `http/protobuf` or an API key header | gRPC, none |
+| `OTEL_SERVICE_NAME` | The service name telemetry carries | `linkbase` |
 
 The keys that sign the app's cookies and anti-forgery tokens are in the default model's database, in `data_protection_key`,
 so restarts don't sign anyone out and every pod shares them. They're stored unencrypted, so treat database access as
