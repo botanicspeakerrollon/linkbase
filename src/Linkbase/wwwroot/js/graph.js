@@ -420,6 +420,21 @@ export function fit() {
     }
 }
 
+// The whole graph as a picture, at twice the screen's resolution, on the page's own background. Returns false when
+// there's nothing to draw.
+export async function savePng(fileName) {
+    if (!cy || cy.elements().empty()) {
+        return false;
+    }
+
+    // The theme always sets this, so the picture matches the page.
+    const background = getComputedStyle(document.documentElement).getPropertyValue('--mud-palette-background').trim();
+    const blob = cy.png({ output: 'blob', full: true, scale: 2, bg: background });
+    const { saveBlob } = await import('./download.js');
+    saveBlob(fileName, blob);
+    return true;
+}
+
 export function destroy() {
     stopSquish();
     resizeObserver?.disconnect();

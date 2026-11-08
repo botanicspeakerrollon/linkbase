@@ -585,6 +585,77 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         Assert.Empty(_consoleErrors);
     }
 
+    private async Task<(string Name, byte[] Bytes)> DownloadAsync(string menuItem)
+    {
+        var download = await _page.RunAndWaitForDownloadAsync(async () =>
+        {
+            await Button("Export").ClickAsync();
+            await _page.GetByRole(AriaRole.Menuitem, new() { Name = menuItem }).ClickAsync();
+        });
+        return (download.SuggestedFilename, await File.ReadAllBytesAsync((await download.PathAsync())!));
+    }
+
+    [Fact]
+    public async Task Keys_and_exports_work_in_the_real_browser()
+    {
+        var s = await SeedAsync();
+        await OpenExploreAsync();
+        var search = _page.GetByRole(AriaRole.Combobox, new() { Name = "Search phrase" });
+        await Assertions.Expect(search).Not.ToHaveAttributeAsync("placeholder", "Loading…");
+
+        // / reaches the search box from anywhere, and a key typed there is just typing.
+        await _page.Keyboard.PressAsync("/");
+        await Assertions.Expect(search).ToBeFocusedAsync();
+        await _page.Keyboard.TypeAsync("t");
+        await Assertions.Expect(search).ToHaveValueAsync("t");
+        await search.FillAsync("");
+        await SearchForAsync(s.Crag);
+        await WaitForExactNodesAsync(1);
+        await Button("Expand").ClickAsync();
+        await WaitForNodesAsync(2);
+        await _page.EvaluateAsync("() => document.activeElement?.blur()");
+
+        await _page.Keyboard.PressAsync("t");
+        await Assertions.Expect(_page.Locator(".explore-table-wrap")).ToBeVisibleAsync();
+        await Assertions.Expect(_page.Locator("tr.explore-table-row", new() { HasText = s.Route })).ToBeVisibleAsync();
+        await _page.Keyboard.PressAsync("t");
+        await Assertions.Expect(_page.Locator(".explore-table-wrap")).ToHaveCountAsync(0);
+
+        var (nodesFile, nodes) = await DownloadAsync("Nodes (CSV)");
+        Assert.Matches(@"^linkbase-nodes-.*\.csv$", nodesFile);
+        var text = System.Text.Encoding.UTF8.GetString(nodes);
+        Assert.StartsWith("﻿id,type,name", text, StringComparison.Ordinal);
+        Assert.Contains(s.Route, text, StringComparison.Ordinal);
+
+        var (pictureFile, picture) = await DownloadAsync("Picture of the graph (PNG)");
+        Assert.EndsWith(".png", pictureFile, StringComparison.Ordinal);
+        Assert.Equal(new byte[] { 0x89, (byte)'P', (byte)'N', (byte)'G' }, picture[..4]);
+        await _page.EvaluateAsync("() => document.activeElement?.blur()");
+
+        await _page.Keyboard.PressAsync("?");
+        var dialog = _page.GetByRole(AriaRole.Dialog);
+        await Assertions.Expect(dialog).ToContainTextAsync("Keyboard shortcuts");
+
+        // MudBlazor starts listening for Esc just after the dialog appears, so under load the first press can come too soon.
+        for (var attempt = 0; attempt < 5 && await dialog.CountAsync() > 0; attempt++)
+        {
+            await _page.Keyboard.PressAsync("Escape");
+            await Task.Delay(300);
+        }
+
+        await Assertions.Expect(dialog).ToHaveCountAsync(0);
+
+        await _page.Keyboard.PressAsync("g");
+        await _page.Keyboard.PressAsync("h");
+        await _page.WaitForURLAsync($"{_url}/");
+
+        await _page.Keyboard.PressAsync("g");
+        await _page.Keyboard.PressAsync("e");
+        await _page.WaitForURLAsync($"{_url}/explore");
+
+        Assert.Empty(_consoleErrors);
+    }
+
     [Fact]
     public async Task A_new_country_can_be_created_from_the_review_page()
     {
@@ -806,6 +877,10 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await _page.Mouse.UpAsync();
         Assert.Empty(await OverlapsAsync());
 
+        // The picture export draws what's on the canvas.
+        var picture = await _page.RunAndWaitForDownloadAsync(() => _page.EvaluateAsync("() => import('/js/graph.js').then(m => m.savePng('scene.png'))"));
+        Assert.Equal("scene.png", picture.SuggestedFilename);
+
         // Leaving the page takes the graph down with it.
         await _page.Locator(".app-rail a[href='logbook']").ClickAsync();
         await _page.WaitForURLAsync("**/logbook");
@@ -813,6 +888,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         Assert.True(await _page.EvaluateAsync<bool>("() => import('/js/graph.js').then(m => m.renderedPosition('x') === null)"));
         Assert.Empty(await OverlapsAsync());
         await _page.EvaluateAsync("() => import('/js/graph.js').then(m => { m.update([], [], null); m.select(null); m.restore([], [], []); m.fit(); })");
+        Assert.False(await _page.EvaluateAsync<bool>("() => import('/js/graph.js').then(m => m.savePng('nothing.png'))"));
         await Assertions.Expect(_page.GetByRole(AriaRole.Heading, new() { Name = "Logbook" })).ToBeVisibleAsync();
 
         Assert.Empty(_consoleErrors);

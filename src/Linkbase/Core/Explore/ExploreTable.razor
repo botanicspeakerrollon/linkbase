@@ -1,0 +1,122 @@
+@using System.Globalization
+
+@* What's on the canvas as tables: one per type, with that type's fields as columns, then the links between them. Clicking
+   a row selects the node, as clicking it on the canvas does. *@
+<div class="explore-table">
+    <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filter" Immediate="true" DebounceInterval="150"
+                  Placeholder="Filter by any part of a name or value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.FilterList"
+                  Clearable="true" Class="mb-3 explore-table-filter" aria-label="Filter the table" />
+
+    @foreach (var group in Groups())
+    {
+        var keys = group.Rows.SelectMany(n => n.Properties.Select(p => p.Key)).Distinct(StringComparer.Ordinal).ToList();
+        <div class="explore-table-heading">
+            <MudChip T="string" Size="Size.Small" Style="@ChipStyle(group.Label)" Class="ma-0">@group.Label</MudChip>
+            <span>@Count(group.Rows.Count, group.Total)</span>
+        </div>
+        <MudTable T="GraphNode" Items="group.Rows" Dense="true" Hover="true" Elevation="0" Class="mb-4" OnRowClick="RowClickedAsync"
+                  RowClass="explore-table-row" RowClassFunc="@((node, _) => node.Id == SelectedId ? "explore-table-selected" : "")">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel T="GraphNode" SortBy="@(n => n.Name)" InitialDirection="SortDirection.Ascending">Name</MudTableSortLabel></MudTh>
+                @foreach (var key in keys)
+                {
+                    var sortKey = SortKey(group.Rows, key);
+                    <MudTh><MudTableSortLabel T="GraphNode" SortBy="sortKey">@GraphStyle.PropertyTitle(key)</MudTableSortLabel></MudTh>
+                }
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                @foreach (var key in keys)
+                {
+                    <MudTd DataLabel="@GraphStyle.PropertyTitle(key)" Class="explore-table-value">@context.Property(key)</MudTd>
+                }
+            </RowTemplate>
+        </MudTable>
+    }
+
+    @if (Links().ToList() is { Count: > 0 } links)
+    {
+        <div class="explore-table-heading"><span class="explore-table-links">Links</span><span>@links.Count.ToString("N0", CultureInfo.InvariantCulture)</span></div>
+        <MudTable T="LinkRow" Items="links" Dense="true" Hover="true" Elevation="0">
+            <HeaderContent>
+                <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.Source.Name)">From</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.RelType)">Relationship</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.Target.Name)">To</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="From"><MudLink OnClick="@(() => OnSelect.InvokeAsync(context.Source))">@context.Source.Name</MudLink> <span class="explore-table-type">@context.Source.Label</span></MudTd>
+                <MudTd DataLabel="Relationship">@context.RelType</MudTd>
+                <MudTd DataLabel="To"><MudLink OnClick="@(() => OnSelect.InvokeAsync(context.Target))">@context.Target.Name</MudLink> <span class="explore-table-type">@context.Target.Label</span></MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+
+    @if (Nodes.Count > 0 && !Groups().Any())
+    {
+        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Nothing on the canvas matches that.</MudText>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<GraphNode> Nodes { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<GraphEdge> Edges { get; set; } = [];
+    [Parameter] public GraphSchema? Schema { get; set; }
+    [Parameter] public string? SelectedId { get; set; }
+    [Parameter] public EventCallback<GraphNode> OnSelect { get; set; }
+
+    private sealed record Group(string Label, List<GraphNode> Rows, int Total);
+
+    private sealed record LinkRow(GraphNode Source, string RelType, GraphNode Target);
+
+    private string? _filter;
+
+    private bool Matches(GraphNode node) =>
+        string.IsNullOrWhiteSpace(_filter)
+        || node.Name.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase)
+        || node.Properties.Any(p => p.Value.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    // In the schema's order, most common types first, as the rest of Explore shows them.
+    private IEnumerable<Group> Groups()
+    {
+        var order = Schema?.Labels.Select((label, i) => (label, i)).ToDictionary(x => x.label, x => x.i) ?? [];
+        return Nodes
+            .GroupBy(n => n.Label)
+            .OrderBy(g => order.GetValueOrDefault(g.Key, int.MaxValue)).ThenBy(g => g.Key, StringComparer.Ordinal)
+            .Select(g => new Group(g.Key, g.Where(Matches).ToList(), g.Count()))
+            .Where(g => g.Rows.Count > 0);
+    }
+
+    private IEnumerable<LinkRow> Links()
+    {
+        var byId = Nodes.ToDictionary(n => n.Id);
+        return Edges
+            .Where(e => byId.ContainsKey(e.SourceId) && byId.ContainsKey(e.TargetId))
+            .DistinctBy(e => (e.SourceId, e.RelType, e.TargetId))
+            .Select(e => new LinkRow(byId[e.SourceId], e.RelType, byId[e.TargetId]))
+            .Where(l => Matches(l.Source) || Matches(l.Target) || (_filter is { } f && l.RelType.Contains(f.Trim(), StringComparison.OrdinalIgnoreCase)));
+    }
+
+    // A column whose every value is a number sorts as numbers, so 9 comes before 10.
+    private static Func<GraphNode, object> SortKey(List<GraphNode> rows, string key)
+    {
+        var values = rows.Select(n => n.Property(key)).Where(v => !string.IsNullOrEmpty(v)).ToList();
+        if (values.Count > 0 && values.All(v => decimal.TryParse(v, NumberStyles.Number, CultureInfo.InvariantCulture, out _)))
+        {
+            return n => decimal.TryParse(n.Property(key), NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? number : decimal.MinValue;
+        }
+
+        return n => n.Property(key) ?? "";
+    }
+
+    private Task RowClickedAsync(TableRowClickEventArgs<GraphNode> args) =>
+        args.Item is { } node ? OnSelect.InvokeAsync(node) : Task.CompletedTask;
+
+    private static string Count(int shown, int total) =>
+        shown == total ? total.ToString("N0", CultureInfo.InvariantCulture) : $"{shown:N0} of {total:N0}";
+
+    private string ChipStyle(string label)
+    {
+        var style = GraphStyle.For(label, Schema);
+        return $"background-color: {style.Color}; color: #ffffff";
+    }
+}

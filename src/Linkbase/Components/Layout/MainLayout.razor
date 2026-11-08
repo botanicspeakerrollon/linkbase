@@ -1,4 +1,7 @@
 @inherits LayoutComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject IDialogService Dialogs
 @inject CurrentModel CurrentModel
 @inject ModelCatalog Catalog
 @inject NavigationManager Navigation
@@ -92,6 +95,43 @@
         {
             _types = [];
         }
+    }
+
+    private IJSObjectReference? _hotkeys;
+    private DotNetObjectReference<MainLayout>? _self;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _self = DotNetObjectReference.Create(this);
+            _hotkeys = await JS.InvokeAsync<IJSObjectReference>("import", "./js/hotkeys.js");
+            await _hotkeys.InvokeVoidAsync("install", _self);
+        }
+    }
+
+    // The keys that work everywhere and need the server. The rest are handled in the browser.
+    [JSInvokable]
+    public Task OnHotkey(string key) => key == "?"
+        ? InvokeAsync(() => Dialogs.ShowAsync<HotkeysDialog>("Keyboard shortcuts", new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true }))
+        : Task.CompletedTask;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hotkeys is not null)
+        {
+            try
+            {
+                await _hotkeys.InvokeVoidAsync("uninstall");
+                await _hotkeys.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser has already gone.
+            }
+        }
+
+        _self?.Dispose();
     }
 
     private string BrandIcon => CurrentModel.Domains.FirstOrDefault()?.Icon ?? Icons.Material.Filled.Hub;

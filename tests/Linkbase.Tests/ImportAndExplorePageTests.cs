@@ -688,6 +688,132 @@ public class ExplorePageTests : UiTestBase
     }
 
     [Fact]
+    public async Task The_table_lists_whats_on_the_canvas_by_type_and_a_row_selects_its_node()
+    {
+        var s = await SeedAsync(grade: "E1 5b");
+        var cut = Render(s);
+        Press(cut, "Expand");
+        Sees(cut, "Route 1");
+        DoesNotSee(cut, "explore-table");
+
+        Press(cut, "Table");
+
+        Sees(cut, "explore-table");
+        var headings = cut.FindAll(".explore-table-heading").Select(h => h.TextContent).ToList();
+        Assert.Contains(headings, h => h.Contains("Crag", StringComparison.Ordinal));
+        Assert.Contains(headings, h => h.Contains("Route", StringComparison.Ordinal));
+        Assert.Contains(headings, h => h.Contains("Links", StringComparison.Ordinal));
+        Assert.Contains(cut.FindAll(".explore-table th"), th => th.TextContent.Trim() == "Grade");
+        Sees(cut, "E1 5b");
+
+        ClickFresh(cut, () => cut.FindAll("tr.explore-table-row").First(r => r.TextContent.Contains(s.Route, StringComparison.Ordinal)));
+        Sees(cut, s.Route + "</h2>");
+        Sees(cut, "explore-table-selected");
+        Assert.Equal($"route:{s.RouteId}", _graph.Invocations.Last(i => i.Identifier == "select").Arguments[0]);
+
+        // The filter narrows every table.
+        cut.Find(".explore-table-filter input").Input("E1 5b");
+        cut.WaitForAssertion(() => Assert.DoesNotContain(cut.FindAll("tr.explore-table-row"), r => r.TextContent.Contains(s.Crag, StringComparison.Ordinal)));
+        cut.Find(".explore-table-filter input").Input("nothing has this " + Guid.NewGuid());
+        Sees(cut, "Nothing on the canvas matches that.");
+
+        Press(cut, "Graph");
+        DoesNotSee(cut, "explore-table-wrap");
+        cut.WaitForAssertion(() => Assert.Contains("fit", GraphCalls));
+    }
+
+    [Fact]
+    public async Task Hotkeys_switch_views_fit_expand_hide_remove_and_deselect()
+    {
+        var s = await SeedAsync();
+        var cut = Render(s);
+        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "register"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
+        Sees(cut, "explore-table-wrap");
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
+        DoesNotSee(cut, "explore-table-wrap");
+
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("f"));
+        cut.WaitForAssertion(() => Assert.Contains("fit", GraphCalls));
+
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("e"));
+        Sees(cut, "Expand again");
+        Sees(cut, "Route 1");
+
+        await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked($"crag:{s.CragId}", 10, 20));
+        Sees(cut, "explore-menu");
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
+        DoesNotSee(cut, "explore-menu");
+        Sees(cut, s.Crag + "</h2>");
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
+        Sees(cut, "Click a node for its details");
+
+        // With nothing selected, the keys that act on a node do nothing.
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("h"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("q"));
+        DoesNotSee(cut, "hidden</");
+
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("h"));
+        Sees(cut, "Show 1 hidden");
+
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
+        Sees(cut, "Click a node for its details");
+        Assert.DoesNotContain(
+            ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
+            n => n!.Contains($"route:{s.RouteId}", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Exports_save_whats_shown_as_csv_json_and_a_picture()
+    {
+        var s = await SeedAsync();
+        var download = JSInterop.SetupModule("./js/download.js");
+        download.SetupVoid("saveStream", _ => true).SetVoidResult();
+        _graph.Setup<bool>("savePng", _ => true).SetResult(true);
+        var cut = Render(s);
+        Press(cut, "Expand");
+        Sees(cut, "Route 1");
+
+        string Saved(string item)
+        {
+            var before = download.Invocations.Count;
+            Press(cut, "Export");
+            Popovers.WaitForAssertion(() => Assert.Contains(Popovers.FindAll(".mud-menu-item"), i => i.TextContent.Contains(item, StringComparison.Ordinal)));
+            ClickFresh(Popovers, () => Popovers.FindAll(".mud-menu-item").First(i => i.TextContent.Contains(item, StringComparison.Ordinal)));
+            cut.WaitForAssertion(() => Assert.True(download.Invocations.Count > before));
+            var call = download.Invocations.Last();
+            Assert.Matches(@"^linkbase-\w+-\d{4}-\d{2}-\d{2}-\d{4}\.(csv|json)$", (string)call.Arguments[0]!);
+            var bytes = ((MemoryStream)((DotNetStreamReference)call.Arguments[2]!).Stream).ToArray();
+            return System.Text.Encoding.UTF8.GetString(bytes).TrimStart('﻿');
+        }
+
+        var nodes = Saved("Nodes (CSV)");
+        Assert.StartsWith("id,type,name", nodes, StringComparison.Ordinal);
+        Assert.Contains(s.Crag, nodes, StringComparison.Ordinal);
+        Assert.Contains(s.Route, nodes, StringComparison.Ordinal);
+
+        var links = Saved("Links (CSV)");
+        Assert.Contains($"route:{s.RouteId},Route,{s.Route},AT,crag:{s.CragId},Crag,{s.Crag}", links, StringComparison.Ordinal);
+
+        var json = System.Text.Json.JsonDocument.Parse(Saved("Nodes and links (JSON)"));
+        Assert.True(json.RootElement.GetProperty("nodes").GetArrayLength() >= 2);
+        Assert.True(json.RootElement.GetProperty("links").GetArrayLength() >= 1);
+
+        Press(cut, "Export");
+        ClickFresh(Popovers, () => Popovers.FindAll(".mud-menu-item").First(i => i.TextContent.Contains("Picture", StringComparison.Ordinal)));
+        cut.WaitForAssertion(() => Assert.Matches(@"^linkbase-graph-.*\.png$", (string)_graph.Invocations.Last(i => i.Identifier == "savePng").Arguments[0]!));
+
+        // Hidden nodes aren't shown, so they aren't exported either.
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
+        Press(cut, "Hide");
+        Assert.DoesNotContain(s.Route, Saved("Nodes (CSV)"), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Hide_show_remove_fit_and_clear()
     {
         var s = await SeedAsync();

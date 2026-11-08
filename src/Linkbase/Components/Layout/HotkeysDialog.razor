@@ -1,0 +1,57 @@
+@* The keyboard shortcuts, opened with ?. The keys themselves are handled in wwwroot/js/hotkeys.js and by the pages. *@
+<MudDialog>
+    <TitleContent>Keyboard shortcuts</TitleContent>
+    <DialogContent>
+        @foreach (var (section, keys) in Sections)
+        {
+            <div class="hotkeys-section">@section</div>
+            <MudSimpleTable Dense="true" Elevation="0" Class="mb-3 hotkeys-table">
+                <tbody>
+                    @foreach (var (key, what) in keys)
+                    {
+                        <tr>
+                            <td class="hotkeys-keys">
+                                @foreach (var part in key.Split(' '))
+                                {
+                                    <kbd>@part</kbd>
+                                }
+                            </td>
+                            <td>@what</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Shortcuts don't work while you're typing in a field. Press Esc or click away first.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Text">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+
+    public static readonly IReadOnlyList<(string Section, IReadOnlyList<(string Key, string What)> Keys)> Sections =
+    [
+        ("Anywhere",
+        [
+            ("/", "Search, or the first field on the page"),
+            ("g h", "Go home"),
+            ("g e", "Go to Explore"),
+            ("g 1…9", "Go to that item in the menu on the left"),
+            ("?", "Show these shortcuts"),
+        ]),
+        ("Explore",
+        [
+            ("t", "Switch between the graph and the table"),
+            ("f", "Fit the graph to the screen"),
+            ("e", "Expand the selected node"),
+            ("h", "Hide the selected node"),
+            ("Delete", "Remove the selected node"),
+            ("Esc", "Close the menu, or clear the selection"),
+        ]),
+    ];
+
+    private void Close() => Dialog.Close();
+}
