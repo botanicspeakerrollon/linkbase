@@ -147,8 +147,8 @@
             <MudButton OnClick="ShowHiddenAsync" Variant="Variant.Text" Size="Size.Small" FullWidth="true" Class="mt-1">Show @_hidden.Count hidden</MudButton>
         }
         <MudStack Row="true" Spacing="1" Class="mt-2">
-            <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0">Fit</MudButton>
-            <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0">Clear</MudButton>
+            <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Fit (f)">Fit</MudButton>
+            <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Clear (c)">Clear</MudButton>
         </MudStack>
 
         <div class="explore-section-title">Saved scenes</div>
@@ -221,7 +221,7 @@
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "e", "h", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "e", "h", "Delete", "Escape"];
 
     // The visible graph lives here. The JavaScript module only draws it and reports clicks.
     private readonly Dictionary<string, GraphNode> _nodes = [];
@@ -647,6 +647,10 @@
             case "f":
                 await ShowViewAsync(false);
                 await FitAsync();
+                break;
+            case "c" when _nodes.Count > 0:
+                await ShowViewAsync(false);
+                await ClearAsync();
                 break;
             case "e" when _selected is { IsModel: true } model:
                 await ShowTypeAsync(model.Label);

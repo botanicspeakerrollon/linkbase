@@ -814,6 +814,16 @@ public class ExplorePageTests : UiTestBase
         Assert.DoesNotContain(
             ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
             n => n!.Contains($"route:{s.RouteId}", StringComparison.Ordinal));
+
+        // c clears the graph, from the table too, and does nothing once it's empty.
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
+        Sees(cut, "explore-table-wrap");
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("c"));
+        Sees(cut, "Type anything above");
+        DoesNotSee(cut, "explore-table-wrap");
+        Assert.Empty((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!);
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("c"));
+        Sees(cut, "Type anything above");
     }
 
     [Fact]
