@@ -27,13 +27,15 @@ RUN dotnet publish src/Linkbase/Linkbase.csproj -c Release -o /app --no-restore 
 FROM ${RUNTIME_IMAGE} AS runtime
 WORKDIR /app
 
-# Npgsql offers Kerberos (GSSAPI) when it connects, which many enterprise Postgres servers use, and needs its library to
-# do that or to decline quietly. Debian-based images have apt, and Red Hat's UBI images microdnf.
+# Security fixes released since the base image was built, which the image scan would otherwise report. Then the library
+# Npgsql needs to offer Kerberos (GSSAPI) when it connects, as many enterprise Postgres servers use, or to decline it
+# quietly. Ubuntu and Debian images have apt, and Red Hat's UBI images microdnf.
 USER root
 RUN if command -v apt-get > /dev/null; then \
-        apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*; \
+        apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+        && rm -rf /var/lib/apt/lists/*; \
     elif command -v microdnf > /dev/null; then \
-        microdnf install -y krb5-libs && microdnf clean all; \
+        microdnf upgrade -y && microdnf install -y krb5-libs && microdnf clean all; \
     fi
 
 # Owned by root and readable by everyone, so whatever user id the platform picks can run it, and none can change it.
