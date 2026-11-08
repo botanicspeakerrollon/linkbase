@@ -319,12 +319,11 @@ namespace Linkbase.Data.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<long>("EntityId")
+                    b.Property<long?>("EntityId")
                         .HasColumnType("bigint")
                         .HasColumnName("entity_id");
 
                     b.Property<string>("EntityType")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("entity_type");
 
@@ -336,6 +335,14 @@ namespace Linkbase.Data.Migrations
                     b.Property<long?>("ImportBatchId")
                         .HasColumnType("bigint")
                         .HasColumnName("import_batch_id");
+
+                    b.Property<string>("NodeId")
+                        .HasColumnType("text")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("NodeType")
+                        .HasColumnType("text")
+                        .HasColumnName("node_type");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -358,6 +365,9 @@ namespace Linkbase.Data.Migrations
                     b.HasIndex("ImportBatchId")
                         .HasDatabaseName("ix_external_ref_import_batch_id");
 
+                    b.HasIndex("NodeId")
+                        .HasDatabaseName("ix_external_ref_node_id");
+
                     b.HasIndex("EntityType", "EntityId")
                         .HasDatabaseName("ix_external_ref_entity_type_entity_id");
 
@@ -365,7 +375,14 @@ namespace Linkbase.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_external_ref_source_entity_type_external_id");
 
-                    b.ToTable("external_ref");
+                    b.HasIndex("Source", "NodeType", "ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_external_ref_source_node_type_external_id");
+
+                    b.ToTable("external_ref", t =>
+                        {
+                            t.HasCheckConstraint("ck_external_ref_target", "(entity_type IS NOT NULL AND entity_id IS NOT NULL AND node_id IS NULL AND node_type IS NULL) OR (entity_type IS NULL AND entity_id IS NULL AND node_id IS NOT NULL AND node_type IS NOT NULL)");
+                        });
                 });
 
             modelBuilder.Entity("Linkbase.Data.FieldDefinition", b =>

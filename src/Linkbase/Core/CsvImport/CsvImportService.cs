@@ -502,6 +502,7 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
             throw new LinkbaseValidationException($"Records this import added have {linked:N0} link(s) added since. Remove those first.");
         }
 
+        await ExternalRefRepository.RemoveForNodesAsync(db, added, cancellationToken);
         await db.Nodes.Where(n => n.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
         await RemoveWhatItCreatedAsync(db, batch.RawPayload, cancellationToken);
         batch.Status = ImportStatus.Undone;

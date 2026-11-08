@@ -357,8 +357,8 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
         var keptCrags = await db.Crags.Where(c => c.ImportBatchId == batchId).Select(c => c.Id).ToListAsync(cancellationToken);
         await db.ExternalRefs
             .Where(r => r.ImportBatchId == batchId
-                && !(r.EntityType == ExternalEntityType.Route && keptRoutes.Contains(r.EntityId))
-                && !(r.EntityType == ExternalEntityType.Crag && keptCrags.Contains(r.EntityId)))
+                && !(r.EntityType == ExternalEntityType.Route && keptRoutes.Contains(r.EntityId!.Value))
+                && !(r.EntityType == ExternalEntityType.Crag && keptCrags.Contains(r.EntityId!.Value)))
             .ExecuteDeleteAsync(cancellationToken);
 
         // With rows kept, it stays committed so it can be undone again once they're free.
@@ -519,8 +519,8 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
     private static async Task<Dictionary<(ExternalEntityType, string), long>> LoadRefsAsync(LinkbaseDbContext db, CancellationToken cancellationToken)
     {
         var refs = await db.ExternalRefs.AsNoTracking()
-            .Where(r => r.Source == DataSource.WebImport)
-            .Select(r => new { r.EntityType, r.ExternalId, r.EntityId })
+            .Where(r => r.Source == DataSource.WebImport && r.EntityType != null)
+            .Select(r => new { EntityType = r.EntityType!.Value, r.ExternalId, EntityId = r.EntityId!.Value })
             .ToListAsync(cancellationToken);
         return refs.ToDictionary(r => (r.EntityType, r.ExternalId), r => r.EntityId);
     }

@@ -1,5 +1,6 @@
 @page "/data/{Type}/{*Key}"
 @inject RecordRepository Records
+@inject ExternalRefRepository Refs
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -52,6 +53,22 @@ else if (_record is not null && _type is not null)
             @foreach (var (key, value) in _record.Values.Where(v => _type.Fields.All(f => f.Key != v.Key)).OrderBy(v => v.Key))
             {
                 <tr><th scope="row">@RecordRepository.Title(key)</th><td>@value</td></tr>
+            }
+            @foreach (var reference in _refs)
+            {
+                <tr>
+                    <th scope="row">@ExternalRefRepository.SourceName(reference.Source) id</th>
+                    <td>
+                        @if (Uri.TryCreate(reference.Url, UriKind.Absolute, out var url) && url.Scheme is "http" or "https")
+                        {
+                            <MudLink Href="@reference.Url" Target="_blank" rel="noopener noreferrer">@reference.ExternalId</MudLink>
+                        }
+                        else
+                        {
+                            @reference.ExternalId
+                        }
+                    </td>
+                </tr>
             }
         </tbody>
     </MudSimpleTable>
@@ -108,6 +125,7 @@ else if (_record is not null && _type is not null)
     private RecordDetail? _record;
     private LabelStyle? _style;
     private IReadOnlyList<RecordLinkGroup> _links = [];
+    private IReadOnlyList<NodeRef> _refs = [];
     private IReadOnlyList<LinkOption> _options = [];
     private List<BreadcrumbItem> _crumbs = [];
     private bool _missing;
@@ -131,6 +149,7 @@ else if (_record is not null && _type is not null)
 
         _style = GraphStyle.For(Type, _type!.Color, _type.Icon);
         _links = await Records.LinksAsync(_record.Id);
+        _refs = await Refs.RefsAsync(_record.Id);
         _options = await Records.LinkOptionsAsync(Type);
         _crumbs = [new BreadcrumbItem(Type, GraphStyle.RecordListLink(Type))];
     }

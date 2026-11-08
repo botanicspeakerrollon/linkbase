@@ -202,6 +202,9 @@ Each type in a model file gets a place in the rail, and pages generated from its
 - **Links** can be added only where the model has a relationship, and removed one at a time, except a record's last link of
   a kind its type requires. A record that still has links can't be deleted, like anything else in the app. Its own required
   links don't count: they go with it.
+- **Ids elsewhere**, such as a UKC id, are kept in `external_ref` by node id, so an import can find the record again. A
+  source's id belongs to one record of a type. The record page shows them, linked when they have a web address, and they go
+  when the record, its import or the model is replaced.
 
 The home page lists how many records there are of each type and how many links of each kind, and so does the graph
 model in Explore (type `graph`), on its types and links. Counting tens of millions of links takes too long to do each time,

@@ -320,6 +320,8 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable
     public async Task The_module_replaces_its_derived_records_and_links_in_one_go()
     {
         var (factory, records) = await LoadAsync();
+        var refs = new ExternalRefRepository(factory);
+        await refs.AddAsync("trip:t1", DataSource.Manual, "old-trip");
 
         var count = await records.ReplaceDerivedAsync("Climbing", "Trip",
             [
@@ -342,8 +344,15 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable
             Assert.Equal("""{"inferred": true}""", await db.NodeLinks.Where(l => l.TargetId == "trip:2024-wales").Select(l => l.Props).SingleAsync());
         }
 
+        // A record that's replaced by itself keeps its refs. One that goes loses them.
+        Assert.Null(await refs.FindNodeAsync(DataSource.Manual, "Trip", "old-trip"));
+        await refs.AddAsync("trip:2024-wales", DataSource.Manual, "wales");
+        await records.ReplaceDerivedAsync("Climbing", "Trip", [new DerivedRecord("2024-wales", "Wales, May 2024", new Dictionary<string, string?>())], []);
+        Assert.Equal("trip:2024-wales", await refs.FindNodeAsync(DataSource.Manual, "Trip", "wales"));
+
         await records.ReplaceDerivedAsync("Climbing", "Trip", [], []);
         Assert.Equal(0, (await records.ListAsync("Trip", null, 0, 10)).Total);
+        Assert.Null(await refs.FindNodeAsync(DataSource.Manual, "Trip", "wales"));
         Assert.Equal(0, await LinksCountedAsync(factory, "ON_TRIP"));
     }
 

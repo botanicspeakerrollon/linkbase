@@ -105,7 +105,7 @@ Each of these is something customers will want too. That's the test for building
 | G3 | **Required fields and links**: a record can't be saved without them | S–M | An ascent's route and date |
 | G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit. Done, see [models](models.md#owned-by-a-module) | M | Grade rank, refreshing trips |
 | G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived. Done, see [models](models.md#owned-by-a-module) | M | Trips |
-| G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows | S | UKC and MP ids, web import sources |
+| G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows. Done: a ref has `node_id` or the climbing columns, which go in step 6 | S | UKC and MP ids, web import sources |
 | G7 | **Creating linked records from a form**: pick a route, or create one, and its crag, without leaving the page | M–L | Later: replaces the custom Add ascent page |
 | G8 | **Sorting and filtering record lists by field** | M | Later: replaces the custom Logbook page |
 | G9 | **Generic import staging**: stage, review, commit and undo, for any import | L | Web import. Also needed for generic web import |

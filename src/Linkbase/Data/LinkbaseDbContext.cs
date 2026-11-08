@@ -93,6 +93,13 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             // thing: UKC crag 123 and UKC climb 123 are different records.
             externalRef.HasIndex(r => new { r.Source, r.EntityType, r.ExternalId }).IsUnique();
             externalRef.HasIndex(r => new { r.EntityType, r.EntityId });
+            externalRef.HasIndex(r => new { r.Source, r.NodeType, r.ExternalId }).IsUnique();
+            externalRef.HasIndex(r => r.NodeId);
+
+            // No foreign key to node: a model reload truncates node, and that would have to truncate the climbing refs too.
+            externalRef.ToTable(t => t.HasCheckConstraint("ck_external_ref_target",
+                "(entity_type IS NOT NULL AND entity_id IS NOT NULL AND node_id IS NULL AND node_type IS NULL)"
+                + " OR (entity_type IS NULL AND entity_id IS NULL AND node_id IS NOT NULL AND node_type IS NOT NULL)"));
         });
 
         modelBuilder.Entity<ImportBatch>(batch =>

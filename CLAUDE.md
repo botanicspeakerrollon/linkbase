@@ -31,8 +31,8 @@ choice between clever and boring, choose boring. See `README.md` for commands.
   `ConfigureConventions`.
 - Foreign keys never cascade. Deleting something that's still referenced fails, and services report that.
   `SaveChanges` wraps the error in `DbUpdateException`; `ExecuteDelete` throws `PostgresException` directly.
-- `external_ref` is polymorphic and has no foreign key, so code that deletes an entity must delete its
-  refs in the same transaction.
+- `external_ref` points at a climbing row or a node (`node_id`) and has no foreign key, so code that deletes an entity or
+  node must delete its refs in the same transaction (`ExternalRefRepository.RemoveForNodesAsync` for nodes).
 - `link_definition.links` counts each relationship's links, because counting them live is too slow on large models. Code
   that adds or removes rows in `node_link` updates it in the same transaction.
 - `created_at` equals `updated_at` until a row is edited; import undo relies on this. `SaveChanges` stamps

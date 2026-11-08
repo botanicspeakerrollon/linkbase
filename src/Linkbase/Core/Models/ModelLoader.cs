@@ -45,6 +45,8 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             }
         }
 
+        // The refs go with the nodes. Refs to climbing rows stay.
+        await RunAsync("DELETE FROM external_ref WHERE node_id IS NOT NULL");
         await RunAsync("TRUNCATE node_link, node, link_definition, field_definition, node_type");
         foreach (var index in indexes)
         {

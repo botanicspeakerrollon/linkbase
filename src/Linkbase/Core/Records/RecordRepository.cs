@@ -401,6 +401,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
             }
 
             await derived.ExecuteDeleteAsync(cancellationToken);
+            await ExternalRefRepository.RemoveForNodesAsync(db, db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).Select(n => n.Id), cancellationToken);
             await db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
@@ -557,6 +558,10 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         }
 
         await old.ExecuteDeleteAsync(cancellationToken);
+
+        // A record that comes back keeps its refs, because its id is the same. The others' refs go with them.
+        var kept = ids.ToList();
+        await ExternalRefRepository.RemoveForNodesAsync(db, db.Nodes.Where(n => n.Type == type && !kept.Contains(n.Id)).Select(n => n.Id), cancellationToken);
         await db.Nodes.Where(n => n.Type == type).ExecuteDeleteAsync(cancellationToken);
         db.Nodes.AddRange(nodes);
         db.NodeLinks.AddRange(links.Distinct().Select(l => new NodeLink

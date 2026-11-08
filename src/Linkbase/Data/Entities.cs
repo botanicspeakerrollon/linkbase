@@ -147,10 +147,18 @@ public class GraphScene : ITimestamped
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
+// An id in another system, such as a UKC crag id. It points at either a climbing row (EntityType and EntityId) or a node
+// in the generic store (NodeId and NodeType), never both. The climbing columns go once climbing has moved to the generic
+// store (docs/climbing-to-generic-plan.md).
 public class ExternalRef : ImportedEntity
 {
-    public ExternalEntityType EntityType { get; set; }
-    public long EntityId { get; set; }
+    public ExternalEntityType? EntityType { get; set; }
+    public long? EntityId { get; set; }
+
+    // The node's type is kept with its id because a source's ids are only unique per kind of thing.
+    public string? NodeId { get; set; }
+    public string? NodeType { get; set; }
+
     public DataSource Source { get; set; }
     public required string ExternalId { get; set; }
     public string? Url { get; set; }
