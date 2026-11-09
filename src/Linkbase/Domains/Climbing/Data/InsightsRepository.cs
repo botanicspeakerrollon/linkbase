@@ -33,13 +33,12 @@ public sealed record PartnerAscentsRow(string Partner, long Ascents);
 
 public sealed record TwoDayTripRow(string Name, DateOnly? StartDate, DateOnly? EndDate);
 
-public sealed record OnThisDayRow(int Year, long RouteId, string Route, string? Grade, long CragId, string Crag, string Style, string[] Partners, string? Notes);
+public sealed record OnThisDayRow(int Year, string RouteId, string Route, string? Grade, string CragId, string Crag, string Style, string[] Partners, string? Notes);
 
-// Ported from queries.cypher. Built on the ascent_facts view, which adds each ascent's country and season.
+// Reads the climbing records in the generic store through views (see ClimbingInsightsOnGenericStore). climbing_ascent_facts adds each
+// ascent's country and season.
 public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
-    private const long User = AppUser.DefaultId;
-
     private async Task<List<T>> QueryAsync<T>(FormattableString sql, CancellationToken cancellationToken)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -49,23 +48,22 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
     // Newest first. A partial date is stored as the first of its month or year, so only exact days count here.
     public Task<List<OnThisDayRow>> OnThisDayAsync(int month, int day, CancellationToken cancellationToken = default) => QueryAsync<OnThisDayRow>(
         $"""
-        SELECT extract(year FROM a.date)::int AS "Year",
-               r.id AS "RouteId", r.name AS "Route", r.grade AS "Grade",
-               c.id AS "CragId", c.name AS "Crag",
-               a.style AS "Style",
+        SELECT f.year AS "Year",
+               r.id AS "RouteId", r.name AS "Route", r.props ->> 'grade' AS "Grade",
+               f.crag_id AS "CragId", f.crag_name AS "Crag",
+               a.props ->> 'style' AS "Style",
                coalesce((SELECT array_agg(p.name ORDER BY p.name)
-                         FROM ascent_partner ap
-                         JOIN partner p ON p.id = ap.partner_id
-                         WHERE ap.ascent_id = a.id), ARRAY[]::text[]) AS "Partners",
-               a.notes AS "Notes"
-        FROM ascent a
-        JOIN route r ON r.id = a.route_id
-        JOIN crag c ON c.id = r.crag_id
-        WHERE a.user_id = {User}
-          AND a.date_precision = 'day'
-          AND extract(month FROM a.date) = {month}
-          AND extract(day FROM a.date) = {day}
-        ORDER BY a.date DESC, a.id DESC
+                         FROM climbing_ascent_partner ap
+                         JOIN climbing_partner p ON p.id = ap.partner_id
+                         WHERE ap.ascent_id = f.ascent_id), ARRAY[]::text[]) AS "Partners",
+               a.props ->> 'notes' AS "Notes"
+        FROM climbing_ascent_facts f
+        JOIN node a ON a.id = f.ascent_id
+        JOIN node r ON r.id = f.route_id
+        WHERE f.date_precision = 'day'
+          AND extract(month FROM f.date) = {month}
+          AND extract(day FROM f.date) = {day}
+        ORDER BY f.date DESC, f.ascent_id DESC
         """, cancellationToken);
 
     public Task<List<TripAbroadRow>> TripsAbroadAsync(CancellationToken cancellationToken = default) => QueryAsync<TripAbroadRow>(
@@ -75,14 +73,14 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
                count(*) AS "Ascents",
                (array_agg(DISTINCT f.crag_name))[1:5] AS "Crags",
                coalesce((SELECT array_agg(DISTINCT p.name)
-                         FROM ascent a
-                         JOIN ascent_partner ap ON ap.ascent_id = a.id
-                         JOIN partner p ON p.id = ap.partner_id
+                         FROM climbing_ascent_facts a
+                         JOIN climbing_ascent_partner ap ON ap.ascent_id = a.ascent_id
+                         JOIN climbing_partner p ON p.id = ap.partner_id
                          WHERE a.trip_id = t.id), ARRAY[]::text[]) AS "Partners"
-        FROM trip t
-        JOIN ascent_facts f ON f.trip_id = t.id
-        WHERE t.abroad AND t.user_id = {User}
-        GROUP BY t.id
+        FROM climbing_trip t
+        JOIN climbing_ascent_facts f ON f.trip_id = t.id
+        WHERE t.abroad
+        GROUP BY t.id, t.name, t.start_date, t.end_date, t.sort_date
         ORDER BY t.sort_date DESC
         """, cancellationToken);
 
@@ -93,10 +91,9 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
                count(*) AS "Ascents",
                round(count(*) FILTER (WHERE f.date_precision = 'day')::numeric
                      / count(DISTINCT f.date) FILTER (WHERE f.date_precision = 'day'), 1) AS "AscentsPerDay"
-        FROM trip t
-        JOIN ascent_facts f ON f.trip_id = t.id
-        WHERE t.user_id = {User}
-        GROUP BY t.id
+        FROM climbing_trip t
+        JOIN climbing_ascent_facts f ON f.trip_id = t.id
+        GROUP BY t.id, t.name, t.start_date, t.end_date, t.sort_date
         HAVING count(DISTINCT f.date) FILTER (WHERE f.date_precision = 'day') > 0
         ORDER BY "Days" DESC
         LIMIT 15
@@ -108,10 +105,10 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         FROM (
             SELECT t.id, t.name, t.sort_date, extract(year FROM t.sort_date)::int AS year,
                    count(DISTINCT f.date) FILTER (WHERE f.date_precision = 'day') AS days
-            FROM trip t
-            JOIN ascent_facts f ON f.trip_id = t.id
-            WHERE t.abroad AND t.user_id = {User}
-            GROUP BY t.id
+            FROM climbing_trip t
+            JOIN climbing_ascent_facts f ON f.trip_id = t.id
+            WHERE t.abroad
+            GROUP BY t.id, t.name, t.start_date, t.end_date, t.sort_date
         ) y
         GROUP BY y.year
         ORDER BY y.year
@@ -122,9 +119,9 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         SELECT f.country AS "Country", count(DISTINCT t.id) AS "Trips",
                min(extract(year FROM t.sort_date))::int AS "FirstYear",
                max(extract(year FROM t.sort_date))::int AS "LastYear"
-        FROM trip t
-        JOIN ascent_facts f ON f.trip_id = t.id
-        WHERE NOT t.home AND t.user_id = {User}
+        FROM climbing_trip t
+        JOIN climbing_ascent_facts f ON f.trip_id = t.id
+        WHERE NOT t.home
         GROUP BY f.country
         ORDER BY "Trips" DESC, "Country"
         """, cancellationToken);
@@ -134,8 +131,7 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         SELECT f.crag_name AS "Crag", f.country AS "Country", count(DISTINCT f.year) AS "Years",
                min(f.year) AS "FirstYear", max(f.year) AS "LastYear", count(DISTINCT f.day_key) AS "Days",
                count(DISTINCT f.route_id) AS "Climbs", count(*) - count(DISTINCT f.route_id) AS "Repeats"
-        FROM ascent_facts f
-        WHERE f.user_id = {User}
+        FROM climbing_ascent_facts f
         GROUP BY f.crag_id, f.crag_name, f.country
         HAVING count(DISTINCT f.year) >= 3
         ORDER BY "Years" DESC, "Days" DESC
@@ -148,8 +144,7 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
                count(*) FILTER (WHERE c.days >= 5) AS "Regulars"
         FROM (
             SELECT f.crag_id, f.country, count(DISTINCT f.day_key) AS days
-            FROM ascent_facts f
-            WHERE f.user_id = {User}
+            FROM climbing_ascent_facts f
             GROUP BY f.crag_id, f.country
         ) c
         GROUP BY c.country
@@ -161,8 +156,7 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         SELECT f.crag_name AS "Crag", count(*) AS "Ascents", count(DISTINCT f.route_id) AS "Climbs",
                count(*) - count(DISTINCT f.route_id) AS "Repeats",
                round(100.0 * (count(*) - count(DISTINCT f.route_id)) / count(*)) AS "RepeatPercent"
-        FROM ascent_facts f
-        WHERE f.user_id = {User}
+        FROM climbing_ascent_facts f
         GROUP BY f.crag_id, f.crag_name
         HAVING count(*) > count(DISTINCT f.route_id)
         ORDER BY "Repeats" DESC
@@ -172,8 +166,7 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
     public Task<List<NotVisitedRow>> NotVisitedLatelyAsync(int currentYear, CancellationToken cancellationToken = default) => QueryAsync<NotVisitedRow>(
         $"""
         SELECT f.crag_name AS "Crag", f.country AS "Country", count(DISTINCT f.day_key) AS "Days", max(f.year) AS "LastYear"
-        FROM ascent_facts f
-        WHERE f.user_id = {User}
+        FROM climbing_ascent_facts f
         GROUP BY f.crag_id, f.crag_name, f.country
         HAVING count(DISTINCT f.day_key) >= 5 AND max(f.year) <= {currentYear} - 5
         ORDER BY "Days" DESC
@@ -184,11 +177,11 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         SELECT f.country AS "Country", count(*) AS "Total",
                ARRAY(SELECT count(*) FILTER (WHERE g.month = m)
                      FROM generate_series(1, 12) m
-                     LEFT JOIN ascent_facts g ON g.country = f.country AND g.user_id = f.user_id AND g.month = m
+                     LEFT JOIN climbing_ascent_facts g ON g.country = f.country AND g.month = m
                      GROUP BY m ORDER BY m) AS "Months"
-        FROM ascent_facts f
-        WHERE f.month IS NOT NULL AND f.user_id = {User}
-        GROUP BY f.country, f.user_id
+        FROM climbing_ascent_facts f
+        WHERE f.month IS NOT NULL
+        GROUP BY f.country
         ORDER BY "Total" DESC
         """, cancellationToken);
 
@@ -197,20 +190,20 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         SELECT f.year AS "Year",
                ARRAY(SELECT count(DISTINCT g.day_key)
                      FROM generate_series(1, 12) m
-                     LEFT JOIN ascent_facts g ON g.year = f.year AND g.user_id = f.user_id AND g.month = m
+                     LEFT JOIN climbing_ascent_facts g ON g.year = f.year AND g.month = m
                      GROUP BY m ORDER BY m) AS "Months",
                count(DISTINCT f.day_key) AS "Total"
-        FROM ascent_facts f
-        WHERE f.month IS NOT NULL AND f.user_id = {User}
-        GROUP BY f.year, f.user_id
+        FROM climbing_ascent_facts f
+        WHERE f.month IS NOT NULL
+        GROUP BY f.year
         ORDER BY f.year
         """, cancellationToken);
 
     public Task<List<SeasonRow>> SeasonsByDisciplineAsync(CancellationToken cancellationToken = default) => QueryAsync<SeasonRow>(
         $"""
         SELECT f.season AS "Season", coalesce(f.discipline, 'none') AS "Discipline", count(*) AS "Ascents"
-        FROM ascent_facts f
-        WHERE f.season IS NOT NULL AND f.user_id = {User}
+        FROM climbing_ascent_facts f
+        WHERE f.season IS NOT NULL
         GROUP BY f.season, f.discipline
         ORDER BY array_position(ARRAY['Spring', 'Summer', 'Autumn', 'Winter'], f.season), "Ascents" DESC
         """, cancellationToken);
@@ -222,8 +215,7 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         FROM (
             SELECT f.year, coalesce(f.discipline, 'none') AS discipline, count(*) AS n,
                    sum(count(*)) OVER (PARTITION BY f.year) AS total
-            FROM ascent_facts f
-            WHERE f.user_id = {User}
+            FROM climbing_ascent_facts f
             GROUP BY f.year, f.discipline
         ) d
         GROUP BY d.year
@@ -235,12 +227,11 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
         SELECT p.name AS "Partner", count(DISTINCT t.id) AS "Trips",
                (array_agg(DISTINCT t.name))[1:8] AS "SomeTrips",
                array_agg(DISTINCT f.country) AS "Countries"
-        FROM partner p
-        JOIN ascent_partner ap ON ap.partner_id = p.id
-        JOIN ascent_facts f ON f.ascent_id = ap.ascent_id
-        JOIN trip t ON t.id = f.trip_id
-        WHERE p.user_id = {User}
-        GROUP BY p.id
+        FROM climbing_partner p
+        JOIN climbing_ascent_partner ap ON ap.partner_id = p.id
+        JOIN climbing_ascent_facts f ON f.ascent_id = ap.ascent_id
+        JOIN climbing_trip t ON t.id = f.trip_id
+        GROUP BY p.id, p.name
         ORDER BY "Trips" DESC, "Partner"
         LIMIT 30
         """, cancellationToken);
@@ -248,10 +239,9 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
     public Task<List<PartnerAscentsRow>> PartnersByAscentsAsync(CancellationToken cancellationToken = default) => QueryAsync<PartnerAscentsRow>(
         $"""
         SELECT p.name AS "Partner", count(*) AS "Ascents"
-        FROM partner p
-        JOIN ascent_partner ap ON ap.partner_id = p.id
-        WHERE p.user_id = {User}
-        GROUP BY p.id
+        FROM climbing_partner p
+        JOIN climbing_ascent_partner ap ON ap.partner_id = p.id
+        GROUP BY p.id, p.name
         ORDER BY "Ascents" DESC, "Partner"
         LIMIT 15
         """, cancellationToken);
@@ -259,10 +249,9 @@ public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> cont
     public Task<List<TwoDayTripRow>> TwoDayTripsAsync(CancellationToken cancellationToken = default) => QueryAsync<TwoDayTripRow>(
         $"""
         SELECT t.name AS "Name", t.start_date AS "StartDate", t.end_date AS "EndDate"
-        FROM trip t
-        JOIN ascent_facts f ON f.trip_id = t.id
-        WHERE t.user_id = {User}
-        GROUP BY t.id
+        FROM climbing_trip t
+        JOIN climbing_ascent_facts f ON f.trip_id = t.id
+        GROUP BY t.id, t.name, t.start_date, t.end_date, t.sort_date
         HAVING count(DISTINCT f.date) FILTER (WHERE f.date_precision = 'day') = 2
         ORDER BY t.start_date
         """, cancellationToken);

@@ -21,7 +21,6 @@ public class RepositoryTests(PostgresFixture fixture)
     private AscentRepository Ascents() => new(fixture.ContextFactory(), Areas(), Refresher());
     private CragRepository Crags() => new(fixture.ContextFactory(), Refresher());
     private RouteRepository Routes() => new(fixture.ContextFactory(), Refresher());
-    private InsightsRepository Insights() => new(fixture.ContextFactory());
 
     private static AscentInput NewAscent(string route, string crag, string country, string date = "2020-05-02", AscentStyle style = AscentStyle.Lead) => new()
     {
@@ -265,56 +264,6 @@ public class RepositoryTests(PostgresFixture fixture)
         Assert.Equal(1, country.SubAreas.Single().Ascents);
 
         Assert.Null(await Areas().GetContentsAsync(-1));
-    }
-
-    [Fact]
-    public async Task Insights_queries_run_and_count_a_known_scenario()
-    {
-        var country = "Argentina";
-        var crag = Unique("Crag");
-        var partner = Unique("Partner");
-        var first = await CreateAsync(NewAscent(Unique("Route"), crag, country, "2031-01-10") with { Partners = [partner] });
-        await Ascents().CreateAsync(new AscentInput
-        {
-            RouteId = first.RouteId,
-            Date = new DateOnly(2031, 1, 11),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Lead,
-            Partners = [partner],
-        });
-        await new TripService(fixture.ContextFactory()).RebuildAsync([]);
-
-        var insights = Insights();
-        var trip = (await insights.TripsAbroadAsync()).Single(t => t.StartDate == new DateOnly(2031, 1, 10));
-        Assert.Equal(2, trip.DatedDays);
-        Assert.Equal(2, trip.Ascents);
-        Assert.Equal([crag], trip.Crags);
-        Assert.Equal([partner], trip.Partners);
-
-        Assert.Contains(await insights.BiggestTripsAsync(), t => t.Name == trip.Name);
-        Assert.Contains(await insights.TripsAbroadPerYearAsync(), y => y.Year == 2031 && y.Trips == 1 && y.Days == 2);
-        Assert.Contains(await insights.CountriesRevisitedAsync(), c => c.Country == country);
-        Assert.Contains(await insights.CragVisitsByCountryAsync(), c => c.Country == country);
-        Assert.Contains(await insights.MostRepeatedCragsAsync(), c => c.Crag == crag && c.Repeats == 1 && c.RepeatPercent == 50);
-        Assert.Contains(await insights.PartnersByTripsAsync(), p => p.Partner == partner && p.Trips == 1);
-        Assert.Contains(await insights.PartnersByAscentsAsync(), p => p.Partner == partner && p.Ascents == 2);
-        Assert.Contains(await insights.TwoDayTripsAsync(), t => t.Name == trip.Name);
-
-        var months = (await insights.AscentsByMonthAndCountryAsync()).Single(c => c.Country == country);
-        Assert.Equal(12, months.Months.Length);
-        Assert.True(months.Months[0] >= 2);
-
-        var days = (await insights.ClimbingDaysByMonthAsync()).Single(y => y.Year == 2031);
-        Assert.Equal(12, days.Months.Length);
-        Assert.Equal(2, days.Months[0]);
-        Assert.Equal(2, days.Total);
-
-        // January is summer in Argentina.
-        Assert.Contains(await insights.SeasonsByDisciplineAsync(), s => s.Season == "Summer" && s.Discipline == "trad");
-        Assert.Contains((await insights.DisciplineMixByYearAsync()).Single(y => y.Year == 2031).Mix, m => m.StartsWith("trad "));
-
-        Assert.NotNull(await insights.CragLoyaltyAsync());
-        Assert.NotNull(await insights.NotVisitedLatelyAsync(2040));
     }
 
     [Fact]

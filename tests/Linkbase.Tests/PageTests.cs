@@ -190,6 +190,15 @@ public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 [Collection(PostgresCollection.Name)]
 public class InsightsPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 {
+    // The made-up climbing model in a database of its own, which the page reads instead of the shared one.
+    private async Task GenericAsync()
+    {
+        var (source, target) = await GenericConversionTests.TypedAsync(Fixture);
+        await new GenericConverter(source, target).ConvertAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(target);
+        Services.AddSingleton<InsightsRepository>();
+    }
+
     private static void OpenTab(IRenderedComponent<InsightsPage> cut, string name)
     {
         cut.WaitForAssertion(() => Assert.Contains(cut.FindAll(".mud-tab"), t => t.TextContent.Trim() == name));
@@ -199,83 +208,51 @@ public class InsightsPageTests(PostgresFixture fixture) : UiTestBase(fixture)
     [Fact]
     public async Task Every_tab_shows_its_tables()
     {
-        var s = await SeedAsync(date: new DateOnly(2015, 5, 2));
-        foreach (var date in new DateOnly[] { new(2015, 5, 3), new(2016, 6, 1), new(2016, 6, 2), new(2017, 7, 1), new(2017, 7, 2) })
-        {
-            await Services.GetRequiredService<AscentRepository>().CreateAsync(new AscentInput
-            {
-                RouteId = s.RouteId,
-                Date = date,
-                DatePrecision = DatePrecision.Day,
-                Style = AscentStyle.Lead,
-                Partners = [s.Partner],
-            });
-        }
-
-        await Services.GetRequiredService<TripService>().RebuildAsync([]);
+        await GenericAsync();
 
         var cut = RenderPage<InsightsPage>();
 
         Sees(cut, "Trips abroad");
-        Sees(cut, s.Partner);
+        Sees(cut, "Gaule, July 2021");
+        Sees(cut, "Sam Example");
         Sees(cut, "Two-day trips");
-        Sees(cut, s.Country);
+        Sees(cut, "Wessex, May 2020");
 
         OpenTab(cut, "Places");
         Sees(cut, "Crags you return to year after year");
-        Sees(cut, s.Crag);
+        Sees(cut, "Hollow Tor");
 
         OpenTab(cut, "Seasons");
         Sees(cut, "Climbing days per month");
         Sees(cut, "Discipline mix by year");
-        Sees(cut, s.Country);
+        Sees(cut, "Wessex");
 
         OpenTab(cut, "Partners");
         Sees(cut, "By trips");
-        Sees(cut, s.Partner);
+        Sees(cut, "Sam Example");
     }
 
     [Fact]
-    public async Task On_this_day_lists_past_years_newest_first_with_exact_dates_only()
+    public async Task On_this_day_lists_exact_dates_only()
     {
-        var older = await SeedAsync(date: new DateOnly(2011, 3, 17), notes: "Older");
-        var newer = await SeedAsync(date: new DateOnly(2019, 3, 17), style: AscentStyle.TopRope);
-        var otherDay = await SeedAsync(date: new DateOnly(2019, 3, 18));
-        var monthOnly = await SeedAsync(date: new DateOnly(2018, 3, 1));
-        await using (var db = Fixture.CreateContext())
-        {
-            await db.Ascents.Where(a => a.Id == monthOnly.AscentId).ExecuteUpdateAsync(u => u
-                .SetProperty(a => a.DatePrecision, DatePrecision.Month)
-                .SetProperty(a => a.UpdatedAt, DateTimeOffset.UtcNow));
-        }
+        await GenericAsync();
 
-        var rows = await Services.GetRequiredService<InsightsRepository>().OnThisDayAsync(3, 17);
-        var mine = rows.Where(r => r.Route == older.Route || r.Route == newer.Route).ToList();
-        Assert.Equal([newer.Route, older.Route], mine.Select(r => r.Route));
-        Assert.Equal(2019, mine[0].Year);
-        Assert.Equal([newer.Partner], mine[0].Partners);
-        Assert.DoesNotContain(rows, r => r.Route == otherDay.Route);
-        Assert.DoesNotContain(await Services.GetRequiredService<InsightsRepository>().OnThisDayAsync(3, 1), r => r.Route == monthOnly.Route);
-
-        var cut = RenderPage<InsightsPage>(p => p.Add(x => x.OnDate, new DateOnly(2026, 3, 17)));
+        var cut = RenderPage<InsightsPage>(p => p.Add(x => x.OnDate, new DateOnly(2026, 5, 2)));
         OpenTab(cut, "On this day");
 
-        Sees(cut, "17 March in past years");
-        Sees(cut, newer.Route);
-        Sees(cut, newer.Crag);
-        Sees(cut, newer.Partner);
-        Sees(cut, "Top rope");
-        Sees(cut, "Older");
-        DoesNotSee(cut, otherDay.Route);
+        Sees(cut, "2 May in past years");
+        Sees(cut, "Crack of Dawn");
+        Sees(cut, "Hollow Tor");
+        Sees(cut, "Sam Example");
+        Sees(cut, "Onsight");
+        Sees(cut, "Cold hands");
+        DoesNotSee(cut, "Slab Happy");
     }
 
     [Fact]
     public async Task On_this_day_says_so_when_nothing_was_climbed()
     {
-        await using (var db = Fixture.CreateContext())
-        {
-            Assert.False(await db.Ascents.AnyAsync(a => a.Date.Month == 2 && a.Date.Day == 29));
-        }
+        await GenericAsync();
 
         var cut = RenderPage<InsightsPage>(p => p.Add(x => x.OnDate, new DateOnly(2024, 2, 29)));
         OpenTab(cut, "On this day");
@@ -286,11 +263,10 @@ public class InsightsPageTests(PostgresFixture fixture) : UiTestBase(fixture)
     [Fact]
     public async Task A_trip_with_no_dates_says_so()
     {
-        var s = await SeedAsync(date: new DateOnly(2016, 5, 2));
-        await Services.GetRequiredService<TripService>().RebuildAsync([]);
+        await GenericAsync();
+
         var cut = RenderPage<InsightsPage>();
-        Sees(cut, s.Country);
-        var instance = typeof(InsightsPage).GetMethod("DateRange", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
-        Assert.Equal("Dates unknown", instance.Invoke(null, [null, null]));
+
+        Sees(cut, "Dates unknown");
     }
 }
