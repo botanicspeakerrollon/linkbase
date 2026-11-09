@@ -5,6 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Linkbase.Domains.Climbing.Data;
 
+public enum AscentSort { Date, Route, Crag, Style }
+
+public sealed record YearCount(int Year, int Ascents);
+
+public sealed record DisciplineCount(Discipline? Discipline, int Ascents);
+
 // The Logbook page's queries over the generic store (see docs/climbing-to-generic-plan.md). Ids are node ids, such as
 // crag:12.
 public sealed record LogbookFilter

@@ -556,8 +556,8 @@ public class ExplorePageTests : UiTestBase
     [Fact]
     public async Task One_enter_searches_for_free_text()
     {
-        var s = await SeedAsync(notes: $"Windy {Guid.NewGuid():N}");
-        var note = (await Services.GetRequiredService<AscentRepository>().GetForEditAsync(s.AscentId))!.Notes!;
+        var note = $"Windy {Guid.NewGuid():N}";
+        await SeedAsync(notes: note);
         var cut = RenderPage<ExplorePage>();
 
         Search(cut, note);
@@ -611,7 +611,7 @@ public class ExplorePageTests : UiTestBase
         Sees(cut, "Fit");
         cut.WaitForAssertion(() => Assert.Contains("update", GraphCalls));
 
-        await cut.InvokeAsync(() => cut.Instance.OnNodeDoubleClicked("model:Country"));
+        await cut.InvokeAsync(() => cut.Instance.OnNodeDoubleClicked("model:Area"));
         cut.WaitForAssertion(() => Assert.DoesNotContain(
             ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
             n => n!.Contains("model:", StringComparison.Ordinal)));
@@ -984,8 +984,9 @@ public class ExplorePageTests : UiTestBase
     }
 
     [Fact]
-    public void A_search_with_no_matches_says_so()
+    public async Task A_search_with_no_matches_says_so()
     {
+        await UseClimbingStoreAsync();
         var cut = RenderPage<ExplorePage>();
 
         Search(cut, "Crag");
@@ -1011,10 +1012,14 @@ public class ExplorePageTests : UiTestBase
     {
         var prefix = Unique("Many");
         var s = await SeedAsync();
-        await using (var db = Fixture.CreateContext())
+        await using (var db = (await UseClimbingStoreAsync()).CreateDbContext())
         {
-            db.Crags.AddRange(Enumerable.Range(0, 105).Select(i => new Crag { UserId = AppUser.DefaultId, Name = $"{prefix} {i:000}", AreaId = s.AreaId }));
-            db.Routes.AddRange(Enumerable.Range(0, 105).Select(i => new Route { UserId = AppUser.DefaultId, Name = $"{prefix} route {i:000}", CragId = s.CragId }));
+            db.Nodes.AddRange(Enumerable.Range(0, 105).Select(i => new Node
+                { Id = $"crag:many{i:000}", UserId = AppUser.DefaultId, Type = "Crag", Key = $"many{i:000}", Name = $"{prefix} {i:000}", Props = "{}" }));
+            db.Nodes.AddRange(Enumerable.Range(0, 105).Select(i => new Node
+                { Id = $"route:many{i:000}", UserId = AppUser.DefaultId, Type = "Route", Key = $"many{i:000}", Name = $"{prefix} route {i:000}", Props = "{}" }));
+            db.NodeLinks.AddRange(Enumerable.Range(0, 105).Select(i => new NodeLink { SourceId = $"crag:many{i:000}", RelType = "IN", TargetId = $"area:{s.AreaId}" }));
+            db.NodeLinks.AddRange(Enumerable.Range(0, 105).Select(i => new NodeLink { SourceId = $"route:many{i:000}", RelType = "AT", TargetId = $"crag:{s.CragId}" }));
             await db.SaveChangesAsync();
         }
 
@@ -1060,16 +1065,17 @@ public class ExplorePageTests : UiTestBase
         await SetAsync(cut, cut.FindComponents<MudSelect<string>>().First(c => c.Instance.Label == "Property").Instance.ValueChanged, "discipline");
         Sees(cut, "Add filter");
         Assert.True(Control(cut, "Add filter").HasAttribute("disabled"));
-        Type(cut, "Value", "boulder");
+        // A choice offers its options rather than a text box.
+        await SetAsync(cut, cut.FindComponents<MudSelect<string>>().First(c => c.Instance.Label == "Value").Instance.ValueChanged, "boulder");
         Press(cut, "Add filter");
-        Sees(cut, "discipline contains boulder");
+        Sees(cut, "discipline = boulder");
         DoesNotSee(cut, "Add filter");
 
         Press(cut, "Expand");
         Told("Nothing new to add");
 
         cut.Find(".mud-chip-close-button").Click();
-        DoesNotSee(cut, "discipline contains boulder");
+        DoesNotSee(cut, "discipline = boulder");
         await SetAsync(cut, cut.FindComponents<MudSelect<string>>().First(c => c.Instance.Label == "Property").Instance.ValueChanged, "grade");
         Sees(cut, "Add filter");
         await SetAsync(cut, cut.FindComponents<MudSelect<string>>().First(c => c.Instance.Label == "Property").Instance.ValueChanged, (string?)null!);

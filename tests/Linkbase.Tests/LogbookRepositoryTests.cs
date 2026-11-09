@@ -12,8 +12,7 @@ public sealed class LogbookRepositoryTests(PostgresFixture fixture)
 {
     private async Task<(LogbookRepository Logbook, ModelFactory Target)> ConvertedAsync()
     {
-        var (source, target) = await GenericConversionTests.TypedAsync(fixture);
-        await new GenericConverter(source, target).ConvertAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        var target = await MadeUpLogbook.CreateAsync(fixture);
         return (new LogbookRepository(target), target);
     }
 

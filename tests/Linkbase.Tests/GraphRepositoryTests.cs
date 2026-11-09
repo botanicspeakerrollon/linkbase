@@ -1,46 +1,47 @@
+using System.Text.Json.Nodes;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
 using Linkbase.Core.Explore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Linkbase.Tests;
 
+// The graph over climbing records in the generic store. Each test builds what it needs in a database of its own.
 [Trait("Category", "Database")]
 [Collection(PostgresCollection.Name)]
 public class GraphRepositoryTests(PostgresFixture fixture)
 {
     private static string Unique(string name) => $"{name} {Guid.NewGuid():N}";
 
-    private GraphRepository Graph() => new(fixture.ContextFactory());
+    private sealed record Scenario(
+        ModelFactory Store, string Country, string Crag, string Route, string Partner, string AscentId, string RouteId, string CragId, string AreaId, string PartnerId);
 
-    private AscentRepository Ascents()
+    private static GraphRepository Graph(Scenario s) => new(s.Store);
+
+    private async Task<Scenario> CreateAsync(string date = "2020-05-02", string discipline = "trad")
     {
-        var refresher = new TripRefresher(new TripService(fixture.ContextFactory()), () => "no-corrections-in-tests.json", NullLogger<TripRefresher>.Instance);
-        return new AscentRepository(fixture.ContextFactory(), new AreaRepository(fixture.ContextFactory()), refresher);
+        var store = await ClimbingStore.CreateAsync(fixture);
+        var (country, crag, route, partner) = (Unique("Country"), Unique("Crag"), Unique("Route"), Unique("Partner"));
+        var area = await ClimbingStore.AddCountryAsync(store, country);
+        var cragId = await ClimbingStore.AddAsync(store, "Crag", crag, null, "IN", area);
+        var routeId = await ClimbingStore.AddAsync(
+            store, "Route", route, new JsonObject { ["grade"] = "VS 4c", ["grade_system"] = "uk_trad", ["discipline"] = discipline }, "AT", cragId);
+        var partnerId = await ClimbingStore.AddAsync(store, "Partner", partner);
+        var ascent = await ClimbingStore.AddAsync(store, "Ascent", route, Ascent(date, "onsight", "A private note"), "OF", routeId);
+        await ClimbingStore.LinkAsync(store, ascent, "WITH", partnerId);
+        return new Scenario(store, country, crag, route, partner, ascent, routeId, cragId, area, partnerId);
     }
 
-    private sealed record Scenario(string Country, string Crag, string Route, string Partner, long AscentId, long RouteId, long CragId, long AreaId, long PartnerId);
-
-    private async Task<Scenario> CreateAsync(string date = "2020-05-02", Discipline discipline = Discipline.Trad)
+    private static JsonObject Ascent(string date, string style, string? notes = null)
     {
-        var (country, crag, route, partner) = (Unique("Country"), Unique("Crag"), Unique("Route"), Unique("Partner"));
-        var id = await Ascents().CreateAsync(new AscentInput
+        var props = new JsonObject { ["date"] = date, ["date_precision"] = "day", ["style"] = style, ["source"] = "manual" };
+        if (notes is not null)
         {
-            NewRoute = new NewRouteInput(route, "VS 4c", GradeSystem.UkTrad, discipline, 20, 1, null, new NewCragInput(crag, null, country)),
-            Date = DateOnly.Parse(date),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Onsight,
-            Partners = [partner],
-            Notes = "A private note",
-        });
+            props["notes"] = notes;
+        }
 
-        await using var db = fixture.CreateContext();
-        var row = await db.Ascents.AsNoTracking().Where(a => a.Id == id)
-            .Select(a => new { a.RouteId, a.Route.CragId, a.Route.Crag.AreaId, PartnerId = a.Partners.Select(p => p.PartnerId).Single() })
-            .SingleAsync();
-        return new Scenario(country, crag, route, partner, id, row.RouteId, row.CragId, row.AreaId, row.PartnerId);
+        return props;
     }
 
     private static readonly GraphFilter NoFilter = new();
@@ -61,21 +62,20 @@ public class GraphRepositoryTests(PostgresFixture fixture)
     {
         var s = await CreateAsync();
 
-        var graph = await Graph().SubgraphAsync([$"ascent:{s.AscentId}", $"route:{s.RouteId}", $"crag:{s.CragId}", $"area:{s.AreaId}", $"partner:{s.PartnerId}"]);
+        var graph = await Graph(s).SubgraphAsync([s.AscentId, s.RouteId, s.CragId, s.AreaId, s.PartnerId]);
 
         var byId = graph.Nodes.ToDictionary(n => n.Id);
-        var ascent = byId[$"ascent:{s.AscentId}"];
+        var ascent = byId[s.AscentId];
         Assert.Equal("Ascent", ascent.Label);
         Assert.Equal(s.Route, ascent.Name);
         Assert.Equal("2020-05-02", ascent.Property("date"));
         Assert.Equal("onsight", ascent.Property("style"));
         Assert.Equal("A private note", ascent.Property("notes"));
-        Assert.Equal(s.AscentId, ascent.EntityId);
 
-        Assert.Equal("VS 4c", byId[$"route:{s.RouteId}"].Property("grade"));
-        Assert.Equal("Crag", byId[$"crag:{s.CragId}"].Label);
-        Assert.Equal("Country", byId[$"area:{s.AreaId}"].Label);
-        Assert.Equal(s.Partner, byId[$"partner:{s.PartnerId}"].Name);
+        Assert.Equal("VS 4c", byId[s.RouteId].Property("grade"));
+        Assert.Equal("Crag", byId[s.CragId].Label);
+        Assert.Equal("Area", byId[s.AreaId].Label);
+        Assert.Equal(s.Partner, byId[s.PartnerId].Name);
     }
 
     [Fact]
@@ -83,26 +83,26 @@ public class GraphRepositoryTests(PostgresFixture fixture)
     {
         var s = await CreateAsync();
 
-        var graph = await Graph().SubgraphAsync([$"ascent:{s.AscentId}", $"route:{s.RouteId}", $"crag:{s.CragId}", $"area:{s.AreaId}", $"partner:{s.PartnerId}"]);
+        var graph = await Graph(s).SubgraphAsync([s.AscentId, s.RouteId, s.CragId, s.AreaId, s.PartnerId]);
 
-        Assert.Contains(new GraphEdge($"ascent:{s.AscentId}", $"route:{s.RouteId}", "OF"), graph.Edges);
-        Assert.Contains(new GraphEdge($"route:{s.RouteId}", $"crag:{s.CragId}", "AT"), graph.Edges);
-        Assert.Contains(new GraphEdge($"crag:{s.CragId}", $"area:{s.AreaId}", "IN"), graph.Edges);
-        Assert.Contains(new GraphEdge($"ascent:{s.AscentId}", $"partner:{s.PartnerId}", "WITH"), graph.Edges);
+        Assert.Contains(new GraphEdge(s.AscentId, s.RouteId, "OF"), graph.Edges);
+        Assert.Contains(new GraphEdge(s.RouteId, s.CragId, "AT"), graph.Edges);
+        Assert.Contains(new GraphEdge(s.CragId, s.AreaId, "IN"), graph.Edges);
+        Assert.Contains(new GraphEdge(s.AscentId, s.PartnerId, "WITH"), graph.Edges);
     }
 
     [Fact]
     public async Task Trips_link_to_ascents_and_the_countries_they_visited()
     {
         var s = await CreateAsync();
-        await new TripService(fixture.ContextFactory()).RebuildAsync([]);
-        await using var db = fixture.CreateContext();
-        var tripId = await db.Ascents.AsNoTracking().Where(a => a.Id == s.AscentId).Select(a => a.TripId).SingleAsync();
+        await new GenericTripService(s.Store).RebuildAsync([]);
+        await using var db = s.Store.CreateDbContext();
+        var tripId = await db.NodeLinks.AsNoTracking().Where(l => l.SourceId == s.AscentId && l.RelType == "ON_TRIP").Select(l => l.TargetId).SingleAsync();
 
-        var neighbours = await Graph().NeighboursAsync($"trip:{tripId}", NoFilter, [], 10);
+        var neighbours = await Graph(s).NeighboursAsync(tripId, NoFilter, [], 10);
 
-        Assert.Contains(neighbours.Nodes, n => n.Id == $"ascent:{s.AscentId}");
-        Assert.Contains(neighbours.Nodes, n => n.Id == $"area:{s.AreaId}" && n.Label == "Country");
+        Assert.Contains(neighbours.Nodes, n => n.Id == s.AscentId);
+        Assert.Contains(neighbours.Nodes, n => n.Id == s.AreaId);
     }
 
     [Fact]
@@ -110,10 +110,10 @@ public class GraphRepositoryTests(PostgresFixture fixture)
     {
         var s = await CreateAsync();
 
-        var neighbours = await Graph().NeighboursAsync($"route:{s.RouteId}", NoFilter, [], 10);
+        var neighbours = await Graph(s).NeighboursAsync(s.RouteId, NoFilter, [], 10);
 
-        Assert.Contains(neighbours.Nodes, n => n.Id == $"crag:{s.CragId}");
-        Assert.Contains(neighbours.Nodes, n => n.Id == $"ascent:{s.AscentId}");
+        Assert.Contains(neighbours.Nodes, n => n.Id == s.CragId);
+        Assert.Contains(neighbours.Nodes, n => n.Id == s.AscentId);
         Assert.Equal(0, neighbours.Remaining);
     }
 
@@ -122,32 +122,32 @@ public class GraphRepositoryTests(PostgresFixture fixture)
     {
         var s = await CreateAsync();
 
-        var neighbours = await Graph().NeighboursAsync($"ascent:{s.AscentId}", NoFilter with { RelTypes = ["WITH"] }, [], 10);
+        var neighbours = await Graph(s).NeighboursAsync(s.AscentId, NoFilter with { RelTypes = ["WITH"] }, [], 10);
 
-        Assert.Equal($"partner:{s.PartnerId}", neighbours.Nodes.Single().Id);
+        Assert.Equal(s.PartnerId, neighbours.Nodes.Single().Id);
     }
 
     [Fact]
     public async Task Property_filters_only_narrow_types_that_have_the_property()
     {
-        var s = await CreateAsync(date: "2020-05-02", discipline: Discipline.Sport);
+        var s = await CreateAsync(date: "2020-05-02", discipline: "sport");
 
-        var outOfRange = await Graph().NeighboursAsync($"route:{s.RouteId}", NoFilter with { Properties = [new PatternFilter("date", FilterOperator.GreaterOrEqual, "2021-01-01")] }, [], 10);
+        var outOfRange = await Graph(s).NeighboursAsync(s.RouteId, NoFilter with { Properties = [new PatternFilter("date", FilterOperator.GreaterOrEqual, "2021-01-01")] }, [], 10);
         Assert.DoesNotContain(outOfRange.Nodes, n => n.Label == "Ascent");
         Assert.Contains(outOfRange.Nodes, n => n.Label == "Crag");
 
-        var inRange = await Graph().NeighboursAsync(
-            $"route:{s.RouteId}",
+        var inRange = await Graph(s).NeighboursAsync(
+            s.RouteId,
             NoFilter with { Properties = [new PatternFilter("date", FilterOperator.GreaterOrEqual, "2020-01-01"), new PatternFilter("date", FilterOperator.LessOrEqual, "2020-12-31")] },
             [],
             10);
         Assert.Contains(inRange.Nodes, n => n.Label == "Ascent");
 
-        var wrongDiscipline = await Graph().NeighboursAsync($"crag:{s.CragId}", NoFilter with { Properties = [new PatternFilter("discipline", FilterOperator.Equals, "boulder")] }, [], 10);
+        var wrongDiscipline = await Graph(s).NeighboursAsync(s.CragId, NoFilter with { Properties = [new PatternFilter("discipline", FilterOperator.Equals, "boulder")] }, [], 10);
         Assert.DoesNotContain(wrongDiscipline.Nodes, n => n.Label == "Route");
-        Assert.Contains(wrongDiscipline.Nodes, n => n.Label == "Country");
+        Assert.Contains(wrongDiscipline.Nodes, n => n.Label == "Area");
 
-        var rightDiscipline = await Graph().NeighboursAsync($"crag:{s.CragId}", NoFilter with { Properties = [new PatternFilter("discipline", FilterOperator.Equals, "sport")] }, [], 10);
+        var rightDiscipline = await Graph(s).NeighboursAsync(s.CragId, NoFilter with { Properties = [new PatternFilter("discipline", FilterOperator.Equals, "sport")] }, [], 10);
         Assert.Contains(rightDiscipline.Nodes, n => n.Label == "Route");
     }
 
@@ -156,8 +156,8 @@ public class GraphRepositoryTests(PostgresFixture fixture)
     {
         var s = await CreateAsync();
 
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Graph().NeighboursAsync($"route:{s.RouteId}", NoFilter with { Properties = [new PatternFilter("nope'; --", FilterOperator.Equals, "x")] }, [], 10));
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Graph().NeighboursAsync($"route:{s.RouteId}", NoFilter with { Properties = [new PatternFilter("date", FilterOperator.Equals, "soon")] }, [], 10));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Graph(s).NeighboursAsync(s.RouteId, NoFilter with { Properties = [new PatternFilter("nope'; --", FilterOperator.Equals, "x")] }, [], 10));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Graph(s).NeighboursAsync(s.RouteId, NoFilter with { Properties = [new PatternFilter("date", FilterOperator.Equals, "soon")] }, [], 10));
     }
 
     [Fact]
@@ -166,20 +166,14 @@ public class GraphRepositoryTests(PostgresFixture fixture)
         var s = await CreateAsync();
         for (var i = 0; i < 4; i++)
         {
-            await Ascents().CreateAsync(new AscentInput
-            {
-                RouteId = s.RouteId,
-                Date = new DateOnly(2021, 1, 1 + i),
-                DatePrecision = DatePrecision.Day,
-                Style = AscentStyle.Lead,
-            });
+            await ClimbingStore.AddAsync(s.Store, "Ascent", s.Route, Ascent($"2021-01-0{1 + i}", "lead"), "OF", s.RouteId);
         }
 
-        var first = await Graph().NeighboursAsync($"route:{s.RouteId}", NoFilter, [], 3);
+        var first = await Graph(s).NeighboursAsync(s.RouteId, NoFilter, [], 3);
         Assert.Equal(3, first.Nodes.Count);
         Assert.Equal(3, first.Remaining);
 
-        var second = await Graph().NeighboursAsync($"route:{s.RouteId}", NoFilter, first.Nodes.Select(n => n.Id).ToList(), 3);
+        var second = await Graph(s).NeighboursAsync(s.RouteId, NoFilter, first.Nodes.Select(n => n.Id).ToList(), 3);
         Assert.Equal(3, second.Nodes.Count);
         Assert.Equal(0, second.Remaining);
         Assert.Empty(first.Nodes.Select(n => n.Id).Intersect(second.Nodes.Select(n => n.Id)));
@@ -188,43 +182,43 @@ public class GraphRepositoryTests(PostgresFixture fixture)
     [Fact]
     public async Task Search_finds_by_part_of_a_name_or_similar_spelling_and_filters_by_label()
     {
+        var store = await ClimbingStore.CreateAsync(fixture);
         var suffix = Guid.NewGuid().ToString("N")[..12];
-        var id = await Ascents().CreateAsync(new AscentInput
-        {
-            NewRoute = new NewRouteInput($"Stanage {suffix}", null, null, null, null, null, null, new NewCragInput($"Crag {suffix}", null, Unique("Country"))),
-            Date = new DateOnly(2020, 1, 1),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Lead,
-        });
+        var area = await ClimbingStore.AddCountryAsync(store, Unique("Country"));
+        var crag = await ClimbingStore.AddAsync(store, "Crag", $"Crag {suffix}", null, "IN", area);
+        var route = await ClimbingStore.AddAsync(store, "Route", $"Stanage {suffix}", null, "AT", crag);
+        var ascent = await ClimbingStore.AddAsync(store, "Ascent", $"Stanage {suffix}", Ascent("2020-01-01", "lead"), "OF", route);
+        var graph = new GraphRepository(store);
 
-        var all = await Graph().SearchNodesAsync(suffix, null);
+        var all = await graph.SearchNodesAsync(suffix, null);
         Assert.Contains(all, n => n.Label == "Route");
         Assert.Contains(all, n => n.Label == "Crag");
-        Assert.Contains(all, n => n.Id == $"ascent:{id}");
+        Assert.Contains(all, n => n.Id == ascent);
 
-        var routesOnly = await Graph().SearchNodesAsync(suffix, ["Route"]);
+        var routesOnly = await graph.SearchNodesAsync(suffix, ["Route"]);
         Assert.All(routesOnly, n => Assert.Equal("Route", n.Label));
         Assert.NotEmpty(routesOnly);
 
-        Assert.Contains(await Graph().SearchNodesAsync($"Stannage {suffix}", ["Route"]), n => n.Name == $"Stanage {suffix}");
-        Assert.Empty(await Graph().SearchNodesAsync("  ", null));
+        Assert.Contains(await graph.SearchNodesAsync($"Stannage {suffix}", ["Route"]), n => n.Name == $"Stanage {suffix}");
+        Assert.Empty(await graph.SearchNodesAsync("  ", null));
     }
 
     [Fact]
     public async Task Scenes_save_replace_load_and_delete()
     {
+        var graph = new GraphRepository(fixture.ContextFactory());
         var name = Unique("Scene");
-        await Graph().SaveSceneAsync(name, [new ScenePosition("crag:1", 1.5, 2.5)]);
-        await Graph().SaveSceneAsync(name, [new ScenePosition("crag:2", 3, 4), new ScenePosition("crag:3", 5, 6)]);
+        await graph.SaveSceneAsync(name, [new ScenePosition("crag:1", 1.5, 2.5)]);
+        await graph.SaveSceneAsync(name, [new ScenePosition("crag:2", 3, 4), new ScenePosition("crag:3", 5, 6)]);
 
-        Assert.Contains(name, await Graph().SceneNamesAsync());
-        var scene = await Graph().LoadSceneAsync(name);
+        Assert.Contains(name, await graph.SceneNamesAsync());
+        var scene = await graph.LoadSceneAsync(name);
         Assert.Equal(2, scene!.Positions.Count);
         Assert.Equal(new ScenePosition("crag:2", 3, 4), scene.Positions[0]);
 
-        await Graph().DeleteSceneAsync(name);
-        Assert.Null(await Graph().LoadSceneAsync(name));
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Graph().SaveSceneAsync(" ", []));
+        await graph.DeleteSceneAsync(name);
+        Assert.Null(await graph.LoadSceneAsync(name));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => graph.SaveSceneAsync(" ", []));
     }
 
     [Fact]

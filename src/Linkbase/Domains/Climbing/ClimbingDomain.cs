@@ -53,22 +53,14 @@ public sealed class ClimbingDomain : IDomainModule
 
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<AscentImportService>();
         services.AddScoped<GenericAscentImportService>();
-        services.AddScoped<TripService>();
         services.AddScoped<GenericTripService>();
         services.AddScoped<Linkbase.Core.Records.IRecordHook>(provider => new ClimbingRecordHook(
             provider.GetRequiredService<IDbContextFactory<LinkbaseDbContext>>(),
             provider.GetRequiredService<GenericTripService>(),
             () => RepoPaths.Resolve(RepoPaths.Corrections),
             provider.GetRequiredService<ILogger<ClimbingRecordHook>>()));
-        services.AddScoped<ReconciliationService>();
-        services.AddScoped<AreaRepository>();
-        services.AddScoped<AscentRepository>();
         services.AddScoped<LogbookRepository>();
-        services.AddScoped<CragRepository>();
-        services.AddScoped<RouteRepository>();
-        services.AddScoped<PartnerRepository>();
         services.AddScoped<InsightsRepository>();
         services.AddScoped<WebImportRepository>();
         services.AddScoped<WebImportService>();
@@ -77,10 +69,6 @@ public sealed class ClimbingDomain : IDomainModule
             configuration["WebImport:FixtureExtraction"] is { Length: > 0 } fixture
                 ? new FixtureClimbingExtractor(RepoPaths.Resolve(fixture))
                 : new AnthropicClimbingExtractor(configuration));
-        services.AddScoped(provider => new TripRefresher(
-            provider.GetRequiredService<TripService>(),
-            () => RepoPaths.Resolve(RepoPaths.Corrections),
-            provider.GetRequiredService<ILogger<TripRefresher>>()));
     }
 
     public async Task<int?> TryRunCommandAsync(string[] args, IServiceProvider services, IConfiguration configuration)
@@ -91,24 +79,7 @@ public sealed class ClimbingDomain : IDomainModule
             return await GenericImportCommands.RunAsync(importScope.ServiceProvider.GetRequiredService<ModelCatalog>(), args, Console.Out);
         }
 
-        if (GenericCommands.IsCommand(args))
-        {
-            await using var genericScope = services.CreateAsyncScope();
-            return await new GenericCommands(genericScope.ServiceProvider.GetRequiredService<ModelCatalog>(), Console.Out).RunAsync(args);
-        }
-
-        if (!AdminCommands.IsCommand(args))
-        {
-            return null;
-        }
-
-        await using var scope = services.CreateAsyncScope();
-        var commands = new AdminCommands(
-            scope.ServiceProvider.GetRequiredService<AscentImportService>(),
-            scope.ServiceProvider.GetRequiredService<TripService>(),
-            scope.ServiceProvider.GetRequiredService<ReconciliationService>(),
-            Console.Out);
-        return await commands.RunAsync(args);
+        return null;
     }
 
     private static string AscentCaption(GraphNode node)

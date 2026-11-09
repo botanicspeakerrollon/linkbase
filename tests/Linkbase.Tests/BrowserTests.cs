@@ -89,6 +89,11 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     private const float RailWidth = 56;
     private const string Positions = "() => import('/js/graph.js').then(m => m.positions())";
 
+    // One database for every browser test, with the climbing model loaded, because each distinct database starts an app.
+    private static readonly SemaphoreSlim StoreLock = new(1, 1);
+    private static ModelFactory? s_store;
+
+    private ModelFactory _store = null!;
     private readonly List<string> _consoleErrors = [];
     private string _url = "";
     private IPlaywright _playwright = null!;
@@ -101,7 +106,18 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _url = await RunningApp.StartAsync(fixture.ConnectionString);
+        await StoreLock.WaitAsync();
+        try
+        {
+            s_store ??= await ClimbingStore.CreateAsync(fixture);
+        }
+        finally
+        {
+            StoreLock.Release();
+        }
+
+        _store = s_store;
+        _url = await RunningApp.StartAsync(_store.ConnectionString);
         _playwright = await Playwright.CreateAsync();
         _browser = await _playwright.Chromium.LaunchAsync();
         _page = await _browser.NewPageAsync(new() { ViewportSize = new() { Width = 1400, Height = 900 } });
@@ -126,10 +142,10 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         // Development's settings add the sample models, whose databases aren't here, so this instance points them at the
         // test database, or it would rightly say it isn't ready.
         var url = await RunningApp.StartAsync(
-            fixture.ConnectionString,
-            $"--ConnectionStrings:Consultancy={fixture.ConnectionString}",
-            $"--ConnectionStrings:SwissRail={fixture.ConnectionString}",
-            $"--ConnectionStrings:ClimbingGeneric={fixture.ConnectionString}");
+            _store.ConnectionString,
+            $"--ConnectionStrings:Consultancy={_store.ConnectionString}",
+            $"--ConnectionStrings:SwissRail={_store.ConnectionString}",
+            $"--ConnectionStrings:ClimbingGeneric={_store.ConnectionString}");
         using var client = new HttpClient();
 
         var live = await client.GetAsync($"{url}/health/live");
@@ -139,22 +155,17 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         Assert.Equal((System.Net.HttpStatusCode.OK, "Healthy"), (ready.StatusCode, await ready.Content.ReadAsStringAsync()));
     }
 
-    private async Task<(string Crag, string Route, long CragId, long RouteId)> SeedAsync()
+    private sealed record Seeded(string Crag, string Route, string Country, long CragId, long RouteId);
+
+    private async Task<Seeded> SeedAsync()
     {
-        var factory = fixture.ContextFactory();
-        var (route, crag, country) = ($"Route {Guid.NewGuid():N}", $"Crag {Guid.NewGuid():N}", $"Country {Guid.NewGuid():N}");
-        var refresher = new TripRefresher(new TripService(factory), () => "no-corrections-in-tests.json", NullLogger<TripRefresher>.Instance);
-        var ascents = new AscentRepository(factory, new AreaRepository(factory), refresher);
-        var id = await ascents.CreateAsync(new AscentInput
-        {
-            NewRoute = new NewRouteInput(route, "VS 4c", GradeSystem.UkTrad, Discipline.Trad, 20, 1, null, new NewCragInput(crag, null, country)),
-            Date = new DateOnly(2015, 5, 2),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Lead,
-        });
-        var row = await ascents.GetForEditAsync(id);
-        return (crag, route, row!.CragId, row.RouteId);
+        var place = await ClimbingStore.AddPlaceAsync(_store);
+        var props = new System.Text.Json.Nodes.JsonObject { ["date"] = "2015-05-02", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual" };
+        await ClimbingStore.AddAsync(_store, "Ascent", place.Route, props, "OF", place.RouteId);
+        return new Seeded(place.Crag, place.Route, place.Country, Key(place.CragId), Key(place.RouteId));
     }
+
+    private static long Key(string nodeId) => long.Parse(nodeId[(nodeId.IndexOf(':') + 1)..], System.Globalization.CultureInfo.InvariantCulture);
 
     private async Task<IReadOnlyList<NodePosition>> NodesAsync()
     {
@@ -285,12 +296,13 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     {
         var s = await SeedAsync();
         var twin = await SeedAsync();
-        await using (var db = fixture.CreateContext())
+        await using (var db = _store.CreateDbContext())
         {
-            db.Crags.Where(c => c.Id == twin.CragId).ExecuteUpdate(u => u.SetProperty(c => c.Name, s.Crag).SetProperty(c => c.UpdatedAt, DateTimeOffset.UtcNow));
+            var twinId = $"crag:{twin.CragId}";
+            db.Nodes.Where(n => n.Id == twinId).ExecuteUpdate(u => u.SetProperty(n => n.Name, s.Crag).SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow));
         }
 
-        var factory = fixture.ContextFactory();
+        var factory = _store;
         var page = new ExtractedPage(
             [],
             [new ExtractedCrag(s.Crag, null, null, null, null)],
@@ -302,11 +314,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await SeesOptionAsync(FieldNamed("Use"), "Choose…");
         await FieldNamed("Use").Locator(".mud-input-slot").First.ClickAsync();
         // The crag that has the route, because its twin's place in the list isn't fixed.
-        await using (var db = fixture.CreateContext())
-        {
-            var country = db.Crags.Where(c => c.Id == s.CragId).Select(c => c.Area.Name).Single();
-            await _page.Locator(".mud-popover-open .mud-list-item", new() { HasText = country }).ClickAsync();
-        }
+        await _page.Locator(".mud-popover-open .mud-list-item", new() { HasText = s.Country }).ClickAsync();
 
         await _page.Locator("td .mud-select").First.WaitForAsync();
 
@@ -333,14 +341,20 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
 
     private async Task<long> AddCragsAsync(string prefix, int count, int routesOnFirst = 0)
     {
-        var factory = fixture.ContextFactory();
-        await using var db = await factory.CreateDbContextAsync();
-        var area = new Area { UserId = AppUser.DefaultId, Name = $"Country {Guid.NewGuid():N}", Kind = AreaKind.Country };
-        var crags = Enumerable.Range(0, count).Select(i => new Crag { UserId = AppUser.DefaultId, Name = $"{prefix} crag with a long name {i:000}", Area = area }).ToList();
-        db.Crags.AddRange(crags);
-        db.Routes.AddRange(Enumerable.Range(0, routesOnFirst).Select(i => new Route { UserId = AppUser.DefaultId, Name = $"Fan {Guid.NewGuid():N}", Crag = crags[0] }));
-        await db.SaveChangesAsync();
-        return crags[0].Id;
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Guid.NewGuid():N}");
+        var first = "";
+        for (var i = 0; i < count; i++)
+        {
+            var crag = await ClimbingStore.AddAsync(_store, "Crag", $"{prefix} crag with a long name {i:000}", null, "IN", area);
+            first = i == 0 ? crag : first;
+        }
+
+        for (var i = 0; i < routesOnFirst; i++)
+        {
+            await ClimbingStore.AddAsync(_store, "Route", $"Fan {Guid.NewGuid():N}", null, "AT", first);
+        }
+
+        return Key(first);
     }
 
     [Fact]
@@ -495,7 +509,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
             INSERT INTO node (id, user_id, type, key, name, props) VALUES ('station:1', 1, 'Station', '1', 'Zurich HB', '{}'), ('station:2', 1, 'Station', '2', 'Bern', '{}');
             """);
         var url = await RunningApp.StartAsync(
-            fixture.ConnectionString,
+            _store.ConnectionString,
             "--Models:climbing:Name=Climbing test",
             "--Models:climbing:ConnectionString=Linkbase",
             "--Models:climbing:Domains:0=Climbing",
@@ -563,7 +577,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await search.FillAsync("graph");
         await _page.Locator("[role=option]", new() { HasText = "Graph model" }).WaitForAsync();
         await search.PressAsync("Enter");
-        await WaitForExactNodesAsync((await new GraphRepository(fixture.ContextFactory()).SchemaAsync()).Labels.Count);
+        await WaitForExactNodesAsync((await new GraphRepository(_store).SchemaAsync()).Labels.Count);
         Assert.All(await NodesAsync(), n => Assert.StartsWith("model:", n.NodeId, StringComparison.Ordinal));
 
         var at = await OnScreenAsync("model:Crag");
@@ -690,7 +704,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     {
         var (crag, country) = ($"Crag {Guid.NewGuid():N}", $"Country {Guid.NewGuid():N}");
         var page = new ExtractedPage([], [new ExtractedCrag(crag, null, null, null, null)], []);
-        var service = new WebImportService(new PageTextFetcher(new HttpClient()), new FixedExtractor(page), new WebImportRepository(fixture.ContextFactory()));
+        var service = new WebImportService(new PageTextFetcher(new HttpClient()), new FixedExtractor(page), new WebImportRepository(_store));
         var batch = await service.ExtractFromTextAsync(crag, null, null, CancellationToken.None);
 
         await _page.GotoAsync($"{_url}/import/{batch}", new() { WaitUntil = WaitUntilState.NetworkIdle });
@@ -705,10 +719,13 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
         await Button("Add to logbook").ClickAsync();
         await _page.WaitForURLAsync("**/import");
 
-        await using var db = fixture.CreateContext();
-        var saved = await db.Crags.AsNoTracking().Where(c => c.Name == crag).Select(c => new { c.Area.Name, c.Area.Kind }).SingleAsync();
+        await using var db = _store.CreateDbContext();
+        var saved = await db.NodeLinks.AsNoTracking()
+            .Where(l => l.RelType == "IN" && l.Source.Type == "Crag" && l.Source.Name == crag)
+            .Select(l => new { l.Target.Name, l.Target.Props })
+            .SingleAsync();
         Assert.Equal(country, saved.Name);
-        Assert.Equal(AreaKind.Country, saved.Kind);
+        Assert.Equal("country", (string?)System.Text.Json.Nodes.JsonNode.Parse(saved.Props)!["kind"]);
         Assert.Empty(_consoleErrors);
     }
 

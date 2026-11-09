@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
@@ -375,31 +376,34 @@ public class GraphPatternSqlTests
 
 [Trait("Category", "Database")]
 [Collection(PostgresCollection.Name)]
-public class GraphPatternQueryTests(PostgresFixture fixture)
+public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime
 {
+    private ModelFactory _store = null!;
+
+    public async Task InitializeAsync() => _store = await ClimbingStore.CreateAsync(fixture);
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     private static string Word() => Guid.NewGuid().ToString("N")[..12];
 
-    private GraphRepository Graph() => new(fixture.ContextFactory());
+    private GraphRepository Graph() => new(_store);
 
-    private AscentRepository Ascents()
-    {
-        var refresher = new TripRefresher(new TripService(fixture.ContextFactory()), () => "no-corrections-in-tests.json", NullLogger<TripRefresher>.Instance);
-        return new AscentRepository(fixture.ContextFactory(), new AreaRepository(fixture.ContextFactory()), refresher);
-    }
-
-    private async Task<(string Crag, string Route, long AscentId, long RouteId, long CragId)> CreateAsync(string grade = "VS 4c", int length = 20, string date = "2020-05-02")
+    private async Task<(string Crag, string Route, string AscentId, string RouteId, string CragId)> CreateAsync(
+        string grade = "VS 4c", int length = 20, string date = "2020-05-02", string? notes = null)
     {
         var (crag, route) = ($"Crag {Word()}", $"Route {Word()}");
-        var id = await Ascents().CreateAsync(new AscentInput
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Word()}");
+        var cragId = await ClimbingStore.AddAsync(_store, "Crag", crag, null, "IN", area);
+        var routeId = await ClimbingStore.AddAsync(
+            _store, "Route", route, new JsonObject { ["grade"] = grade, ["grade_system"] = "uk_trad", ["discipline"] = "trad", ["length_m"] = length, ["pitches"] = 1 }, "AT", cragId);
+        var props = new JsonObject { ["date"] = date, ["date_precision"] = "day", ["style"] = "onsight", ["source"] = "manual" };
+        if (notes is not null)
         {
-            NewRoute = new NewRouteInput(route, grade, GradeSystem.UkTrad, Discipline.Trad, length, 1, null, new NewCragInput(crag, null, $"Country {Word()}")),
-            Date = DateOnly.Parse(date),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Onsight,
-        });
-        await using var db = fixture.CreateContext();
-        var row = await db.Ascents.AsNoTracking().Where(a => a.Id == id).Select(a => new { a.RouteId, a.Route.CragId }).SingleAsync();
-        return (crag, route, id, row.RouteId, row.CragId);
+            props["notes"] = notes;
+        }
+
+        var ascentId = await ClimbingStore.AddAsync(_store, "Ascent", route, props, "OF", routeId);
+        return (crag, route, ascentId, routeId, cragId);
     }
 
     [Fact]
@@ -427,7 +431,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
             new GraphPattern([new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Equals, s.Crag.ToUpperInvariant())])], []),
             schema, 10, 0);
 
-        Assert.Equal($"crag:{s.CragId}", result.NodeIds.Single());
+        Assert.Equal(s.CragId, result.NodeIds.Single());
         Assert.Equal(0, result.Remaining);
     }
 
@@ -442,7 +446,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
             new GraphPattern([crag, new PatternNode("Route", []), new PatternNode("Ascent", [])], [new PatternRel("AT", false), new PatternRel("OF", false)]),
             schema, 10, 0);
 
-        Assert.Equal([$"crag:{s.CragId}", $"route:{s.RouteId}", $"ascent:{s.AscentId}"], result.NodeIds);
+        Assert.Equal([s.CragId, s.RouteId, s.AscentId], result.NodeIds);
 
         var wrongWay = await Graph().RunPatternAsync(
             new GraphPattern([crag, new PatternNode("Route", [])], [new PatternRel("AT", true)]),
@@ -475,16 +479,11 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
     public async Task Limit_and_offset_page_through_matches()
     {
         var suffix = Word();
-        var ids = new List<string>();
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Word()}");
+        var crag = await ClimbingStore.AddAsync(_store, "Crag", $"Crag {Word()}", null, "IN", area);
         for (var i = 0; i < 3; i++)
         {
-            await Ascents().CreateAsync(new AscentInput
-            {
-                NewRoute = new NewRouteInput($"Page {suffix} {i}", null, null, null, null, null, null, new NewCragInput($"Crag {Word()}", null, $"Country {Word()}")),
-                Date = new DateOnly(2020, 1, 1),
-                DatePrecision = DatePrecision.Day,
-                Style = AscentStyle.Lead,
-            });
+            await ClimbingStore.AddAsync(_store, "Route", $"Page {suffix} {i}", null, "AT", crag);
         }
 
         var schema = await Graph().SchemaAsync();
@@ -512,7 +511,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
         var withinLabel = await Graph().MatchPropertiesAsync("Route", word, default);
         Assert.DoesNotContain(withinLabel, m => m.Label == "Crag");
 
-        var grade = (await Graph().SubgraphAsync([$"route:{s.RouteId}"])).Nodes.Single().Property("grade")!;
+        var grade = (await Graph().SubgraphAsync([s.RouteId])).Nodes.Single().Property("grade")!;
         Assert.Contains(await Graph().MatchPropertiesAsync("Route", grade[1..], default), m => m.Key == "grade" && m.Value == grade);
     }
 
@@ -520,14 +519,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
     public async Task Long_notes_are_not_suggested_as_matches()
     {
         var word = Word();
-        await Ascents().CreateAsync(new AscentInput
-        {
-            NewRoute = new NewRouteInput($"Route {Word()}", null, null, null, null, null, null, new NewCragInput($"Crag {Word()}", null, $"Country {Word()}")),
-            Date = new DateOnly(2020, 1, 1),
-            DatePrecision = DatePrecision.Day,
-            Style = AscentStyle.Lead,
-            Notes = $"A long private note about {word}",
-        });
+        await CreateAsync(notes: $"A long private note about {word}");
 
         Assert.DoesNotContain(await Graph().MatchPropertiesAsync(null, word), m => m.Key == "notes");
     }
@@ -542,18 +534,14 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
     [Fact]
     public async Task Free_text_finds_names_and_any_property_including_notes()
     {
-        var s = await CreateAsync(grade: $"G{Word()}");
         var word = Word();
-        await using (var db = fixture.CreateContext())
-        {
-            await db.Ascents.Where(a => a.Id == s.AscentId).ExecuteUpdateAsync(u => u.SetProperty(a => a.Notes, $"Windy day {word}").SetProperty(a => a.UpdatedAt, DateTimeOffset.UtcNow));
-        }
+        var s = await CreateAsync(grade: $"G{Word()}", notes: $"Windy day {word}");
 
-        Assert.Equal([$"crag:{s.CragId}"], await FreeTextAsync(s.Crag.Split(' ')[1].ToUpperInvariant()));
-        Assert.Equal([$"ascent:{s.AscentId}"], await FreeTextAsync(word));
+        Assert.Equal([s.CragId], await FreeTextAsync(s.Crag.Split(' ')[1].ToUpperInvariant()));
+        Assert.Equal([s.AscentId], await FreeTextAsync(word));
 
-        var grade = (await Graph().SubgraphAsync([$"route:{s.RouteId}"])).Nodes.Single().Property("grade")!;
-        Assert.Contains($"route:{s.RouteId}", await FreeTextAsync(grade));
+        var grade = (await Graph().SubgraphAsync([s.RouteId])).Nodes.Single().Property("grade")!;
+        Assert.Contains(s.RouteId, await FreeTextAsync(grade));
     }
 
     [Fact]
@@ -562,7 +550,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
         var s = await CreateAsync();
         var word = s.Route.Split(' ')[1];
 
-        Assert.Equal([$"route:{s.RouteId}"], await FreeTextAsync(word));
+        Assert.Equal([s.RouteId], await FreeTextAsync(word));
         Assert.Empty(await FreeTextAsync(word, "Crag"));
     }
 
@@ -570,14 +558,8 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
     public async Task Free_text_tolerates_a_typo()
     {
         var word = Word();
-        var near = $"Zz{word}x";
-        var country = await fixture.CreateContext().Areas.Select(a => a.Id).FirstAsync();
-        await using (var db = fixture.CreateContext())
-        {
-            db.Crags.Add(new Crag { UserId = AppUser.DefaultId, Name = near, AreaId = country });
-            db.Crags.Add(new Crag { UserId = AppUser.DefaultId, Name = $"Zz{word}y", AreaId = country });
-            await db.SaveChangesAsync();
-        }
+        await ClimbingStore.AddAsync(_store, "Crag", $"Zz{word}x");
+        await ClimbingStore.AddAsync(_store, "Crag", $"Zz{word}y");
 
         var misspelt = await FreeTextAsync($"Zz{word[..^1]}q");
         Assert.Equal(2, misspelt.Count);
@@ -589,8 +571,8 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
         var word = Word();
         var s = await CreateAsync(grade: $"grade{word}");
 
-        Assert.Contains($"route:{s.RouteId}", await FreeTextAsync($"grade{word}"));
-        Assert.DoesNotContain($"route:{s.RouteId}", await FreeTextAsync("length_m"));
+        Assert.Contains(s.RouteId, await FreeTextAsync($"grade{word}"));
+        Assert.DoesNotContain(s.RouteId, await FreeTextAsync("length_m"));
     }
 
     [Fact]
@@ -625,7 +607,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture)
     {
         var s = await CreateAsync();
 
-        var counts = await Graph().RelationshipCountsAsync($"route:{s.RouteId}");
+        var counts = await Graph().RelationshipCountsAsync(s.RouteId);
 
         Assert.Contains(new RelationshipCount("AT", true, "Crag", 1), counts);
         Assert.Contains(new RelationshipCount("OF", false, "Ascent", 1), counts);

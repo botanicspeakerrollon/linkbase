@@ -17,7 +17,6 @@ public enum DatePrecision { Day, Month, Year }
 
 public enum DataSource { Manual, Ukc, MountainProject, WebImport, Csv }
 
-public enum ExternalEntityType { Area, Crag, Route, Ascent }
 
 public enum ImportStatus { Pending, Staged, Committed, Undone, Failed }
 

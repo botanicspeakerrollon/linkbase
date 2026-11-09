@@ -67,19 +67,29 @@ public sealed class GenericImportCommands(
         if (what is "ukc" or "all")
         {
             using var reader = new StreamReader(what == "ukc" && path is not null ? path : Resolve(DefaultUkcPath), Encoding.UTF8);
-            AdminCommands.Print(output, "UKC", await importer.ImportAsync(DataSource.Ukc, null, UkcParser.Parse(reader).Select(corrections.Apply).ToList()));
+            Print(output, "UKC", await importer.ImportAsync(DataSource.Ukc, null, UkcParser.Parse(reader).Select(corrections.Apply).ToList()));
         }
 
         if (what is "mp" or "all")
         {
             using var reader = new StreamReader(what == "mp" && path is not null ? path : Resolve(DefaultMountainProjectPath), Encoding.UTF8);
-            AdminCommands.Print(output, "Mountain Project",
+            Print(output, "Mountain Project",
                 await importer.ImportAsync(DataSource.MountainProject, null, MountainProjectParser.Parse(reader).Select(corrections.Apply).ToList()));
         }
 
         var trips = await new GenericTripService(target).RebuildAsync(corrections.TripMerges);
         await output.WriteLineAsync($"Trips: {trips.Trips} trips, {trips.LinkedAscents} ascents linked, {trips.InferredLinks} inferred");
         return 0;
+    }
+
+    private static void Print(TextWriter output, string source, ImportSummary summary)
+    {
+        output.WriteLine($"{source} (batch {summary.BatchId}): {summary.Rows} rows");
+        output.WriteLine($"  Areas:    {summary.Areas.Created} created, {summary.Areas.Matched} matched");
+        output.WriteLine($"  Crags:    {summary.Crags.Created} created, {summary.Crags.Matched} matched");
+        output.WriteLine($"  Routes:   {summary.Routes.Created} created, {summary.Routes.Matched} matched");
+        output.WriteLine($"  Ascents:  {summary.Ascents.Created} created, {summary.Ascents.Matched} already imported");
+        output.WriteLine($"  Partners: {summary.PartnersCreated} created");
     }
 
     private string Resolve(string relativePath) => (resolvePath ?? (path => RepoPaths.Resolve(path)))(relativePath);

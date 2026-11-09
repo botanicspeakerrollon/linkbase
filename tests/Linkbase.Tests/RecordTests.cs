@@ -12,6 +12,8 @@ namespace Linkbase.Tests;
 
 internal sealed class ModelFactory(string connectionString) : IDbContextFactory<LinkbaseDbContext>
 {
+    public string ConnectionString => connectionString;
+
     public LinkbaseDbContext CreateDbContext() =>
         new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
 }
@@ -361,22 +363,17 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task Reloading_a_model_drops_its_nodes_refs_and_keeps_climbings()
+    public async Task Reloading_a_model_drops_its_nodes_and_their_refs()
     {
         var (factory, _) = await ExampleAsync();
         var refs = new ExternalRefRepository(factory);
         await refs.AddAsync("person:p1", DataSource.Ukc, "1");
-        await using (var db = factory.CreateDbContext())
-        {
-            db.ExternalRefs.Add(new ExternalRef { EntityType = ExternalEntityType.Crag, EntityId = 1, Source = DataSource.Ukc, ExternalId = "1" });
-            await db.SaveChangesAsync();
-        }
 
         await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
 
         Assert.Empty(await refs.RefsAsync("person:p1"));
         await using var check = factory.CreateDbContext();
-        Assert.True(await check.ExternalRefs.AnyAsync(r => r.EntityType == ExternalEntityType.Crag && r.EntityId == 1));
+        Assert.False(await check.ExternalRefs.AnyAsync());
     }
 
     [Fact]

@@ -241,13 +241,13 @@ public class ContextEdgeCaseTests(PostgresFixture fixture)
     public void Saving_synchronously_stamps_timestamps_too()
     {
         using var db = fixture.CreateContext();
-        var partner = new Partner { UserId = AppUser.DefaultId, Name = $"Partner {Guid.NewGuid():N}" };
-        db.Partners.Add(partner);
+        var batch = new ImportBatch { UserId = AppUser.DefaultId, Source = DataSource.Csv, Status = ImportStatus.Staged };
+        db.ImportBatches.Add(batch);
 
         db.SaveChanges();
 
-        Assert.NotEqual(default, partner.CreatedAt);
-        Assert.Equal(partner.CreatedAt, partner.UpdatedAt);
+        Assert.NotEqual(default, batch.CreatedAt);
+        Assert.Equal(batch.CreatedAt, batch.UpdatedAt);
     }
 
     [Fact]

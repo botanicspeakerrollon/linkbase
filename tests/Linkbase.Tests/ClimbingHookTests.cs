@@ -33,13 +33,6 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable
         return new RecordRepository(factory, new RecordHooks([hook]));
     }
 
-    private async Task<(ModelFactory Source, ModelFactory Target)> ConvertedAsync()
-    {
-        var (source, target) = await GenericConversionTests.TypedAsync(fixture);
-        await new GenericConverter(source, target).ConvertAsync(ModelPath, TextWriter.Null);
-        return (source, target);
-    }
-
     private static async Task<string> IdOfAsync(ModelFactory factory, string type, string name)
     {
         await using var db = factory.CreateDbContext();
@@ -56,35 +49,24 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable
         };
 
     [Fact]
-    public async Task Trips_rebuilt_on_the_generic_store_match_the_typed_tables()
+    public async Task Rebuilding_trips_keeps_their_keys_and_links()
     {
-        var (source, target) = await ConvertedAsync();
+        var target = await MadeUpLogbook.CreateAsync(fixture);
+        await using var before = target.CreateDbContext();
+        var keys = await before.Nodes.AsNoTracking().Where(n => n.Type == "Trip").OrderBy(n => n.Key).Select(n => n.Id).ToListAsync();
 
-        // The typed tables rebuild their trips, and the generic store does the same from the same ascents.
-        await new TripService(source).RebuildAsync([]);
         await new GenericTripService(target).RebuildAsync([]);
 
-        var typed = await ClimbingGraph.ReadAsync(source);
         await using var db = target.CreateDbContext();
-        var actual = (await db.Nodes.AsNoTracking().Where(n => n.Type == "Trip").ToListAsync()).OrderBy(n => n.Key).ToList();
-        var expected = typed.Nodes.Where(n => n.Type == "Trip").OrderBy(n => n.Key).ToList();
-        Assert.NotEmpty(expected);
-        Assert.Equal(expected.Select(n => (n.Id, n.Name)), actual.Select(n => (n.Id, n.Name)));
-        foreach (var (want, have) in expected.Zip(actual))
-        {
-            Assert.True(JsonNode.DeepEquals(want.Props, JsonNode.Parse(have.Props)), $"{want.Id}: {have.Props} vs {want.Props.ToJsonString()}");
-        }
-
-        var links = (await db.NodeLinks.AsNoTracking().Where(l => l.RelType == "ON_TRIP" || l.RelType == "VISITED").ToListAsync())
-            .Select(l => $"{l.SourceId} {l.RelType} {l.TargetId} {JsonNode.Parse(l.Props)!.ToJsonString()}").Order().ToList();
-        var wanted = typed.Links.Where(l => l.RelType is "ON_TRIP" or "VISITED").Select(l => $"{l.Signature} {l.Props.ToJsonString()}").Order().ToList();
-        Assert.Equal(wanted, links);
+        Assert.Equal(keys, await db.Nodes.AsNoTracking().Where(n => n.Type == "Trip").OrderBy(n => n.Key).Select(n => n.Id).ToListAsync());
+        Assert.Equal(3, await db.NodeLinks.CountAsync(l => l.RelType == "ON_TRIP"));
+        Assert.Equal(2, await db.NodeLinks.CountAsync(l => l.RelType == "VISITED"));
     }
 
     [Fact]
     public async Task A_route_gets_its_grade_rank_when_saved()
     {
-        var (_, target) = await ConvertedAsync();
+        var target = await MadeUpLogbook.CreateAsync(fixture);
         var records = Records(target);
         var crag = await IdOfAsync(target, "Crag", "Hollow Tor");
 
@@ -103,7 +85,7 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable
     [Fact]
     public async Task A_new_ascent_is_named_for_its_route_and_joins_the_trips()
     {
-        var (_, target) = await ConvertedAsync();
+        var target = await MadeUpLogbook.CreateAsync(fixture);
         var records = Records(target);
         var route = await IdOfAsync(target, "Route", "Slab Happy");
 
@@ -119,7 +101,7 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable
     [Fact]
     public async Task Renaming_a_route_renames_its_ascents_and_moving_an_ascent_moves_its_trip()
     {
-        var (_, target) = await ConvertedAsync();
+        var target = await MadeUpLogbook.CreateAsync(fixture);
         var records = Records(target);
         var route = await IdOfAsync(target, "Route", "La Bleue");
         var key = await records.CreateAsync("Ascent", null, Ascent(route, "2023-08-01"));
@@ -153,7 +135,7 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable
     [Fact]
     public async Task Without_the_corrections_file_trips_are_left_alone()
     {
-        var (_, target) = await ConvertedAsync();
+        var target = await MadeUpLogbook.CreateAsync(fixture);
         var records = Records(target);
         File.Delete(_corrections);
         var route = await IdOfAsync(target, "Route", "Slab Happy");

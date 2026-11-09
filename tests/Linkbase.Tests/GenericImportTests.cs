@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Linkbase.Tests;
 
-// The UKC and Mountain Project parsers writing into the generic store. Everything here is made up. The typed importer is
-// the reference: the same files through both must give the same records, links and external ids. See
+// The UKC and Mountain Project parsers writing into the generic store. Everything here is made up. See
 // docs/climbing-to-generic-plan.md.
 [Trait("Category", "Database")]
 [Collection(PostgresCollection.Name)]
@@ -38,25 +37,18 @@ public sealed class GenericImportTests : IDisposable
 
     private string InRoot(string relative) => Path.Combine(_root, relative);
 
-    private async Task<(ModelFactory Typed, ModelFactory Generic)> ImportedAsync()
+    private async Task<ModelFactory> ImportedAsync()
     {
-        var typed = new ModelFactory(await _fixture.CreateModelDatabaseAsync("SELECT 1"));
         var generic = new ModelFactory(await _fixture.CreateModelDatabaseAsync("SELECT 1"));
-        var commands = new AdminCommands(
-            new AscentImportService(typed), new TripService(typed), new ReconciliationService(typed), TextWriter.Null, InRoot);
-        Assert.Equal(0, await commands.RunAsync(["import", "all"]));
         Assert.Equal(0, await new GenericImportCommands(generic, _output, InRoot).RunAsync("all", ["--fresh"]));
-        return (typed, generic);
+        return generic;
     }
 
     [Fact]
-    public async Task Both_files_give_the_same_store_as_the_typed_importer()
+    public async Task Both_files_give_a_connected_store()
     {
-        var (typed, generic) = await ImportedAsync();
+        var generic = await ImportedAsync();
 
-        var problems = await new GenericVerifier(typed, generic).VerifyAsync(imported: true);
-
-        Assert.Empty(problems);
         var text = _output.ToString();
         Assert.Contains("UKC (batch", text);
         Assert.Contains("Mountain Project (batch", text);
@@ -64,13 +56,18 @@ public sealed class GenericImportTests : IDisposable
         await using var db = generic.CreateDbContext();
         Assert.True(await db.Nodes.AnyAsync(n => n.Type == "Ascent"));
         Assert.True(await db.Nodes.AnyAsync(n => n.Type == "Trip"));
-        Assert.True(await db.ExternalRefs.AnyAsync(r => r.NodeId != null && r.Source == DataSource.Ukc));
+        Assert.True(await db.ExternalRefs.AnyAsync(r => r.Source == DataSource.Ukc));
+
+        // Every ascent is of a route, every route is at a crag and every crag is in an area, as the model requires.
+        Assert.False(await db.Nodes.AnyAsync(n => n.Type == "Ascent" && !db.NodeLinks.Any(l => l.SourceId == n.Id && l.RelType == "OF")));
+        Assert.False(await db.Nodes.AnyAsync(n => n.Type == "Route" && !db.NodeLinks.Any(l => l.SourceId == n.Id && l.RelType == "AT")));
+        Assert.False(await db.Nodes.AnyAsync(n => n.Type == "Crag" && !db.NodeLinks.Any(l => l.SourceId == n.Id && l.RelType == "IN")));
     }
 
     [Fact]
     public async Task Importing_the_files_again_adds_nothing()
     {
-        var (_, generic) = await ImportedAsync();
+        var generic = await ImportedAsync();
         await using var before = generic.CreateDbContext();
         var nodes = await before.Nodes.CountAsync();
         var links = await before.NodeLinks.CountAsync();
@@ -96,7 +93,7 @@ public sealed class GenericImportTests : IDisposable
         await using var db = generic.CreateDbContext();
         Assert.False(await db.Nodes.AnyAsync(n => n.Type != "Trip"));
         Assert.False(await db.NodeLinks.AnyAsync(n => n.RelType != "ON_TRIP" && n.RelType != "VISITED"));
-        Assert.False(await db.ExternalRefs.AnyAsync(r => r.NodeId != null));
+        Assert.False(await db.ExternalRefs.AnyAsync());
     }
 
     public void Dispose()

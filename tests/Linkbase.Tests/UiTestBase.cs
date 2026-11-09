@@ -28,16 +28,6 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
 
         var factory = fixture.ContextFactory();
         Services.AddSingleton(factory);
-        Services.AddSingleton(new TripService(factory));
-        Services.AddSingleton(services => new TripRefresher(
-            services.GetRequiredService<TripService>(),
-            () => "no-corrections-in-tests.json",
-            NullLogger<TripRefresher>.Instance));
-        Services.AddSingleton<AreaRepository>();
-        Services.AddSingleton<AscentRepository>();
-        Services.AddSingleton<CragRepository>();
-        Services.AddSingleton<RouteRepository>();
-        Services.AddSingleton<PartnerRepository>();
         Services.AddSingleton<InsightsRepository>();
         Services.AddSingleton<GraphRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
@@ -196,6 +186,28 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
 
     protected sealed record Seeded(long AscentId, long RouteId, long CragId, long AreaId, string Route, string Crag, string Country, string Partner);
 
+    private ModelFactory? _climbing;
+
+    // The climbing model in a database of its own, which every repository reads instead of the shared one from here on. Call
+    // it before rendering a page.
+    private protected async Task<ModelFactory> UseClimbingStoreAsync()
+    {
+        if (_climbing is null)
+        {
+            _climbing = await ClimbingStore.CreateAsync(Fixture);
+            Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(_climbing);
+            Services.AddSingleton<GraphRepository>();
+            Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+            Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
+            Services.AddSingleton<WebImportRepository>();
+            Services.AddSingleton<InsightsRepository>();
+        }
+
+        return _climbing;
+    }
+
+    private static long KeyOf(string nodeId) => long.Parse(nodeId[(nodeId.IndexOf(':') + 1)..], System.Globalization.CultureInfo.InvariantCulture);
+
     protected async Task<Seeded> SeedAsync(
         DateOnly? date = null,
         AscentStyle style = AscentStyle.Lead,
@@ -203,20 +215,34 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         string? notes = null,
         short? rating = null)
     {
+        var store = await UseClimbingStoreAsync();
         var (route, crag, country, partner) = (Unique("Route"), Unique("Crag"), Unique("Country"), Unique("Partner"));
-        var id = await Services.GetRequiredService<AscentRepository>().CreateAsync(new AscentInput
+        var area = await ClimbingStore.AddCountryAsync(store, country);
+        var cragId = await ClimbingStore.AddAsync(store, "Crag", crag, null, "IN", area);
+        var routeId = await ClimbingStore.AddAsync(
+            store, "Route", route,
+            new System.Text.Json.Nodes.JsonObject { ["grade"] = grade, ["grade_system"] = "uk_trad", ["discipline"] = "trad", ["length_m"] = 20, ["pitches"] = 2 }, "AT", cragId);
+        var partnerId = await ClimbingStore.AddAsync(store, "Partner", partner);
+        var props = new System.Text.Json.Nodes.JsonObject
         {
-            NewRoute = new NewRouteInput(route, grade, GradeSystem.UkTrad, Discipline.Trad, 20, 2, null, new NewCragInput(crag, null, country)),
-            Date = date ?? new DateOnly(2015, 5, 2),
-            DatePrecision = DatePrecision.Day,
-            Style = style,
-            Partners = [partner],
-            Notes = notes,
-            MyRating = rating,
-        });
-        await using var db = Fixture.CreateContext();
-        var row = await db.Ascents.AsNoTracking().Where(a => a.Id == id).Select(a => new { a.RouteId, a.Route.CragId, a.Route.Crag.AreaId }).SingleAsync();
-        return new Seeded(id, row.RouteId, row.CragId, row.AreaId, route, crag, country, partner);
+            ["date"] = (date ?? new DateOnly(2015, 5, 2)).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            ["date_precision"] = "day",
+            ["style"] = SnakeCaseEnumConverter<AscentStyle>.ToStore(style),
+            ["source"] = "manual",
+        };
+        if (notes is not null)
+        {
+            props["notes"] = notes;
+        }
+
+        if (rating is { } stars)
+        {
+            props["my_rating"] = (int)stars;
+        }
+
+        var ascentId = await ClimbingStore.AddAsync(store, "Ascent", route, props, "OF", routeId);
+        await ClimbingStore.LinkAsync(store, ascentId, "WITH", partnerId);
+        return new Seeded(KeyOf(ascentId), KeyOf(routeId), KeyOf(cragId), KeyOf(area), route, crag, country, partner);
     }
 
     protected sealed class StubExtractor(Func<string, CancellationToken, Task<ExtractedPage>> answer) : IClimbingExtractor

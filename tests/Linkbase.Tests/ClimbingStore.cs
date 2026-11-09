@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Linkbase.Core;
 using Linkbase.Core.Models;
 using Linkbase.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Linkbase.Tests;
 
@@ -28,11 +29,22 @@ internal static class ClimbingStore
         await db.SaveChangesAsync();
         if (rel is not null)
         {
-            db.NodeLinks.Add(new NodeLink { SourceId = id, RelType = rel, TargetId = target! });
-            await db.SaveChangesAsync();
+            await LinkAsync(store, id, rel, target!);
         }
 
         return id;
+    }
+
+    // A link, with the count the home page shows for its relationship.
+    public static async Task LinkAsync(ModelFactory store, string source, string rel, string target)
+    {
+        await using var db = store.CreateDbContext();
+        db.NodeLinks.Add(new NodeLink { SourceId = source, RelType = rel, TargetId = target });
+        await db.SaveChangesAsync();
+        var types = await db.Nodes.Where(n => n.Id == source || n.Id == target).Select(n => new { n.Id, n.Type }).ToDictionaryAsync(n => n.Id, n => n.Type);
+        var (from, to) = (types[source], types[target]);
+        await db.LinkDefinitions.Where(d => d.SourceType == from && d.RelType == rel && d.TargetType == to)
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links + 1));
     }
 
     public static Task<string> AddCountryAsync(ModelFactory store, string name) =>

@@ -203,8 +203,11 @@ public static partial class GraphPatternSql
         var term = add(filter.Value, NpgsqlDbType.Text);
         var borrowed = add(RegisteredDomains.LabelsNamedAfterParent, NpgsqlDbType.Array | NpgsqlDbType.Text);
 
-        // % is a near miss on the name, up to pg_trgm's similarity threshold. Unlike similarity(), it can use an index.
-        return $"({node}.search_text ILIKE {like} OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
+        // A type named after another node matches only where the text isn't in the name: search_text holds the name too, and
+        // matching on that would repeat the other node's name in every one of them. Keeping search_text ILIKE as the first
+        // condition lets the trigram index find the rows. % is a near miss on the name, up to pg_trgm's similarity threshold.
+        // Unlike similarity(), it can use an index.
+        return $"(({node}.search_text ILIKE {like} AND ({node}.label <> ALL({borrowed}) OR NOT {node}.name ILIKE {like})) OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
     }
 
     private static string EscapeLike(string text) =>

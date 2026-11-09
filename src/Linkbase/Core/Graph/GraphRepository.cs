@@ -205,30 +205,16 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .ToDictionaryAsync(g => g.Label, g => g.Count, cancellationToken);
     }
 
-    // How many links there are of each kind, most first. A model file's come from the counts kept on its definitions,
-    // because counting tens of millions of links takes too long. A domain's are counted, as there are few of them.
+    // How many links there are of each kind, most first. They come from the counts kept on the relationship definitions,
+    // because counting tens of millions of links each time takes too long.
     public async Task<IReadOnlyList<ConnectionCount>> ConnectionCountsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var defined = await db.LinkDefinitions.AsNoTracking()
+        return await db.LinkDefinitions.AsNoTracking()
             .Where(d => d.Links > 0)
+            .OrderByDescending(d => d.Links).ThenBy(d => d.SourceType).ThenBy(d => d.RelType).ThenBy(d => d.TargetType)
             .Select(d => new ConnectionCount(d.SourceType, d.RelType, d.TargetType, d.Links))
             .ToListAsync(cancellationToken);
-
-        var counted = await db.Database.SqlQuery<ConnectionCountRow>(
-            $"""
-            SELECT s.label AS "SourceLabel", e.rel_type AS "RelType", t.label AS "TargetLabel", count(*) AS "Links"
-            FROM graph_edges_climbing e
-            JOIN graph_nodes_climbing s ON s.node_id = e.source_id
-            JOIN graph_nodes_climbing t ON t.node_id = e.target_id
-            WHERE s.user_id = {AppUser.DefaultId}
-            GROUP BY 1, 2, 3
-            """).ToListAsync(cancellationToken);
-
-        return defined
-            .Concat(counted.Select(c => new ConnectionCount(c.SourceLabel, c.RelType, c.TargetLabel, c.Links)))
-            .OrderByDescending(c => c.Links).ThenBy(c => c.SourceLabel).ThenBy(c => c.RelType).ThenBy(c => c.TargetLabel)
-            .ToList();
     }
 
     // Everything matching what's been typed, as label, property and value. Long free text is left out,
@@ -457,7 +443,6 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
 
     private sealed record ConnectionRow(string SourceLabel, string RelType, string TargetLabel);
 
-    private sealed record ConnectionCountRow(string SourceLabel, string RelType, string TargetLabel, long Links);
 
     private sealed record PropertyRow(string Label, string Key, string JsonType);
 

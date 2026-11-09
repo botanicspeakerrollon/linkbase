@@ -90,8 +90,7 @@ public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture)
     // The made-up climbing model in a database of its own, which the page reads instead of the shared one.
     private async Task<ModelFactory> GenericAsync()
     {
-        var (source, target) = await GenericConversionTests.TypedAsync(Fixture);
-        await new GenericConverter(source, target).ConvertAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        var target = await MadeUpLogbook.CreateAsync(Fixture);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(target);
         Services.AddSingleton<LogbookRepository>();
         return target;
@@ -193,8 +192,7 @@ public class InsightsPageTests(PostgresFixture fixture) : UiTestBase(fixture)
     // The made-up climbing model in a database of its own, which the page reads instead of the shared one.
     private async Task GenericAsync()
     {
-        var (source, target) = await GenericConversionTests.TypedAsync(Fixture);
-        await new GenericConverter(source, target).ConvertAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        var target = await MadeUpLogbook.CreateAsync(Fixture);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(target);
         Services.AddSingleton<InsightsRepository>();
     }

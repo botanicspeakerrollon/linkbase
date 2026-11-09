@@ -11,15 +11,8 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<AppUser> Users => Set<AppUser>();
-    public DbSet<Area> Areas => Set<Area>();
-    public DbSet<Crag> Crags => Set<Crag>();
-    public DbSet<Route> Routes => Set<Route>();
-    public DbSet<Ascent> Ascents => Set<Ascent>();
     public DbSet<ExternalRef> ExternalRefs => Set<ExternalRef>();
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
-    public DbSet<Partner> Partners => Set<Partner>();
-    public DbSet<AscentPartner> AscentPartners => Set<AscentPartner>();
-    public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<GraphScene> GraphScenes => Set<GraphScene>();
     public DbSet<NodeType> NodeTypes => Set<NodeType>();
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
@@ -49,7 +42,6 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         configurationBuilder.Properties<Discipline>().HaveConversion<SnakeCaseEnumConverter<Discipline>>();
         configurationBuilder.Properties<AscentStyle>().HaveConversion<SnakeCaseEnumConverter<AscentStyle>>();
         configurationBuilder.Properties<DataSource>().HaveConversion<SnakeCaseEnumConverter<DataSource>>();
-        configurationBuilder.Properties<ExternalEntityType>().HaveConversion<SnakeCaseEnumConverter<ExternalEntityType>>();
         configurationBuilder.Properties<ImportStatus>().HaveConversion<SnakeCaseEnumConverter<ImportStatus>>();
         configurationBuilder.Properties<DatePrecision>().HaveConversion<SnakeCaseEnumConverter<DatePrecision>>();
         configurationBuilder.Properties<StagedKind>().HaveConversion<SnakeCaseEnumConverter<StagedKind>>();
@@ -60,68 +52,19 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     {
         modelBuilder.HasPostgresExtension("pg_trgm");
 
-        modelBuilder.Entity<Area>(area =>
-        {
-            area.HasOne(a => a.Parent).WithMany(a => a.Children).HasForeignKey(a => a.ParentId);
-            // Without NULLS NOT DISTINCT, Postgres would allow duplicate root areas.
-            area.HasIndex(a => new { a.ParentId, a.Name }).IsUnique().AreNullsDistinct(false);
-        });
-
-        modelBuilder.Entity<Crag>(crag =>
-        {
-            crag.ToTable(t =>
-            {
-                t.HasCheckConstraint("ck_crag_lat", "lat BETWEEN -90 AND 90");
-                t.HasCheckConstraint("ck_crag_lon", "lon BETWEEN -180 AND 180");
-            });
-            crag.Property(c => c.Aliases).HasColumnType("text[]").HasDefaultValueSql("'{}'");
-            crag.HasIndex(c => c.Name).HasMethod("gin").HasOperators("gin_trgm_ops");
-        });
-
-        modelBuilder.Entity<Route>(route =>
-        {
-            route.HasIndex(r => r.Name).HasMethod("gin").HasOperators("gin_trgm_ops");
-        });
-
-        modelBuilder.Entity<Ascent>(ascent =>
-        {
-            ascent.ToTable(t => t.HasCheckConstraint("ck_ascent_my_rating", "my_rating BETWEEN 0 AND 3"));
-            ascent.HasIndex(a => new { a.UserId, a.Date });
-        });
-
         modelBuilder.Entity<ExternalRef>(externalRef =>
         {
-            // entity_type is part of the key because a source's ids are only unique per kind of
-            // thing: UKC crag 123 and UKC climb 123 are different records.
-            externalRef.HasIndex(r => new { r.Source, r.EntityType, r.ExternalId }).IsUnique();
-            externalRef.HasIndex(r => new { r.EntityType, r.EntityId });
+            // node_type is part of the key because a source's ids are only unique per kind of thing: UKC crag 123 and
+            // UKC climb 123 are different records.
             externalRef.HasIndex(r => new { r.Source, r.NodeType, r.ExternalId }).IsUnique();
             externalRef.HasIndex(r => r.NodeId);
 
-            // No foreign key to node: a model reload truncates node, and that would have to truncate the climbing refs too.
-            externalRef.ToTable(t => t.HasCheckConstraint("ck_external_ref_target",
-                "(entity_type IS NOT NULL AND entity_id IS NOT NULL AND node_id IS NULL AND node_type IS NULL)"
-                + " OR (entity_type IS NULL AND entity_id IS NULL AND node_id IS NOT NULL AND node_type IS NOT NULL)"));
+            // No foreign key to node: a model reload truncates node, and that would have to truncate the refs too.
         });
 
         modelBuilder.Entity<ImportBatch>(batch =>
         {
             batch.Property(b => b.RawPayload).HasColumnType("jsonb");
-        });
-
-        modelBuilder.Entity<Partner>(partner =>
-        {
-            partner.HasIndex(p => new { p.UserId, p.Name }).IsUnique();
-        });
-
-        modelBuilder.Entity<AscentPartner>(link =>
-        {
-            link.HasKey(l => new { l.AscentId, l.PartnerId });
-        });
-
-        modelBuilder.Entity<Trip>(trip =>
-        {
-            trip.HasIndex(t => new { t.UserId, t.Key }).IsUnique();
         });
 
         modelBuilder.Entity<GraphScene>(scene =>

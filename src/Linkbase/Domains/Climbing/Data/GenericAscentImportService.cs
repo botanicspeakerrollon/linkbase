@@ -9,6 +9,17 @@ using NpgsqlTypes;
 
 namespace Linkbase.Domains.Climbing.Data;
 
+public sealed record ImportCounts(int Created, int Matched);
+
+public sealed record ImportSummary(
+    long BatchId,
+    int Rows,
+    ImportCounts Areas,
+    ImportCounts Crags,
+    ImportCounts Routes,
+    ImportCounts Ascents,
+    int PartnersCreated);
+
 // AscentImportService for the generic store: loads parsed UKC and Mountain Project rows as Area, Crag, Route, Ascent and
 // Partner records with their links and external ids, as models/climbing/model.json describes them. One batch, one
 // transaction, tagged so ImportStagingService.UndoAsync can take it back. Matching is the typed importer's: an external id
