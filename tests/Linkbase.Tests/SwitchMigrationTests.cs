@@ -68,8 +68,43 @@ public sealed class SwitchMigrationTests(PostgresFixture fixture)
         await using var db = Context(connectionString);
         var error = await Assert.ThrowsAnyAsync<Exception>(() => db.GetService<IMigrator>().MigrateAsync());
 
-        Assert.Contains("External ids still point at the old tables", (error as PostgresException ?? error.InnerException as PostgresException)!.MessageText);
+        Assert.Contains("external ids for the old tables", (error as PostgresException ?? error.InnerException as PostgresException)!.MessageText);
         Assert.True(await TableExistsAsync(connectionString, "area"));
+    }
+
+    [Fact]
+    public async Task Refuses_a_copy_that_has_fewer_records_than_the_old_tables()
+    {
+        var connectionString = await DatabaseBeforeTheSwitchAsync();
+        await ExecuteAsync(connectionString, """
+            INSERT INTO area (user_id, name, kind) VALUES (1, 'Made-up country', 'country'), (1, 'Made-up region', 'region');
+            INSERT INTO node_type (name, sort_order) VALUES ('Area', 1);
+            INSERT INTO node (id, user_id, type, key, name, props) VALUES ('area:1', 1, 'Area', '1', 'Made-up country', '{}');
+            """);
+
+        await using var db = Context(connectionString);
+        var error = await Assert.ThrowsAnyAsync<Exception>(() => db.GetService<IMigrator>().MigrateAsync());
+
+        var message = (error as PostgresException ?? error.InnerException as PostgresException)!.MessageText;
+        Assert.Contains("holds 2 rows and the generic store has 1 Area", message);
+        Assert.True(await TableExistsAsync(connectionString, "area"));
+    }
+
+    [Fact]
+    public async Task Refuses_when_there_are_more_old_external_ids_than_new_ones()
+    {
+        var connectionString = await DatabaseBeforeTheSwitchAsync();
+        await ExecuteAsync(connectionString, """
+            INSERT INTO node_type (name, sort_order) VALUES ('Crag', 1);
+            INSERT INTO node (id, user_id, type, key, name, props) VALUES ('crag:1', 1, 'Crag', '1', 'Made-up crag', '{}');
+            INSERT INTO external_ref (entity_type, entity_id, source, external_id) VALUES ('crag', 1, 'ukc', 'a'), ('crag', 2, 'ukc', 'b');
+            INSERT INTO external_ref (node_id, node_type, source, external_id) VALUES ('crag:1', 'Crag', 'ukc', 'a-new');
+            """);
+
+        await using var db = Context(connectionString);
+        var error = await Assert.ThrowsAnyAsync<Exception>(() => db.GetService<IMigrator>().MigrateAsync());
+
+        Assert.Contains("2 external ids for the old tables and only 1", (error as PostgresException ?? error.InnerException as PostgresException)!.MessageText);
     }
 
     [Fact]

@@ -1,7 +1,7 @@
 namespace Linkbase.Data;
 
-// The generic store: any model's types, fields, relationships and data, as loaded from a model file. Climbing keeps its
-// own typed tables. See docs/models.md.
+// The generic store: any model's types, fields, relationships and data, as loaded from a model file. Climbing's records are
+// here too. See docs/models.md.
 
 // Choice is one of a fixed list of values, kept in FieldDefinition.Options and stored as text. List is several text
 // values, stored as a JSON array.

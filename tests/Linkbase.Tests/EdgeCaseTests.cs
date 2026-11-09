@@ -84,8 +84,7 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture) : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _store = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(_store).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        _store = await ClimbingStore.CreateAsync(fixture);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

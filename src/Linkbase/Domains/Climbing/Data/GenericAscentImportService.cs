@@ -20,10 +20,10 @@ public sealed record ImportSummary(
     ImportCounts Ascents,
     int PartnersCreated);
 
-// AscentImportService for the generic store: loads parsed UKC and Mountain Project rows as Area, Crag, Route, Ascent and
-// Partner records with their links and external ids, as models/climbing/model.json describes them. One batch, one
-// transaction, tagged so ImportStagingService.UndoAsync can take it back. Matching is the typed importer's: an external id
-// first, then an identical name in the same place; similar names are never merged. The trips and the ascents' names follow
+// Loads parsed UKC and Mountain Project rows as Area, Crag, Route, Ascent and Partner records with their links and external
+// ids, as models/climbing/model.json describes them. One batch, one transaction, tagged so ImportStagingService.UndoAsync can
+// take it back. A row is matched by an external id first, then by an identical name in the same place; similar names are
+// never merged. The trips and the ascents' names follow
 // from GenericTripService and the records themselves. See docs/climbing-to-generic-plan.md.
 public sealed class GenericAscentImportService(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {

@@ -1,3 +1,5 @@
+using Linkbase.Core;
+using Linkbase.Core.Models;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
@@ -42,15 +44,46 @@ public sealed class PostgresFixture : IAsyncLifetime
         public LinkbaseDbContext CreateDbContext() => fixture.CreateContext();
     }
 
+    // Databases made for a test are copies of a template that was migrated once, because applying every migration took longer
+    // than the test. A template can't be copied while anything is connected to it, so its connections aren't pooled.
+    private readonly SemaphoreSlim _templateLock = new(1, 1);
+    private readonly Dictionary<string, string> _templates = [];
+
+    private async Task<string> TemplateAsync(string key, Func<string, Task> prepare)
+    {
+        await _templateLock.WaitAsync();
+        try
+        {
+            if (!_templates.TryGetValue(key, out var name))
+            {
+                name = $"tmpl_{Guid.NewGuid():N}";
+                await prepare(await CreateDatabaseAsync(name) + ";Pooling=false");
+                _templates[key] = name;
+            }
+
+            return name;
+        }
+        finally
+        {
+            _templateLock.Release();
+        }
+    }
+
+    private static async Task MigrateAsync(string connectionString)
+    {
+        await using var db = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
+        await db.Database.MigrateAsync();
+    }
+
     // A separate, migrated database, with whatever the SQL puts in the generic store: a model the app has never heard of.
     // Nothing in it reaches the shared database that other tests use.
     public async Task<string> CreateModelDatabaseAsync(string insertRowsSql)
     {
+        var template = await TemplateAsync("migrated", MigrateAsync);
+
         // Not pooled: every test makes a database of its own, and idle pooled connections to hundreds of them would use up
         // the server's connections.
-        var connectionString = await CreateDatabaseAsync($"model_{Guid.NewGuid():N}") + ";Pooling=false";
-        await using var db = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
-        await db.Database.MigrateAsync();
+        var connectionString = await CreateDatabaseAsync($"model_{Guid.NewGuid():N}", template) + ";Pooling=false";
 
         // Straight to Npgsql, because EF would read the braces in the JSON as parameters.
         await using var connection = new NpgsqlConnection(connectionString);
@@ -59,6 +92,17 @@ public sealed class PostgresFixture : IAsyncLifetime
         command.CommandText = insertRowsSql;
         await command.ExecuteNonQueryAsync();
         return connectionString;
+    }
+
+    // A migrated database with the climbing model file loaded and no records.
+    public async Task<string> CreateClimbingDatabaseAsync()
+    {
+        var template = await TemplateAsync("climbing", async connectionString =>
+        {
+            await MigrateAsync(connectionString);
+            await new ModelLoader(new ModelFactory(connectionString)).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        });
+        return await CreateDatabaseAsync($"model_{Guid.NewGuid():N}", template) + ";Pooling=false";
     }
 
     // A database with no tables at all, as an app pointed at a new server would find.
@@ -99,14 +143,14 @@ public sealed class PostgresFixture : IAsyncLifetime
     }
 
     // On the container, or on the given server, connecting through whichever database is already there.
-    private async Task<string> CreateDatabaseAsync(string name)
+    private async Task<string> CreateDatabaseAsync(string name, string? template = null)
     {
         var admin = _server ?? _connectionString;
         await using (var connection = new NpgsqlConnection(admin))
         {
             await connection.OpenAsync();
             // The name is a generated GUID, and CREATE DATABASE can't take a parameter.
-            await using var create = new NpgsqlCommand($"CREATE DATABASE {name}", connection);
+            await using var create = new NpgsqlCommand($"CREATE DATABASE {name}{(template is null ? "" : $" TEMPLATE {template}")}", connection);
             await create.ExecuteNonQueryAsync();
         }
 

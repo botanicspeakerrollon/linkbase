@@ -1012,16 +1012,9 @@ public class ExplorePageTests : UiTestBase
     {
         var prefix = Unique("Many");
         var s = await SeedAsync();
-        await using (var db = (await UseClimbingStoreAsync()).CreateDbContext())
-        {
-            db.Nodes.AddRange(Enumerable.Range(0, 105).Select(i => new Node
-                { Id = $"crag:many{i:000}", UserId = AppUser.DefaultId, Type = "Crag", Key = $"many{i:000}", Name = $"{prefix} {i:000}", Props = "{}" }));
-            db.Nodes.AddRange(Enumerable.Range(0, 105).Select(i => new Node
-                { Id = $"route:many{i:000}", UserId = AppUser.DefaultId, Type = "Route", Key = $"many{i:000}", Name = $"{prefix} route {i:000}", Props = "{}" }));
-            db.NodeLinks.AddRange(Enumerable.Range(0, 105).Select(i => new NodeLink { SourceId = $"crag:many{i:000}", RelType = "IN", TargetId = $"area:{s.AreaId}" }));
-            db.NodeLinks.AddRange(Enumerable.Range(0, 105).Select(i => new NodeLink { SourceId = $"route:many{i:000}", RelType = "AT", TargetId = $"crag:{s.CragId}" }));
-            await db.SaveChangesAsync();
-        }
+        var store = await UseClimbingStoreAsync();
+        await ClimbingStore.AddManyAsync(store, "Crag", Enumerable.Range(0, 105).Select(i => $"{prefix} {i:000}"), null, "IN", $"area:{s.AreaId}");
+        await ClimbingStore.AddManyAsync(store, "Route", Enumerable.Range(0, 105).Select(i => $"{prefix} route {i:000}"), null, "AT", $"crag:{s.CragId}");
 
         var cut = RenderPage<ExplorePage>();
         Search(cut, "Crag");

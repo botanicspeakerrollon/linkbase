@@ -10,9 +10,10 @@ namespace Linkbase.Data.Migrations
     /// <inheritdoc />
     public partial class SwitchClimbingToGenericStore : Migration
     {
-        // Dropping the old tables loses a logbook that was never copied, so this refuses to run until it has been. Each old table
-        // that has rows needs records of its type in the generic store, and old external ids need new ones. Empty databases,
-        // such as a model that never held climbing, pass.
+        // Dropping the old tables loses a logbook that was never copied, so this refuses to run until it has been. The generic
+        // store needs at least as many records of each type as the old table has rows, so a stale or half-finished copy stops it
+        // too, and at least as many external ids as the old ones. Trips are the exception: they are derived and rebuilt from the
+        // ascents, so only that some exist is checked. Empty databases, such as a model that never held climbing, pass.
         private const string Guard = """
             DO $$
             DECLARE
@@ -26,13 +27,15 @@ namespace Linkbase.Data.Migrations
                 LOOP
                     EXECUTE format('SELECT count(*) FROM %I', pair.tbl) INTO typed;
                     SELECT count(*) INTO generic FROM node WHERE type = pair.node_type;
-                    IF typed > 0 AND generic = 0 THEN
-                        RAISE EXCEPTION 'The % table still holds % rows and the generic store has no % records. Copy the logbook first: climbing to-generic <model> --same-database (docs/operations.md).', pair.tbl, typed, pair.node_type;
+                    IF typed > 0 AND (generic = 0 OR (generic < typed AND pair.node_type <> 'Trip')) THEN
+                        RAISE EXCEPTION 'The % table holds % rows and the generic store has % % records. Copy the logbook first: climbing to-generic <model> --same-database (docs/climbing-switch.md).', pair.tbl, typed, generic, pair.node_type;
                     END IF;
                 END LOOP;
 
-                IF EXISTS (SELECT 1 FROM external_ref WHERE node_id IS NULL) AND NOT EXISTS (SELECT 1 FROM external_ref WHERE node_id IS NOT NULL) THEN
-                    RAISE EXCEPTION 'External ids still point at the old tables and none point at the generic store. Copy the logbook first (docs/operations.md).';
+                SELECT count(*) INTO typed FROM external_ref WHERE node_id IS NULL;
+                SELECT count(*) INTO generic FROM external_ref WHERE node_id IS NOT NULL;
+                IF typed > generic THEN
+                    RAISE EXCEPTION 'There are % external ids for the old tables and only % for the generic store. Copy the logbook first (docs/climbing-switch.md).', typed, generic;
                 END IF;
             END
             $$;

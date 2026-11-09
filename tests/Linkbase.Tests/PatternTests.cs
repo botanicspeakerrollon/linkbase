@@ -555,6 +555,23 @@ public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Free_text_finds_an_ascent_by_its_own_notes_even_when_they_repeat_its_routes_name()
+    {
+        var word = Word();
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Word()}");
+        var crag = await ClimbingStore.AddAsync(_store, "Crag", $"Crag {Word()}", null, "IN", area);
+        var route = await ClimbingStore.AddAsync(_store, "Route", $"Route {word}", null, "AT", crag);
+        var named = await ClimbingStore.AddAsync(_store, "Ascent", $"Route {word}", new JsonObject { ["date"] = "2020-01-01", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual" }, "OF", route);
+        var noted = await ClimbingStore.AddAsync(_store, "Ascent", $"Route {word}", new JsonObject { ["date"] = "2020-01-02", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual", ["notes"] = $"Mentions {word} again" }, "OF", route);
+
+        var found = await FreeTextAsync(word);
+
+        Assert.Contains(route, found);
+        Assert.Contains(noted, found);
+        Assert.DoesNotContain(named, found);
+    }
+
+    [Fact]
     public async Task Free_text_tolerates_a_typo()
     {
         var word = Word();

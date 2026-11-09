@@ -341,19 +341,9 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     private async Task<long> AddCragsAsync(string prefix, int count, int routesOnFirst = 0)
     {
         var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Guid.NewGuid():N}");
-        var first = "";
-        for (var i = 0; i < count; i++)
-        {
-            var crag = await ClimbingStore.AddAsync(_store, "Crag", $"{prefix} crag with a long name {i:000}", null, "IN", area);
-            first = i == 0 ? crag : first;
-        }
-
-        for (var i = 0; i < routesOnFirst; i++)
-        {
-            await ClimbingStore.AddAsync(_store, "Route", $"Fan {Guid.NewGuid():N}", null, "AT", first);
-        }
-
-        return Key(first);
+        var crags = await ClimbingStore.AddManyAsync(_store, "Crag", Enumerable.Range(0, count).Select(i => $"{prefix} crag with a long name {i:000}"), null, "IN", area);
+        await ClimbingStore.AddManyAsync(_store, "Route", Enumerable.Range(0, routesOnFirst).Select(_ => $"Fan {Guid.NewGuid():N}"), null, "AT", crags[0]);
+        return Key(crags[0]);
     }
 
     [Fact]

@@ -181,7 +181,7 @@ public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 
         var cut = RenderPage<LogbookPage>();
 
-        Sees(cut, "no ascents in the generic store");
+        Sees(cut, "has no ascents yet");
     }
 }
 

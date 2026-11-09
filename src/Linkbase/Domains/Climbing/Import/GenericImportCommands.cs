@@ -14,7 +14,7 @@ namespace Linkbase.Domains.Climbing.Import;
 // The UKC and Mountain Project parsers writing into a model's generic store, as models/climbing/model.json describes it.
 // Each file is one import batch, which can be undone like a CSV import. `all` loads both default files and rebuilds the
 // trips. With --fresh it first reloads the model file, which empties the store, so a climbing model can be rebuilt from the
-// exports alone. The typed importer (`import ukc|mp|all`) stays until the switch.
+// exports alone.
 public sealed class GenericImportCommands(
     IDbContextFactory<LinkbaseDbContext> target, TextWriter output, Func<string, string>? resolvePath = null)
 {

@@ -244,6 +244,13 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
         var areas = await LoadAreasAsync(db, cancellationToken);
+        await CheckChosenRecordsExistAsync(db, included, areas, cancellationToken);
+        var knownRefs = (await db.ExternalRefs.AsNoTracking()
+                .Where(r => r.Source == DataSource.WebImport)
+                .Select(r => new { r.NodeType, r.ExternalId })
+                .ToListAsync(cancellationToken))
+            .Select(r => (r.NodeType, r.ExternalId))
+            .ToHashSet();
         var nextKey = new Dictionary<string, long>();
         foreach (var type in new[] { "Area", "Crag", "Route" })
         {
@@ -316,7 +323,7 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
                 cragsCreated++;
             }
 
-            await AddRefAsync(db, cragId, "Crag", CragKey(refBase, staged.Name), batch.SourceUrl, batchId, cancellationToken);
+            AddRef(db, knownRefs, cragId, "Crag", CragKey(refBase, staged.Name), batch.SourceUrl, batchId);
 
             foreach (var stagedRoute in staged.Routes.Where(r => r.Include))
             {
@@ -360,7 +367,7 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
                     routesCreated++;
                 }
 
-                await AddRefAsync(db, routeId, "Route", RouteKey(refBase, staged.Name, stagedRoute.Name), batch.SourceUrl, batchId, cancellationToken);
+                AddRef(db, knownRefs, routeId, "Route", RouteKey(refBase, staged.Name, stagedRoute.Name), batch.SourceUrl, batchId);
             }
         }
 
@@ -570,13 +577,11 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
         }
     }
 
-    private static async Task AddRefAsync(
-        LinkbaseDbContext db, string nodeId, string nodeType, string externalId, string? url, long batchId, CancellationToken cancellationToken)
+    // A source's id is added once, whichever batch brought it first.
+    private static void AddRef(
+        LinkbaseDbContext db, HashSet<(string NodeType, string ExternalId)> known, string nodeId, string nodeType, string externalId, string? url, long batchId)
     {
-        var exists = await db.ExternalRefs.AnyAsync(
-            r => r.Source == DataSource.WebImport && r.NodeType == nodeType && r.ExternalId == externalId, cancellationToken)
-            || db.ChangeTracker.Entries<ExternalRef>().Any(e => e.Entity.Source == DataSource.WebImport && e.Entity.NodeType == nodeType && e.Entity.ExternalId == externalId);
-        if (exists)
+        if (!known.Add((nodeType, externalId)))
         {
             return;
         }
@@ -590,6 +595,47 @@ public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> con
             Url = url,
             ImportBatchId = batchId,
         });
+    }
+
+    // What the review chose may have gone, or never been a crag, route or area, since the review was loaded. Better a clear
+    // message before anything is written than a foreign key failing part-way.
+    private static async Task CheckChosenRecordsExistAsync(
+        LinkbaseDbContext db, IReadOnlyList<StagedCrag> crags, Dictionary<string, AreaRow> areas, CancellationToken cancellationToken)
+    {
+        var chosen = new Dictionary<string, (string Type, string Name)>();
+        foreach (var crag in crags)
+        {
+            if (crag.UsesExisting)
+            {
+                chosen[crag.Choice] = ("Crag", crag.Name);
+            }
+
+            foreach (var route in crag.Routes.Where(r => r.Include && r.UsesExisting))
+            {
+                chosen[route.Choice] = ("Route", route.Name);
+            }
+
+            if (crag.Choice == StagedRow.CreateNew)
+            {
+                foreach (var areaId in new[] { crag.AreaId, crag.NewAreaParentId }.OfType<string>())
+                {
+                    if (!areas.ContainsKey(areaId))
+                    {
+                        throw new LinkbaseValidationException($"The area chosen for '{crag.Name}' is no longer there. Choose another.");
+                    }
+                }
+            }
+        }
+
+        var ids = chosen.Keys.ToList();
+        var found = await db.Nodes.AsNoTracking().Where(n => ids.Contains(n.Id)).Select(n => new { n.Id, n.Type }).ToDictionaryAsync(n => n.Id, n => n.Type, cancellationToken);
+        foreach (var (id, (type, name)) in chosen)
+        {
+            if (!found.TryGetValue(id, out var actual) || actual != type)
+            {
+                throw new LinkbaseValidationException($"The {type.ToLowerInvariant()} chosen for '{name}' is no longer there. Review the import again.");
+            }
+        }
     }
 
     private static async Task<Dictionary<(string NodeType, string ExternalId), string>> LoadRefsAsync(LinkbaseDbContext db, CancellationToken cancellationToken)

@@ -18,8 +18,7 @@ public class WebImportTests(PostgresFixture fixture) : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _store = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(_store).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        _store = await ClimbingStore.CreateAsync(fixture);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
@@ -316,7 +315,7 @@ public class WebImportTests(PostgresFixture fixture) : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Commit_rolls_back_entirely_if_a_row_fails()
+    public async Task Commit_writes_nothing_if_a_chosen_area_has_gone()
     {
         var country = await CreateCountryAsync($"Country {Word()}");
         var (good, bad) = ($"Crag {Word()}", $"Crag {Word()}");
@@ -324,11 +323,25 @@ public class WebImportTests(PostgresFixture fixture) : IAsyncLifetime
         staged.Crags[0].AreaId = country;
         staged.Crags[1].AreaId = "area:missing";
 
-        await Assert.ThrowsAnyAsync<DbUpdateException>(() => Repository().CommitAsync(staged.BatchId, staged.Crags));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => Repository().CommitAsync(staged.BatchId, staged.Crags));
 
         await using var db = _store.CreateDbContext();
         Assert.False(await ExistsAsync("Crag", good));
         Assert.Equal(ImportStatus.Staged, await db.ImportBatches.AsNoTracking().Where(b => b.Id == staged.BatchId).Select(b => b.Status).SingleAsync());
+    }
+
+    [Fact]
+    public async Task Commit_refuses_a_choice_that_is_not_a_crag()
+    {
+        var existing = await CreateCragAndRouteAsync($"Country {Word()}", $"Crag {Word()}", $"Route {Word()}");
+        var crag = $"Crag {Word()}";
+        var staged = await StageAsync(crag, Page(crag, null));
+        staged.Crags[0].Choice = existing.RouteId;
+
+        var error = await Assert.ThrowsAsync<LinkbaseValidationException>(() => Repository().CommitAsync(staged.BatchId, staged.Crags));
+
+        Assert.Contains("no longer there", error.Message);
+        Assert.False(await ExistsAsync("Crag", crag));
     }
 
     [Fact]
