@@ -2,12 +2,12 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Linkbase.Data;
-using Linkbase.Domains.Climbing.Import;
+using Linkbase.Domains.Climbing.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
 
-namespace Linkbase.Domains.Climbing.Data;
+namespace Linkbase.Domains.Climbing.Import;
 
 public sealed record ImportCounts(int Created, int Matched);
 

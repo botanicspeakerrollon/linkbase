@@ -1,7 +1,8 @@
 using Linkbase.Data;
-using Linkbase.Domains.Climbing.Data;
 
-namespace Linkbase.Domains.Climbing.Import;
+using Linkbase.Domains.Climbing.Import;
+
+namespace Linkbase.Domains.Climbing.Data;
 
 public sealed record TripAscent(long Id, string Country, DateOnly Date, DatePrecision Precision);
 

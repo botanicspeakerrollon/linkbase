@@ -2,6 +2,7 @@
 
 Current:
 
+- [architecture](architecture.md): where things live, and where access control would go.
 - [models](models.md): what a model is, model files, configuring and switching models, climbing in the generic store.
 - [operations](operations.md): backing up, restoring and rebuilding the database, secrets.
 - [postgres](postgres.md): getting into the databases and querying them by hand.
