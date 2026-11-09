@@ -83,8 +83,8 @@ public sealed class AscentImportService(IDbContextFactory<LinkbaseDbContext> con
         public async Task LoadCachesAsync()
         {
             var refs = await db.ExternalRefs.AsNoTracking()
-                .Where(r => r.Source == source)
-                .Select(r => new { r.EntityType, r.ExternalId, r.EntityId })
+                .Where(r => r.Source == source && r.EntityType != null)
+                .Select(r => new { EntityType = r.EntityType!.Value, r.ExternalId, EntityId = r.EntityId!.Value })
                 .ToListAsync(cancellationToken);
             foreach (var r in refs)
             {

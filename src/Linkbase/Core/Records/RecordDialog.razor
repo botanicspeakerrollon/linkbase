@@ -15,7 +15,7 @@
                               HelperText="What identifies it, and can't change later. Made from the name if left empty." />
             }
 
-            @foreach (var field in Type.Fields)
+            @foreach (var field in Type.Editable)
             {
                 var key = field.Key;
                 var label = RecordRepository.Title(key);
@@ -126,7 +126,7 @@
     protected override void OnInitialized()
     {
         _name = Record?.Name;
-        _values = Type.Fields.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
+        _values = Type.Editable.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
     }
 
     private DateTime? DateOf(string key) =>

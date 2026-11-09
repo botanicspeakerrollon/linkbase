@@ -50,7 +50,9 @@ builder.Services.AddScoped<DatabaseStatusService>();
 builder.Services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("databases", tags: ["ready"]);
 builder.Services.AddScoped<GraphRepository>();
 builder.Services.AddScoped<ModelLoader>();
+builder.Services.AddScoped<RecordHooks>();
 builder.Services.AddScoped<RecordRepository>();
+builder.Services.AddScoped<ExternalRefRepository>();
 builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();
 foreach (var domain in RegisteredDomains.All)

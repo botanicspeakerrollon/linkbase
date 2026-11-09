@@ -9,8 +9,9 @@ using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
 
-// Options are a choice field's values, in the order to offer them, and empty for every other type.
-public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<string> Options)
+// Options are a choice field's values, in the order to offer them, and empty for every other type. Owner is the domain
+// module that keeps the value, such as Climbing, for a field people can't edit.
+public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<string> Options, string? Owner = null)
 {
     public RecordField(string key, FieldType type)
         : this(key, type, [])
@@ -22,18 +23,29 @@ public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<strin
 
     // Records compare lists by reference, so compare the options by value.
     public bool Equals(RecordField? other) =>
-        other is not null && Key == other.Key && Type == other.Type && Required == other.Required && Options.SequenceEqual(other.Options);
+        other is not null && Key == other.Key && Type == other.Type && Required == other.Required && Options.SequenceEqual(other.Options)
+        && Owner == other.Owner;
 
-    public override int GetHashCode() => HashCode.Combine(Key, Type, Required, Options.Count);
+    public override int GetHashCode() => HashCode.Combine(Key, Type, Required, Options.Count, Owner);
 }
 
 // A kind of link every record of a type needs at least one of, such as an ascent's OF link to a Route.
 public sealed record RequiredLink(string RelType, string OtherType);
 
-public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields)
+// Owner is the domain module that derives the type's records, such as Climbing for trips. Only it writes them.
+public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields, string? Owner = null)
 {
     public IReadOnlyList<RequiredLink> RequiredLinks { get; init; } = [];
+
+    // The fields people fill in, as the edit form shows them.
+    public IEnumerable<RecordField> Editable => Fields.Where(f => f.Owner is null);
 }
+
+// A record a domain module derives, such as a trip. Values are as a form sends them.
+public sealed record DerivedRecord(string Key, string Name, IReadOnlyDictionary<string, string?> Values);
+
+// A link a domain module derives, between record ids, such as an ascent ON_TRIP a trip.
+public sealed record DerivedLink(string SourceId, string RelType, string TargetId, JsonObject? Props = null);
 
 // Values are shown as text: numbers as written, dates as yyyy-MM-dd, booleans as true or false, and a list's values one
 // per line.
@@ -88,9 +100,12 @@ public sealed record RecordOption(string Id, string Name, string Key);
 public sealed record RelationshipDefinition(string FromType, string RelType, string ToType);
 
 // Lists, shows and edits the generic store's data, guided by the model's definitions. See docs/models.md.
-public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
+// Domain modules' hooks run on every change made through it, except ReplaceDerivedAsync, which is the modules' own.
+public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks? hooks = null)
 {
     public const int LinksShown = 25;
+
+    private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
 
     public async Task<IReadOnlyList<RecordType>> TypesAsync(CancellationToken cancellationToken = default)
     {
@@ -102,7 +117,8 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 t.Name,
                 t.Color,
                 t.Icon,
-                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options, f.Required }).ToList(),
+                t.Owner,
+                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner }).ToList(),
             })
             .ToListAsync(cancellationToken);
         var required = await db.LinkDefinitions.AsNoTracking()
@@ -111,7 +127,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
             .Select(l => new { l.SourceType, l.RelType, l.TargetType })
             .ToListAsync(cancellationToken);
         return types.Select(t => new RecordType(t.Name, t.Color, t.Icon,
-            t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? []) { Required = f.Required }).ToList())
+            t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? [], f.Owner) { Required = f.Required }).ToList(), t.Owner)
         {
             RequiredLinks = required.Where(l => l.SourceType == t.Name).Select(l => new RequiredLink(l.RelType, l.TargetType)).ToList(),
         }).ToList();
@@ -274,12 +290,13 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         return groups;
     }
 
-    // The kinds of link a record of this type can have, either way round.
+    // The kinds of link a record of this type can have, either way round. Links to a module's derived records are its own,
+    // so they're left out.
     public async Task<IReadOnlyList<LinkOption>> LinkOptionsAsync(string type, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var definitions = await db.LinkDefinitions.AsNoTracking()
-            .Where(l => l.SourceType == type || l.TargetType == type)
+            .Where(l => (l.SourceType == type || l.TargetType == type) && l.Source.Owner == null && l.Target.Owner == null)
             .OrderBy(l => l.RelType)
             .Select(l => new { l.SourceType, l.RelType, l.TargetType })
             .ToListAsync(cancellationToken);
@@ -332,22 +349,27 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        var created = await CreateInAsync(db, type, key, input, cancellationToken);
+        var changes = new List<RecordChange>();
+        var created = await CreateInAsync(db, type, key, input, changes, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        await _hooks.AfterChangeAsync(changes, cancellationToken);
         return created;
     }
 
-    private async Task<string> CreateInAsync(LinkbaseDbContext db, string type, string? key, RecordInput input, CancellationToken cancellationToken)
+    private async Task<string> CreateInAsync(
+        LinkbaseDbContext db, string type, string? key, RecordInput input, List<RecordChange> changes, CancellationToken cancellationToken)
     {
         var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
+        RefuseDerived(definition);
         var name = Name(input);
         var props = Props(definition, input);
+        props = Hooked(definition, name, props);
 
         // The records it creates go first, so they can be linked to.
         var requested = input.Links.ToList();
         foreach (var create in input.Creates)
         {
-            var targetKey = await CreateInAsync(db, create.Type, create.Key, create.Input, cancellationToken);
+            var targetKey = await CreateInAsync(db, create.Type, create.Key, create.Input, changes, cancellationToken);
             requested.Add(new NewLink(create.RelType, $"{create.Type.ToLowerInvariant()}:{targetKey}"));
         }
 
@@ -382,6 +404,8 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
             await CountAsync(db, type, group.Key.RelType, group.Key.TargetType, group.Count(), cancellationToken);
         }
 
+        changes.Add(new RecordChange(RecordChangeKind.Created, type, id, NoValues, Values(props)));
+        changes.AddRange(links.SelectMany(l => LinkChanges(RecordChangeKind.Linked, type, id, l.RelType, l.TargetType, l.TargetId)));
         return key;
     }
 
@@ -392,8 +416,14 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         var ids = requested.Select(l => l.TargetId).Distinct().ToList();
         var targets = await db.Nodes.AsNoTracking()
             .Where(n => ids.Contains(n.Id) && n.UserId == AppUser.DefaultId)
-            .Select(n => new { n.Id, n.Type })
-            .ToDictionaryAsync(n => n.Id, n => n.Type, cancellationToken);
+            .Select(n => new { n.Id, n.Type, n.NodeType.Owner })
+            .ToListAsync(cancellationToken);
+        if (targets.FirstOrDefault(t => t.Owner is not null) is { } derived)
+        {
+            throw Derived(derived.Type, derived.Owner!);
+        }
+
+        var targetTypes = targets.ToDictionary(t => t.Id, t => t.Type);
         var defined = await db.LinkDefinitions.AsNoTracking()
             .Where(d => d.SourceType == type.Name)
             .Select(d => new { d.RelType, d.TargetType })
@@ -402,7 +432,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         var links = new List<(string RelType, string TargetId, string TargetType)>();
         foreach (var link in requested.Distinct())
         {
-            var targetType = targets.GetValueOrDefault(link.TargetId)
+            var targetType = targetTypes.GetValueOrDefault(link.TargetId)
                 ?? throw new LinkbaseValidationException("The record to link to no longer exists.");
             if (!defined.Any(d => d.RelType == link.RelType && d.TargetType == targetType))
             {
@@ -426,25 +456,38 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         var node = await db.Nodes.SingleOrDefaultAsync(n => n.Id == id && n.UserId == AppUser.DefaultId, cancellationToken)
             ?? throw new LinkbaseValidationException("This record no longer exists.");
         var definition = await TypeAsync(node.Type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {node.Type}.");
+        RefuseDerived(definition);
 
+        var before = Values(node.Props);
         node.Name = Name(input);
-        node.Props = Props(definition, input, node.Props);
+        node.Props = Hooked(definition, node.Name, Props(definition, input, node.Props));
         await db.SaveChangesAsync(cancellationToken);
+        await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, Values(node.Props))], cancellationToken);
     }
 
     // Like everything else, a record that still has links can't be deleted. Remove its links first. The links its type
-    // requires can't be removed on their own, so they go with it.
+    // requires can't be removed on their own, so they go with it. So do links to a module's derived records, which are the
+    // module's, and its hooks hear of the delete to derive them again.
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var type = await db.Nodes.AsNoTracking().Where(n => n.Id == id && n.UserId == AppUser.DefaultId).Select(n => n.Type).SingleOrDefaultAsync(cancellationToken);
-        if (type is null)
+        var node = await db.Nodes.AsNoTracking()
+            .Where(n => n.Id == id && n.UserId == AppUser.DefaultId)
+            .Select(n => new { n.Type, n.Props, n.NodeType.Owner })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (node is null)
         {
             return;
         }
 
+        if (node.Owner is not null)
+        {
+            throw Derived(node.Type, node.Owner);
+        }
+
+        var type = node.Type;
         var required = await db.LinkDefinitions.AsNoTracking()
-            .Where(d => d.SourceType == type && d.Required)
+            .Where(d => d.SourceType == type && d.Required && d.Target.Owner == null)
             .Select(d => new { d.RelType, d.TargetType })
             .ToListAsync(cancellationToken);
         var own = new List<(string RelType, string TargetType, int Count)>();
@@ -454,7 +497,9 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
             own.Add((definition.RelType, definition.TargetType, count));
         }
 
-        var links = await db.NodeLinks.CountAsync(l => l.SourceId == id || l.TargetId == id, cancellationToken) - own.Sum(o => o.Count);
+        var links = await db.NodeLinks.CountAsync(
+            l => (l.SourceId == id && l.Target.NodeType.Owner == null) || (l.TargetId == id && l.Source.NodeType.Owner == null), cancellationToken)
+            - own.Sum(o => o.Count);
         if (links > 0)
         {
             throw new LinkbaseValidationException($"This record still has {links:N0} link(s). Remove them first.");
@@ -469,26 +514,42 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
                 await CountAsync(db, type, relType, targetType, -removed, cancellationToken);
             }
 
+            var derived = db.NodeLinks.Where(
+                l => (l.SourceId == id && l.Target.NodeType.Owner != null) || (l.TargetId == id && l.Source.NodeType.Owner != null));
+            foreach (var group in await derived.GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
+                         .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
+                         .ToListAsync(cancellationToken))
+            {
+                await CountAsync(db, group.SourceType, group.RelType, group.TargetType, -group.Count, cancellationToken);
+            }
+
+            await derived.ExecuteDeleteAsync(cancellationToken);
+            await ExternalRefRepository.RemoveForNodesAsync(db, db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).Select(n => n.Id), cancellationToken);
             await db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.ForeignKeyViolation)
         {
             throw new LinkbaseValidationException("This record was linked to something else while deleting it. Remove its links first.");
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
     }
 
-    // Links only go where the model has a relationship, either way round.
+    // Links only go where the model has a relationship, either way round, and never to a module's derived records.
     public async Task AddLinkAsync(string sourceId, string relType, string targetId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var ends = await db.Nodes.AsNoTracking()
             .Where(n => (n.Id == sourceId || n.Id == targetId) && n.UserId == AppUser.DefaultId)
-            .Select(n => new { n.Id, n.Type })
+            .Select(n => new { n.Id, n.Type, n.NodeType.Owner })
             .ToListAsync(cancellationToken);
         var source = ends.FirstOrDefault(e => e.Id == sourceId) ?? throw new LinkbaseValidationException("One end of the link no longer exists.");
         var target = ends.FirstOrDefault(e => e.Id == targetId) ?? throw new LinkbaseValidationException("One end of the link no longer exists.");
+        if (ends.FirstOrDefault(e => e.Owner is not null) is { } derived)
+        {
+            throw Derived(derived.Type, derived.Owner!);
+        }
 
         if (!await db.LinkDefinitions.AnyAsync(l => l.SourceType == source.Type && l.RelType == relType && l.TargetType == target.Type, cancellationToken))
         {
@@ -505,6 +566,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         await db.SaveChangesAsync(cancellationToken);
         await CountAsync(db, source.Type, relType, target.Type, 1, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId), cancellationToken);
     }
 
     public async Task RemoveLinkAsync(long linkId, CancellationToken cancellationToken = default)
@@ -512,11 +574,26 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var link = await db.NodeLinks.AsNoTracking()
             .Where(l => l.Id == linkId)
-            .Select(l => new { l.SourceId, SourceName = l.Source.Name, SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
+            .Select(l => new
+            {
+                l.SourceId,
+                SourceName = l.Source.Name,
+                SourceType = l.Source.Type,
+                SourceOwner = l.Source.NodeType.Owner,
+                l.RelType,
+                l.TargetId,
+                TargetType = l.Target.Type,
+                TargetOwner = l.Target.NodeType.Owner,
+            })
             .SingleOrDefaultAsync(cancellationToken);
         if (link is null)
         {
             return;
+        }
+
+        if (link.SourceOwner is not null || link.TargetOwner is not null)
+        {
+            throw link.SourceOwner is not null ? Derived(link.SourceType, link.SourceOwner) : Derived(link.TargetType, link.TargetOwner!);
         }
 
         // The last of a required kind of link has to stay. Deleting the record takes it too.
@@ -531,6 +608,129 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         var removed = await db.NodeLinks.Where(l => l.Id == linkId).ExecuteDeleteAsync(cancellationToken);
         await CountAsync(db, link.SourceType, link.RelType, link.TargetType, -removed, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+        if (removed > 0)
+        {
+            await _hooks.AfterChangeAsync(
+                LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId), cancellationToken);
+        }
+    }
+
+    // Replaces every record of a type a domain module derives, and every link to them, in one transaction. Only the
+    // module that owns the type can, and no hooks run. Each link needs one end among the new records, and a relationship
+    // the model has. Returns how many records there are now.
+    public async Task<int> ReplaceDerivedAsync(
+        string domain, string type, IReadOnlyList<DerivedRecord> records, IReadOnlyList<DerivedLink> links, CancellationToken cancellationToken = default)
+    {
+        var definition = await TypeAsync(type, cancellationToken) ?? throw new InvalidOperationException($"There's no type called {type}.");
+        if (definition.Owner != domain)
+        {
+            throw new InvalidOperationException($"{type} isn't derived by {domain}, so it can't replace them.");
+        }
+
+        var prefix = $"{type.ToLowerInvariant()}:";
+        var nodes = records.Select(r => new Node
+        {
+            Id = prefix + r.Key,
+            UserId = AppUser.DefaultId,
+            Type = type,
+            Key = r.Key,
+            Name = Name(new RecordInput(r.Name, r.Values)),
+            Props = Props(definition, new RecordInput(r.Name, r.Values), includeKept: true),
+        }).ToList();
+        if (nodes.GroupBy(n => n.Key).FirstOrDefault(g => g.Count() > 1) is { } repeated)
+        {
+            throw new InvalidOperationException($"{type} {repeated.Key} is there more than once.");
+        }
+
+        var ids = nodes.Select(n => n.Id).ToHashSet();
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var others = links.SelectMany(l => new[] { l.SourceId, l.TargetId }).Where(id => !ids.Contains(id)).Distinct().ToList();
+        var types = await db.Nodes.AsNoTracking().Where(n => others.Contains(n.Id)).Select(n => new { n.Id, n.Type }).ToDictionaryAsync(n => n.Id, n => n.Type, cancellationToken);
+        foreach (var node in nodes)
+        {
+            types[node.Id] = type;
+        }
+
+        var relationships = (await db.LinkDefinitions.AsNoTracking().Select(d => new { d.SourceType, d.RelType, d.TargetType }).ToListAsync(cancellationToken))
+            .Select(d => (d.SourceType, d.RelType, d.TargetType)).ToHashSet();
+        foreach (var link in links)
+        {
+            if (!ids.Contains(link.SourceId) && !ids.Contains(link.TargetId))
+            {
+                throw new InvalidOperationException($"The link {link.SourceId} {link.RelType} {link.TargetId} has neither end among the {type} records.");
+            }
+
+            if (!types.TryGetValue(link.SourceId, out var from) || !types.TryGetValue(link.TargetId, out var to))
+            {
+                throw new InvalidOperationException($"The link {link.SourceId} {link.RelType} {link.TargetId} has an end that isn't there.");
+            }
+
+            if (!relationships.Contains((from, link.RelType, to)))
+            {
+                throw new InvalidOperationException($"The model has no {from} {link.RelType} {to} relationship.");
+            }
+        }
+
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var old = db.NodeLinks.Where(l => l.Source.Type == type || l.Target.Type == type);
+        foreach (var group in await old.GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
+                     .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
+                     .ToListAsync(cancellationToken))
+        {
+            await CountAsync(db, group.SourceType, group.RelType, group.TargetType, -group.Count, cancellationToken);
+        }
+
+        await old.ExecuteDeleteAsync(cancellationToken);
+
+        // A record that comes back keeps its refs, because its id is the same. The others' refs go with them.
+        var kept = ids.ToList();
+        await ExternalRefRepository.RemoveForNodesAsync(db, db.Nodes.Where(n => n.Type == type && !kept.Contains(n.Id)).Select(n => n.Id), cancellationToken);
+        await db.Nodes.Where(n => n.Type == type).ExecuteDeleteAsync(cancellationToken);
+        db.Nodes.AddRange(nodes);
+        db.NodeLinks.AddRange(links.Distinct().Select(l => new NodeLink
+        {
+            SourceId = l.SourceId, RelType = l.RelType, TargetId = l.TargetId, Props = l.Props?.ToJsonString() ?? "{}",
+        }));
+        await db.SaveChangesAsync(cancellationToken);
+        foreach (var group in links.Distinct().GroupBy(l => (From: types[l.SourceId], l.RelType, To: types[l.TargetId])))
+        {
+            await CountAsync(db, group.Key.From, group.Key.RelType, group.Key.To, group.Count(), cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return nodes.Count;
+    }
+
+    private static readonly IReadOnlyDictionary<string, string> NoValues = new Dictionary<string, string>();
+
+    private static List<RecordChange> LinkChanges(RecordChangeKind kind, string sourceType, string sourceId, string relType, string targetType, string targetId) =>
+    [
+        new(kind, sourceType, sourceId, NoValues, NoValues, relType, targetId),
+        new(kind, targetType, targetId, NoValues, NoValues, relType, sourceId),
+    ];
+
+    private static void RefuseDerived(RecordType type)
+    {
+        if (type.Owner is not null)
+        {
+            throw Derived(type.Name, type.Owner);
+        }
+    }
+
+    private static LinkbaseValidationException Derived(string type, string owner) =>
+        new($"{type} records are derived by {owner} from other records, so they can't be changed here.");
+
+    // Lets the modules' hooks set the fields they keep.
+    private string Hooked(RecordType type, string name, string props)
+    {
+        if (!_hooks.Watch(type.Name))
+        {
+            return props;
+        }
+
+        var json = JsonNode.Parse(props) as JsonObject ?? [];
+        _hooks.BeforeSave(type, name, json);
+        return json.ToJsonString();
     }
 
     // Keeps the relationship's count, which the home page and the graph model show, in step with its links.
@@ -543,11 +743,11 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         string.IsNullOrWhiteSpace(input.Name) ? throw new LinkbaseValidationException("A record needs a name.") : input.Name.Trim();
 
     // Values are checked against their field's type and stored typed, as the loader does. Values for keys the type doesn't
-    // define are kept as they were.
-    private static string Props(RecordType type, RecordInput input, string? existing = null)
+    // define are kept as they were, and so are those of fields a module keeps, unless it's the module writing them.
+    private static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false)
     {
         var props = (existing is null ? null : JsonNode.Parse(existing) as JsonObject) ?? [];
-        foreach (var field in type.Fields)
+        foreach (var field in includeKept ? type.Fields : type.Editable)
         {
             var text = input.Values.GetValueOrDefault(field.Key)?.Trim();
             if (field.Type == FieldType.List && FieldValues.SplitList(text ?? "", '\n', '\r').Count == 0)
@@ -588,7 +788,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         return props.ToJsonString();
     }
 
-    private static Dictionary<string, string> Values(string props)
+    internal static Dictionary<string, string> Values(string props)
     {
         using var document = JsonDocument.Parse(props);
         return document.RootElement.EnumerateObject().ToDictionary(

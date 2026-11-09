@@ -6,6 +6,35 @@ edit data, and climbing becomes a model file plus a small module of behaviour.
 
 It replaces the "climbing stays as typed tables" choice in [extensibility-plan.md](extensibility-plan.md).
 
+## Where we are
+
+*Read-out on 2026-11-09.*
+
+| Step | State |
+| --- | --- |
+| 0. Delete Neo4j and Duplicates | Done, on `main` |
+| 1. Generic features G1 to G6 | Done, on `main`. G1 to G3 are choice, list and required fields. G4 and G5 are module hooks, module-owned fields and records (`generic-module-hooks`). G6 is external refs by node id (`g6-external-refs-by-node`) |
+| Later features G7, G8, G9 | Done, on branch `g7-g8-g9-generic-forms-lists-staging`, **not yet in `main`** |
+| 2. Climbing model file and `climbing to-generic` converter | **Not started.** There is no `models/climbing/` and no converter |
+| 3 to 6 | Not started |
+
+**The branch to merge.** `g7-g8-g9-generic-forms-lists-staging` has `main` merged in and passes its tests, so it can fast-forward
+into `main`. Import staging now runs the module hooks on commit and undo. The `g6` and `generic-module-hooks` worktrees under
+`.claude/worktrees/` are already in `main` and can go.
+
+**What's next.** Step 2, in this order:
+1. Write `models/climbing/model.json` using choice, list and required fields, with the Trip type and `grade_rank` owned by the
+   module.
+2. Write `climbing to-generic`, keeping node keys equal to today's row ids, and copying `external_ref` rows to node ids.
+3. Write the check that compares counts per type, every ascent's fields, links and refs against the typed tables.
+4. Load it into a local second database shown as "Climbing (generic)".
+
+Then step 3 (grade rank, trips, captions as module code) and step 4 (port the pages). Step 6 is the only step that touches the
+real data, and it needs your go-ahead.
+
+**Decisions still open** are at the end of this file. Browse and route descriptions block step 4 and step 2 respectively, so
+answer those first.
+
 ## Why
 
 The split was kept for three reasons. None of them holds up any more:
@@ -103,9 +132,9 @@ Each of these is something customers will want too. That's the test for building
 | G1 | **Choice fields**: a fixed list of values in the model file, shown as a select, checked on save and import | S | Style, discipline, grade system, area kind, date precision, source |
 | G2 | **List fields**: several text values, such as aliases | S | Crag aliases |
 | G3 | **Required fields and links**: a record can't be saved without them | S–M | An ascent's route and date |
-| G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit | M | Grade rank, refreshing trips |
-| G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived | M | Trips |
-| G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows | S | UKC and MP ids, web import sources |
+| G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit. Done, see [models](models.md#owned-by-a-module) | M | Grade rank, refreshing trips |
+| G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived. Done, see [models](models.md#owned-by-a-module) | M | Trips |
+| G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows. Done: a ref has `node_id` or the climbing columns, which go in step 6 | S | UKC and MP ids, web import sources |
 | G7 | **Creating linked records from a form**: pick a route, or create one, and its crag, without leaving the page | M–L | Later: replaces the custom Add ascent page. Done |
 | G8 | **Sorting and filtering record lists by field** | M | Later: replaces the custom Logbook page. Done |
 | G9 | **Generic import staging**: stage, review, commit and undo, for any import | L | Web import. Also needed for generic web import. Done for CSV; the web import moves onto it later |
@@ -125,7 +154,7 @@ Each step leaves the app working, and the real data isn't touched until step 6.
    - Neo4j: the driver package, the exporter, inspector and comparison, their commands, tests and docs, and the `neo4j`
      source value. The real database has no rows using it.
    - The Duplicates page, `review_item`, and the import step that flags duplicates.
-1. **Generic features for storage: G1 to G6.** Each one is useful to model files straight away. G1 to G3 are done.
+1. **Generic features for storage: G1 to G6.** Each one is useful to model files straight away. All done.
 2. **The climbing model file and a converter.**
    - `climbing to-generic` copies the typed tables into a model's generic store.
    - It's checked against the typed tables: counts per type, every ascent's fields, links and refs.

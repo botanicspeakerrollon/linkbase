@@ -317,7 +317,8 @@
 
     private async Task RefreshAsync()
     {
-        _types = await Records.TypesAsync();
+        // A module's derived records can't be imported, so their types aren't offered.
+        _types = (await Records.TypesAsync()).Where(t => t.Owner is null).ToList();
         _relationships = await Records.RelationshipsAsync();
         _recent = await Importer.RecentAsync(RecentShown);
     }
@@ -454,7 +455,7 @@
 
     private void SetNameColumn(int column) => Changed(() => _nameColumn = column);
 
-    // An existing type's fields keep the types it already has.
+    // An existing type's fields keep the types it already has, and those a module keeps start unticked.
     private void ChooseType(string choice) => Changed(() =>
     {
         _typeChoice = choice;
@@ -464,6 +465,7 @@
             if (type?.Fields.FirstOrDefault(f => f.Key == field.Key) is { } defined)
             {
                 field.Type = defined.Type;
+                field.Include &= defined.Owner is null;
             }
         }
     });

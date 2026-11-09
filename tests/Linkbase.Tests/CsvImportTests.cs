@@ -163,8 +163,13 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable
         var batch = (await importer.RecentAsync(5)).Single();
         Assert.Equal(("suppliers.csv", "Supplier records", 2, ImportStatus.Committed), (batch.File, batch.What, batch.Added, batch.Status));
 
+        // A ref added to an imported record goes with it.
+        var refs = new ExternalRefRepository(factory);
+        await refs.AddAsync("supplier:s1", DataSource.Csv, "A-1");
+
         await importer.UndoAsync(result.BatchId);
         Assert.Equal(0, (await records.ListAsync("Supplier", null, 0, 10)).Total);
+        Assert.Null(await refs.FindNodeAsync(DataSource.Csv, "Supplier", "A-1"));
         Assert.Equal(ImportStatus.Undone, (await importer.RecentAsync(5)).Single().Status);
 
         // The type came with the import, so it goes with it.

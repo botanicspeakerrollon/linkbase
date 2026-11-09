@@ -123,6 +123,18 @@ public class SchemaTests(PostgresFixture fixture)
     }
 
     [Fact]
+    public async Task An_external_ref_points_at_a_row_or_a_node_but_not_both()
+    {
+        await using var db = fixture.CreateContext();
+        db.ExternalRefs.Add(new ExternalRef { EntityType = ExternalEntityType.Crag, EntityId = 1, NodeId = "crag:1", NodeType = "Crag", Source = DataSource.Ukc, ExternalId = Unique("both") });
+        await AssertViolatesAsync("ck_external_ref_target", () => db.SaveChangesAsync());
+
+        await using var neither = fixture.CreateContext();
+        neither.ExternalRefs.Add(new ExternalRef { Source = DataSource.Ukc, ExternalId = Unique("neither") });
+        await AssertViolatesAsync("ck_external_ref_target", () => neither.SaveChangesAsync());
+    }
+
+    [Fact]
     public async Task Aliases_round_trip_through_a_text_array()
     {
         var crag = NewCrag();

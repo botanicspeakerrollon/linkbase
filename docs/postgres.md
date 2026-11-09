@@ -78,7 +78,7 @@ Every database has the same tables, because there's one schema. A model only fil
 | `ascent` | Your ascents: `route_id`, `date`, `date_precision`, `style`, `notes`, `my_rating` and `trip_id` |
 | `partner`, `ascent_partner` | Who you climbed with, and on which ascents |
 | `trip` | Trips, worked out from ascents. Hand edits are lost when they're rebuilt |
-| `external_ref` | Ids in other systems such as UKC. It has no foreign key, so it can point at anything |
+| `external_ref` | Ids in other systems such as UKC, for a climbing row (`entity_type`, `entity_id`) or a node (`node_id`, `node_type`), never both. It has no foreign key, so what deletes the row or node deletes its refs |
 | `crag_country`, `ascent_facts` | Views that save repeating joins |
 
 **The generic store**, filled by model files and CSV imports (the samples, and any new model):

@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Linkbase.Data;
+using Linkbase.Domains;
 
 namespace Linkbase.Core.Models;
 
@@ -81,6 +82,11 @@ public sealed partial class ModelFile
             }
 
             ValidateFields($"Type '{type.Name}'", type.Fields, problems);
+            ValidateOwner($"Type '{type.Name}'", type.Owner, problems);
+            foreach (var field in type.Fields)
+            {
+                ValidateOwner($"Field '{field.Key}' of type '{type.Name}'", field.Owner, problems);
+            }
         }
 
         foreach (var duplicate in Types.GroupBy(t => t.Name).Where(g => g.Count() > 1))
@@ -103,11 +109,31 @@ public sealed partial class ModelFile
             }
 
             ValidateFields(what, relationship.Fields, problems);
+            foreach (var field in relationship.Fields.Where(f => f.Owner is not null))
+            {
+                problems.Add($"{what}'s field '{field.Key}' has an owner, which only a type's fields can have.");
+            }
+
+            // People can't link to a module's derived records, so they couldn't add a record that needs such a link.
+            if (relationship.Required && Types.FirstOrDefault(t => t.Name == relationship.To)?.Owner is { } owner
+                && Types.FirstOrDefault(t => t.Name == relationship.From)?.Owner is null)
+            {
+                problems.Add($"{what} is required, but {relationship.To} records are derived by {owner}, so people couldn't add {relationship.From} records.");
+            }
         }
 
         if (problems.Count > 0)
         {
             throw new LinkbaseValidationException(string.Join(Environment.NewLine, problems));
+        }
+    }
+
+    // An owner is one of this app's domain modules, by its key, such as Climbing.
+    private static void ValidateOwner(string what, string? owner, List<string> problems)
+    {
+        if (owner is not null && RegisteredDomains.All.All(d => d.Key != owner))
+        {
+            problems.Add($"{what} is owned by '{owner}', which isn't a domain. The domains are: {string.Join(", ", RegisteredDomains.All.Select(d => d.Key))}.");
         }
     }
 
@@ -170,6 +196,9 @@ public sealed class ModelType
 
     public required ModelTypeSource Source { get; init; }
     public IReadOnlyList<ModelField> Fields { get; init; } = [];
+
+    // The domain module that derives this type's records, such as Climbing for trips. Only it writes them.
+    public string? Owner { get; init; }
 }
 
 public sealed class ModelTypeSource
@@ -196,6 +225,9 @@ public sealed class ModelField
 
     // Every row needs a value. On a relationship's field, every link does.
     public bool Required { get; init; }
+
+    // The domain module that keeps this field's value, such as Climbing. Only a type's fields can have one.
+    public string? Owner { get; init; }
 }
 
 public sealed class ModelRelationship

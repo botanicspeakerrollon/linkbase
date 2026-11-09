@@ -333,6 +333,53 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
     }
 
     [Fact]
+    public async Task External_ids_find_their_record_and_go_with_it()
+    {
+        var (factory, records) = await ExampleAsync();
+        var refs = new ExternalRefRepository(factory);
+        var key = await records.CreateAsync("Person", null, new RecordInput("New starter", new Dictionary<string, string?>()));
+        var id = $"person:{key}";
+
+        await refs.AddAsync(id, DataSource.Ukc, " 123 ", "https://example.test/people/123");
+        await refs.AddAsync(id, DataSource.Ukc, "123");
+        await refs.AddAsync("project:pr1", DataSource.Ukc, "123");
+        Assert.Equal([(DataSource.Ukc, "123", "https://example.test/people/123")], (await refs.RefsAsync(id)).Select(r => (r.Source, r.ExternalId, r.Url)));
+        Assert.Equal(id, await refs.FindNodeAsync(DataSource.Ukc, "Person", "123"));
+        Assert.Equal("project:pr1", await refs.FindNodeAsync(DataSource.Ukc, "Project", "123"));
+        Assert.Null(await refs.FindNodeAsync(DataSource.MountainProject, "Person", "123"));
+
+        Assert.Contains("Another Person already has the UKC id 123", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => refs.AddAsync("person:p1", DataSource.Ukc, "123"))).Message);
+        Assert.Contains("no longer exists", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => refs.AddAsync("person:nope", DataSource.Ukc, "9"))).Message);
+
+        await records.DeleteAsync(id);
+        Assert.Null(await refs.FindNodeAsync(DataSource.Ukc, "Person", "123"));
+        Assert.Equal("project:pr1", await refs.FindNodeAsync(DataSource.Ukc, "Project", "123"));
+
+        var other = (await refs.RefsAsync("project:pr1")).Single();
+        await refs.RemoveAsync(other.Id);
+        Assert.Empty(await refs.RefsAsync("project:pr1"));
+    }
+
+    [Fact]
+    public async Task Reloading_a_model_drops_its_nodes_refs_and_keeps_climbings()
+    {
+        var (factory, _) = await ExampleAsync();
+        var refs = new ExternalRefRepository(factory);
+        await refs.AddAsync("person:p1", DataSource.Ukc, "1");
+        await using (var db = factory.CreateDbContext())
+        {
+            db.ExternalRefs.Add(new ExternalRef { EntityType = ExternalEntityType.Crag, EntityId = 1, Source = DataSource.Ukc, ExternalId = "1" });
+            await db.SaveChangesAsync();
+        }
+
+        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+
+        Assert.Empty(await refs.RefsAsync("person:p1"));
+        await using var check = factory.CreateDbContext();
+        Assert.True(await check.ExternalRefs.AnyAsync(r => r.EntityType == ExternalEntityType.Crag && r.EntityId == 1));
+    }
+
+    [Fact]
     public void Explore_opens_a_model_files_types_on_their_record_page()
     {
         Assert.Equal("/data/Stop/8503000%3A0", GraphStyle.Link(new GraphNode("stop:8503000:0", "Stop", "Zürich HB", [])));
@@ -422,6 +469,23 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
         Told("Saved.");
         Sees(cut, "Lead backend engineer");
         Assert.Equal("Lead backend engineer", (await Records.GetAsync("Person", "p4"))!.Values["title"]);
+    }
+
+    [Fact]
+    public async Task A_record_shows_its_ids_elsewhere_and_links_only_web_addresses()
+    {
+        await UseExampleAsync();
+        var refs = Services.GetRequiredService<ExternalRefRepository>();
+        await refs.AddAsync("person:p4", DataSource.Ukc, "4401", "https://example.test/people/4401");
+        await refs.AddAsync("person:p4", DataSource.MountainProject, "7702", "javascript:alert(1)");
+
+        var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Person").Add(x => x.Key, "p4"));
+
+        Sees(cut, "UKC id");
+        Assert.Equal("https://example.test/people/4401", cut.Find("a[href^='https://example.test']").GetAttribute("href"));
+        Sees(cut, "Mountain Project id");
+        Sees(cut, "7702");
+        Assert.Empty(cut.FindAll("a[href^='javascript']"));
     }
 
     [Fact]

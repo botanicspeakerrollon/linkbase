@@ -45,6 +45,8 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             }
         }
 
+        // The refs go with the nodes. Refs to climbing rows stay.
+        await RunAsync("DELETE FROM external_ref WHERE node_id IS NOT NULL");
         await RunAsync("TRUNCATE node_link, node, link_definition, field_definition, node_type");
         foreach (var index in indexes)
         {
@@ -55,20 +57,22 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         {
             var type = model.Types[i];
             await RunAsync(
-                "INSERT INTO node_type (name, color, icon, sort_order) VALUES (@name, @color, @icon, @order)",
+                "INSERT INTO node_type (name, color, icon, sort_order, owner) VALUES (@name, @color, @icon, @order, @owner)",
                 ("name", type.Name, NpgsqlDbType.Text),
                 ("color", (object?)type.Color ?? DBNull.Value, NpgsqlDbType.Text),
                 ("icon", (object?)type.Icon ?? DBNull.Value, NpgsqlDbType.Text),
-                ("order", i, NpgsqlDbType.Integer));
+                ("order", i, NpgsqlDbType.Integer),
+                ("owner", (object?)type.Owner ?? DBNull.Value, NpgsqlDbType.Text));
             foreach (var field in type.Fields)
             {
                 await RunAsync(
-                    "INSERT INTO field_definition (node_type_name, key, type, options, required) VALUES (@type, @key, @fieldType, @options, @required)",
+                    "INSERT INTO field_definition (node_type_name, key, type, options, required, owner) VALUES (@type, @key, @fieldType, @options, @required, @owner)",
                     ("type", type.Name, NpgsqlDbType.Text),
                     ("key", field.Key, NpgsqlDbType.Text),
                     ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
                     ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text),
-                    ("required", field.Required, NpgsqlDbType.Boolean));
+                    ("required", field.Required, NpgsqlDbType.Boolean),
+                    ("owner", (object?)field.Owner ?? DBNull.Value, NpgsqlDbType.Text));
             }
         }
 
