@@ -83,12 +83,12 @@ corrections at `data/corrections.json`. All are git-ignored. `docs/import-mappin
 
 | Task | Command |
 | --- | --- |
-| Import both files, derive trips, write the report | `dotnet run --project src/Linkbase -- import all` |
-| Import one file | `dotnet run --project src/Linkbase -- import ukc [path]` (or `mp`) |
-| Recalculate trips | `dotnet run --project src/Linkbase -- rebuild trips` |
-| Rewrite the report | `dotnet run --project src/Linkbase -- report` |
+| Import both files and derive trips | `dotnet run --project src/Linkbase --launch-profile http -- climbing import <model> all` |
+| Import one file | `dotnet run --project src/Linkbase --launch-profile http -- climbing import <model> ukc [path]` (or `mp`) |
+| Rebuild the logbook from the files alone | the same with `--fresh --same-database`, which empties the model's records first |
 
-The report goes to `data/samples/reconciliation.md`, and counts what was loaded and where it came from.
+`<model>` is the model's key under `Models`, such as `climbing`, or `default` when none are configured. Trips follow from the
+ascents, and each file is one import batch that can be undone.
 
 ## Importing from web pages
 

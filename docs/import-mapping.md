@@ -159,4 +159,4 @@ Insights comes from 19 reports that show how the logbook is used:
   the reconciliation report and the graph explorer.
 
 They all run on this schema. Those that group by country need a recursive area lookup, because
-Mountain Project crags sit up to 7 levels below the country. A small `crag_country` view handles that.
+Mountain Project crags sit up to 7 levels below the country. A small `climbing_crag_country` view handles that.

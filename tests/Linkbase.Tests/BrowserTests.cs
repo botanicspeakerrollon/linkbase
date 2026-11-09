@@ -145,7 +145,6 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
             _store.ConnectionString,
             $"--ConnectionStrings:Consultancy={_store.ConnectionString}",
             $"--ConnectionStrings:SwissRail={_store.ConnectionString}",
-            $"--ConnectionStrings:ClimbingGeneric={_store.ConnectionString}");
         using var client = new HttpClient();
 
         var live = await client.GetAsync($"{url}/health/live");

@@ -68,20 +68,7 @@ Queries end with `;`. A query that seems stuck is often waiting for that. `Ctrl+
 
 Every database has the same tables, because there's one schema. A model only fills the ones it uses.
 
-**Climbing**, filled only in the real database:
-
-| Table | Holds |
-| --- | --- |
-| `area` | Countries and areas, nested through `parent_id`. `kind` says which |
-| `crag` | Crags, each in an area, with `lat`, `lon` and `aliases` |
-| `route` | Routes, each at a crag, with `grade`, `grade_system`, `discipline`, `length_m` and `pitches` |
-| `ascent` | Your ascents: `route_id`, `date`, `date_precision`, `style`, `notes`, `my_rating` and `trip_id` |
-| `partner`, `ascent_partner` | Who you climbed with, and on which ascents |
-| `trip` | Trips, worked out from ascents. Hand edits are lost when they're rebuilt |
-| `external_ref` | Ids in other systems such as UKC, for a climbing row (`entity_type`, `entity_id`) or a node (`node_id`, `node_type`), never both. It has no foreign key, so what deletes the row or node deletes its refs |
-| `crag_country`, `ascent_facts` | Views that save repeating joins |
-
-**The generic store**, filled by model files and CSV imports (the samples, and any new model):
+**The generic store**, which holds every model, climbing included:
 
 | Table | Holds |
 | --- | --- |
@@ -90,12 +77,14 @@ Every database has the same tables, because there's one schema. A model only fil
 | `link_definition` | The relationships allowed, such as `Service CALLS_AT Stop`, with how many links there are in `links` |
 | `node` | The records. `id` is the type in lower case, a colon and the key, such as `stop:8503000`. Field values are JSON in `props` |
 | `node_link` | The links, from `source_id` to `target_id`, with `rel_type` and any values in `props` |
+| `external_ref` | Ids in other systems such as UKC, for a node (`node_id`, `node_type`). It has no foreign key, so what deletes the node deletes its refs |
 
-**Shared by both:**
+**Around it:**
 
 | Table | Holds |
 | --- | --- |
-| `graph_nodes`, `graph_edges` | Views of everything as one graph, climbing and generic together. Explore reads these |
+| `graph_nodes`, `graph_edges` | Views of the generic store as one graph. Explore reads these |
+| `climbing_ascent_facts` and the other `climbing_` views | What Insights reads: each ascent with its place and season, trips and partners |
 | `graph_scene` | Scenes saved in Explore |
 | `import_batch` | Each import, so it can be undone. A CSV import's file name and counts are in `raw_payload` |
 | `app_user` | The one user for now |

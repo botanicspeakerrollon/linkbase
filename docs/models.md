@@ -7,8 +7,8 @@ There are two kinds:
 
 - **Generic models** are defined by a model file and loaded with one command. Explore works on them straight away, and their
   home page lists what's in them. This is how a new model starts.
-- **Domain models** also have code of their own, plugged in through `IDomainModule` in `Domains/<Domain>/`: typed tables,
-  pages, imports and logic that a model file can't express, such as climbing's grades and trips. Climbing is the only one.
+- **Domain models** also have code of their own, plugged in through `IDomainModule` in `Domains/<Domain>/`: pages,
+  imports and logic that a model file can't express, such as climbing's grades and trips. Climbing is the only one.
 
 ## Trying it
 
@@ -18,17 +18,8 @@ rail and use the switcher by the model's name.
 
 ## Climbing in the generic store
 
-Climbing is being moved into the generic store (see [the plan](climbing-to-generic-plan.md)). To try it, locally, make a
-database for it next to the other samples, then copy your logbook in:
-
-```powershell
-docker exec linkbase-samples psql -U linkbase -d postgres -c "CREATE DATABASE climbing_generic"
-dotnet ef database update --project src/Linkbase --connection "Host=127.0.0.1;Port=55433;Database=climbing_generic;Username=linkbase"
-dotnet run --project src/Linkbase --launch-profile http -- climbing to-generic climbing-generic
-```
-
-"Climbing (generic)" then shows in the switcher, with Explore, record pages, CSV import and export working on it. The copy
-can be repeated: it replaces the target's generic store each time, and never changes your logbook.
+Climbing's records are in the generic store like any other model's. Its model file is `models/climbing/model.json`, and the
+Climbing module keeps the grade rank and the trips. See [the plan](climbing-to-generic-plan.md).
 
 ## Adding a model
 
@@ -165,8 +156,7 @@ The choice is kept in a cookie for a year, and switching reloads the page. `/mod
 | `model list` | Lists the configured models |
 | `model migrate` | Applies migrations to every configured model's database, **including your real one** |
 | `model load <file> [model]` | Loads a model file into a model, the first one if none is named |
-| `climbing to-generic <model> [--same-database]` | Copies the climbing model's typed tables into `<model>`'s generic store, as `models/climbing/model.json` describes it, then checks the copy. It only reads the typed tables. Converting into the climbing model's own database needs `--same-database` |
-| `climbing verify-generic <model>` | Checks `<model>`'s generic store against the climbing typed tables: records of each type and their fields, links, external ids and the kept link counts. Changes nothing |
+| `climbing import <model> ukc\|mp\|all [--fresh] [--same-database]` | Loads the UKC and Mountain Project exports into `<model>`, one undoable batch per file, and rebuilds the trips. `--fresh` first reloads the model file, which empties the model's records, and needs `--same-database` for the climbing model's own database |
 
 Run them with `dotnet run --project src/Linkbase --launch-profile http -- <command>`. The launch profile matters: without it,
 `appsettings.Development.json` and its models aren't read.

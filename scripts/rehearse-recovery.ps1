@@ -1,6 +1,6 @@
 # Proves recovery works without touching the real database, which it only reads from. In a throwaway container it:
 #   1. restores the backup, which must match the real database exactly;
-#   2. rebuilds from the export files, whose climbing data must match, and lists what a rebuild doesn't bring back.
+#   2. rebuilds from the export files, whose climbing records must match, and lists what a rebuild doesn't bring back.
 # Exits non-zero if either fails. The container is always removed.
 param(
     [string]$Backup
@@ -11,11 +11,14 @@ param(
 $real = Resolve-DbContainer ''
 if (-not $Backup) { $Backup = & (Join-Path $PSScriptRoot 'backup-db.ps1') }
 
-$climbing = 'area', 'crag', 'route', 'ascent', 'partner', 'ascent_partner', 'trip', 'external_ref'
+# The climbing records are node types in the generic store. The other tables are counted as they are.
+$climbing = 'Area', 'Crag', 'Route', 'Ascent', 'Partner', 'Trip', 'external_ref'
 $other = 'graph_scene', 'import_batch'
 
 function Get-Counts([string]$Container, [string]$Database = '$POSTGRES_DB') {
-    $sql = (($climbing + $other) | ForEach-Object { "SELECT '$_', count(*) FROM $_" }) -join ' UNION ALL '
+    $sql = (($climbing + $other) | ForEach-Object {
+        if ($_ -cmatch '^[A-Z]') { "SELECT '$_', count(*) FROM node WHERE type = '$_'" } else { "SELECT '$_', count(*) FROM $_" }
+    }) -join ' UNION ALL '
     $counts = @{}
     foreach ($row in (Invoke-Sql $Container "$sql;" $Database)) {
         $table, $count = $row -split '\|'
@@ -28,16 +31,21 @@ function Get-Counts([string]$Container, [string]$Database = '$POSTGRES_DB') {
 # Every ascent as text, so a difference in any field shows up, whatever the ids are.
 $digestSql = @'
 SELECT md5(string_agg(line, E'\n' ORDER BY line)) FROM (
-    SELECT concat_ws('|', ar.name, c.name, r.name, r.grade, r.grade_system, r.discipline, r.length_m, r.pitches,
-                     a.date, a.date_precision, a.style, a.style_raw, a.notes, a.my_rating, a.source, t.name,
+    SELECT concat_ws('|', cc.country, crag.name, r.name, r.props->>'grade', r.props->>'grade_system', r.props->>'discipline',
+                     r.props->>'length_m', r.props->>'pitches', a.props->>'date', a.props->>'date_precision', a.props->>'style',
+                     a.props->>'style_raw', a.props->>'notes', a.props->>'my_rating', a.props->>'source', trip.name,
                      (SELECT string_agg(p.name, ',' ORDER BY p.name)
-                      FROM ascent_partner ap JOIN partner p ON p.id = ap.partner_id
-                      WHERE ap.ascent_id = a.id)) AS line
-    FROM ascent a
-    JOIN route r ON r.id = a.route_id
-    JOIN crag c ON c.id = r.crag_id
-    JOIN area ar ON ar.id = c.area_id
-    LEFT JOIN trip t ON t.id = a.trip_id
+                      FROM node_link w JOIN node p ON p.id = w.target_id
+                      WHERE w.source_id = a.id AND w.rel_type = 'WITH')) AS line
+    FROM node a
+    JOIN node_link of_link ON of_link.source_id = a.id AND of_link.rel_type = 'OF'
+    JOIN node r ON r.id = of_link.target_id
+    JOIN node_link at_link ON at_link.source_id = r.id AND at_link.rel_type = 'AT'
+    JOIN node crag ON crag.id = at_link.target_id
+    LEFT JOIN climbing_crag_country cc ON cc.crag_id = crag.id
+    LEFT JOIN node_link trip_link ON trip_link.source_id = a.id AND trip_link.rel_type = 'ON_TRIP'
+    LEFT JOIN node trip ON trip.id = trip_link.target_id
+    WHERE a.type = 'Ascent'
 ) lines;
 '@
 
@@ -56,9 +64,6 @@ $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopba
 $listener.Start()
 $port = $listener.LocalEndpoint.Port
 $listener.Stop()
-
-$report = Join-Path $script:RepoRoot 'data/samples/reconciliation.md'
-$savedReport = if (Test-Path $report) { [IO.File]::ReadAllBytes($report) } else { $null }
 
 Invoke-Native docker @('run', '-d', '--name', $name, '-e', 'POSTGRES_DB=linkbase', '-e', 'POSTGRES_USER=linkbase', '-e', "POSTGRES_PASSWORD=$password", '-p', "127.0.0.1:${port}:5432", $image) | Out-Null
 try {
@@ -90,7 +95,7 @@ try {
     try {
         foreach ($step in @(
             @('ef', 'database', 'update', '--project', 'src/Linkbase', '--configuration', 'Release', '--connection', $connection),
-            @('run', '--project', 'src/Linkbase', '-c', 'Release', '--no-launch-profile', '--', 'import', 'all'))) {
+            @('run', '--project', 'src/Linkbase', '-c', 'Release', '--no-launch-profile', '--', 'climbing', 'import', 'default', 'all', '--fresh', '--same-database'))) {
             # Beats user secrets, so the import can only reach the throwaway database.
             $env:ConnectionStrings__Linkbase = $connection
             $output = & dotnet @step
@@ -117,9 +122,6 @@ try {
     }
 } finally {
     docker rm -f $name | Out-Null
-
-    # The rebuild's import writes this report over the real one.
-    if ($null -ne $savedReport) { [IO.File]::WriteAllBytes($report, $savedReport) }
 }
 
 if ($failures.Count -gt 0) {

@@ -31,8 +31,8 @@ choice between clever and boring, choose boring. See `README.md` for commands.
   `ConfigureConventions`.
 - Foreign keys never cascade. Deleting something that's still referenced fails, and services report that.
   `SaveChanges` wraps the error in `DbUpdateException`; `ExecuteDelete` throws `PostgresException` directly.
-- `external_ref` points at a climbing row or a node (`node_id`) and has no foreign key, so code that deletes an entity or
-  node must delete its refs in the same transaction (`ExternalRefRepository.RemoveForNodesAsync` for nodes).
+- `external_ref` points at a node (`node_id`) and has no foreign key, so code that deletes a node must delete its refs in
+  the same transaction (`ExternalRefRepository.RemoveForNodesAsync`).
 - `link_definition.links` counts each relationship's links, because counting them live is too slow on large models. Code
   that adds or removes rows in `node_link` updates it in the same transaction.
 - `created_at` equals `updated_at` until a row is edited; import undo relies on this. `SaveChanges` stamps
@@ -69,7 +69,7 @@ choice between clever and boring, choose boring. See `README.md` for commands.
   hard-code them. Inputs are `Variant.Outlined` and `Margin.Dense`, because v9 has no global default for these.
 - MudBlazor is v9, and its analyzer turns removed attributes into build errors. Headings use `HtmlTag`, not
   `Component`. Selects over enums need `ToStringFunc`, or the chosen value shows as the raw enum name.
-- Trips are derived. Anything that changes an ascent's date or country calls `TripRefresher`, and hand edits to a
+- Trips are derived. `ClimbingRecordHook` rebuilds them when an ascent's date or country changes, and hand edits to a
   trip won't survive a rebuild. Multi-country merges come from `data/corrections.json`.
 - EF can't sort after projecting to a positional record, so order before the `Select`.
 - The Explore page owns the visible graph, and `wwwroot/js/graph.js` only draws it and reports clicks. Nodes already

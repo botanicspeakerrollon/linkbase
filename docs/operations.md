@@ -53,10 +53,10 @@ database.** Take a backup first if there's anything in it you want.
 docker compose down -v
 docker compose up -d --wait
 dotnet ef database update --project src/Linkbase
-dotnet run --project src/Linkbase -- import all
+dotnet run --project src/Linkbase -- climbing import default all
 ```
 
-`import all` also needs `data/corrections.json`, and stops if it's missing. `docker compose down` without `-v` only stops
+The import also needs `data/corrections.json`, and stops if it's missing. `docker compose down` without `-v` only stops
 Postgres and keeps the data.
 
 A rebuild brings back everything in the export files, and nothing else:
