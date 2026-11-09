@@ -1,0 +1,17 @@
+<section id="@Id" class="guide-section">
+    <MudText Typo="Typo.h5" HtmlTag="h2" Class="guide-heading">
+        @if (Icon is not null)
+        {
+            <MudIcon Icon="@Icon" Color="Color.Primary" Size="Size.Medium" />
+        }
+        @Title
+    </MudText>
+    @ChildContent
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = "";
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -27,6 +27,8 @@ public sealed class ClimbingDomain : IDomainModule
         new("insights", "Insights", Icons.Material.Outlined.Insights),
     ];
 
+    public string? GuideHref => "guide/climbing";
+
     public IReadOnlyList<LabelStyle> LabelStyles { get; } =
     [
         new("Area", "#0e7490", Icons.Material.Filled.Map),

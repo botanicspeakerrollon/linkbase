@@ -46,7 +46,8 @@ dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
 | Look at the tables and query them | `docker exec -it -e PGOPTIONS="-c default_transaction_read_only=on" linkbase-db-1 psql -U linkbase -d linkbase` (read-only; see [Postgres](docs/postgres.md)) |
 
 The app runs at <http://localhost:5173>. Its home page shows whether the database is reachable and
-up to date. `docker compose down` keeps your data; adding `-v` deletes it.
+up to date. The user guide is in the app, under Guide in the rail (`/guide`), with a page of its own for each domain
+(`/guide/climbing`). A domain adds its page through `IDomainModule.GuideHref`. `docker compose down` keeps your data; adding `-v` deletes it.
 
 ### Tests
 

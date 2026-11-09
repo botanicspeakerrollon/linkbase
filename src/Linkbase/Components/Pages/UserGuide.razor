@@ -1,0 +1,225 @@
+@page "/guide"
+@inject CurrentModel CurrentModel
+
+<GuidePage Title="Linkbase guide" Path="/guide" Sections="Contents"
+           Lede="Load any connected data, such as people and projects, suppliers, a rail network or a climbing logbook, then explore it as a graph and edit it. There is no query language to learn and no graph database to run.">
+    <Hero>
+        <div class="d-flex flex-wrap mt-3" style="gap: 8px">
+            <MudButton Href="/explore" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Hub">Open Explore</MudButton>
+            <MudButton Href="/guide#explore" Variant="Variant.Outlined" StartIcon="@Icons.Material.Outlined.PlayCircle">Start with exploring</MudButton>
+        </div>
+
+        @* Drawn by hand to show what Explore produces. Its colours stand in for the colours a model gives its types. *@
+        <svg class="guide-graph" viewBox="0 0 560 190" role="img" aria-label="A small graph: three people, each working on projects, and the projects needing skills">
+            <g class="guide-graph-edges">
+                <line x1="90" y1="45" x2="230" y2="45" /><line x1="90" y1="95" x2="230" y2="45" /><line x1="90" y1="95" x2="230" y2="145" />
+                <line x1="90" y1="145" x2="230" y2="145" /><line x1="230" y1="45" x2="400" y2="30" /><line x1="230" y1="45" x2="400" y2="95" />
+                <line x1="230" y1="145" x2="400" y2="95" /><line x1="230" y1="145" x2="400" y2="160" />
+            </g>
+            <g class="guide-graph-person"><circle cx="90" cy="45" r="16" /><circle cx="90" cy="95" r="16" /><circle cx="90" cy="145" r="16" /></g>
+            <g class="guide-graph-project"><circle cx="230" cy="45" r="20" /><circle cx="230" cy="145" r="20" /></g>
+            <g class="guide-graph-skill"><circle cx="400" cy="30" r="13" /><circle cx="400" cy="95" r="13" /><circle cx="400" cy="160" r="13" /></g>
+            <g class="guide-graph-labels">
+                <text x="90" y="22" text-anchor="middle">Person</text><text x="230" y="20" text-anchor="middle">Project</text>
+                <text x="426" y="34">Skill</text><text x="426" y="99">Skill</text><text x="426" y="164">Skill</text>
+            </g>
+        </svg>
+    </Hero>
+    <ChildContent>
+        <div class="guide-cards">
+            <a class="guide-card" href="/guide#explore">
+                <MudIcon Icon="@Icons.Material.Filled.Hub" Color="Color.Primary" />
+                <strong>Explore without queries</strong>
+                <span>Build a search by choosing from suggestions, then grow the graph one click at a time.</span>
+            </a>
+            <a class="guide-card" href="/guide#records">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" />
+                <strong>Edit what you find</strong>
+                <span>Every type gets a list and a record page where you change values and add or remove links.</span>
+            </a>
+            <a class="guide-card" href="/guide#import">
+                <MudIcon Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" />
+                <strong>Import CSV files</strong>
+                <span>Map columns to a type, review before anything is written, and undo an import later.</span>
+            </a>
+            <a class="guide-card" href="/guide#models">
+                <MudIcon Icon="@Icons.Material.Filled.Layers" Color="Color.Primary" />
+                <strong>Many models, one app</strong>
+                <span>Each model keeps its own database. The rail switches between them.</span>
+            </a>
+            <a class="guide-card" href="/guide#keyboard">
+                <MudIcon Icon="@Icons.Material.Filled.Keyboard" Color="Color.Primary" />
+                <strong>Keyboard first</strong>
+                <span>Search, move around, expand and clear without touching the mouse. Press ? anywhere.</span>
+            </a>
+            <a class="guide-card" href="/guide#yours">
+                <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                <strong>Your data stays yours</strong>
+                <span>Plain Postgres on your own machine, and exports to CSV, JSON and PNG whenever you like.</span>
+            </a>
+        </div>
+
+        @foreach (var domain in CurrentModel.Domains.Where(d => d.GuideHref is not null))
+        {
+            <MudPaper Class="pa-4 mb-6 d-flex align-center flex-wrap" Elevation="1" Style="gap: 12px">
+                <MudIcon Icon="@domain.Icon" Color="Color.Primary" Size="Size.Large" />
+                <div style="flex: 1 1 280px">
+                    <MudText Typo="Typo.h6" HtmlTag="h2">This model has its own pages: @domain.Name</MudText>
+                    <MudText Typo="Typo.body2">The guide below covers what every model can do. The @domain.Name guide covers what it adds.</MudText>
+                </div>
+                <MudButton Href="@("/" + domain.GuideHref)" Variant="Variant.Outlined">Read the @domain.Name guide</MudButton>
+            </MudPaper>
+        }
+
+        <GuideSection Id="idea" Title="The idea" Icon="@Icons.Material.Outlined.Lightbulb">
+            <p>
+                Linkbase keeps your data as <strong>records</strong> and the <strong>links</strong> between them. A record has a type
+                (<em>Person</em>, <em>Project</em>, <em>Supplier</em>), a name and some fields. A link joins two records and has a
+                relationship, such as <code>WORKS_ON</code>, so the data reads like sentences: <em>this person works on that project</em>.
+            </p>
+            <p>
+                That is a graph, and it answers questions a spreadsheet makes awkward. Which projects need a skill nobody on the team has?
+                Who worked with whom? What sits two steps away from this one thing? You ask by clicking, not by writing queries.
+            </p>
+            <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
+                <thead><tr><th>Word</th><th>Means</th><th>Example</th></tr></thead>
+                <tbody>
+                    <tr><td>Type</td><td>A kind of record</td><td>Person, Project, Stop</td></tr>
+                    <tr><td>Record, or node</td><td>One thing of a type, with a name and fields</td><td>A person called Ada</td></tr>
+                    <tr><td>Field</td><td>A value on a record: text, number, date, yes/no, a choice or a list</td><td>joined = 2021-03-01</td></tr>
+                    <tr><td>Relationship</td><td>A named way two types can be linked</td><td>WORKS_ON, from Person to Project</td></tr>
+                    <tr><td>Link, or edge</td><td>One actual connection between two records</td><td>Ada WORKS_ON Atlas</td></tr>
+                    <tr><td>Model</td><td>A complete set of types, records and links, in its own database</td><td>The consultancy, or the rail network</td></tr>
+                </tbody>
+            </MudSimpleTable>
+            <MudAlert Severity="Severity.Info" Dense="true">The Home page lists what is in the current model: how many records of each type, and every relationship with its number of links.</MudAlert>
+        </GuideSection>
+
+        <GuideSection Id="explore" Title="Exploring the graph" Icon="@Icons.Material.Filled.Hub">
+            <p>Explore is the heart of the app. Open it from the rail, or press <kbd>g</kbd> then <kbd>e</kbd> anywhere.</p>
+
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">1. Build a search by choosing</MudText>
+            <p>
+                The search box at the top builds a phrase one step at a time, and what it suggests depends on the step you are on.
+                Start with a type, then add conditions to it, or follow a relationship to the next type.
+            </p>
+            <div class="guide-phrase" aria-label="An example search phrase">
+                <span class="pattern-node guide-type-a"><span class="pattern-node-label">Person</span><span class="pattern-node-filter">skills contains "postgres"</span></span>
+                <span class="pattern-rel">WORKS_ON →</span>
+                <span class="pattern-node guide-type-b"><span class="pattern-node-label">Project</span><span class="pattern-node-filter">status = "active"</span></span>
+            </div>
+            <p class="guide-caption">Read as: people with Postgres among their skills, and the active projects they work on.</p>
+            <ul class="guide-list">
+                <li>A <strong>type</strong> first, such as Person, or plain text to search every record for a word.</li>
+                <li>Then a <strong>property</strong>, how to compare it (<code>=</code>, <code>contains</code>, <code>starts with</code>, <code>&gt;</code> and so on, depending on the field) and a value. Values are suggested from your data.</li>
+                <li>Or a <strong>relationship</strong>, written <code>WORKS_ON →</code> when it leaves the record and <code>← WORKS_ON</code> when it arrives. That adds the next step.</li>
+                <li>Press <kbd>Enter</kbd> to search. Press <kbd>←</kbd> and <kbd>→</kbd>, or click a step, to add a condition to an earlier step.</li>
+                <li>Type <code>graph</code> to see the model itself: every type, and how they are linked. Click a type there, then <em>Show all</em>, to bring in its records.</li>
+            </ul>
+
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">2. Grow the graph from what you find</MudText>
+            <ul class="guide-list">
+                <li><strong>Click</strong> a node for its details in the panel on the right.</li>
+                <li><strong>Right-click</strong> a node to expand it: all its links, or only one relationship. The menu also removes it, removes everything else, or opens its record to edit.</li>
+                <li><strong>Double-click</strong> expands everything linked to it. At most 100 are added at a time, and <em>Show more</em> brings in the rest.</li>
+                <li><strong>Nodes you already have never move</strong> when others are added, so you keep your bearings. Drag a node and the ones linked near it follow, like a spring.</li>
+                <li>Under <em>When expanding, only show</em> in the panel, limit expansion to chosen relationships or to records whose property matches.</li>
+            </ul>
+
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">3. Read it as a graph or as a table</MudText>
+            <p>
+                Press <kbd>t</kbd> to swap the picture for a table of the same nodes. The table is the better way to scan values or sort
+                through a lot of records, and selecting a row selects the node, so the two stay in step.
+            </p>
+
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">4. Keep and share what you built</MudText>
+            <ul class="guide-list">
+                <li><strong>Saved scenes</strong> remember the nodes on the canvas under a name, so you can come back to a view later.</li>
+                <li><strong>Export</strong> the canvas as nodes (CSV), links (CSV), nodes and links together (JSON) or a picture (PNG).</li>
+            </ul>
+        </GuideSection>
+
+        <GuideSection Id="records" Title="Records and links" Icon="@Icons.Material.Filled.Edit">
+            <p>
+                Each type in the model gets its own entry in the rail. Its page lists the records, with a search that matches any part of a name
+                or a value, and an <em>Add</em> button for a new one.
+            </p>
+            <ul class="guide-list">
+                <li>Open a record to see every field and every link, grouped by relationship. <em>Edit</em> changes the fields.</li>
+                <li><em>Add link</em> joins it to another record. Only relationships the model defines are offered.</li>
+                <li><em>Open and edit</em> in Explore jumps straight here from any node.</li>
+                <li>Fields marked <em>kept by</em> something are worked out by a domain module, so there is no box to type in.</li>
+            </ul>
+            <MudAlert Severity="Severity.Warning" Dense="true">
+                A record that still has links cannot be deleted. Remove its links first. Deleting asks you to confirm and cannot be undone.
+            </MudAlert>
+        </GuideSection>
+
+        <GuideSection Id="import" Title="Importing CSV files" Icon="@Icons.Material.Filled.UploadFile">
+            <p>
+                A model with no importer of its own gets <em>Import CSV</em> in the rail. A file is either <strong>records of one type</strong>
+                or <strong>links between records already here</strong>, so import the records first.
+            </p>
+            <ol class="guide-list">
+                <li><strong>Choose a file.</strong> You see a preview of its columns and a few sample values.</li>
+                <li><strong>Say what it is.</strong> Pick an existing type or name a new one, then choose the key column that identifies each row, the name column, and which columns become fields. For links, pick the type at each end, the column holding each end's key, and the relationship.</li>
+                <li><strong>Import.</strong> You are told how many records are new and how many are already here. Rows already here are left as they are, so importing the same file twice is safe.</li>
+            </ol>
+            <p>
+                <em>Review first</em> stages the rows instead of writing them. You look through what would be added, leave out what you do not
+                want, and commit when you are happy. Recent imports are listed below the form, and an import can be undone.
+            </p>
+        </GuideSection>
+
+        <GuideSection Id="models" Title="Working with models" Icon="@Icons.Material.Filled.Layers">
+            <p>
+                A model is one self-contained set of data. When more than one is configured, the name at the top of the rail becomes a
+                switcher: click it and choose another model. Each has its own database, so they never mix.
+            </p>
+            <p>
+                New models start as a <strong>model file</strong>, a small JSON description of the types, fields and relationships, plus CSV files of data.
+                One command loads it, and Explore works on it straight away. Models that need their own logic, such as climbing with its grades
+                and trips, add pages of their own. The <code>docs/models.md</code> file in the repository has the file format and the steps.
+            </p>
+        </GuideSection>
+
+        <GuideSection Id="keyboard" Title="Keyboard shortcuts" Icon="@Icons.Material.Filled.Keyboard">
+            <p>Everything common can be done from the keyboard. Press <kbd>?</kbd> on any page to see this list in place.</p>
+            <ShortcutTable />
+        </GuideSection>
+
+        <GuideSection Id="yours" Title="Your data stays yours" Icon="@Icons.Material.Filled.Lock">
+            <ul class="guide-list">
+                <li>Everything is stored in a Postgres database you run, with a database for each model. Exploring, editing and importing a CSV file all happen against that database.</li>
+                <li>Exports to CSV, JSON and PNG are one click away in Explore, so you can always take your data to another tool.</li>
+                <li>Back-ups and restores are scripts in the repository, and are covered in <code>docs/operations.md</code>.</li>
+            </ul>
+        </GuideSection>
+
+        <GuideSection Id="tips" Title="Tips" Icon="@Icons.Material.Outlined.TipsAndUpdates">
+            <ul class="guide-list">
+                <li>Not sure where to start? Type <code>graph</code> in Explore and click a type.</li>
+                <li>Too many nodes? Press <kbd>c</kbd> to clear, or select a node and press <kbd>Delete</kbd> to take just that one off the graph. Expanding a neighbour brings it back.</li>
+                <li>The picture too crowded to read? Switch to the table with <kbd>t</kbd>.</li>
+                <li>Press <kbd>f</kbd> to fit the whole graph to the screen.</li>
+                <li>Found something worth keeping? Save it as a scene before you clear the canvas.</li>
+            </ul>
+        </GuideSection>
+    </ChildContent>
+</GuidePage>
+
+@code {
+    private static readonly IReadOnlyList<(string Id, string Title)> Contents =
+    [
+        ("idea", "The idea"),
+        ("explore", "Exploring the graph"),
+        ("records", "Records and links"),
+        ("import", "Importing CSV files"),
+        ("models", "Working with models"),
+        ("keyboard", "Keyboard shortcuts"),
+        ("yours", "Your data stays yours"),
+        ("tips", "Tips"),
+    ];
+
+    public static IReadOnlyList<(string Id, string Title)> SectionIds => Contents;
+}

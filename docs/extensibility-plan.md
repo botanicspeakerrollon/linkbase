@@ -20,7 +20,6 @@ language, the Explore canvas, and AI extraction with human review before anythin
   [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md) argues those reasons no longer hold, and sets out the move.
 - **One app instance and one database per customer.** Sharing a database means one missed filter could expose a customer's
   data to another. Separate databases rule that out, and per-database backup and restore already exist.
-- **Hosted by us.** Customers without expertise won't run Docker. That makes us responsible for their data.
 - **The generic store is the product.** Climbing becomes the demo and a personal instance, and keeps working throughout.
 - **One permission check on every read.** With several users, field visibility has to be enforced in one place, including
   Explore's raw SQL and free-text search, or that search could reveal hidden fields. `CLAUDE.md` says sensitive fields are
@@ -30,18 +29,16 @@ language, the Explore canvas, and AI extraction with human review before anythin
 
 | | Phase | Size | State |
 | --- | --- | --- | --- |
-| 0 | Find a pilot company and one of its real datasets | No code | Not started |
+| 0 | Find a pilot company and one of its real datasets | No code | **Done** |
 | 1 | Generic Explore | Small | **Done** |
 | 2 | Performance on a large dataset | Small | **First pass done.** See [performance](performance.md) |
-| 3 | Foundations: private remote, CI, Dockerfile, bundled graph libraries, health checks, logging | Small | Not started |
+| 3 | Foundations: private remote, CI, Dockerfile, bundled graph libraries, health checks, logging | Small | **Done** |
 | 4 | Separate `Core/` from `Domains/Climbing/`, and remove the single-user assumption | Medium | **Split done.** Single-user assumption still to go |
 | 5 | Generic model store, model files, switching between models, generated pages | Large | **Done**, apart from values on links |
 | 6 | Sign-in, roles and field permissions, finished before a pilot uses real data | Large | Not started |
 | 7 | Import: a CSV mapping wizard, then AI extraction driven by the model | Large | **CSV wizard done.** AI extraction still to go |
 | 8 | Hosting: per-customer setup, scheduled off-site backups, monitoring, audit log | Medium | Not started |
 | 9 | AI model setup, and plain-English questions that compile to checked search patterns, never raw SQL | Medium | Not started |
-
-A pilot could change everything from Phase 4 on, which is why finding one comes first.
 
 ### Phase 1: done
 
@@ -80,15 +77,3 @@ skipped, not updated, which keeps undo simple; updating them is the obvious next
 Still to do: build the extraction tool's schema from the model definition, and apply the "must appear in the source text" check to every
 field. Add staging, review and undo as a new generic path, and leave the climbing import alone, because it's tightly shaped
 around crags and routes. Customers must be told text goes to Anthropic, and be able to turn it off.
-
-## What not to do
-
-- Move climbing into the generic store. (Under review, see [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md).)
-- Add Cypher or runtime-loaded plugins. The search bar covers the querying in use, and folders are enough for now.
-- Promise custom logic. The generic store will never do what typed code does, and customers will ask, so what's out of scope
-  matters as much as what's in.
-
-## Biggest risks
-
-- **No demand.** People may like the demo and not pay. A pilot paying something tests this cheaply.
-- **Support.** Being the only person looking after a business's data is a bigger commitment than writing the code.

@@ -1,0 +1,136 @@
+@page "/guide/climbing"
+
+<GuidePage Title="Climbing Logbook guide" Path="/guide/climbing" Sections="Contents"
+           Lede="Your ascents, crags, routes and partners in one place: filter the logbook, look for patterns across years and trips, and add new crags and routes from articles. Everything else works as in the general guide.">
+    <Hero>
+        <div class="d-flex flex-wrap mt-3" style="gap: 8px">
+            <MudButton Href="/logbook" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Outlined.MenuBook">Open the logbook</MudButton>
+            <MudButton Href="/guide" Variant="Variant.Outlined">General guide</MudButton>
+        </div>
+    </Hero>
+    <ChildContent>
+        <GuideSection Id="model" Title="What's in a logbook" Icon="@Icons.Material.Filled.Terrain">
+            <p>A logbook is made of six types, linked the way climbing actually works.</p>
+            <div class="guide-types">
+                <span class="guide-type" style="--chip: #2563eb">Area</span>
+                <span class="guide-type" style="--chip: #a16207">Crag</span>
+                <span class="guide-type" style="--chip: #7c3aed">Route</span>
+                <span class="guide-type" style="--chip: #15803d">Ascent</span>
+                <span class="guide-type" style="--chip: #c2410c">Partner</span>
+                <span class="guide-type" style="--chip: #be185d">Trip</span>
+            </div>
+            <ul class="guide-list">
+                <li><strong>Areas</strong> nest: a country holds regions, which hold smaller areas. <strong>Crags</strong> are in an area, and <strong>routes</strong> are at a crag.</li>
+                <li>An <strong>ascent</strong> is you climbing a route on a day, with a style, notes and the partners who were there.</li>
+                <li>A <strong>trip</strong> is a run of climbing days in a place. You never enter these: they are worked out from your ascents.</li>
+            </ul>
+            <p>The Home page counts each type and every kind of link, so you can see at a glance what is loaded.</p>
+        </GuideSection>
+
+        <GuideSection Id="logbook" Title="The logbook" Icon="@Icons.Material.Outlined.MenuBook">
+            <p>The Logbook page is every ascent, newest first, in a table you can sort by date, route, crag or style.</p>
+            <ul class="guide-list">
+                <li><strong>Filter</strong> by date range, area, crag, grade system, discipline and style. Filters combine, and the grid and the summary both follow them.</li>
+                <li><strong>Summary</strong> opens above the table with your hardest clean ascent in each grade system, a count by discipline and a count by year. Falls, hangdogs, seconds and top-rope climbs do not count as clean.</li>
+                <li><strong>Add ascent</strong> records a new one. The pencil beside any row opens that ascent to edit.</li>
+                <li>Each row shows the date, route, grade, crag, style, partners, trip and notes.</li>
+            </ul>
+        </GuideSection>
+
+        <GuideSection Id="insights" Title="Insights" Icon="@Icons.Material.Outlined.Insights">
+            <p>Insights looks for patterns across your whole logbook, in five tabs.</p>
+            <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
+                <thead><tr><th>Tab</th><th>Answers</th></tr></thead>
+                <tbody>
+                    <tr><td>Trips</td><td>Every trip abroad with its dates, days, crags and partners. Your biggest trips by climbing days, the countries you keep going back to, trips per year and two-day trips.</td></tr>
+                    <tr><td>Places</td><td>Crags you return to year after year, how many crags in each country you visited once or five-plus days, where you repeat the most, and crags you have not visited for five years or more.</td></tr>
+                    <tr><td>Seasons</td><td>Climbing days per month for every year, ascents per month by country, a season-by-season split and the mix of disciplines by year.</td></tr>
+                    <tr><td>Partners</td><td>Who you climb with most, by trips and by ascents.</td></tr>
+                    <tr><td>On this day</td><td>What you were climbing on today's date in past years.</td></tr>
+                </tbody>
+            </MudSimpleTable>
+        </GuideSection>
+
+        <GuideSection Id="explore" Title="Exploring a logbook" Icon="@Icons.Material.Filled.Hub">
+            <p>
+                The general guide explains Explore. These searches show what it is good for with climbing data. Choose the steps from the suggestions
+                as you type, and press <kbd>Enter</kbd>.
+            </p>
+            <div class="guide-phrase">
+                <span class="pattern-node" style="--chip: #7c3aed; background: var(--chip)"><span class="pattern-node-label">Route</span><span class="pattern-node-filter">grade = "7a"</span></span>
+            </div>
+            <p class="guide-caption">All the routes graded 7a. Right-click one and expand to see the ascents on it, and who was with you.</p>
+            <div class="guide-phrase">
+                <span class="pattern-node" style="background: #7c3aed"><span class="pattern-node-label">Route</span></span>
+                <span class="pattern-rel">← OF</span>
+                <span class="pattern-node" style="background: #15803d"><span class="pattern-node-label">Ascent</span></span>
+                <span class="pattern-rel">WITH →</span>
+                <span class="pattern-node" style="background: #c2410c"><span class="pattern-node-label">Partner</span></span>
+            </div>
+            <p class="guide-caption">Routes, the ascents of them, and who you climbed with. The relationships are offered as you build the phrase.</p>
+            <ul class="guide-list">
+                <li>Type a partner's name as plain text, then expand them to see every trip and ascent you shared.</li>
+                <li>Routes show their grade on the canvas, and ascents are captioned with date and style.</li>
+                <li>Type <code>graph</code> to see all six types and how they link.</li>
+            </ul>
+        </GuideSection>
+
+        <GuideSection Id="web" Title="Adding crags and routes from the web" Icon="@Icons.Material.Outlined.CloudDownload">
+            <p>
+                The Import page turns an article or a list into crags and routes, with you in control. It needs an Anthropic API key
+                (see the README); Claude only reads the text and suggests facts.
+            </p>
+            <ol class="guide-list">
+                <li><strong>Give it the text.</strong> Paste it, which is the most reliable way and the right one for sites that block fetching or forbid scraping. Or fetch a page by address, if the site allows it.</li>
+                <li><strong>Review.</strong> Each crag and route found is listed. Match a crag to one you already have, choose its area or make a new one, correct names and grades, and untick what you do not want. Nothing is in the logbook yet.</li>
+                <li><strong>Add.</strong> Only the ticked rows are written. Rows you matched to existing records are not changed.</li>
+                <li><strong>Undo.</strong> Recent imports are listed on the Import page, and an import can be undone later.</li>
+            </ol>
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                Only facts and a brief summary are kept: names, grades, lengths, locations and the source address. The page's own text is never stored.
+            </MudAlert>
+            <p>
+                The answer is treated as untrusted. Any name or grade that is not in the text you gave is dropped, as is any summary copied from it,
+                and the review page says what was removed.
+            </p>
+        </GuideSection>
+
+        <GuideSection Id="files" Title="Loading your existing logbook" Icon="@Icons.Material.Filled.UploadFile">
+            <p>
+                Existing history comes from a UKC export and Mountain Project ticks. These are loaded from the command line, not the web page,
+                so they are easy to repeat. Re-importing is safe: rows already imported are recognised and skipped.
+            </p>
+            <p>The exact commands are in the README under <em>Importing existing data</em>. Each file is one import batch, so it can be undone.</p>
+        </GuideSection>
+
+        <GuideSection Id="trips" Title="Trips, and why they can't be edited" Icon="@Icons.Material.Filled.Flight">
+            <p>
+                Trips are worked out from your ascents and rebuilt whenever an ascent's date or country changes. Because of that, any hand edit to a trip
+                would be lost at the next rebuild, so trip pages are read-only. To change a trip, change the ascents.
+            </p>
+            <p>Some trips span more than one country. Those merges come from a corrections file, which you keep alongside your data.</p>
+        </GuideSection>
+
+        <GuideSection Id="shortcuts" Title="Shortcuts that help here" Icon="@Icons.Material.Filled.Keyboard">
+            <ul class="guide-list">
+                <li><kbd>/</kbd> focuses the search box, or the first field on the Logbook page.</li>
+                <li><kbd>g</kbd> then a number goes to that item in the rail: <kbd>1</kbd> Home, <kbd>2</kbd> Explore, <kbd>3</kbd> Logbook, <kbd>4</kbd> Import, <kbd>5</kbd> Insights.</li>
+                <li>The full list is in the <MudLink Href="/guide#keyboard">general guide</MudLink>, or press <kbd>?</kbd>.</li>
+            </ul>
+        </GuideSection>
+    </ChildContent>
+</GuidePage>
+
+@code {
+    public static readonly IReadOnlyList<(string Id, string Title)> Contents =
+    [
+        ("model", "What's in a logbook"),
+        ("logbook", "The logbook"),
+        ("insights", "Insights"),
+        ("explore", "Exploring a logbook"),
+        ("web", "Adding crags and routes from the web"),
+        ("files", "Loading your existing logbook"),
+        ("trips", "Trips, and why they can't be edited"),
+        ("shortcuts", "Shortcuts that help here"),
+    ];
+}

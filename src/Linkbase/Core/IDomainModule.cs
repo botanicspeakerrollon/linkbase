@@ -16,6 +16,9 @@ public interface IDomainModule
 
     IReadOnlyList<NavItem> NavItems { get; }
 
+    // The address of this domain's page in the user guide, linked from the guide's front page. Null if it has none.
+    string? GuideHref { get; }
+
     // How its types of node look and behave in Explore. Other types get a default.
     IReadOnlyList<LabelStyle> LabelStyles { get; }
 

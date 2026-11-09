@@ -650,3 +650,230 @@ html:has(.explore) {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+/* The user guide: a contents list that follows the reader beside a column of text kept to a readable width. */
+.guide {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 820px);
+    gap: 40px;
+    align-items: start;
+}
+
+.guide-toc {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 12px;
+    border-left: 1px solid var(--mud-palette-lines-default);
+}
+
+.guide-toc-title {
+    margin-bottom: 6px;
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.guide-toc a {
+    padding: 3px 0;
+    color: var(--mud-palette-text-secondary);
+    text-decoration: none;
+}
+
+.guide-toc a:hover,
+.guide-toc a:focus-visible {
+    color: var(--mud-palette-primary);
+}
+
+.guide-body {
+    line-height: 1.6;
+}
+
+.guide-body p {
+    margin: 0 0 12px;
+}
+
+.guide-hero {
+    margin-bottom: 28px;
+}
+
+.guide-lede {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--mud-palette-text-secondary);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+.guide-section {
+    margin-top: 36px;
+    scroll-margin-top: 16px;
+}
+
+.guide-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+
+.guide-sub {
+    margin: 20px 0 6px;
+}
+
+.guide-list {
+    margin: 0 0 14px;
+    padding-left: 22px;
+}
+
+.guide-list li {
+    margin-bottom: 6px;
+}
+
+.guide-body code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--mud-palette-background-gray);
+    font-size: 0.8125rem;
+}
+
+.guide-body kbd {
+    display: inline-block;
+    min-width: 20px;
+    padding: 0 6px;
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--mud-palette-background);
+    font-family: inherit;
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.guide-caption {
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.8125rem;
+}
+
+/* The front page's feature cards. */
+.guide-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.guide-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-secondary);
+    text-decoration: none;
+}
+
+.guide-card strong {
+    color: var(--mud-palette-text-primary);
+}
+
+.guide-card:hover,
+.guide-card:focus-visible {
+    border-color: var(--mud-palette-primary);
+}
+
+/* A search phrase drawn as in Explore's search box, but only to look at. Its colours stand in for a model's own. */
+.guide-phrase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 6px;
+    padding: 10px;
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+}
+
+.guide-phrase .pattern-node {
+    cursor: default;
+}
+
+.guide-type-a {
+    background: #c2410c;
+}
+
+.guide-type-b {
+    background: #a16207;
+}
+
+.guide-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.guide-type {
+    padding: 3px 12px;
+    border-radius: 14px;
+    background: var(--chip);
+    color: #ffffff;
+    font-size: 0.8125rem;
+}
+
+.guide-graph {
+    display: block;
+    width: 100%;
+    max-width: 560px;
+    margin-top: 20px;
+}
+
+.guide-graph-edges line {
+    stroke: var(--mud-palette-lines-inputs);
+    stroke-width: 1.5;
+}
+
+.guide-graph-person circle {
+    fill: #c2410c;
+}
+
+.guide-graph-project circle {
+    fill: #a16207;
+}
+
+.guide-graph-skill circle {
+    fill: #0f766e;
+}
+
+.guide-graph-labels text {
+    fill: var(--mud-palette-text-secondary);
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    .guide {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .guide-toc {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        padding-left: 0;
+        border-left: none;
+    }
+
+    .guide-toc-title {
+        flex-basis: 100%;
+    }
+}

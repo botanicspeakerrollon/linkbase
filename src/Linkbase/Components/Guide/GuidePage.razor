@@ -1,0 +1,38 @@
+@* The frame of a guide page: a title, an introduction, a contents list that follows the reader, and the sections. *@
+<PageTitle>@Title</PageTitle>
+
+<div class="guide">
+    <nav class="guide-toc" aria-label="On this page">
+        <div class="guide-toc-title">On this page</div>
+        @foreach (var (id, title) in Sections)
+        {
+            @* Spelled out with the page's path, because a bare #id would resolve against the app's base address. *@
+            <a href="@($"{Path}#{id}")">@title</a>
+        }
+    </nav>
+
+    <article class="guide-body">
+        <header class="guide-hero">
+            <MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-2">@Title</MudText>
+            <p class="guide-lede">@Lede</p>
+            @Hero
+        </header>
+        @ChildContent
+    </article>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter, EditorRequired] public string Lede { get; set; } = "";
+
+    // The page's own address, such as /guide.
+    [Parameter, EditorRequired] public string Path { get; set; } = "";
+
+    // The section ids and titles, in order. Each needs a GuideSection with the same id.
+    [Parameter, EditorRequired] public IReadOnlyList<(string Id, string Title)> Sections { get; set; } = [];
+
+    // Anything under the introduction, such as buttons or a picture.
+    [Parameter] public RenderFragment? Hero { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
