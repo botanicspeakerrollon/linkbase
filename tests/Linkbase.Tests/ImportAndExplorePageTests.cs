@@ -597,7 +597,7 @@ public class ExplorePageTests : UiTestBase
         WaitForOption(cut, "Search everything for");
         Key(cut, "Enter");
 
-        Sees(cut, s.Crag + "</h2>");
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
     }
 
     [Fact]
@@ -626,7 +626,7 @@ public class ExplorePageTests : UiTestBase
         Sees(cut, "Click a node for its details");
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
-        Sees(cut, s.Crag + "</h2>");
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked("crag:-1"));
         Sees(cut, "Click a node for its details");
@@ -814,7 +814,7 @@ public class ExplorePageTests : UiTestBase
         Sees(cut, "explore-menu");
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
         DoesNotSee(cut, "explore-menu");
-        Sees(cut, s.Crag + "</h2>");
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
         Sees(cut, "Click a node for its details");
 
@@ -825,7 +825,7 @@ public class ExplorePageTests : UiTestBase
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("h"));
         Assert.Equal(drawn, _graph.Invocations.Count(i => i.Identifier == "update"));
-        Sees(cut, s.Crag + "</h2>");
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
@@ -948,7 +948,7 @@ public class ExplorePageTests : UiTestBase
         WaitForOption(cut, s.Crag);
         Key(cut, "Enter");
         Key(cut, "Enter");
-        Sees(cut, s.Crag + "</h2>");
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
 
         Press(cut, "Clear");
         Sees(cut, "Type anything above");
@@ -1119,7 +1119,7 @@ public class ExplorePageTests : UiTestBase
         Key(cut, "Enter");
         cut.WaitForAssertion(() => Assert.Contains("pattern-node", cut.Markup));
         Key(cut, "Enter");
-        Sees(cut, s.Crag + "</h2>");
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
         return cut;
     }
 
