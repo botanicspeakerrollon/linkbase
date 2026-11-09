@@ -421,7 +421,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
-        var cut = RenderPage<CsvImportPage>();
+        var cut = RenderPage<CsvImportPanel>();
 
         var upload = cut.FindComponent<InputFile>();
         upload.UploadFiles(InputFileContent.CreateFromText("id,name,staff\ns1,Acme,12\ns2,Brill,3\n", "suppliers.csv"));
@@ -453,14 +453,14 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
         Services.AddSingleton<ImportStagingService>();
-        var cut = RenderPage<CsvImportPage>();
+        var cut = RenderPage<CsvImportPanel>();
         cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("id,name,staff\ns1,Acme,12\ns2,Brill,3\n", "suppliers.csv"));
         Sees(cut, "suppliers.csv: 2 rows, 3 columns.");
         Press(cut, "Check");
         Sees(cut, "2 new record(s) to add.");
 
         Press(cut, "Review first");
-        WaitUntil(() => CurrentPath.StartsWith("/import-csv/review/", StringComparison.Ordinal), $"the review, at {CurrentPath}");
+        WaitUntil(() => CurrentPath.StartsWith("/import/review/", StringComparison.Ordinal), $"the review, at {CurrentPath}");
         Assert.Null(await new RecordRepository(factory).TypeAsync("Supplier"));
         var review = RenderPage<StagedImportPage>(p => p.Add(x => x.BatchId, long.Parse(CurrentPath.Split('/')[^1], System.Globalization.CultureInfo.InvariantCulture)));
 
@@ -483,7 +483,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
-        var cut = RenderPage<CsvImportPage>();
+        var cut = RenderPage<CsvImportPanel>();
 
         cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText(
             File.ReadAllText(RepoPaths.Resolve("models/consultancy/import-demo/more-people.csv")), "more-people.csv"));
@@ -506,7 +506,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
-        var cut = RenderPage<CsvImportPage>();
+        var cut = RenderPage<CsvImportPanel>();
 
         // Project comes first in the file, but the model has Person WORKS_ON Project, so the ends are swapped.
         cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("project_id,person_id\npr1,p1\npr4,p1\n", "assignments.csv"));

@@ -179,8 +179,8 @@ Run them with `dotnet run --project src/Linkbase --launch-profile http -- <comma
 
 ## Importing a CSV file
 
-A model without a domain has **Import CSV** in the rail, for bringing data in without writing a model file. Each file is one
-of two things:
+**Import** in the rail opens one page for bringing data in: **CSV file** here, **Read text** (below), and any import a domain
+adds, such as climbing's web import. The CSV tab works without writing a model file. Each file is one of two things:
 
 - **Records of one type**, new or already in the model. Choose the column that identifies each row (the key) and the one that
   names it, then which other columns to keep, each as a field with a type. The types are guessed from the first 1,000 rows. A
@@ -208,13 +208,24 @@ To try it, `models/consultancy/import-demo/` and `models/swiss-rail/import-demo/
 choose and what Check should say.
 
 **Import** adds everything at once. **Review first** stages it instead: nothing changes, and the batch appears under
-**Recent imports** with a Review link, so a review survives a reload. The review page (`/import-csv/review/<id>`) lists what
+**Recent imports** with a Review link, so a review survives a reload. The review page (`/import/review/<id>`) lists what
 would be added, a page at a time, with a box on each item. Untick any to leave them out (or Exclude all, then tick the few
 you want), then **Commit** adds the rest, or **Discard** drops the lot. Staging is not CSV-specific: `ImportStagingService`
 (`Core/Staging`) takes any importer's records, links and model changes, and holds them in `staged_item` until they're
 committed. Committing is one transaction, and skips a record or link that has become a duplicate, or whose ends have gone,
 since it was staged. Things already here are never staged, only counted. Climbing's web import keeps its own staging until
 it's moved onto this.
+
+## Reading text
+
+**Read text** finds records and links in pasted text or a fetched page, using the current model. The model's types, fields and
+relationships become the extraction tool's schema, so the answer can only name what the model has. Every name and value is
+then checked against the source text, and anything not in it, or longer than 200 characters, is dropped and listed in the
+review's notes. A type that requires links is only kept when the text gives them. The rest is the same as a CSV import: it is
+staged for review, committed in one transaction, and can be undone from **Recent imports**. A record is keyed by the slug of its
+name, and one already here, by key or by exact name, is left as it is but can be linked to.
+
+The text is sent to Anthropic, and the tab says so. Set `Extraction:Enabled` to `false` to hide it.
 
 Each import is one transaction, and **Recent imports** can undo it. Undoing removes the records and links it added,
 including changes made to them since, and a type or relationship it added once nothing is left of it. It's refused while

@@ -7,15 +7,15 @@ using MudBlazor;
 using Linkbase.Data;
 using System.Globalization;
 using Linkbase.Core.Explore;
+using Linkbase.Core.Import;
 using Linkbase.Core.Records;
 using FieldType = Linkbase.Data.FieldType;
 
 namespace Linkbase.Core.CsvImport;
 
-public partial class CsvImportPage
+public partial class CsvImportPanel
 {
     private const string NewType = "\u0001new";
-    private const int RecentShown = 10;
 
     private sealed class FieldChoice
     {
@@ -27,7 +27,7 @@ public partial class CsvImportPage
     private CsvFile? _file;
     private IReadOnlyList<RecordType> _types = [];
     private IReadOnlyList<RelationshipDefinition> _relationships = [];
-    private IReadOnlyList<CsvBatch> _recent = [];
+    private RecentImports? _recentList;
     private Dictionary<int, FieldChoice> _fields = [];
     private bool _reading;
     private bool _importing;
@@ -59,7 +59,10 @@ public partial class CsvImportPage
         // A module's derived records can't be imported, so their types aren't offered.
         _types = (await Records.TypesAsync()).Where(t => t.Owner is null).ToList();
         _relationships = await Records.RelationshipsAsync();
-        _recent = await Importer.RecentAsync(RecentShown);
+        if (_recentList is not null)
+        {
+            await _recentList.RefreshAsync();
+        }
     }
 
     private IReadOnlyList<string> Between() =>
@@ -255,7 +258,7 @@ public partial class CsvImportPage
             var batch = _links
                 ? await Importer.StageAsync(_file!, LinkMapping())
                 : await Importer.StageAsync(_file!, RecordMapping());
-            Navigation.NavigateTo($"/import-csv/review/{batch}");
+            Navigation.NavigateTo($"/import/review/{batch}");
         }
         catch (LinkbaseValidationException ex)
         {
@@ -264,29 +267,6 @@ public partial class CsvImportPage
         finally
         {
             _importing = false;
-        }
-    }
-
-    private async Task UndoAsync(CsvBatch batch)
-    {
-        var confirmed = await Dialogs.ShowMessageBoxAsync(
-            $"Undo importing {batch.File}?",
-            $"This removes the {Count(batch.Added)} {batch.What} it added, including any changes made to them since. Types and fields it added stay.",
-            yesText: "Undo", cancelText: "Cancel");
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        try
-        {
-            await Importer.UndoAsync(batch.Id);
-            Snackbar.Add("Import undone.", Severity.Success);
-            await RefreshAsync();
-        }
-        catch (LinkbaseValidationException ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Warning);
         }
     }
 

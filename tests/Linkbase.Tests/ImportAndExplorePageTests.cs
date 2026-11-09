@@ -1,3 +1,4 @@
+using Linkbase.Core.Extraction;
 using System.Net;
 using Bunit;
 using System.Text.Json.Nodes;
@@ -46,14 +47,35 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
         [new ExtractedCrag(crag, null, null, null, null)],
         routes.Select(r => new ExtractedRoute(r, crag, null, null, null, null, null, null)).ToList());
 
-    private static void OpenTab(IRenderedComponent<ImportPage> cut, string name) =>
+    private static void OpenTab(IRenderedComponent<WebImportPanel> cut, string name) =>
         ClickFresh(cut, () => cut.FindAll(".mud-tab").First(t => t.TextContent.Trim() == name));
+
+    [Theory]
+    [InlineData(null, new[] { "Web page or text", "Read text", "CSV file" })]
+    [InlineData("false", new[] { "CSV file" })]
+    public async Task One_import_page_offers_the_ways_of_importing_and_text_reading_can_be_turned_off(string? enabled, string[] expected)
+    {
+        await StoreAsync();
+        UseExtractor((_, _) => Task.FromResult(Page("x")));
+        Services.AddSingleton<Linkbase.Core.CsvImport.CsvImportService>();
+        var configuration = new Microsoft.Extensions.Configuration.ConfigurationManager();
+        configuration["Extraction:Enabled"] = enabled;
+        Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(configuration);
+        var cut = RenderPage<Linkbase.Core.Import.ImportHubPage>();
+
+        // The first panel's own tabs follow the page's.
+        var tabs = cut.FindAll(".mud-tab").Select(t => t.TextContent.Trim()).Take(expected.Length).ToList();
+        Assert.Equal(expected, tabs);
+
+        ClickFresh(cut, () => cut.FindAll(".mud-tab").First(t => t.TextContent.Trim() == "CSV file"));
+        Assert.Contains("Choose a CSV file", cut.Markup, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void Extract_needs_something_to_read()
     {
         UseExtractor((_, _) => Task.FromResult(Page("x")));
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         Assert.True(Control(cut, "Extract").HasAttribute("disabled"));
         OpenTab(cut, "Fetch a page");
@@ -66,7 +88,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
     {
         var crag = Unique("Crag");
         UseExtractor((_, _) => Task.FromResult(Page(crag)));
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         Type(cut, "Text from the page", crag);
         Type(cut, "Where it came from (optional)", "https://example.com/a");
@@ -84,7 +106,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
             await release.Task.WaitAsync(token);
             return Page("x");
         });
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         Type(cut, "Text from the page", string.Join("\n\n", Enumerable.Repeat(new string('x', 500), 80)));
         Press(cut, "Extract");
@@ -102,7 +124,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
     {
         var message = Unique("The model refused");
         UseExtractor((_, _) => throw new ExtractionFailedException(message));
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         Type(cut, "Text from the page", "Some text");
         Press(cut, "Extract");
@@ -115,7 +137,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
     public void A_fetch_failure_suggests_pasting()
     {
         UseExtractor((_, _) => Task.FromResult(Page("x")));
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         OpenTab(cut, "Fetch a page");
         Type(cut, "Web address", "https://example.com/missing");
@@ -132,7 +154,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
         UseExtractor(
             (_, _) => Task.FromResult(Page(crag)),
             () => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html") });
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         OpenTab(cut, "Fetch a page");
         Type(cut, "Web address", "https://example.com/" + Guid.NewGuid());
@@ -162,7 +184,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
         var (crag, route, country) = (Unique("Crag"), Unique("Route"), Unique("Country"));
         UseExtractor((_, _) => Task.FromResult(Page(crag, route)));
         await CommitAsync(crag, route, country);
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
 
         Press(cut, "Undo");
         Press(Dialogs, "Cancel");
@@ -189,7 +211,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
             await ClimbingStore.AddAsync(_store, "Ascent", route, new JsonObject { ["date"] = "2020-01-01", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual" }, "OF", routeId);
         }
 
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
         Press(cut, "Undo");
         Press(Dialogs, "Undo");
 
@@ -203,7 +225,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
         var (crag, route, country) = (Unique("Crag"), Unique("Route"), Unique("Country"));
         UseExtractor((_, _) => Task.FromResult(Page(crag, route)));
         var batch = await CommitAsync(crag, route, country);
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
         Sees(cut, "Undo");
         await Services.GetRequiredService<WebImportRepository>().UndoAsync(batch);
 
@@ -223,7 +245,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
             await Task.Delay(Timeout.Infinite, token);
             return Page("x");
         });
-        var cut = RenderPage<ImportPage>();
+        var cut = RenderPage<WebImportPanel>();
         Type(cut, "Text from the page", "text");
         Press(cut, "Extract");
         cut.WaitForAssertion(() => Assert.Contains("role=\"status\"", cut.Markup));

@@ -50,7 +50,7 @@ public sealed partial class CsvImportService
         : FieldType.Text;
 
     // The value as its field's type, as the loader stores it, or null if it isn't one.
-    private static JsonNode? Typed(string text, FieldType type, IReadOnlyList<string>? options = null) => type switch
+    internal static JsonNode? Typed(string text, FieldType type, IReadOnlyList<string>? options = null) => type switch
     {
         FieldType.Choice => FieldValues.MatchChoice(text, options ?? []) is { } option ? JsonValue.Create(option) : null,
         FieldType.List => FieldValues.SplitList(text, FieldValues.ListSeparator) is { Count: > 0 } values

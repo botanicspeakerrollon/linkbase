@@ -39,8 +39,8 @@
             </a>
             <a class="guide-card" href="/guide#import">
                 <MudIcon Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" />
-                <strong>Import CSV files</strong>
-                <span>Map columns to a type, review before anything is written, and undo an import later.</span>
+                <strong>Import data</strong>
+                <span>Bring in a CSV file or read text with AI, review before anything is written, and undo an import later.</span>
             </a>
             <a class="guide-card" href="/guide#models">
                 <MudIcon Icon="@Icons.Material.Filled.Layers" Color="Color.Primary" />
@@ -155,9 +155,14 @@
             </MudAlert>
         </GuideSection>
 
-        <GuideSection Id="import" Title="Importing CSV files" Icon="@Icons.Material.Filled.UploadFile">
+        <GuideSection Id="import" Title="Importing data" Icon="@Icons.Material.Filled.UploadFile">
             <p>
-                A model with no importer of its own gets <em>Import CSV</em> in the rail. A file is either <strong>records of one type</strong>
+                <em>Import</em> in the rail is one page with a tab for each way of bringing data in: <strong>CSV file</strong>,
+                <strong>Read text</strong>, and any a domain adds, such as climbing's web import.
+            </p>
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="mt-3">CSV file</MudText>
+            <p>
+                A file is either <strong>records of one type</strong>
                 or <strong>links between records already here</strong>, so import the records first.
             </p>
             <ol class="guide-list">
@@ -169,6 +174,17 @@
                 <em>Review first</em> stages the rows instead of writing them. You look through what would be added, leave out what you do not
                 want, and commit when you are happy. Recent imports are listed below the form, and an import can be undone.
             </p>
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="mt-3">Read text</MudText>
+            <p>
+                Paste text, or fetch a page if the site allows it, and Claude looks for records and links of the types in the current model.
+                Only what the text actually says is kept: a name or value that is not in it, or is longer than 200 characters, is dropped and
+                listed in the review's notes. Records already here are left as they are but can still be linked to. Everything is staged
+                for review first, and can be undone like a CSV import.
+            </p>
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+                The text is sent to Anthropic to be read, and it needs an Anthropic API key (see the README). An administrator can turn it off
+                with <code>Extraction:Enabled</code>.
+            </MudAlert>
         </GuideSection>
 
         <GuideSection Id="models" Title="Working with models" Icon="@Icons.Material.Filled.Layers">
@@ -214,7 +230,7 @@
         ("idea", "The idea"),
         ("explore", "Exploring the graph"),
         ("records", "Records and links"),
-        ("import", "Importing CSV files"),
+        ("import", "Importing data"),
         ("models", "Working with models"),
         ("keyboard", "Keyboard shortcuts"),
         ("yours", "Your data stays yours"),

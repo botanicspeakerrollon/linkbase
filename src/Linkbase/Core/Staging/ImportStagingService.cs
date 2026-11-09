@@ -10,8 +10,8 @@ using NpgsqlTypes;
 namespace Linkbase.Core.Staging;
 
 
-// Stage, review, commit and undo, for any import that works out records and links to add: a CSV file today, web import
-// or a model's own importer later. An import stages what it would add and nothing else changes until someone commits it.
+// Stage, review, commit and undo, for any import that works out records and links to add: a CSV file, text read by AI
+// or a model's own importer. An import stages what it would add and nothing else changes until someone commits it.
 // Staged items are kept in the database, so a review survives a reload. Committing is one transaction, tagging everything
 // with the batch, which is how undoing finds it. See docs/models.md.
 public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks? hooks = null)
@@ -20,7 +20,7 @@ public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbCon
 
     // Sources whose batches this service commits and undoes. UKC and Mountain Project batches arrive already committed, from
     // climbing's importer. Others, such as climbing's web import, have their own.
-    private static readonly DataSource[] GenericSources = [DataSource.Csv, DataSource.Ukc, DataSource.MountainProject];
+    private static readonly DataSource[] GenericSources = [DataSource.Csv, DataSource.Ai, DataSource.Ukc, DataSource.MountainProject];
 
     public static bool IsGeneric(DataSource source) => GenericSources.Contains(source);
 

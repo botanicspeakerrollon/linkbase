@@ -36,7 +36,7 @@ language, the Explore canvas, and AI extraction with human review before anythin
 | 4 | Separate `Core/` from `Domains/Climbing/`, and remove the single-user assumption | Medium | **Split done.** Single-user assumption still to go |
 | 5 | Generic model store, model files, switching between models, generated pages | Large | **Done**, apart from values on links |
 | 6 | Sign-in, roles and field permissions, finished before a pilot uses real data | Large | Not started |
-| 7 | Import: a CSV mapping wizard, then AI extraction driven by the model | Large | **CSV wizard done.** AI extraction still to go |
+| 7 | Import: a CSV mapping wizard, then AI extraction driven by the model | Large | **CSV wizard and generic AI extraction done**, on one Import page. Retiring climbing's own web import still to go |
 | 8 | Hosting: per-customer setup, scheduled off-site backups, monitoring, audit log | Medium | Not started |
 | 9 | AI model setup, and plain-English questions that compile to checked search patterns, never raw SQL | Medium | Not started |
 
@@ -74,6 +74,17 @@ Done: a CSV wizard (`Core/CsvImport`) imports records of a new or existing type,
 against its field's type first, and undoes an import. See [models](models.md#importing-a-csv-file). Existing records are
 skipped, not updated, which keeps undo simple; updating them is the obvious next request.
 
-Still to do: build the extraction tool's schema from the model definition, and apply the "must appear in the source text" check to every
-field. Add staging, review and undo as a new generic path, and leave the climbing import alone, because it's tightly shaped
-around crags and routes. Customers must be told text goes to Anthropic, and be able to turn it off.
+One Import page (`/import`) has a tab for each way in: a domain's own (climbing's hand-built web import), **Read text** for any
+model, and **CSV file**.
+
+**Read text** (`Core/Extraction`) builds the extraction tool's schema from the model's types, fields and relationships, so the
+answer can only name things the model has. `ModelExtractionValidator` then drops any name or value not in the source text,
+any value over 200 characters, and any record missing a required field or required link. Choice and true/false values can only
+be checked against the field. Results go through the generic staging, review and undo (`DataSource.Ai`). Records already there
+are left alone but can be linked to. The text goes to Anthropic: the tab says so, and `Extraction:Enabled=false` hides it, and
+climbing's web import with it.
+
+Still to do: move climbing onto the generic path where it can go. Its web import is still hand-built for crags, routes
+(grade systems, summaries, area parents), source URLs and undo that keeps edited rows. Keep its prompt, because a model-driven
+prompt can't know that "E2 5c" is a trad grade. Records are keyed by the slug of their name, so two different things with the
+same name collide, and the review page shows link ids rather than names.

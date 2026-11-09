@@ -1,4 +1,3 @@
-@page "/import-csv"
 @using System.Globalization
 @inject CsvImportService Importer
 @inject RecordRepository Records
@@ -7,10 +6,7 @@
 @inject NavigationManager Navigation
 
 @* Brings records or links in from a CSV file: choose the file, say what its columns are, check, then import. *@
-<PageTitle>Import a CSV file</PageTitle>
-
-<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Import a CSV file</MudText>
-<MudText Typo="Typo.body2" Class="mb-4" Style="color: var(--mud-palette-text-secondary)">
+<MudText Typo="Typo.body2" Class="mb-4 mt-2" Style="color: var(--mud-palette-text-secondary)">
     Each file is either records of one type, such as suppliers, or links between records already here, such as which supplier
     supplies which product. Import the records first.
 </MudText>
@@ -239,37 +235,4 @@
     </MudAlert>
 }
 
-@if (_recent.Count > 0)
-{
-    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent imports</MudText>
-    <MudSimpleTable Dense="true" Elevation="1">
-        <thead>
-            <tr><th>When</th><th>File</th><th>What</th><th>Items</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach (var batch in _recent)
-            {
-                <tr>
-                    <td style="white-space: nowrap">@batch.At.ToLocalTime().ToString("d MMM yyyy HH:mm", CultureInfo.InvariantCulture)</td>
-                    <td>@batch.File</td>
-                    <td>@batch.What</td>
-                    <td>@Count(batch.Added)</td>
-                    <td>
-                        @if (batch.Status == ImportStatus.Staged)
-                        {
-                            <MudButton Href="@($"/import-csv/review/{batch.Id}")" Variant="Variant.Text" Size="Size.Small">Review</MudButton>
-                        }
-                        else if (batch.Status == ImportStatus.Committed)
-                        {
-                            <MudButton OnClick="@(() => UndoAsync(batch))" Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Undo</MudButton>
-                        }
-                        else
-                        {
-                            <MudText Typo="Typo.caption">Undone</MudText>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </MudSimpleTable>
-}
+<RecentImports @ref="_recentList" />

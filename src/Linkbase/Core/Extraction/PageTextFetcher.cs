@@ -1,6 +1,6 @@
 using SmartReader;
 
-namespace Linkbase.Domains.Climbing.Import.Web;
+namespace Linkbase.Core.Extraction;
 
 public sealed record PageText(string? Title, string Text);
 
@@ -10,7 +10,7 @@ public sealed class PageFetchFailedException(string message) : Exception(message
 // failure points back to pasting the text instead.
 public sealed class PageTextFetcher(HttpClient httpClient)
 {
-    public const string UserAgent = "Linkbase/1.0 (personal climbing logbook; one page at a time, on request)";
+    public const string UserAgent = "Linkbase/1.0 (one page at a time, on request)";
     private const long MaxBytes = 5 * 1024 * 1024;
     private const string PasteHint = "Copy the text from your browser and paste it instead.";
 

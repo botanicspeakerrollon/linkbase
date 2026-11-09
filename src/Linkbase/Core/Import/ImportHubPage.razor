@@ -1,0 +1,48 @@
+@page "/import"
+@page "/import-csv"
+@inject CurrentModel CurrentModel
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+
+@* The one place to bring data in. A tab for each way of importing: the ones a model's domains add (climbing's web import),
+   then reading text for any model, then a CSV file. *@
+<PageTitle>Import</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Import</MudText>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudTabs @bind-ActivePanelIndex="_tab" Elevation="0" Rounded="false">
+        @foreach (var source in _sources)
+        {
+            <MudTabPanel Text="@source.Title">
+                <DynamicComponent Type="source.Panel" />
+            </MudTabPanel>
+        }
+        @if (_aiEnabled)
+        {
+            <MudTabPanel Text="Read text">
+                <ExtractionPanel />
+            </MudTabPanel>
+        }
+        <MudTabPanel Text="CSV file">
+            <CsvImportPanel />
+        </MudTabPanel>
+    </MudTabs>
+</MudPaper>
+
+@code {
+    private int _tab;
+    private bool _aiEnabled;
+    private IReadOnlyList<ImportSource> _sources = [];
+
+    protected override void OnInitialized()
+    {
+        // Text goes to Anthropic, so an administrator can turn the ways of importing that send it off.
+        _aiEnabled = !string.Equals(Configuration["Extraction:Enabled"], "false", StringComparison.OrdinalIgnoreCase);
+        _sources = CurrentModel.Domains.SelectMany(d => d.ImportSources).Where(s => _aiEnabled || !s.UsesAi).ToList();
+
+        // The old CSV address still works, and opens its tab.
+        var path = new Uri(Navigation.Uri).AbsolutePath.TrimEnd('/');
+        _tab = path.EndsWith("/import-csv", StringComparison.Ordinal) ? _sources.Count + (_aiEnabled ? 1 : 0) : 0;
+    }
+}

@@ -1,4 +1,4 @@
-@page "/import"
+@using Linkbase.Core.Extraction
 @implements IDisposable
 @inject WebImportService Imports
 @inject WebImportRepository Repository
@@ -6,10 +6,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService Dialogs
 
-<PageTitle>Import</PageTitle>
-
-<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Import from the web</MudText>
-<MudText Typo="Typo.body2" Class="mb-4">
+<MudText Typo="Typo.body2" Class="mb-4 mt-2">
     Add crags and routes from an article or list. You check everything before it goes in your logbook.
     Only facts and a brief summary are kept, never the page's own text.
 </MudText>

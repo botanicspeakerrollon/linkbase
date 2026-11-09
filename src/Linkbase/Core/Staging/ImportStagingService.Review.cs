@@ -35,7 +35,7 @@ public sealed partial class ImportStagingService
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var batches = await db.ImportBatches.AsNoTracking()
-            .Where(b => b.Source == DataSource.Csv && b.UserId == AppUser.DefaultId)
+            .Where(b => (b.Source == DataSource.Csv || b.Source == DataSource.Ai) && b.UserId == AppUser.DefaultId)
             .OrderByDescending(b => b.Id)
             .Take(count)
             .Select(b => new { b.Id, b.Source, b.RawPayload, b.Status, b.CreatedAt })
@@ -77,9 +77,28 @@ public sealed partial class ImportStagingService
         var items = await query.OrderBy(i => i.Kind).ThenBy(i => i.Id).Skip(page * pageSize).Take(pageSize)
             .Select(i => new { i.Id, i.Kind, i.Type, i.Key, i.Name, i.Props, i.RelType, i.SourceId, i.TargetId, i.TargetType, i.Included })
             .ToListAsync(cancellationToken);
+        // A link is shown by the names of its ends: those staged in this batch, or else those already in the model.
+        var ends = items.Where(i => i.Kind == StagedKind.Link).SelectMany(i => new[] { i.SourceId, i.TargetId }).OfType<string>().Distinct().ToList();
+        var names = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (ends.Count > 0)
+        {
+            foreach (var node in await db.Nodes.AsNoTracking().Where(n => ends.Contains(n.Id)).Select(n => new { n.Id, n.Name }).ToListAsync(cancellationToken))
+            {
+                names[node.Id] = node.Name;
+            }
+
+            var staged = await db.StagedItems.AsNoTracking().Where(i => i.ImportBatchId == batchId && i.Kind == StagedKind.Record && i.Key != null)
+                .Select(i => new { i.Type, i.Key, i.Name }).ToListAsync(cancellationToken);
+            foreach (var record in staged)
+            {
+                names.TryAdd($"{record.Type.ToLowerInvariant()}:{record.Key}", record.Name ?? record.Key!);
+            }
+        }
+
+        string End(string? id) => id is null ? "" : names.GetValueOrDefault(id, id);
         return new StagedPage(total, items.Select(i => i.Kind == StagedKind.Record
             ? new StagedRow(i.Id, i.Kind, i.Type, i.Name ?? i.Key ?? "", Detail(i.Key, i.Props), i.Included)
-            : new StagedRow(i.Id, i.Kind, i.Type, $"{i.SourceId} {i.RelType} {i.TargetId}", $"{i.Type} {i.RelType} {i.TargetType}", i.Included)).ToList());
+            : new StagedRow(i.Id, i.Kind, i.Type, $"{End(i.SourceId)} {i.RelType} {End(i.TargetId)}", $"{i.Type} {i.RelType} {i.TargetType}", i.Included)).ToList());
     }
 
     // The key, then each value, such as "s1 · city: Bern · rating: 4".

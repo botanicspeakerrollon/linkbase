@@ -1,0 +1,114 @@
+@implements IDisposable
+@inject ModelExtractionService Extraction
+@inject NavigationManager Navigation
+
+@* Reads pasted or fetched text for the current model: its types, fields and relationships tell the extractor what to look
+   for. What it finds is staged for review, and nothing is added until it's committed. *@
+<MudText Typo="Typo.body2" Class="mb-4 mt-2" Style="color: var(--mud-palette-text-secondary)">
+    Find records and links in an article or list, using this model's types. You check everything before it's added. Only
+    facts are kept, never the page's own text.
+</MudText>
+<MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
+    The text is sent to Anthropic to be read. Don't use this for anything that mustn't leave this computer. An administrator can turn it off with Extraction:Enabled.
+</MudAlert>
+
+<MudTabs @bind-ActivePanelIndex="_tab" Elevation="0" Rounded="false">
+    <MudTabPanel Text="Paste text">
+        <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_text" Label="Text to read" Lines="10" Class="mt-2" Disabled="_running" Immediate="true"
+                      HelperText="The most reliable way, and it works on sites that block fetching or forbid scraping." />
+        <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_sourceUrl" Label="Where it came from (optional)" Class="mt-2" Disabled="_running" />
+    </MudTabPanel>
+    <MudTabPanel Text="Fetch a page">
+        <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_url" Label="Web address" Placeholder="https://" Class="mt-2" Disabled="_running" Immediate="true"
+                      HelperText="Check that the site allows this. If it doesn't, or the fetch fails, paste the text instead." />
+    </MudTabPanel>
+</MudTabs>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-3">
+    <MudButton OnClick="StartAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_running || !CanStart)">Read</MudButton>
+    @if (_running)
+    {
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancel</MudButton>
+    }
+</MudStack>
+
+@if (_running)
+{
+    <MudText Typo="Typo.body2" Class="mt-3" role="status">@_progressMessage</MudText>
+    @if (_progressTotal > 1)
+    {
+        <MudProgressLinear Value="@_progressCompleted" Max="@_progressTotal" Class="mt-1" />
+    }
+    else
+    {
+        <MudProgressLinear Indeterminate="true" Class="mt-1" />
+    }
+}
+
+@if (_error is not null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-3">@_error</MudAlert>
+}
+
+<RecentImports />
+
+@code {
+    private int _tab;
+    private string? _text;
+    private string? _sourceUrl;
+    private string? _url;
+    private bool _running;
+    private string? _progressMessage;
+    private int _progressCompleted;
+    private int _progressTotal;
+    private string? _error;
+    private CancellationTokenSource? _cancellation;
+
+    private bool CanStart => _tab == 0 ? !string.IsNullOrWhiteSpace(_text) : !string.IsNullOrWhiteSpace(_url);
+
+    private async Task StartAsync()
+    {
+        _running = true;
+        _error = null;
+        _progressMessage = "Starting";
+        _progressCompleted = 0;
+        _progressTotal = 0;
+        _cancellation = new CancellationTokenSource();
+
+        var progress = new Progress<ExtractionProgress>(report =>
+        {
+            _progressMessage = report.Message;
+            _progressCompleted = report.Completed;
+            _progressTotal = report.Total;
+            _ = InvokeAsync(StateHasChanged);
+        });
+
+        try
+        {
+            var batch = _tab == 0
+                ? await Extraction.ExtractFromTextAsync(_text!, _sourceUrl, progress, _cancellation.Token)
+                : await Extraction.ExtractFromUrlAsync(_url!, progress, _cancellation.Token);
+            Navigation.NavigateTo($"/import/review/{batch}");
+        }
+        catch (OperationCanceledException)
+        {
+            _error = "Cancelled.";
+        }
+        catch (Exception ex) when (ex is ExtractionFailedException or PageFetchFailedException or LinkbaseValidationException)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private void Cancel() => _cancellation?.Cancel();
+
+    public void Dispose()
+    {
+        _cancellation?.Cancel();
+        _cancellation?.Dispose();
+    }
+}

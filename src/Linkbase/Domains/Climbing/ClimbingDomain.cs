@@ -5,6 +5,7 @@ using Linkbase.Core.Models;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Domains.Climbing.Features;
+using Linkbase.Domains.Climbing.Features.WebImport;
 using Linkbase.Domains.Climbing.Import;
 using Linkbase.Domains.Climbing.Import.Web;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,8 @@ public sealed class ClimbingDomain : IDomainModule
         new("import", "Import", Icons.Material.Outlined.CloudDownload),
         new("insights", "Insights", Icons.Material.Outlined.Insights),
     ];
+
+    public IReadOnlyList<ImportSource> ImportSources { get; } = [new("Web page or text", typeof(WebImportPanel), UsesAi: true)];
 
     public string? GuideHref => "guide/climbing";
 
@@ -66,7 +69,6 @@ public sealed class ClimbingDomain : IDomainModule
         services.AddScoped<InsightsRepository>();
         services.AddScoped<WebImportRepository>();
         services.AddScoped<WebImportService>();
-        services.AddHttpClient<PageTextFetcher>(client => client.Timeout = TimeSpan.FromSeconds(30));
         services.AddScoped<IClimbingExtractor>(_ =>
             configuration["WebImport:FixtureExtraction"] is { Length: > 0 } fixture
                 ? new FixtureClimbingExtractor(RepoPaths.Resolve(fixture))

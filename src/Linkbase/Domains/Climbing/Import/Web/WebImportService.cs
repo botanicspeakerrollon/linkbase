@@ -1,9 +1,8 @@
+using Linkbase.Core.Extraction;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 
 namespace Linkbase.Domains.Climbing.Import.Web;
-
-public sealed record ExtractionProgress(string Message, int Completed, int Total);
 
 // Input to staged results: fetch or take pasted text, extract part by part, merge, validate, store.
 public sealed class WebImportService(

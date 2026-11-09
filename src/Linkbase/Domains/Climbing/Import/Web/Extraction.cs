@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Linkbase.Core.Extraction;
 
 namespace Linkbase.Domains.Climbing.Import.Web;
 
@@ -35,70 +36,9 @@ public sealed record ExtractedPage(
 // What's kept in import_batch.raw_payload. The page's own text is deliberately not stored.
 public sealed record ImportExtraction(string? Title, ExtractedPage Page, IReadOnlyList<string> Warnings);
 
-public sealed class ExtractionFailedException(string message) : Exception(message);
-
 public interface IClimbingExtractor
 {
     Task<ExtractedPage> ExtractAsync(string text, IReadOnlyList<string> knownCrags, CancellationToken cancellationToken);
-}
-
-public static class TextChunker
-{
-    public const int DefaultMaxLength = 24_000;
-
-    // Splits on paragraph breaks where it can, so a route's line stays whole. No text is dropped.
-    public static List<string> Split(string text, int maxLength = DefaultMaxLength)
-    {
-        var chunks = new List<string>();
-        var current = new System.Text.StringBuilder();
-
-        foreach (var paragraph in text.ReplaceLineEndings("\n").Split("\n\n", StringSplitOptions.RemoveEmptyEntries))
-        {
-            foreach (var piece in SplitLongParagraph(paragraph, maxLength))
-            {
-                if (current.Length > 0 && current.Length + piece.Length + 2 > maxLength)
-                {
-                    chunks.Add(current.ToString());
-                    current.Clear();
-                }
-
-                if (current.Length > 0)
-                {
-                    current.Append("\n\n");
-                }
-
-                current.Append(piece);
-            }
-        }
-
-        if (current.Length > 0)
-        {
-            chunks.Add(current.ToString());
-        }
-
-        return chunks;
-    }
-
-    private static IEnumerable<string> SplitLongParagraph(string paragraph, int maxLength)
-    {
-        var remaining = paragraph;
-        while (remaining.Length > maxLength)
-        {
-            var cut = remaining.LastIndexOfAny(['\n', ' '], maxLength - 1);
-            if (cut <= 0)
-            {
-                cut = maxLength;
-            }
-
-            yield return remaining[..cut];
-            remaining = remaining[cut..].TrimStart();
-        }
-
-        if (remaining.Length > 0)
-        {
-            yield return remaining;
-        }
-    }
 }
 
 // Long pages come back in parts. The same crag or route can appear in several, so merge on the

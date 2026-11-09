@@ -4,6 +4,10 @@ namespace Linkbase.Core;
 
 public sealed record NavItem(string Href, string Title, string Icon, bool ExactMatch = false);
 
+// A way of importing that belongs to a domain, shown as a tab on the Import page. Panel is a component with no parameters.
+// UsesAi is for one that sends text to Anthropic, which is hidden when Extraction:Enabled is false.
+public sealed record ImportSource(string Title, Type Panel, bool UsesAi = false);
+
 // What a domain, such as climbing, adds to the app. The core knows nothing else about it.
 public interface IDomainModule
 {
@@ -15,6 +19,9 @@ public interface IDomainModule
     string Icon { get; }
 
     IReadOnlyList<NavItem> NavItems { get; }
+
+    // Its own ways of importing, beside the CSV file every model has.
+    IReadOnlyList<ImportSource> ImportSources { get; }
 
     // The address of this domain's page in the user guide, linked from the guide's front page. Null if it has none.
     string? GuideHref { get; }

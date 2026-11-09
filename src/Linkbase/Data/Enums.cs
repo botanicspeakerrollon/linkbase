@@ -15,7 +15,7 @@ public enum AscentStyle { Lead, Onsight, Flash, Redpoint, Send, Hangdog, Second,
 
 public enum DatePrecision { Day, Month, Year }
 
-public enum DataSource { Manual, Ukc, MountainProject, WebImport, Csv }
+public enum DataSource { Manual, Ukc, MountainProject, WebImport, Csv, Ai }
 
 
 public enum ImportStatus { Pending, Staged, Committed, Undone, Failed }

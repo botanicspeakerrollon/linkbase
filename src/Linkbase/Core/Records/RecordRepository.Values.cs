@@ -109,7 +109,7 @@ public sealed partial class RecordRepository
     }
 
     // Lower case letters, digits and hyphens, such as zoe-adams for Zoë Adams.
-    private static string Slug(string name)
+    internal static string Slug(string name)
     {
         var plain = name.Normalize(System.Text.NormalizationForm.FormD)
             .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark);

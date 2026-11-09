@@ -89,6 +89,7 @@ public sealed class ExternalRefRepository(IDbContextFactory<LinkbaseDbContext> c
         DataSource.MountainProject => "Mountain Project",
         DataSource.WebImport => "Web import",
         DataSource.Csv => "CSV",
+        DataSource.Ai => "AI extraction",
         _ => "Manual",
     };
 }

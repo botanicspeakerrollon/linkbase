@@ -1,0 +1,79 @@
+@using System.Globalization
+@inject CsvImportService Importer
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+@* The latest imports that go through the generic staging, such as a CSV file or text read by AI: review one that's staged,
+   or undo one that's been committed. *@
+@if (_recent.Count > 0)
+{
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent imports</MudText>
+    <MudSimpleTable Dense="true" Elevation="1">
+        <thead>
+            <tr><th>When</th><th>File</th><th>What</th><th>Items</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var batch in _recent)
+            {
+                <tr>
+                    <td style="white-space: nowrap">@batch.At.ToLocalTime().ToString("d MMM yyyy HH:mm", CultureInfo.InvariantCulture)</td>
+                    <td>@batch.File</td>
+                    <td>@batch.What</td>
+                    <td>@Count(batch.Added)</td>
+                    <td>
+                        @if (batch.Status == ImportStatus.Staged)
+                        {
+                            <MudButton Href="@($"/import/review/{batch.Id}")" Variant="Variant.Text" Size="Size.Small">Review</MudButton>
+                        }
+                        else if (batch.Status == ImportStatus.Committed)
+                        {
+                            <MudButton OnClick="@(() => UndoAsync(batch))" Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Undo</MudButton>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption">Undone</MudText>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+}
+
+@code {
+    private const int Shown = 10;
+    private IReadOnlyList<CsvBatch> _recent = [];
+
+    protected override async Task OnInitializedAsync() => _recent = await Importer.RecentAsync(Shown);
+
+    public async Task RefreshAsync()
+    {
+        _recent = await Importer.RecentAsync(Shown);
+        StateHasChanged();
+    }
+
+    private static string Count(int count) => count.ToString("N0", CultureInfo.InvariantCulture);
+
+    private async Task UndoAsync(CsvBatch batch)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            $"Undo importing {batch.File}?",
+            $"This removes the {Count(batch.Added)} {batch.What} it added, including any changes made to them since. Types and fields it added stay.",
+            yesText: "Undo", cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Importer.UndoAsync(batch.Id);
+            Snackbar.Add("Import undone.", Severity.Success);
+            await RefreshAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+}
