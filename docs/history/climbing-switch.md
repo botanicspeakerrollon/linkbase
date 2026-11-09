@@ -1,5 +1,7 @@
 # Switching the real logbook to the generic store
 
+> **Historical.** The switch ran on 2026-11-09 and the typed tables are gone. Kept as the record of how it was done.
+
 Step 6 of [the plan](climbing-to-generic-plan.md). Your real logbook is still in the typed tables (`area`, `crag`, `route`,
 `ascent`, `partner`, `ascent_partner`, `trip`). This moves it into the generic store and then drops the typed tables.
 

@@ -141,7 +141,7 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         ListAsync(type, search, null, [], page, pageSize, cancellationToken);
 
     // Sorted by a field and narrowed by filters on fields, as well as the search. Values are JSON, so a field is a lookup in
-    // props; a field filtered often can have an expression index (docs/climbing-to-generic-plan.md).
+    // props; a field filtered often can have an expression index (docs/history/climbing-to-generic-plan.md).
     public async Task<RecordRows> ListAsync(
         string type, string? search, RecordSort? sort, IReadOnlyList<RecordFilter> filters, int page, int pageSize, CancellationToken cancellationToken = default)
     {

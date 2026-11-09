@@ -1,10 +1,12 @@
 # Moving climbing into the generic store
 
+> **Historical.** All six steps are done and climbing now lives in the generic store. Current behaviour is in [models](../models.md#climbing-in-the-generic-store).
+
 Climbing is the one model with its own typed tables. Every other model lives in the generic store (`node`, `node_link` and
 the definition tables). This plan moves climbing into the generic store too, so there's one way to store, import, show and
 edit data, and climbing becomes a model file plus a small module of behaviour.
 
-It replaces the "climbing stays as typed tables" choice in [extensibility-plan.md](extensibility-plan.md).
+It replaces the "climbing stays as typed tables" choice in [extensibility-plan.md](../extensibility-plan.md).
 
 ## Where we are
 
@@ -15,7 +17,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
 | 0. Delete Neo4j and Duplicates | Done |
 | 1. Generic features G1 to G6 | Done |
 | Later features G7, G8, G9 | Done: forms that create linked records, sorting and filtering, staged imports |
-| 2. Climbing model file and converter | Done: `models/climbing/model.json`, `climbing to-generic` and `climbing verify-generic`. Tested on made-up data; **not yet run on the real logbook**, which needs your database. See [models](models.md#climbing-in-the-generic-store) |
+| 2. Climbing model file and converter | Done: `models/climbing/model.json`, `climbing to-generic` and `climbing verify-generic`. Tested on made-up data; **not yet run on the real logbook**, which needs your database. See [models](../models.md#climbing-in-the-generic-store) |
 | 3. Module behaviour on the generic store | Done: `ClimbingRecordHook` keeps `grade_rank`, names ascents after their routes and rebuilds trips; `GenericTripService` rebuilds the `Trip` records. A test checks that its trips match the typed tables' |
 | 4. Port the module pages | Done: Browse and the typed Add ascent page are gone, the Logbook reads the generic store (`LogbookRepository`; its Add button is the generic form), Insights reads it through the `climbing_*` views (migration `ClimbingInsightsOnGenericStore`), and web import matches, commits and undoes on Area, Crag and Route records (`WebImportRepository`, keeping its own review screen). A route's summary is no longer kept, because the model has no description field |
 | 5. Imports | Done: `GenericAscentImportService` loads the UKC and Mountain Project parsers' rows into the generic store as one undoable batch per file. `climbing import <model> ukc\|mp\|all [--fresh]` runs it, and a test checks it gives what the typed importer gives. `climbing verify-generic <model> --imported` checks an imported store against the typed tables, matching trips by key because they're numbered afresh. Run on the real logbook: matches. The typed importer stays until step 6 |
@@ -140,8 +142,8 @@ Each of these is something customers will want too. That's the test for building
 | G1 | **Choice fields**: a fixed list of values in the model file, shown as a select, checked on save and import | S | Style, discipline, grade system, area kind, date precision, source |
 | G2 | **List fields**: several text values, such as aliases | S | Crag aliases |
 | G3 | **Required fields and links**: a record can't be saved without them | S–M | An ascent's route and date |
-| G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit. Done, see [models](models.md#owned-by-a-module) | M | Grade rank, refreshing trips |
-| G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived. Done, see [models](models.md#owned-by-a-module) | M | Trips |
+| G4 | **Module hooks and module-owned fields**: code runs when a type's records are saved or deleted, and can keep fields people can't edit. Done, see [models](../models.md#owned-by-a-module) | M | Grade rank, refreshing trips |
+| G5 | **Module-owned records**: types only the module writes, shown read-only and marked as derived. Done, see [models](../models.md#owned-by-a-module) | M | Trips |
 | G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows. Done: a ref has `node_id` or the climbing columns, which go in step 6 | S | UKC and MP ids, web import sources |
 | G7 | **Creating linked records from a form**: pick a route, or create one, and its crag, without leaving the page | M–L | Later: replaces the custom Add ascent page. Done |
 | G8 | **Sorting and filtering record lists by field** | M | Later: replaces the custom Logbook page. Done |

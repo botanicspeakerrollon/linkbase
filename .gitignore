@@ -486,3 +486,5 @@ data/samples/*
 !data/samples/.gitkeep
 data/corrections.json
 backups/
+
+.claude/worktrees/

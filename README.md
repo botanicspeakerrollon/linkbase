@@ -79,7 +79,7 @@ Migration jobs are console commands of the app, so they need no UI and are easy 
 instead of the web app. Re-importing is safe: rows already imported are recognised and skipped.
 
 Put the UKC export at `data/samples/import.csv`, the Mountain Project ticks at `data/samples/ticks.csv`, and your
-corrections at `data/corrections.json`. All are git-ignored. `docs/import-mapping.md` describes the mapping.
+corrections at `data/corrections.json`. All are git-ignored. `docs/history/import-mapping.md` describes the mapping.
 
 | Task | Command |
 | --- | --- |
@@ -168,7 +168,7 @@ src/Linkbase/
       Import/   Parsers, corrections, trip rules, admin commands, and the web extraction pipeline in Web/
 tests/Linkbase.Tests/
 data/samples/   Your export files (git-ignored)
-docs/           Design notes, models, the security roadmap, operations, performance and querying Postgres
+docs/           Index in docs/README.md: models, the security roadmap, operations, performance and querying Postgres
 models/         Model files and their CSVs, such as the example consultancy and the demo climbing logbook
 scripts/        Local setup, backup, restore and recovery rehearsal
 backups/        Database backups (git-ignored)

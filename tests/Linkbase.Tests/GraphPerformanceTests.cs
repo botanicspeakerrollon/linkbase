@@ -14,7 +14,7 @@ public sealed class PerformanceFactAttribute : FactAttribute
     {
         if (string.IsNullOrEmpty(GraphPerformanceTests.Connection))
         {
-            Skip = "Set LINKBASE_PERF_CONNECTION to the throwaway database from scripts/load-gtfs-test-data.ps1.";
+            Skip = "Set LINKBASE_PERF_CONNECTION to the throwaway database from the large-sample steps in docs/performance.md.";
         }
     }
 }

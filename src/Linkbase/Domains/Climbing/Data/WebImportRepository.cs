@@ -86,7 +86,7 @@ public sealed record CommitSummary(int AreasCreated, int CragsCreated, int Crags
 public sealed record UndoSummary(int RoutesDeleted, int CragsDeleted, int AreasDeleted, IReadOnlyList<string> Skipped);
 
 // The staged web import over the generic store: match extracted rows against the Area, Crag and Route records, write the
-// confirmed ones in one transaction, tagged with the batch, and undo a batch later. See docs/climbing-to-generic-plan.md.
+// confirmed ones in one transaction, tagged with the batch, and undo a batch later. See docs/history/climbing-to-generic-plan.md.
 public sealed class WebImportRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
     private const double SimilarityThreshold = 0.5;

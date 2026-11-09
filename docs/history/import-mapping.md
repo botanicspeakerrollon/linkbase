@@ -1,5 +1,7 @@
 # Import mapping
 
+> **Historical.** The decisions below were made for the typed tables, which no longer exist. The parsers still follow them; see the code in `Domains/Climbing/Import/`.
+
 Status: implemented and verified. The UKC and Mountain Project CSVs load into Postgres. Before the logbook's earlier store
 was retired, a row-by-row comparison with it found no differences in ascents or trips.
 

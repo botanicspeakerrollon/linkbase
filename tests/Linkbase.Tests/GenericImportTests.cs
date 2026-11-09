@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Linkbase.Tests;
 
 // The UKC and Mountain Project parsers writing into the generic store. Everything here is made up. See
-// docs/climbing-to-generic-plan.md.
+// docs/history/climbing-to-generic-plan.md.
 [Trait("Category", "Database")]
 public sealed class GenericImportTests : IDisposable, IClassFixture<PostgresFixture>
 {

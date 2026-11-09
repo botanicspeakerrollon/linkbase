@@ -17,7 +17,7 @@ language, the Explore canvas, and AI extraction with human review before anythin
 - **Hybrid data model.** Climbing stays as typed tables. A generic store is added beside it for everything else, and a model
   becomes a typed module only when it earns one. Moving climbing into the generic store would lose grade ranking and
   derived trips, and mean redoing a migration that was verified row by row. **Under review:**
-  [climbing-to-generic-plan.md](climbing-to-generic-plan.md) argues those reasons no longer hold, and sets out the move.
+  [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md) argues those reasons no longer hold, and sets out the move.
 - **One app instance and one database per customer.** Sharing a database means one missed filter could expose a customer's
   data to another. Separate databases rule that out, and per-database backup and restore already exist.
 - **Hosted by us.** Customers without expertise won't run Docker. That makes us responsible for their data.
@@ -83,7 +83,7 @@ around crags and routes. Customers must be told text goes to Anthropic, and be a
 
 ## What not to do
 
-- Move climbing into the generic store. (Under review, see [climbing-to-generic-plan.md](climbing-to-generic-plan.md).)
+- Move climbing into the generic store. (Under review, see [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md).)
 - Add Cypher or runtime-loaded plugins. The search bar covers the querying in use, and folders are enough for now.
 - Promise custom logic. The generic store will never do what typed code does, and customers will ask, so what's out of scope
   matters as much as what's in.
