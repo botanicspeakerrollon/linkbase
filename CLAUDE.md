@@ -63,8 +63,7 @@ choice between clever and boring, choose boring. See `README.md` for commands.
   the planner may walk the whole graph.
 - Ask before adding a NuGet dependency, and ask when requirements are ambiguous, especially about source
   data formats. Inspect real export files before writing a parser.
-- A domain's pages live in `Domains/<Domain>/Features/<Feature>/`. The climbing logbook page's folder is `Features/Ascents`: it was named when
-  the app was called Logbook, and a `Logbook` folder would have shadowed the root namespace.
+- A domain's pages live in `Domains/<Domain>/Features/<Feature>/`.
 - The UI is dark only. Colours live in `AppTheme.cs` and reach the pages as `--mud-palette-*` variables, so don't
   hard-code them. Inputs are `Variant.Outlined` and `Margin.Dense`, because v9 has no global default for these.
 - MudBlazor is v9, and its analyzer turns removed attributes into build errors. Headings use `HtmlTag`, not

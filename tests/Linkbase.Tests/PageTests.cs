@@ -4,7 +4,7 @@ using Linkbase.Components.Pages;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
-using Linkbase.Domains.Climbing.Features.Ascents;
+using Linkbase.Domains.Climbing.Features.Logbook;
 using Linkbase.Domains.Climbing.Features.Insights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
