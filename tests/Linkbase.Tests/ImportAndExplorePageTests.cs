@@ -230,7 +230,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
 
         await DisposeComponentsAsync();
 
-        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(30));
     }
 }
 

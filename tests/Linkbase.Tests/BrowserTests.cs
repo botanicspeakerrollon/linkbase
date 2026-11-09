@@ -143,7 +143,8 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         var url = await RunningApp.StartAsync(
             _store.ConnectionString,
             $"--ConnectionStrings:Consultancy={_store.ConnectionString}",
-            $"--ConnectionStrings:SwissRail={_store.ConnectionString}");
+            $"--ConnectionStrings:SwissRail={_store.ConnectionString}",
+            $"--ConnectionStrings:ClimbingDemo={_store.ConnectionString}");
         using var client = new HttpClient();
 
         var live = await client.GetAsync($"{url}/health/live");
