@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Linkbase.Domains.Climbing.Import;
 
 //   dotnet run --project src/Linkbase -- climbing to-generic <target model> [--same-database]
-//   dotnet run --project src/Linkbase -- climbing verify-generic <target model> [--ignore-timestamps]
+//   dotnet run --project src/Linkbase -- climbing verify-generic <target model> [--imported]
 //
 // to-generic copies the climbing model's typed tables into the target model's generic store, as models/climbing/model.json
 // describes it, and checks the result. verify-generic only checks. Both read the typed tables of the first model that uses
@@ -17,7 +17,7 @@ public sealed class GenericCommands(ModelCatalog catalog, TextWriter output, Fun
     private const string ModelFilePath = "models/climbing/model.json";
 
     public static bool IsCommand(string[] args) =>
-        args is ["climbing", "to-generic", _] or ["climbing", "to-generic", _, "--same-database"] or ["climbing", "verify-generic", _] or ["climbing", "verify-generic", _, "--ignore-timestamps"];
+        args is ["climbing", "to-generic", _] or ["climbing", "to-generic", _, "--same-database"] or ["climbing", "verify-generic", _] or ["climbing", "verify-generic", _, "--imported"];
 
     public async Task<int> RunAsync(string[] args)
     {
@@ -52,7 +52,7 @@ public sealed class GenericCommands(ModelCatalog catalog, TextWriter output, Fun
                 await output.WriteLineAsync($"  external ids: {summary.Refs:N0}");
             }
 
-            var problems = await new GenericVerifier(source, target).VerifyAsync(!args.Contains("--ignore-timestamps"));
+            var problems = await new GenericVerifier(source, target).VerifyAsync(args.Contains("--imported"));
             if (problems.Count == 0)
             {
                 await output.WriteLineAsync($"{targetModel.Name} matches the typed tables.");

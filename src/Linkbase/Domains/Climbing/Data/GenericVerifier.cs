@@ -11,16 +11,19 @@ public sealed class GenericVerifier(IDbContextFactory<LinkbaseDbContext> source,
 {
     private const int MostReported = 20;
 
-    // A copy keeps its rows' timestamps. Two separate imports of the same files can't, so they pass compareTimestamps: false.
-    public async Task<IReadOnlyList<string>> VerifyAsync(bool compareTimestamps = true, CancellationToken cancellationToken = default)
+    // A copy keeps its rows' timestamps and trip numbers. An import of the same files can't: its records are new, and its trips are
+    // numbered afresh, because they're derived. So with imported: true timestamps aren't compared, and a trip is matched by
+    // its trip_key instead of its number.
+    public async Task<IReadOnlyList<string>> VerifyAsync(bool imported = false, CancellationToken cancellationToken = default)
     {
-        var expected = await ClimbingGraph.ReadAsync(source, cancellationToken);
+        var typed = await ClimbingGraph.ReadAsync(source, cancellationToken);
         await using var db = await target.CreateDbContextAsync(cancellationToken);
         var problems = new List<string>();
 
         var nodes = await db.Nodes.AsNoTracking()
             .Select(n => new { n.Id, n.Type, n.Key, n.Name, n.Props, n.CreatedAt, n.UpdatedAt })
             .ToDictionaryAsync(n => n.Id, cancellationToken);
+        var expected = imported ? RenumberTrips(typed, nodes.Values.Where(n => n.Type == "Trip").Select(n => (n.Id, n.Key, n.Props))) : typed;
         foreach (var type in expected.Nodes.Select(n => n.Type).Concat(nodes.Values.Select(n => n.Type)).Distinct().Order())
         {
             var want = expected.Nodes.Count(n => n.Type == type);
@@ -42,7 +45,7 @@ public sealed class GenericVerifier(IDbContextFactory<LinkbaseDbContext> source,
             Compare(problems, node.Id, "type", node.Type, actual.Type);
             Compare(problems, node.Id, "key", node.Key, actual.Key);
             Compare(problems, node.Id, "name", node.Name, actual.Name);
-            if (compareTimestamps)
+            if (!imported)
             {
                 Compare(problems, node.Id, "created", node.CreatedAt.ToUniversalTime().ToString("O"), actual.CreatedAt.ToUniversalTime().ToString("O"));
                 Compare(problems, node.Id, "updated", node.UpdatedAt.ToUniversalTime().ToString("O"), actual.UpdatedAt.ToUniversalTime().ToString("O"));
@@ -112,6 +115,22 @@ public sealed class GenericVerifier(IDbContextFactory<LinkbaseDbContext> source,
         }
 
         return problems.Count <= MostReported ? problems : [.. problems.Take(MostReported), $"and {problems.Count - MostReported:N0} more"];
+    }
+
+    // The typed tables' trips under the numbers the target gave the same trips, found by trip_key. A trip the target hasn't got
+    // keeps its number, and is reported as missing.
+    private static ClimbingGraph RenumberTrips(ClimbingGraph typed, IEnumerable<(string Id, string Key, string Props)> actual)
+    {
+        var byKey = actual.ToDictionary(t => (string?)(JsonNode.Parse(t.Props) as JsonObject)?["trip_key"] ?? t.Id, t => (t.Id, t.Key));
+        var ids = typed.Nodes.Where(n => n.Type == "Trip").ToDictionary(
+            n => n.Id, n => byKey.TryGetValue((string?)n.Props["trip_key"] ?? "", out var found) ? found : (n.Id, n.Key));
+        string Id(string id) => ids.TryGetValue(id, out var found) ? found.Id : id;
+        return new ClimbingGraph
+        {
+            Nodes = typed.Nodes.Select(n => ids.TryGetValue(n.Id, out var found) ? n with { Id = found.Id, Key = found.Key } : n).ToList(),
+            Links = typed.Links.Select(l => l with { SourceId = Id(l.SourceId), TargetId = Id(l.TargetId) }).ToList(),
+            Refs = typed.Refs,
+        };
     }
 
     private static void Compare(List<string> problems, string id, string what, string expected, string actual)

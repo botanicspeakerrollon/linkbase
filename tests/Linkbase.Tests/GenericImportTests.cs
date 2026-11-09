@@ -54,7 +54,7 @@ public sealed class GenericImportTests : IDisposable
     {
         var (typed, generic) = await ImportedAsync();
 
-        var problems = await new GenericVerifier(typed, generic).VerifyAsync(compareTimestamps: false);
+        var problems = await new GenericVerifier(typed, generic).VerifyAsync(imported: true);
 
         Assert.Empty(problems);
         var text = _output.ToString();
