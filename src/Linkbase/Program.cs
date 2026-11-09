@@ -52,6 +52,7 @@ builder.Services.AddScoped<GraphRepository>();
 builder.Services.AddScoped<ModelLoader>();
 builder.Services.AddScoped<RecordRepository>();
 builder.Services.AddScoped<CsvImportService>();
+builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();
 foreach (var domain in RegisteredDomains.All)
 {
     domain.AddServices(builder.Services, builder.Configuration);

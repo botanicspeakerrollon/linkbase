@@ -897,6 +897,70 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("route");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.StagedItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ImportBatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("import_batch_id");
+
+                    b.Property<bool>("Included")
+                        .HasColumnType("boolean")
+                        .HasColumnName("included");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Props")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("props");
+
+                    b.Property<string>("RelType")
+                        .HasColumnType("text")
+                        .HasColumnName("rel_type");
+
+                    b.Property<string>("SourceId")
+                        .HasColumnType("text")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("TargetId")
+                        .HasColumnType("text")
+                        .HasColumnName("target_id");
+
+                    b.Property<string>("TargetType")
+                        .HasColumnType("text")
+                        .HasColumnName("target_type");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_staged_item");
+
+                    b.HasIndex("ImportBatchId", "Kind", "Id")
+                        .HasDatabaseName("ix_staged_item_import_batch_id_kind_id");
+
+                    b.ToTable("staged_item");
+                });
+
             modelBuilder.Entity("Linkbase.Data.Trip", b =>
                 {
                     b.Property<long>("Id")
@@ -1296,6 +1360,18 @@ namespace Linkbase.Data.Migrations
                     b.Navigation("ImportBatch");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.StagedItem", b =>
+                {
+                    b.HasOne("Linkbase.Data.ImportBatch", "ImportBatch")
+                        .WithMany()
+                        .HasForeignKey("ImportBatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_staged_item_import_batch_import_batch_id");
+
+                    b.Navigation("ImportBatch");
                 });
 
             modelBuilder.Entity("Linkbase.Data.Trip", b =>

@@ -92,3 +92,33 @@ public class NodeLink
     public long? ImportBatchId { get; set; }
     public ImportBatch? ImportBatch { get; set; }
 }
+
+// Whether a staged item is a record to add or a link between two records.
+public enum StagedKind { Record, Link }
+
+// One thing an import has worked out it would add, kept until the import is committed or discarded so it can be reviewed
+// first. A record has a type, key, name and props; a link has a relationship and the ids of its two ends. Excluded items
+// are left out when the import is committed. See docs/models.md.
+public class StagedItem
+{
+    public long Id { get; set; }
+    public long ImportBatchId { get; set; }
+    public ImportBatch ImportBatch { get; set; } = null!;
+    public StagedKind Kind { get; set; }
+
+    // A record's type, or a link's source type.
+    public required string Type { get; set; }
+
+    // A record's key and name.
+    public string? Key { get; set; }
+    public string? Name { get; set; }
+    public string? Props { get; set; }
+
+    // A link's relationship and its two ends. A record's own node id is kept in SourceId.
+    public string? RelType { get; set; }
+    public string? SourceId { get; set; }
+    public string? TargetId { get; set; }
+    public string? TargetType { get; set; }
+
+    public bool Included { get; set; } = true;
+}

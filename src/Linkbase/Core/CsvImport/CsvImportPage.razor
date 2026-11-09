@@ -219,6 +219,9 @@
         <MudButton OnClick="ImportAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_plan.CanImport || _importing)" Class="mt-2">
             Import @Count(_plan.ToAdd)
         </MudButton>
+        <MudButton OnClick="StageAsync" Variant="Variant.Outlined" Disabled="@(!_plan.CanImport || _importing)" Class="mt-2 ml-2">
+            Review first
+        </MudButton>
     </MudPaper>
 }
 
@@ -241,7 +244,7 @@
     <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent imports</MudText>
     <MudSimpleTable Dense="true" Elevation="1">
         <thead>
-            <tr><th>When</th><th>File</th><th>What</th><th>Added</th><th></th></tr>
+            <tr><th>When</th><th>File</th><th>What</th><th>Items</th><th></th></tr>
         </thead>
         <tbody>
             @foreach (var batch in _recent)
@@ -252,7 +255,11 @@
                     <td>@batch.What</td>
                     <td>@Count(batch.Added)</td>
                     <td>
-                        @if (batch.Status == ImportStatus.Committed)
+                        @if (batch.Status == ImportStatus.Staged)
+                        {
+                            <MudButton Href="@($"/import-csv/review/{batch.Id}")" Variant="Variant.Text" Size="Size.Small">Review</MudButton>
+                        }
+                        else if (batch.Status == ImportStatus.Committed)
                         {
                             <MudButton OnClick="@(() => UndoAsync(batch))" Variant="Variant.Text" Size="Size.Small" Color="Color.Error">Undo</MudButton>
                         }
@@ -487,6 +494,27 @@
             _plan = null;
             _file = null;
             await RefreshAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _importing = false;
+        }
+    }
+
+    // Stages the file and goes to the review, where it can be committed or discarded.
+    private async Task StageAsync()
+    {
+        _importing = true;
+        try
+        {
+            var batch = _links
+                ? await Importer.StageAsync(_file!, LinkMapping())
+                : await Importer.StageAsync(_file!, RecordMapping());
+            Navigation.NavigateTo($"/import-csv/review/{batch}");
         }
         catch (LinkbaseValidationException ex)
         {

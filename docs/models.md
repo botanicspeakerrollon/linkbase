@@ -147,6 +147,15 @@ first ten are listed. A list field's values are split by `|`, as in a model file
 To try it, `models/consultancy/import-demo/` and `models/swiss-rail/import-demo/` have files and a README each, saying what to
 choose and what Check should say.
 
+**Import** adds everything at once. **Review first** stages it instead: nothing changes, and the batch appears under
+**Recent imports** with a Review link, so a review survives a reload. The review page (`/import-csv/review/<id>`) lists what
+would be added, a page at a time, with a box on each item. Untick any to leave them out (or Exclude all, then tick the few
+you want), then **Commit** adds the rest, or **Discard** drops the lot. Staging is not CSV-specific: `ImportStagingService`
+(`Core/Staging`) takes any importer's records, links and model changes, and holds them in `staged_item` until they're
+committed. Committing is one transaction, and skips a record or link that has become a duplicate, or whose ends have gone,
+since it was staged. Things already here are never staged, only counted. Climbing's web import keeps its own staging until
+it's moved onto this.
+
 Each import is one transaction, and **Recent imports** can undo it. Undoing removes the records and links it added,
 including changes made to them since, and a type or relationship it added once nothing is left of it. It's refused while
 something added since links to one of its records, or if it would leave a record without a link its type requires. Files

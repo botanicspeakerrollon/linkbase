@@ -6,6 +6,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using Linkbase.Core.Models;
 using Linkbase.Core.Records;
+using Linkbase.Core.Staging;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -47,10 +48,13 @@ public sealed record CsvTypeGuess(string Type, string Reason);
 
 public sealed record CsvBatch(long Id, string File, string What, int Added, ImportStatus Status, DateTimeOffset At);
 
-// Imports records or links from a CSV file into the generic store, in one transaction, and undoes an import. Records whose
-// key is already there are left as they are, so undoing an import only ever removes what it added. See docs/models.md.
+// Reads a CSV file of records or links and stages what it would add, for review and commit by ImportStagingService, or
+// imports it straight away, which is staging and committing in one go. Records whose key is already there are left as they
+// are, so undoing an import only ever removes what it added. See docs/models.md.
 public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
+    private readonly ImportStagingService _staging = new(contextFactory);
+
     public const long MaxBytes = 100L * 1024 * 1024;
     private const int Samples = 5;
     private const int GuessRows = 1000;
@@ -282,194 +286,63 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var (pairs, problems, notes, skipped) = await ReadLinksAsync(db, file, mapping, cancellationToken);
         var existing = await ExistingLinksAsync(db, mapping.RelType, pairs, cancellationToken);
-        return new CsvImportPlan(file.Rows, pairs.Count - existing, existing, skipped, problems, notes);
+        return new CsvImportPlan(file.Rows, pairs.Count - existing.Count, existing.Count, skipped, problems, notes);
     }
 
-    public async Task<CsvImportResult> ImportAsync(CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken = default)
+    public async Task<CsvImportResult> ImportAsync(CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken = default) =>
+        await CommitAsync(await StageAsync(file, mapping, cancellationToken), cancellationToken);
+
+    public async Task<CsvImportResult> ImportAsync(CsvFile file, CsvLinkMapping mapping, CancellationToken cancellationToken = default) =>
+        await CommitAsync(await StageAsync(file, mapping, cancellationToken), cancellationToken);
+
+    private async Task<CsvImportResult> CommitAsync(long batch, CancellationToken cancellationToken)
     {
-        var (rows, problems, _, _, choices) = await ReadRecordsAsync(file, mapping, cancellationToken);
+        var committed = await _staging.CommitAsync(batch, cancellationToken);
+        return new CsvImportResult(batch, committed.Added);
+    }
+
+    // Works out which records the file would add and stages them, for review. Nothing else changes until the batch is
+    // committed.
+    public async Task<long> StageAsync(CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken = default)
+    {
+        var (rows, problems, notes, skipped, choices) = await ReadRecordsAsync(file, mapping, cancellationToken);
         Stop(problems);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
-        await connection.OpenAsync(cancellationToken);
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
-
-        // The type and any new fields join the model, as if the model file had them.
-        var newType = await ExecuteAsync(connection, transaction,
-            "INSERT INTO node_type (name, sort_order) SELECT @type, coalesce(max(sort_order), 0) + 1 FROM node_type ON CONFLICT (name) DO NOTHING",
-            ("type", mapping.Type, NpgsqlDbType.Text)) > 0;
-        foreach (var field in mapping.Fields)
-        {
-            await ExecuteAsync(connection, transaction,
-                "INSERT INTO field_definition (node_type_name, key, type, options) VALUES (@type, @key, @fieldType, @options) ON CONFLICT (node_type_name, key) DO NOTHING",
-                ("type", mapping.Type, NpgsqlDbType.Text),
-                ("key", field.Key, NpgsqlDbType.Text),
-                ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
-                ("options", choices.TryGetValue(field.Key, out var options) ? options.ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text));
-        }
-
-        var batch = await NewBatchAsync(connection, transaction, file, $"{mapping.Type} records", newType ? new { type = mapping.Type } : null, cancellationToken);
-        await ExecuteAsync(connection, transaction, "CREATE TEMP TABLE staging_node (id text, key text, name text, props jsonb) ON COMMIT DROP");
-        await using (var import = await connection.BeginBinaryImportAsync("COPY staging_node (id, key, name, props) FROM STDIN (FORMAT BINARY)", cancellationToken))
-        {
-            foreach (var row in rows)
-            {
-                await import.StartRowAsync(cancellationToken);
-                await import.WriteAsync($"{mapping.Type.ToLowerInvariant()}:{row.Key}", NpgsqlDbType.Text, cancellationToken);
-                await import.WriteAsync(row.Key, NpgsqlDbType.Text, cancellationToken);
-                await import.WriteAsync(row.Name, NpgsqlDbType.Text, cancellationToken);
-                await import.WriteAsync(row.Props, NpgsqlDbType.Jsonb, cancellationToken);
-            }
-
-            await import.CompleteAsync(cancellationToken);
-        }
-
-        var added = await ExecuteAsync(connection, transaction,
-            """
-            INSERT INTO node (id, user_id, type, key, name, props, import_batch_id)
-            SELECT id, @user, @type, key, name, props, @batch FROM staging_node
-            ON CONFLICT DO NOTHING
-            """,
-            ("user", AppUser.DefaultId, NpgsqlDbType.Bigint),
-            ("type", mapping.Type, NpgsqlDbType.Text),
-            ("batch", batch, NpgsqlDbType.Bigint));
-        await FinishBatchAsync(connection, transaction, batch, added, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return new CsvImportResult(batch, added);
+        var existing = await ExistingKeysAsync(db, mapping.Type, rows.Select(r => r.Key).ToList(), cancellationToken);
+        var added = rows.Where(r => !existing.Contains(r.Key)).ToList();
+        var model = new ModelChanges(
+            [mapping.Type],
+            mapping.Fields.Select(f => new StagedField(mapping.Type, f.Key, f.Type, choices.TryGetValue(f.Key, out var options) ? options : [])).ToList(),
+            []);
+        return await _staging.StageAsync(
+            new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.Type} records", model, rows.Count - added.Count, skipped, notes),
+            added.Select(r => new StagedRecord(mapping.Type, r.Key, r.Name, r.Props)),
+            [],
+            cancellationToken);
     }
 
-    public async Task<CsvImportResult> ImportAsync(CsvFile file, CsvLinkMapping mapping, CancellationToken cancellationToken = default)
+    public async Task<long> StageAsync(CsvFile file, CsvLinkMapping mapping, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var (pairs, problems, _, _) = await ReadLinksAsync(db, file, mapping, cancellationToken);
+        var (pairs, problems, notes, skipped) = await ReadLinksAsync(db, file, mapping, cancellationToken);
         Stop(problems);
 
-        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
-        await connection.OpenAsync(cancellationToken);
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
-        var newRelationship = await ExecuteAsync(connection, transaction,
-            "INSERT INTO link_definition (source_type, rel_type, target_type) VALUES (@from, @rel, @to) ON CONFLICT DO NOTHING",
-            ("from", mapping.FromType, NpgsqlDbType.Text),
-            ("rel", mapping.RelType, NpgsqlDbType.Text),
-            ("to", mapping.ToType, NpgsqlDbType.Text)) > 0;
-
-        var batch = await NewBatchAsync(connection, transaction, file, $"{mapping.FromType} {mapping.RelType} {mapping.ToType} links", newRelationship ? new { from = mapping.FromType, rel = mapping.RelType, to = mapping.ToType } : null, cancellationToken);
-        await StageLinksAsync(connection, pairs, cancellationToken);
-        var added = await ExecuteAsync(connection, transaction,
-            """
-            INSERT INTO node_link (source_id, rel_type, target_id, import_batch_id)
-            SELECT s.source_id, @rel, s.target_id, @batch FROM staging_link s
-            WHERE NOT EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id)
-            """,
-            ("rel", mapping.RelType, NpgsqlDbType.Text),
-            ("batch", batch, NpgsqlDbType.Bigint));
-        await ExecuteAsync(connection, transaction,
-            "UPDATE link_definition SET links = links + @added WHERE source_type = @from AND rel_type = @rel AND target_type = @to",
-            ("added", (long)added, NpgsqlDbType.Bigint),
-            ("from", mapping.FromType, NpgsqlDbType.Text),
-            ("rel", mapping.RelType, NpgsqlDbType.Text),
-            ("to", mapping.ToType, NpgsqlDbType.Text));
-        await FinishBatchAsync(connection, transaction, batch, added, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        return new CsvImportResult(batch, added);
+        var existing = await ExistingLinksAsync(db, mapping.RelType, pairs, cancellationToken);
+        var model = new ModelChanges([], [], [new StagedRelationship(mapping.FromType, mapping.RelType, mapping.ToType)]);
+        return await _staging.StageAsync(
+            new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.FromType} {mapping.RelType} {mapping.ToType} links", model, existing.Count, skipped, notes),
+            [],
+            pairs.Where(p => !existing.Contains(p)).Select(p => new StagedLink(mapping.FromType, mapping.RelType, p.Source, mapping.ToType, p.Target)),
+            cancellationToken);
     }
 
-    // Removes everything the import added: its links, then its records, including changes made to them since. Types,
-    // fields and relationships it added stay in the model.
-    public async Task UndoAsync(long batchId, CancellationToken cancellationToken = default)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var batch = await db.ImportBatches.SingleOrDefaultAsync(b => b.Id == batchId && b.Source == DataSource.Csv && b.UserId == AppUser.DefaultId, cancellationToken)
-            ?? throw new LinkbaseValidationException("There's no such import.");
-        if (batch.Status != ImportStatus.Committed)
-        {
-            throw new LinkbaseValidationException("This import has already been undone.");
-        }
+    public Task UndoAsync(long batchId, CancellationToken cancellationToken = default) => _staging.UndoAsync(batchId, cancellationToken);
 
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        var links = await db.NodeLinks.Where(l => l.ImportBatchId == batchId)
-            .GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
-            .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
-            .ToListAsync(cancellationToken);
-        // A record keeps at least one of each link its type requires, so undoing can't take away its last one.
-        foreach (var group in links)
-        {
-            var required = await db.LinkDefinitions.AnyAsync(
-                d => d.SourceType == group.SourceType && d.RelType == group.RelType && d.TargetType == group.TargetType && d.Required, cancellationToken);
-            var stranded = !required ? 0 : await db.NodeLinks
-                .Where(l => l.ImportBatchId == batchId && l.RelType == group.RelType && l.Source.Type == group.SourceType && l.Target.Type == group.TargetType)
-                .Select(l => l.SourceId)
-                .Distinct()
-                .CountAsync(source => !db.NodeLinks.Any(o => o.SourceId == source && o.RelType == group.RelType && o.Target.Type == group.TargetType && o.ImportBatchId != batchId), cancellationToken);
-            if (stranded > 0)
-            {
-                throw new LinkbaseValidationException(
-                    $"Undoing would leave {stranded:N0} {group.SourceType} record(s) with no {group.SourceType} {group.RelType} {group.TargetType} link, which each needs. Link them another way first.");
-            }
-        }
-
-        foreach (var group in links)
-        {
-            await db.LinkDefinitions
-                .Where(d => d.SourceType == group.SourceType && d.RelType == group.RelType && d.TargetType == group.TargetType)
-                .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links - group.Count), cancellationToken);
-        }
-
-        await db.NodeLinks.Where(l => l.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
-
-        // The import's own records first, then their links one side at a time, so both lookups use an index. Joining every
-        // link to its ends took minutes on the Swiss sample's 45M links.
-        var added = db.Nodes.Where(n => n.ImportBatchId == batchId).Select(n => n.Id);
-        var linked = await db.NodeLinks.CountAsync(l => added.Contains(l.SourceId), cancellationToken)
-            + await db.NodeLinks.CountAsync(l => added.Contains(l.TargetId), cancellationToken);
-        if (linked > 0)
-        {
-            throw new LinkbaseValidationException($"Records this import added have {linked:N0} link(s) added since. Remove those first.");
-        }
-
-        await db.Nodes.Where(n => n.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
-        await RemoveWhatItCreatedAsync(db, batch.RawPayload, cancellationToken);
-        batch.Status = ImportStatus.Undone;
-        await db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-    }
-
-    // A type the import added goes too, with its fields, once nothing is left of it. So does a relationship it added, once
-    // it has no links. Fields it added to a type that was already there stay.
-    private static async Task RemoveWhatItCreatedAsync(LinkbaseDbContext db, string? summary, CancellationToken cancellationToken)
-    {
-        var created = (JsonNode.Parse(summary ?? "{}") as JsonObject)?["created"] as JsonObject;
-        if ((string?)created?["type"] is { } type
-            && !await db.Nodes.AnyAsync(n => n.Type == type, cancellationToken)
-            && !await db.LinkDefinitions.AnyAsync(d => (d.SourceType == type || d.TargetType == type) && d.Links > 0, cancellationToken))
-        {
-            await db.LinkDefinitions.Where(d => d.SourceType == type || d.TargetType == type).ExecuteDeleteAsync(cancellationToken);
-            await db.FieldDefinitions.Where(f => f.NodeTypeName == type).ExecuteDeleteAsync(cancellationToken);
-            await db.NodeTypes.Where(t => t.Name == type).ExecuteDeleteAsync(cancellationToken);
-        }
-
-        if ((string?)created?["rel"] is { } rel && (string?)created["from"] is { } from && (string?)created["to"] is { } to)
-        {
-            await db.LinkDefinitions.Where(d => d.SourceType == from && d.RelType == rel && d.TargetType == to && d.Links == 0).ExecuteDeleteAsync(cancellationToken);
-        }
-    }
-
-    public async Task<IReadOnlyList<CsvBatch>> RecentAsync(int count, CancellationToken cancellationToken = default)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var batches = await db.ImportBatches.AsNoTracking()
-            .Where(b => b.Source == DataSource.Csv && b.UserId == AppUser.DefaultId)
-            .OrderByDescending(b => b.Id)
-            .Take(count)
-            .Select(b => new { b.Id, b.RawPayload, b.Status, b.CreatedAt })
-            .ToListAsync(cancellationToken);
-        return batches.Select(b =>
-        {
-            var summary = JsonNode.Parse(b.RawPayload ?? "{}") as JsonObject ?? [];
-            return new CsvBatch(b.Id, (string?)summary["file"] ?? "", (string?)summary["what"] ?? "", (int?)summary["added"] ?? 0, b.Status, b.CreatedAt);
-        }).ToList();
-    }
+    public async Task<IReadOnlyList<CsvBatch>> RecentAsync(int count, CancellationToken cancellationToken = default) =>
+        (await _staging.RecentAsync(count, cancellationToken))
+        .Select(b => new CsvBatch(b.Id, b.File, b.What, b.Status == ImportStatus.Staged ? b.Items : b.Added, b.Status, b.At))
+        .ToList();
 
     private sealed record RecordRow(string Key, string Name, string Props);
 
@@ -724,20 +597,28 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         return found;
     }
 
-    private static async Task<int> ExistingLinksAsync(LinkbaseDbContext db, string relType, List<(string Source, string Target)> pairs, CancellationToken cancellationToken)
+    private static async Task<HashSet<(string Source, string Target)>> ExistingLinksAsync(LinkbaseDbContext db, string relType, List<(string Source, string Target)> pairs, CancellationToken cancellationToken)
     {
-        // In a transaction only so the staging table lasts until the count, and goes when it's rolled back.
+        // In a transaction only so the staging table lasts until the lookup, and goes when it's rolled back.
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         await StageLinksAsync(connection, pairs, cancellationToken);
         await using var command = new NpgsqlCommand(
-            "SELECT count(*) FROM staging_link s WHERE EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id)",
+            "SELECT s.source_id, s.target_id FROM staging_link s WHERE EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id)",
             connection, transaction);
         command.Parameters.Add(new NpgsqlParameter("rel", NpgsqlDbType.Text) { Value = relType });
-        var count = Convert.ToInt32(await command.ExecuteScalarAsync(cancellationToken), CultureInfo.InvariantCulture);
+        var found = new HashSet<(string, string)>();
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                found.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
         await transaction.RollbackAsync(cancellationToken);
-        return count;
+        return found;
     }
 
     private static async Task StageLinksAsync(NpgsqlConnection connection, List<(string Source, string Target)> pairs, CancellationToken cancellationToken)
@@ -756,28 +637,6 @@ public sealed class CsvImportService(IDbContextFactory<LinkbaseDbContext> contex
         }
 
         await import.CompleteAsync(cancellationToken);
-    }
-
-    // Created says whether the import added a type or a relationship to the model, which undoing it takes away again.
-    private static async Task<long> NewBatchAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, CsvFile file, string what, object? created, CancellationToken cancellationToken)
-    {
-        await using var command = new NpgsqlCommand(
-            "INSERT INTO import_batch (user_id, source, status, raw_payload, created_at, updated_at) VALUES (@user, 'csv', 'pending', @summary, now(), now()) RETURNING id",
-            connection, transaction);
-        command.Parameters.Add(new NpgsqlParameter("user", NpgsqlDbType.Bigint) { Value = AppUser.DefaultId });
-        command.Parameters.Add(new NpgsqlParameter("summary", NpgsqlDbType.Jsonb) { Value = JsonSerializer.Serialize(new { file = file.FileName, what, created }) });
-        return (long)(await command.ExecuteScalarAsync(cancellationToken))!;
-    }
-
-    // What the import added, by file name and kind, never the file's contents.
-    private static async Task FinishBatchAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, long batch, int added, CancellationToken cancellationToken)
-    {
-        await using var command = new NpgsqlCommand(
-            "UPDATE import_batch SET status = 'committed', raw_payload = raw_payload || jsonb_build_object('added', @added), updated_at = now() WHERE id = @batch",
-            connection, transaction);
-        command.Parameters.Add(new NpgsqlParameter("added", NpgsqlDbType.Integer) { Value = added });
-        command.Parameters.Add(new NpgsqlParameter("batch", NpgsqlDbType.Bigint) { Value = batch });
-        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static async Task<int> ExecuteAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, string sql, params (string Name, object Value, NpgsqlDbType Type)[] parameters)

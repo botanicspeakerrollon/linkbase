@@ -108,7 +108,7 @@ Each of these is something customers will want too. That's the test for building
 | G6 | **External refs by node id**: `external_ref` points at nodes, not typed rows | S | UKC and MP ids, web import sources |
 | G7 | **Creating linked records from a form**: pick a route, or create one, and its crag, without leaving the page | M–L | Later: replaces the custom Add ascent page. Done |
 | G8 | **Sorting and filtering record lists by field** | M | Later: replaces the custom Logbook page. Done |
-| G9 | **Generic import staging**: stage, review, commit and undo, for any import | L | Web import. Also needed for generic web import |
+| G9 | **Generic import staging**: stage, review, commit and undo, for any import | L | Web import. Also needed for generic web import. Done for CSV; the web import moves onto it later |
 | G10 | **Saved searches and dashboards** | L | Later: replaces Insights. Belongs with multi-user |
 
 Only G1 to G6 are needed for the move. G7 to G10 replace module pages later, and each is on the roadmap for its own sake.

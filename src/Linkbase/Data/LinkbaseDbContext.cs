@@ -26,6 +26,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<LinkDefinition> LinkDefinitions => Set<LinkDefinition>();
     public DbSet<Node> Nodes => Set<Node>();
     public DbSet<NodeLink> NodeLinks => Set<NodeLink>();
+    public DbSet<StagedItem> StagedItems => Set<StagedItem>();
     public DbSet<GraphNodeRow> GraphNodes => Set<GraphNodeRow>();
     public DbSet<GraphEdgeRow> GraphEdges => Set<GraphEdgeRow>();
 
@@ -51,6 +52,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         configurationBuilder.Properties<ExternalEntityType>().HaveConversion<SnakeCaseEnumConverter<ExternalEntityType>>();
         configurationBuilder.Properties<ImportStatus>().HaveConversion<SnakeCaseEnumConverter<ImportStatus>>();
         configurationBuilder.Properties<DatePrecision>().HaveConversion<SnakeCaseEnumConverter<DatePrecision>>();
+        configurationBuilder.Properties<StagedKind>().HaveConversion<SnakeCaseEnumConverter<StagedKind>>();
         configurationBuilder.Properties<FieldType>().HaveConversion<SnakeCaseEnumConverter<FieldType>>();
     }
 
@@ -154,6 +156,15 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             link.HasOne(l => l.Source).WithMany().HasForeignKey(l => l.SourceId);
             link.HasOne(l => l.Target).WithMany().HasForeignKey(l => l.TargetId);
             link.Property(l => l.Props).HasColumnType("jsonb").HasDefaultValueSql("'{}'");
+        });
+
+        modelBuilder.Entity<StagedItem>(item =>
+        {
+            item.Property(i => i.Props).HasColumnType("jsonb");
+            item.HasOne(i => i.ImportBatch).WithMany().HasForeignKey(i => i.ImportBatchId);
+
+            // Reviewing lists a batch's items a page at a time, and committing reads them in order.
+            item.HasIndex(i => new { i.ImportBatchId, i.Kind, i.Id });
         });
 
         modelBuilder.Entity<GraphNodeRow>(node =>

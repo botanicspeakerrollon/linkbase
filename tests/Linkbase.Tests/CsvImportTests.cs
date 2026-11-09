@@ -4,6 +4,7 @@ using Linkbase.Core.CsvImport;
 using Linkbase.Core.Graph;
 using Linkbase.Core.Models;
 using Linkbase.Core.Records;
+using Linkbase.Core.Staging;
 using Linkbase.Data;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
@@ -439,6 +440,37 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         Told("Import undone.");
         Sees(cut, "Undone");
         Assert.Equal(0, (await new RecordRepository(factory).ListAsync("Supplier", null, 0, 10)).Total);
+    }
+
+    [Fact]
+    public async Task Reviews_a_staged_import_leaves_an_item_out_and_commits_the_rest()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
+        Services.AddSingleton<CsvImportService>();
+        Services.AddSingleton<ImportStagingService>();
+        var cut = RenderPage<CsvImportPage>();
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("id,name,staff\ns1,Acme,12\ns2,Brill,3\n", "suppliers.csv"));
+        Sees(cut, "suppliers.csv: 2 rows, 3 columns.");
+        Press(cut, "Check");
+        Sees(cut, "2 new record(s) to add.");
+
+        Press(cut, "Review first");
+        WaitUntil(() => CurrentPath.StartsWith("/import-csv/review/", StringComparison.Ordinal), $"the review, at {CurrentPath}");
+        Assert.Null(await new RecordRepository(factory).TypeAsync("Supplier"));
+        var review = RenderPage<StagedImportPage>(p => p.Add(x => x.BatchId, long.Parse(CurrentPath.Split('/')[^1], System.Globalization.CultureInfo.InvariantCulture)));
+
+        Sees(review, "Review suppliers.csv");
+        Sees(review, "2 Supplier records staged, 2 included.");
+        Sees(review, "Brill");
+        review.Find("input[aria-label='Import Acme']").Change(false);
+        Sees(review, "2 Supplier records staged, 1 included.");
+
+        Press(review, "Commit 1");
+        Press(Dialogs, "Commit");
+        Told("Added 1.");
+        Assert.Equal(["Brill"], (await new RecordRepository(factory).ListAsync("Supplier", null, 0, 10)).Rows.Select(r => r.Name));
     }
 
     [Fact]
