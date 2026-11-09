@@ -46,7 +46,9 @@ public sealed class PostgresFixture : IAsyncLifetime
     // Nothing in it reaches the shared database that other tests use.
     public async Task<string> CreateModelDatabaseAsync(string insertRowsSql)
     {
-        var connectionString = await CreateDatabaseAsync($"model_{Guid.NewGuid():N}");
+        // Not pooled: every test makes a database of its own, and idle pooled connections to hundreds of them would use up
+        // the server's connections.
+        var connectionString = await CreateDatabaseAsync($"model_{Guid.NewGuid():N}") + ";Pooling=false";
         await using var db = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
         await db.Database.MigrateAsync();
 
