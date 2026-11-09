@@ -18,7 +18,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
 | 2. Climbing model file and converter | Done: `models/climbing/model.json`, `climbing to-generic` and `climbing verify-generic`. Tested on made-up data; **not yet run on the real logbook**, which needs your database. See [models](models.md#climbing-in-the-generic-store) |
 | 3. Module behaviour on the generic store | Done: `ClimbingRecordHook` keeps `grade_rank`, names ascents after their routes and rebuilds trips; `GenericTripService` rebuilds the `Trip` records. A test checks that its trips match the typed tables' |
 | 4. Port the module pages | Not started |
-| 5. Imports | Done: `GenericAscentImportService` loads the UKC and Mountain Project parsers' rows into the generic store as one undoable batch per file. `climbing import <model> ukc\|mp\|all [--fresh]` runs it, and a test checks it gives what the typed importer gives. The typed importer stays until step 6 |
+| 5. Imports | Done: `GenericAscentImportService` loads the UKC and Mountain Project parsers' rows into the generic store as one undoable batch per file. `climbing import <model> ukc\|mp\|all [--fresh]` runs it, and a test checks it gives what the typed importer gives. `climbing verify-generic <model> --imported` checks an imported store against the typed tables, matching trips by key because they're numbered afresh. Run on the real logbook: matches. The typed importer stays until step 6 |
 | 6. Switch | Not started. Needs your go-ahead |
 
 **Two gaps in step 3.**
