@@ -11,7 +11,8 @@ public sealed class GenericVerifier(IDbContextFactory<LinkbaseDbContext> source,
 {
     private const int MostReported = 20;
 
-    public async Task<IReadOnlyList<string>> VerifyAsync(CancellationToken cancellationToken = default)
+    // A copy keeps its rows' timestamps. Two separate imports of the same files can't, so they pass compareTimestamps: false.
+    public async Task<IReadOnlyList<string>> VerifyAsync(bool compareTimestamps = true, CancellationToken cancellationToken = default)
     {
         var expected = await ClimbingGraph.ReadAsync(source, cancellationToken);
         await using var db = await target.CreateDbContextAsync(cancellationToken);
@@ -41,8 +42,12 @@ public sealed class GenericVerifier(IDbContextFactory<LinkbaseDbContext> source,
             Compare(problems, node.Id, "type", node.Type, actual.Type);
             Compare(problems, node.Id, "key", node.Key, actual.Key);
             Compare(problems, node.Id, "name", node.Name, actual.Name);
-            Compare(problems, node.Id, "created", node.CreatedAt.ToUniversalTime().ToString("O"), actual.CreatedAt.ToUniversalTime().ToString("O"));
-            Compare(problems, node.Id, "updated", node.UpdatedAt.ToUniversalTime().ToString("O"), actual.UpdatedAt.ToUniversalTime().ToString("O"));
+            if (compareTimestamps)
+            {
+                Compare(problems, node.Id, "created", node.CreatedAt.ToUniversalTime().ToString("O"), actual.CreatedAt.ToUniversalTime().ToString("O"));
+                Compare(problems, node.Id, "updated", node.UpdatedAt.ToUniversalTime().ToString("O"), actual.UpdatedAt.ToUniversalTime().ToString("O"));
+            }
+
             var props = JsonNode.Parse(actual.Props) as JsonObject ?? [];
             foreach (var key in node.Props.Select(p => p.Key).Concat(props.Select(p => p.Key)).Distinct().Order())
             {

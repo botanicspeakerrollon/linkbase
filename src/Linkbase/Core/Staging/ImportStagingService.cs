@@ -64,8 +64,11 @@ public sealed class ImportStagingService(IDbContextFactory<LinkbaseDbContext> co
 {
     private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
 
-    // Sources whose batches this service commits and undoes. Others, such as climbing's web import, have their own.
-    public static bool IsGeneric(DataSource source) => source == DataSource.Csv;
+    // Sources whose batches this service commits and undoes. UKC and Mountain Project batches arrive already committed, from
+    // climbing's importer. Others, such as climbing's web import, have their own.
+    private static readonly DataSource[] GenericSources = [DataSource.Csv, DataSource.Ukc, DataSource.MountainProject];
+
+    public static bool IsGeneric(DataSource source) => GenericSources.Contains(source);
 
     public async Task<long> StageAsync(
         StagingRequest request, IEnumerable<StagedRecord> records, IEnumerable<StagedLink> links, CancellationToken cancellationToken = default)
@@ -249,7 +252,7 @@ public sealed class ImportStagingService(IDbContextFactory<LinkbaseDbContext> co
     private static async Task<ImportBatch> EnsureStagedAsync(LinkbaseDbContext db, long batchId, CancellationToken cancellationToken)
     {
         var batch = await db.ImportBatches.AsNoTracking()
-            .SingleOrDefaultAsync(b => b.Id == batchId && b.UserId == AppUser.DefaultId && b.Source == DataSource.Csv, cancellationToken)
+            .SingleOrDefaultAsync(b => b.Id == batchId && b.UserId == AppUser.DefaultId && GenericSources.Contains(b.Source), cancellationToken)
             ?? throw new LinkbaseValidationException("There's no such import.");
         return batch.Status == ImportStatus.Staged ? batch : throw new LinkbaseValidationException("This import has already been committed or discarded.");
     }
@@ -385,7 +388,7 @@ public sealed class ImportStagingService(IDbContextFactory<LinkbaseDbContext> co
     public async Task UndoAsync(long batchId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var batch = await db.ImportBatches.SingleOrDefaultAsync(b => b.Id == batchId && b.UserId == AppUser.DefaultId && b.Source == DataSource.Csv, cancellationToken)
+        var batch = await db.ImportBatches.SingleOrDefaultAsync(b => b.Id == batchId && b.UserId == AppUser.DefaultId && GenericSources.Contains(b.Source), cancellationToken)
             ?? throw new LinkbaseValidationException("There's no such import.");
         if (batch.Status != ImportStatus.Committed)
         {
@@ -398,13 +401,15 @@ public sealed class ImportStagingService(IDbContextFactory<LinkbaseDbContext> co
             .GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
             .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
             .ToListAsync(cancellationToken);
-        // A record keeps at least one of each link its type requires, so undoing can't take away its last one.
+        // A record keeps at least one of each link its type requires, so undoing can't take away its last one. Records this
+        // import added go with it, so they don't count.
         foreach (var group in links)
         {
             var required = await db.LinkDefinitions.AnyAsync(
                 d => d.SourceType == group.SourceType && d.RelType == group.RelType && d.TargetType == group.TargetType && d.Required, cancellationToken);
             var stranded = !required ? 0 : await db.NodeLinks
-                .Where(l => l.ImportBatchId == batchId && l.RelType == group.RelType && l.Source.Type == group.SourceType && l.Target.Type == group.TargetType)
+                .Where(l => l.ImportBatchId == batchId && l.RelType == group.RelType && l.Source.Type == group.SourceType && l.Target.Type == group.TargetType
+                    && l.Source.ImportBatchId != batchId)
                 .Select(l => l.SourceId)
                 .Distinct()
                 .CountAsync(source => !db.NodeLinks.Any(o => o.SourceId == source && o.RelType == group.RelType && o.Target.Type == group.TargetType && o.ImportBatchId != batchId), cancellationToken);

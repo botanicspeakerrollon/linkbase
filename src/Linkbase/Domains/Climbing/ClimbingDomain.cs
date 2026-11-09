@@ -58,6 +58,7 @@ public sealed class ClimbingDomain : IDomainModule
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<AscentImportService>();
+        services.AddScoped<GenericAscentImportService>();
         services.AddScoped<TripService>();
         services.AddScoped<GenericTripService>();
         services.AddScoped<Linkbase.Core.Records.IRecordHook>(provider => new ClimbingRecordHook(
@@ -87,6 +88,12 @@ public sealed class ClimbingDomain : IDomainModule
 
     public async Task<int?> TryRunCommandAsync(string[] args, IServiceProvider services, IConfiguration configuration)
     {
+        if (GenericImportCommands.IsCommand(args))
+        {
+            await using var importScope = services.CreateAsyncScope();
+            return await GenericImportCommands.RunAsync(importScope.ServiceProvider.GetRequiredService<ModelCatalog>(), args, Console.Out);
+        }
+
         if (GenericCommands.IsCommand(args))
         {
             await using var genericScope = services.CreateAsyncScope();

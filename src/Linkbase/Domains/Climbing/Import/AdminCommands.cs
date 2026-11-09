@@ -59,14 +59,14 @@ public sealed class AdminCommands(
     {
         using var reader = new StreamReader(path, Encoding.UTF8);
         var rows = UkcParser.Parse(reader).Select(corrections.Apply).ToList();
-        Print("UKC", await importer.ImportAsync(DataSource.Ukc, null, rows));
+        Print(output, "UKC", await importer.ImportAsync(DataSource.Ukc, null, rows));
     }
 
     private async Task ImportMountainProjectAsync(string path, Corrections corrections)
     {
         using var reader = new StreamReader(path, Encoding.UTF8);
         var rows = MountainProjectParser.Parse(reader).Select(corrections.Apply).ToList();
-        Print("Mountain Project", await importer.ImportAsync(DataSource.MountainProject, null, rows));
+        Print(output, "Mountain Project", await importer.ImportAsync(DataSource.MountainProject, null, rows));
     }
 
     private async Task RebuildTripsAsync(Corrections corrections)
@@ -75,7 +75,7 @@ public sealed class AdminCommands(
         output.WriteLine($"Trips: {summary.Trips} trips, {summary.LinkedAscents} ascents linked, {summary.InferredLinks} inferred");
     }
 
-    private void Print(string source, ImportSummary summary)
+    internal static void Print(TextWriter output, string source, ImportSummary summary)
     {
         output.WriteLine($"{source} (batch {summary.BatchId}): {summary.Rows} rows");
         output.WriteLine($"  Areas:    {summary.Areas.Created} created, {summary.Areas.Matched} matched");
