@@ -1,0 +1,125 @@
+using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Linkbase.Core.Models;
+using Linkbase.Data;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
+
+namespace Linkbase.Core.Records;
+public sealed partial class RecordRepository
+{
+    // Lets the modules' hooks set the fields they keep.
+    private string Hooked(RecordType type, string name, string props)
+    {
+        if (!_hooks.Watch(type.Name))
+        {
+            return props;
+        }
+
+        var json = JsonNode.Parse(props) as JsonObject ?? [];
+        _hooks.BeforeSave(type, name, json);
+        return json.ToJsonString();
+    }
+
+    // Keeps the relationship's count, which the home page and the graph model show, in step with its links.
+    private static Task CountAsync(LinkbaseDbContext db, string sourceType, string relType, string targetType, int change, CancellationToken cancellationToken) =>
+        db.LinkDefinitions
+            .Where(d => d.SourceType == sourceType && d.RelType == relType && d.TargetType == targetType)
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links + change), cancellationToken);
+
+    private static string Name(RecordInput input) =>
+        string.IsNullOrWhiteSpace(input.Name) ? throw new LinkbaseValidationException("A record needs a name.") : input.Name.Trim();
+
+    // Values are checked against their field's type and stored typed, as the loader does. Values for keys the type doesn't
+    // define are kept as they were, and so are those of fields a module keeps, unless it's the module writing them.
+    private static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false)
+    {
+        var props = (existing is null ? null : JsonNode.Parse(existing) as JsonObject) ?? [];
+        foreach (var field in includeKept ? type.Fields : type.Editable)
+        {
+            var text = input.Values.GetValueOrDefault(field.Key)?.Trim();
+            if (field.Type == FieldType.List && FieldValues.SplitList(text ?? "", '\n', '\r').Count == 0)
+            {
+                text = null;
+            }
+
+            if (string.IsNullOrEmpty(text))
+            {
+                props.Remove(field.Key);
+                if (field.Required)
+                {
+                    throw new LinkbaseValidationException($"{Title(field.Key)} is required.");
+                }
+
+                continue;
+            }
+
+            props[field.Key] = field.Type switch
+            {
+                FieldType.Number => decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
+                    ? JsonValue.Create(number)
+                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be a number, such as 12.5."),
+                FieldType.Date => DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+                    ? JsonValue.Create(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be a date, such as 2026-11-06."),
+                FieldType.Boolean => bool.TryParse(text, out var flag)
+                    ? JsonValue.Create(flag)
+                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be true or false."),
+                FieldType.Choice => FieldValues.MatchChoice(text, field.Options) is { } option
+                    ? JsonValue.Create(option)
+                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."),
+                FieldType.List => new JsonArray(FieldValues.SplitList(text, '\n', '\r').Select(v => (JsonNode?)JsonValue.Create(v)).ToArray()),
+                _ => JsonValue.Create(text),
+            };
+        }
+
+        return props.ToJsonString();
+    }
+
+    internal static Dictionary<string, string> Values(string props)
+    {
+        using var document = JsonDocument.Parse(props);
+        return document.RootElement.EnumerateObject().ToDictionary(
+            p => p.Name,
+            p => p.Value.ValueKind switch
+            {
+                JsonValueKind.String => p.Value.GetString()!,
+                JsonValueKind.True => "true",
+                JsonValueKind.False => "false",
+                JsonValueKind.Array => string.Join('\n', p.Value.EnumerateArray().Select(v => v.ValueKind == JsonValueKind.String ? v.GetString() : v.GetRawText())),
+                _ => p.Value.GetRawText(),
+            });
+    }
+
+    private static async Task<string> FreeKeyAsync(LinkbaseDbContext db, string type, string stem, CancellationToken cancellationToken)
+    {
+        var taken = await db.Nodes.AsNoTracking()
+            .Where(n => n.Type == type && (n.Key == stem || n.Key.StartsWith(stem + "-")))
+            .Select(n => n.Key)
+            .ToListAsync(cancellationToken);
+        var key = stem;
+        for (var i = 2; taken.Contains(key); i++)
+        {
+            key = $"{stem}-{i}";
+        }
+
+        return key;
+    }
+
+    // Lower case letters, digits and hyphens, such as zoe-adams for Zoë Adams.
+    private static string Slug(string name)
+    {
+        var plain = name.Normalize(System.Text.NormalizationForm.FormD)
+            .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark);
+        var slug = new string(plain.Select(c => char.IsAsciiLetterOrDigit(c) ? char.ToLowerInvariant(c) : '-').ToArray());
+        slug = string.Join('-', slug.Split('-', StringSplitOptions.RemoveEmptyEntries));
+        return slug.Length == 0 ? "record" : slug[..Math.Min(slug.Length, 60)].TrimEnd('-');
+    }
+
+    public static string Title(string key) => char.ToUpperInvariant(key[0]) + key[1..].Replace('_', ' ');
+
+    private static string EscapeLike(string text) =>
+        text.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
+}
