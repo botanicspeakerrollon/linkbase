@@ -1,6 +1,7 @@
 using Linkbase.Core;
 using Linkbase.Core.Explore;
 using Linkbase.Core.Graph;
+using Linkbase.Core.Models;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Domains.Climbing.Features;
@@ -79,6 +80,12 @@ public sealed class ClimbingDomain : IDomainModule
 
     public async Task<int?> TryRunCommandAsync(string[] args, IServiceProvider services, IConfiguration configuration)
     {
+        if (GenericCommands.IsCommand(args))
+        {
+            await using var genericScope = services.CreateAsyncScope();
+            return await new GenericCommands(genericScope.ServiceProvider.GetRequiredService<ModelCatalog>(), Console.Out).RunAsync(args);
+        }
+
         if (!AdminCommands.IsCommand(args))
         {
             return null;

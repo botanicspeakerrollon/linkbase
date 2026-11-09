@@ -1,0 +1,76 @@
+// The climbing logbook as a model: the types, fields and relationships of the typed tables, for the generic store. It has no
+// CSV files, because the data comes from `climbing to-generic` (copying the typed tables) or from the UKC and Mountain
+// Project imports, and the Climbing module derives grade_rank and the trips. See docs/climbing-to-generic-plan.md.
+{
+  "name": "Climbing logbook",
+  "types": [
+    {
+      "name": "Area", "color": "#0e7490", "icon": "Map",
+      "fields": [ { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true } ]
+    },
+    {
+      "name": "Crag", "color": "#a16207", "icon": "Terrain",
+      "fields": [
+        { "key": "rock_type" },
+        { "key": "lat", "type": "number" },
+        { "key": "lon", "type": "number" },
+        { "key": "aliases", "type": "list" },
+        { "key": "notes" }
+      ]
+    },
+    {
+      "name": "Route", "color": "#7c3aed", "icon": "Timeline",
+      "fields": [
+        { "key": "grade" },
+        {
+          "key": "grade_system", "type": "choice",
+          "options": [ "uk_trad", "uk_tech", "french", "yds", "font", "v", "ewbank", "uiaa", "australian", "nordic", "alpine", "scrambling", "via_ferrata", "ice", "other" ]
+        },
+        { "key": "discipline", "type": "choice", "options": [ "trad", "sport", "boulder", "winter", "alpine", "other" ] },
+        { "key": "length_m", "type": "number" },
+        { "key": "pitches", "type": "number" },
+        { "key": "grade_rank", "type": "number", "owner": "Climbing" }
+      ]
+    },
+    {
+      "name": "Ascent", "color": "#15803d", "icon": "Flag",
+      "fields": [
+        { "key": "date", "type": "date", "required": true },
+        { "key": "date_precision", "type": "choice", "options": [ "day", "month", "year" ], "required": true },
+        {
+          "key": "style", "type": "choice", "required": true,
+          "options": [ "lead", "onsight", "flash", "redpoint", "send", "hangdog", "second", "top_rope", "solo", "dnf", "other" ]
+        },
+        { "key": "style_raw" },
+        { "key": "notes" },
+        { "key": "my_rating", "type": "number" },
+        { "key": "source", "type": "choice", "options": [ "manual", "ukc", "mountain_project", "web_import", "csv" ], "required": true }
+      ]
+    },
+    { "name": "Partner", "color": "#c2410c", "icon": "Person" },
+    {
+      "name": "Trip", "color": "#be185d", "icon": "Flight", "owner": "Climbing",
+      "fields": [
+        { "key": "trip_key" },
+        { "key": "start_date", "type": "date" },
+        { "key": "end_date", "type": "date" },
+        { "key": "sort_date", "type": "date" },
+        { "key": "notes" },
+        { "key": "abroad", "type": "boolean" },
+        { "key": "home", "type": "boolean" },
+        { "key": "approximate", "type": "boolean" },
+        { "key": "dates_partly_unknown", "type": "boolean" },
+        { "key": "manual", "type": "boolean" }
+      ]
+    }
+  ],
+  "relationships": [
+    { "from": "Area", "type": "IN", "to": "Area" },
+    { "from": "Crag", "type": "IN", "to": "Area", "required": true },
+    { "from": "Route", "type": "AT", "to": "Crag", "required": true },
+    { "from": "Ascent", "type": "OF", "to": "Route", "required": true },
+    { "from": "Ascent", "type": "WITH", "to": "Partner" },
+    { "from": "Ascent", "type": "ON_TRIP", "to": "Trip", "fields": [ { "key": "inferred", "type": "boolean" } ] },
+    { "from": "Trip", "type": "VISITED", "to": "Area" }
+  ]
+}

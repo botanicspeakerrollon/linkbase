@@ -15,7 +15,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
 | 0. Delete Neo4j and Duplicates | Done, on `main` |
 | 1. Generic features G1 to G6 | Done, on `main`. G1 to G3 are choice, list and required fields. G4 and G5 are module hooks, module-owned fields and records (`generic-module-hooks`). G6 is external refs by node id (`g6-external-refs-by-node`) |
 | Later features G7, G8, G9 | Done, on branch `g7-g8-g9-generic-forms-lists-staging`, **not yet in `main`** |
-| 2. Climbing model file and `climbing to-generic` converter | **Not started.** There is no `models/climbing/` and no converter |
+| 2. Climbing model file and `climbing to-generic` converter | Done: `models/climbing/model.json`, `climbing to-generic`, `climbing verify-generic`. **Not yet run on the real logbook**, because that needs your database. See [models](models.md#climbing-in-the-generic-store) |
 | 3 to 6 | Not started |
 
 **The branch to merge.** `g7-g8-g9-generic-forms-lists-staging` has `main` merged in and passes its tests, so it can fast-forward

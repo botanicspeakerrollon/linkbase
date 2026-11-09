@@ -93,16 +93,22 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         long nodes = 0;
         foreach (var type in model.Types)
         {
-            var columns = await StageAsync(connection, model, type.Source.File, cancellationToken);
-            var key = Column(columns, type.Source.File, type.Source.Key);
-            var name = type.Source.Name is null ? key : Column(columns, type.Source.File, type.Source.Name);
-            await CheckChoicesAsync(connection, transaction, type.Fields, columns, type.Source.File, cancellationToken);
-            await CheckRequiredAsync(connection, transaction, type.Fields, columns, type.Source.File, $"nullif({key}, '') IS NOT NULL", cancellationToken);
-            var count = await Guard($"{type.Name} from {type.Source.File}", () => RunAsync(
+            // A type with no source starts empty.
+            if (type.Source is not { } typeSource)
+            {
+                continue;
+            }
+
+            var columns = await StageAsync(connection, model, typeSource.File, cancellationToken);
+            var key = Column(columns, typeSource.File, typeSource.Key);
+            var name = typeSource.Name is null ? key : Column(columns, typeSource.File, typeSource.Name);
+            await CheckChoicesAsync(connection, transaction, type.Fields, columns, typeSource.File, cancellationToken);
+            await CheckRequiredAsync(connection, transaction, type.Fields, columns, typeSource.File, $"nullif({key}, '') IS NOT NULL", cancellationToken);
+            var count = await Guard($"{type.Name} from {typeSource.File}", () => RunAsync(
                 $"""
                 INSERT INTO node (id, user_id, type, key, name, props)
                 SELECT lower(@type) || ':' || {key}, @user, @type, {key}, coalesce(nullif({name}, ''), {key}),
-                       {Props(type.Fields, columns, type.Source.File)}
+                       {Props(type.Fields, columns, typeSource.File)}
                 FROM staging
                 WHERE nullif({key}, '') IS NOT NULL
                 ON CONFLICT (id) DO NOTHING
@@ -110,14 +116,18 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                 ("type", type.Name, NpgsqlDbType.Text),
                 ("user", AppUser.DefaultId, NpgsqlDbType.Bigint)));
             await RunAsync("DROP TABLE staging");
-            await output.WriteLineAsync($"{type.Name}: {count:N0} from {type.Source.File}");
+            await output.WriteLineAsync($"{type.Name}: {count:N0} from {typeSource.File}");
             nodes += count;
         }
 
         long links = 0;
         foreach (var relationship in model.Relationships)
         {
-            var source = relationship.Source;
+            if (relationship.Source is not { } source)
+            {
+                continue;
+            }
+
             var columns = await StageAsync(connection, model, source.File, cancellationToken);
             var from = Column(columns, source.File, source.FromColumn);
             var to = Column(columns, source.File, source.ToColumn);

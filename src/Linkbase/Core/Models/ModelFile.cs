@@ -76,11 +76,6 @@ public sealed partial class ModelFile
                 problems.Add($"Type '{type.Name}' needs a name of letters and digits, starting with a capital, such as Stop.");
             }
 
-            if (type.Source is null)
-            {
-                problems.Add($"Type '{type.Name}' needs a source.");
-            }
-
             ValidateFields($"Type '{type.Name}'", type.Fields, problems);
             ValidateOwner($"Type '{type.Name}'", type.Owner, problems);
             foreach (var field in type.Fields)
@@ -194,7 +189,8 @@ public sealed class ModelType
     // A Material icon's name, such as Train.
     public string? Icon { get; init; }
 
-    public required ModelTypeSource Source { get; init; }
+    // Where the type's records come from. Leave it out for a type that starts empty, such as one a domain module fills.
+    public ModelTypeSource? Source { get; init; }
     public IReadOnlyList<ModelField> Fields { get; init; } = [];
 
     // The domain module that derives this type's records, such as Climbing for trips. Only it writes them.
@@ -235,7 +231,8 @@ public sealed class ModelRelationship
     public required string From { get; init; }
     public required string Type { get; init; }
     public required string To { get; init; }
-    public required ModelRelationshipSource Source { get; init; }
+    // Leave it out for a relationship that starts with no links.
+    public ModelRelationshipSource? Source { get; init; }
     public IReadOnlyList<ModelField> Fields { get; init; } = [];
 
     // Every record of the From type needs at least one of these links, such as an ascent's route.

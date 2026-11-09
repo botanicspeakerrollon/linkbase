@@ -16,6 +16,20 @@ Locally, three models are configured in `appsettings.Development.json`: your cli
 Swiss public transport. The last two live in the `linkbase-samples` container (see [performance](performance.md)). Hover over the
 rail and use the switcher by the model's name.
 
+## Climbing in the generic store
+
+Climbing is being moved into the generic store (see [the plan](climbing-to-generic-plan.md)). To try it, locally, make a
+database for it next to the other samples, then copy your logbook in:
+
+```powershell
+docker exec linkbase-samples psql -U linkbase -d postgres -c "CREATE DATABASE climbing_generic"
+dotnet ef database update --project src/Linkbase --connection "Host=127.0.0.1;Port=55433;Database=climbing_generic;Username=linkbase"
+dotnet run --project src/Linkbase --launch-profile http -- climbing to-generic climbing-generic
+```
+
+"Climbing (generic)" then shows in the switcher, with Explore, record pages, CSV import and export working on it. The copy
+can be repeated: it replaces the target's generic store each time, and never changes your logbook.
+
 ## Adding a model
 
 1. Write a model file, and put its CSV files beside it or in the folder it names. `models/consultancy/` is a small one to copy.
@@ -70,11 +84,11 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `folder` | Where the CSV files are. The model file's own folder if left out |
 | `types[].name` | Letters and digits, starting with a capital, such as `Stop` |
 | `types[].color`, `icon` | Optional. A colour such as `#0f766e`, and a [Material icon](https://fonts.google.com/icons)'s name in PascalCase, such as `Train` |
-| `types[].source` | The CSV file, the column identifying a row (`key`), and the column to show as its name (`name`, the key if left out) |
+| `types[].source` | The CSV file, the column identifying a row (`key`), and the column to show as its name (`name`, the key if left out). Leave it out for a type that starts empty, such as one a domain module fills |
 | `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean`, `choice` or `list`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. A list is several text values in one cell, split by `|`, such as `Figma|User research`. `column` is the CSV column, the key if left out |
 | `types[].owner`, `types[].fields[].owner` | Optional. The domain module that writes these records or keeps this value, by its key, such as `Climbing`. See [owned by a module](#owned-by-a-module) |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
-| `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files |
+| `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files. Leave it out for a relationship that starts with no links |
 | `required` | On a field, `true` means every record needs a value. On a relationship, it means every record of the `from` type needs at least one of its links, such as each ascent's route |
 
 In Explore, a filter on a list matches when any of its values does, so `skills = postgres` finds everyone with Postgres
@@ -148,6 +162,8 @@ The choice is kept in a cookie for a year, and switching reloads the page. `/mod
 | `model list` | Lists the configured models |
 | `model migrate` | Applies migrations to every configured model's database, **including your real one** |
 | `model load <file> [model]` | Loads a model file into a model, the first one if none is named |
+| `climbing to-generic <model> [--same-database]` | Copies the climbing model's typed tables into `<model>`'s generic store, as `models/climbing/model.json` describes it, then checks the copy. It only reads the typed tables. Converting into the climbing model's own database needs `--same-database` |
+| `climbing verify-generic <model>` | Checks `<model>`'s generic store against the climbing typed tables: records of each type and their fields, links, external ids and the kept link counts. Changes nothing |
 
 Run them with `dotnet run --project src/Linkbase --launch-profile http -- <command>`. The launch profile matters: without it,
 `appsettings.Development.json` and its models aren't read.
