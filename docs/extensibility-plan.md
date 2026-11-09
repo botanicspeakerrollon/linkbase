@@ -86,5 +86,4 @@ climbing's web import with it.
 
 Still to do: move climbing onto the generic path where it can go. Its web import is still hand-built for crags, routes
 (grade systems, summaries, area parents), source URLs and undo that keeps edited rows. Keep its prompt, because a model-driven
-prompt can't know that "E2 5c" is a trad grade. Records are keyed by the slug of their name, so two different things with the
-same name collide, and the review page shows link ids rather than names.
+prompt can't know that "E2 5c" is a trad grade. A record is keyed by the slug of its name, with a number added when a different record has the key.
