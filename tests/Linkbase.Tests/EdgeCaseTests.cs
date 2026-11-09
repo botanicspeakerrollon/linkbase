@@ -1,3 +1,6 @@
+using System.Text.Json.Nodes;
+using Linkbase.Core;
+using Linkbase.Core.Models;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
@@ -75,8 +78,18 @@ public class ExtractionEdgeCaseTests
 
 [Trait("Category", "Database")]
 [Collection(PostgresCollection.Name)]
-public class WebImportEdgeCaseTests(PostgresFixture fixture)
+public class WebImportEdgeCaseTests(PostgresFixture fixture) : IAsyncLifetime
 {
+    private ModelFactory _store = null!;
+
+    public async Task InitializeAsync()
+    {
+        _store = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(_store).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     private sealed class StubExtractor(ExtractedPage page) : IClimbingExtractor
     {
         public Task<ExtractedPage> ExtractAsync(string text, IReadOnlyList<string> knownCrags, CancellationToken cancellationToken) =>
@@ -85,7 +98,7 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture)
 
     private static string Word(string prefix) => $"{prefix}{Guid.NewGuid():N}";
 
-    private WebImportRepository Repository() => new(fixture.ContextFactory());
+    private WebImportRepository Repository() => new(_store);
 
     private async Task<StagedImport> StageAsync(string text, ExtractedPage page)
     {
@@ -98,13 +111,15 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture)
         [new ExtractedCrag(crag, null, null, null, null)],
         [new ExtractedRoute(route, crag, null, system, null, null, null, null)]);
 
-    private async Task<long> CountryAsync(string name)
+    private int _next;
+
+    private async Task<string> CountryAsync(string name)
     {
-        await using var db = fixture.CreateContext();
-        var area = new Area { UserId = AppUser.DefaultId, Name = name, Kind = AreaKind.Country };
-        db.Areas.Add(area);
+        var key = (++_next).ToString();
+        await using var db = _store.CreateDbContext();
+        db.Nodes.Add(new Node { Id = $"area:{key}", UserId = AppUser.DefaultId, Type = "Area", Key = key, Name = name, Props = new JsonObject { ["kind"] = "country" }.ToJsonString() });
         await db.SaveChangesAsync();
-        return area.Id;
+        return $"area:{key}";
     }
 
     [Fact]
@@ -157,7 +172,7 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture)
     {
         var (country, region, place) = (Word("Country"), Word("Region"), Word("Place"));
 
-        async Task<long> CommitAsync(string areaName, long? parentId)
+        async Task<string> CommitAsync(string areaName, string? parentId)
         {
             var (crag, route) = (Word("Crag"), Word("Route"));
             var staged = await StageAsync($"{crag} {route}", Page(crag, route));
@@ -165,18 +180,19 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture)
             staged.Crags[0].NewAreaParentId = parentId;
             staged.Crags[0].NewAreaKind = parentId is null ? AreaKind.Country : null;
             await Repository().CommitAsync(staged.BatchId, staged.Crags);
-            await using var db = fixture.CreateContext();
-            return await db.Crags.Where(c => c.Name == crag).Select(c => c.AreaId).SingleAsync();
+            await using var db = _store.CreateDbContext();
+            return await db.NodeLinks.Where(l => l.RelType == "IN" && l.Source.Type == "Crag" && l.Source.Name == crag).Select(l => l.TargetId).SingleAsync();
         }
 
         var countryId = await CommitAsync(country, null);
         var regionId = await CommitAsync(region, countryId);
         var placeId = await CommitAsync(place, regionId);
 
-        await using var check = fixture.CreateContext();
-        Assert.Equal(AreaKind.Country, (await check.Areas.FindAsync(countryId))!.Kind);
-        Assert.Equal(AreaKind.Region, (await check.Areas.FindAsync(regionId))!.Kind);
-        Assert.Equal(AreaKind.Area, (await check.Areas.FindAsync(placeId))!.Kind);
+        await using var check = _store.CreateDbContext();
+        async Task<string?> KindAsync(string id) => (string?)JsonNode.Parse((await check.Nodes.SingleAsync(n => n.Id == id)).Props)!["kind"];
+        Assert.Equal("country", await KindAsync(countryId));
+        Assert.Equal("region", await KindAsync(regionId));
+        Assert.Equal("area", await KindAsync(placeId));
 
         Assert.Equal(regionId, await CommitAsync(region, countryId));
     }
@@ -188,9 +204,9 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture)
         var staged = await StageAsync($"{crag} {route}", Page(crag, route));
         staged.Crags[0].AreaId = await CountryAsync(Word("Country"));
         await Repository().CommitAsync(staged.BatchId, staged.Crags);
-        await using (var db = fixture.CreateContext())
+        await using (var db = _store.CreateDbContext())
         {
-            await db.Crags.Where(c => c.Name == crag).ExecuteUpdateAsync(u => u.SetProperty(c => c.UpdatedAt, DateTimeOffset.UtcNow.AddMinutes(1)));
+            await db.Nodes.Where(n => n.Type == "Crag" && n.Name == crag).ExecuteUpdateAsync(u => u.SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow.AddMinutes(1)));
         }
 
         var undo = await Repository().UndoAsync(staged.BatchId);
@@ -206,9 +222,9 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture)
         staged.Crags[0].NewAreaName = area;
         staged.Crags[0].NewAreaKind = AreaKind.Country;
         await Repository().CommitAsync(staged.BatchId, staged.Crags);
-        await using (var db = fixture.CreateContext())
+        await using (var db = _store.CreateDbContext())
         {
-            await db.Areas.Where(a => a.Name == area).ExecuteUpdateAsync(u => u.SetProperty(a => a.UpdatedAt, DateTimeOffset.UtcNow.AddMinutes(1)));
+            await db.Nodes.Where(n => n.Type == "Area" && n.Name == area).ExecuteUpdateAsync(u => u.SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow.AddMinutes(1)));
         }
 
         var undo = await Repository().UndoAsync(staged.BatchId);

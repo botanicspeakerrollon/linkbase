@@ -1,15 +1,29 @@
+using System.Text.Json.Nodes;
+using Linkbase.Core;
+using Linkbase.Core.Models;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
-using Linkbase.Core.Graph;
 using Linkbase.Domains.Climbing.Import.Web;
 using Microsoft.EntityFrameworkCore;
 
 namespace Linkbase.Tests;
 
+// The web import over the generic store. Each test gets a database of its own with the climbing model loaded and no records.
 [Trait("Category", "Database")]
 [Collection(PostgresCollection.Name)]
-public class WebImportTests(PostgresFixture fixture)
+public class WebImportTests(PostgresFixture fixture) : IAsyncLifetime
 {
+    private ModelFactory _store = null!;
+    private int _next;
+
+    public async Task InitializeAsync()
+    {
+        _store = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(_store).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     private static string Word() => Guid.NewGuid().ToString("N")[..12];
 
     private sealed class FakeExtractor(params ExtractedPage[] answers) : IClimbingExtractor
@@ -24,34 +38,56 @@ public class WebImportTests(PostgresFixture fixture)
         }
     }
 
-    private WebImportRepository Repository() => new(fixture.ContextFactory());
+    private WebImportRepository Repository() => new(_store);
 
     private WebImportService Service(IClimbingExtractor extractor) =>
         new(new PageTextFetcher(new HttpClient()), extractor, Repository());
 
-    private async Task<long> CreateCountryAsync(string name)
+    // Adds a record, and a link from it if given. Returns its node id.
+    private async Task<string> AddAsync(string type, string name, JsonObject? props = null, string? rel = null, string? target = null)
     {
-        await using var db = fixture.CreateContext();
-        var area = new Area { UserId = AppUser.DefaultId, Name = name, Kind = AreaKind.Country };
-        db.Areas.Add(area);
+        var key = (++_next).ToString();
+        var id = $"{type.ToLowerInvariant()}:{key}";
+        await using var db = _store.CreateDbContext();
+        db.Nodes.Add(new Node { Id = id, UserId = AppUser.DefaultId, Type = type, Key = key, Name = name, Props = (props ?? []).ToJsonString() });
         await db.SaveChangesAsync();
-        return area.Id;
+        if (rel is not null)
+        {
+            db.NodeLinks.Add(new NodeLink { SourceId = id, RelType = rel, TargetId = target! });
+            await db.SaveChangesAsync();
+        }
+
+        return id;
     }
 
-    private async Task<(long CragId, long RouteId)> CreateCragAndRouteAsync(string country, string crag, string route)
+    private Task<string> CreateCountryAsync(string name) => AddAsync("Area", name, new JsonObject { ["kind"] = "country" });
+
+    private async Task<(string CragId, string RouteId)> CreateCragAndRouteAsync(string country, string crag, string route)
     {
         var areaId = await CreateCountryAsync(country);
-        await using var db = fixture.CreateContext();
-        var row = new Route
-        {
-            UserId = AppUser.DefaultId,
-            Name = route,
-            Crag = new Crag { UserId = AppUser.DefaultId, Name = crag, AreaId = areaId },
-        };
-        db.Routes.Add(row);
-        await db.SaveChangesAsync();
-        return (row.CragId, row.Id);
+        var cragId = await AddAsync("Crag", crag, null, "IN", areaId);
+        return (cragId, await AddAsync("Route", route, null, "AT", cragId));
     }
+
+    private async Task<Node> NodeAsync(string type, string name)
+    {
+        await using var db = _store.CreateDbContext();
+        return await db.Nodes.AsNoTracking().SingleAsync(n => n.Type == type && n.Name == name);
+    }
+
+    private async Task<bool> ExistsAsync(string type, string name)
+    {
+        await using var db = _store.CreateDbContext();
+        return await db.Nodes.AnyAsync(n => n.Type == type && n.Name == name);
+    }
+
+    private async Task<string?> TargetAsync(string sourceId, string rel)
+    {
+        await using var db = _store.CreateDbContext();
+        return await db.NodeLinks.AsNoTracking().Where(l => l.SourceId == sourceId && l.RelType == rel).Select(l => l.TargetId).SingleOrDefaultAsync();
+    }
+
+    private static string Prop(Node node, string key) => (string)JsonNode.Parse(node.Props)![key]!;
 
     private static string Text(params string[] names) => string.Join("\n\n", names);
 
@@ -75,7 +111,7 @@ public class WebImportTests(PostgresFixture fixture)
         Assert.Equal(ImportStatus.Staged, staged.Status);
         Assert.Equal(route, staged.Crags.Single().Routes.Single().Name);
 
-        await using var db = fixture.CreateContext();
+        await using var db = _store.CreateDbContext();
         var payload = await db.ImportBatches.AsNoTracking().Where(b => b.Id == staged.BatchId).Select(b => b.RawPayload).SingleAsync();
         Assert.Contains(route, payload);
         Assert.DoesNotContain(secret, payload);
@@ -206,26 +242,29 @@ public class WebImportTests(PostgresFixture fixture)
         var summary = await Repository().CommitAsync(staged.BatchId, staged.Crags);
 
         Assert.Equal(new CommitSummary(0, 1, 0, 1, 0), summary);
-        await using var db = fixture.CreateContext();
-        var row = await db.Routes.AsNoTracking().Where(r => r.Name == route)
-            .Select(r => new { r.Id, r.Grade, r.GradeSystem, r.Description, r.ImportBatchId, Area = r.Crag.AreaId })
-            .SingleAsync();
-        Assert.Equal("VS 4c", row.Grade);
-        Assert.Equal(GradeSystem.UkTrad, row.GradeSystem);
-        Assert.Equal("My short summary.", row.Description);
+        var row = await NodeAsync("Route", route);
+        var props = JsonNode.Parse(row.Props)!;
+        Assert.Equal(("VS 4c", "uk_trad", "trad", 20, 1), ((string)props["grade"]!, (string)props["grade_system"]!, (string)props["discipline"]!, (int)props["length_m"]!, (int)props["pitches"]!));
+        Assert.Equal(GradeRanking.Rank(GradeSystem.UkTrad, "VS 4c"), (double?)props["grade_rank"]);
         Assert.Equal(staged.BatchId, row.ImportBatchId);
-        Assert.Equal(countryId, row.Area);
+        var cragNode = await NodeAsync("Crag", crag);
+        Assert.Equal(cragNode.Id, await TargetAsync(row.Id, "AT"));
+        Assert.Equal(countryId, await TargetAsync(cragNode.Id, "IN"));
 
-        var routeRef = await db.ExternalRefs.AsNoTracking().SingleAsync(r => r.EntityType == ExternalEntityType.Route && r.EntityId == row.Id);
-        Assert.Equal(DataSource.WebImport, routeRef.Source);
-        Assert.Equal(url, routeRef.Url);
+        await using var db = _store.CreateDbContext();
+        var routeRef = await db.ExternalRefs.AsNoTracking().SingleAsync(r => r.NodeId == row.Id);
+        Assert.Equal((DataSource.WebImport, url, "Route"), (routeRef.Source, routeRef.Url, routeRef.NodeType));
+
+        // The relationship counts the home page shows follow.
+        Assert.Equal(1, (await db.LinkDefinitions.SingleAsync(d => d.SourceType == "Route" && d.RelType == "AT")).Links);
+        Assert.Equal(1, (await db.LinkDefinitions.SingleAsync(d => d.SourceType == "Crag" && d.RelType == "IN")).Links);
 
         var rerun = await StageAsync(Text(crag, country, route, "VS 4c"), answer, url);
         Assert.Equal(StagedMatch.Existing, rerun.Crags.Single().Match);
         Assert.Equal(row.Id, rerun.Crags.Single().Routes.Single().Choice);
         var second = await Repository().CommitAsync(rerun.BatchId, rerun.Crags);
         Assert.Equal(new CommitSummary(0, 0, 1, 0, 1), second);
-        Assert.Equal(1, await db.Routes.CountAsync(r => r.Name == route));
+        Assert.Equal(1, await db.Nodes.CountAsync(n => n.Type == "Route" && n.Name == route));
     }
 
     [Fact]
@@ -251,10 +290,9 @@ public class WebImportTests(PostgresFixture fixture)
         var summary = await Repository().CommitAsync(staged.BatchId, staged.Crags);
 
         Assert.Equal(new CommitSummary(0, 1, 0, 1, 0), summary);
-        await using var db = fixture.CreateContext();
-        Assert.Equal("E1 5b", await db.Routes.AsNoTracking().Where(r => r.Name == renamed).Select(r => r.Grade).SingleAsync());
-        Assert.False(await db.Routes.AnyAsync(r => r.Name == skip));
-        Assert.False(await db.Crags.AnyAsync(c => c.Name == skippedCrag));
+        Assert.Equal("E1 5b", Prop(await NodeAsync("Route", renamed), "grade"));
+        Assert.False(await ExistsAsync("Route", skip));
+        Assert.False(await ExistsAsync("Crag", skippedCrag));
     }
 
     [Fact]
@@ -273,8 +311,7 @@ public class WebImportTests(PostgresFixture fixture)
         var choiceError = await Assert.ThrowsAsync<LinkbaseValidationException>(() => Repository().CommitAsync(ambiguous.BatchId, ambiguous.Crags));
         Assert.Contains("Choose a match", choiceError.Message);
 
-        await using var db = fixture.CreateContext();
-        Assert.False(await db.Crags.AnyAsync(c => c.Name == noArea || c.Name == similar));
+        Assert.False(await ExistsAsync("Crag", noArea) || await ExistsAsync("Crag", similar));
         Assert.Equal(existing.CragId, ambiguous.Crags.Single().Candidates.Single().Id);
     }
 
@@ -285,12 +322,12 @@ public class WebImportTests(PostgresFixture fixture)
         var (good, bad) = ($"Crag {Word()}", $"Crag {Word()}");
         var staged = await StageAsync(Text(good, bad), new ExtractedPage([], [new ExtractedCrag(good, null, null, null, null), new ExtractedCrag(bad, null, null, null, null)], []));
         staged.Crags[0].AreaId = country;
-        staged.Crags[1].AreaId = -1;
+        staged.Crags[1].AreaId = "area:missing";
 
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => Repository().CommitAsync(staged.BatchId, staged.Crags));
 
-        await using var db = fixture.CreateContext();
-        Assert.False(await db.Crags.AnyAsync(c => c.Name == good));
+        await using var db = _store.CreateDbContext();
+        Assert.False(await ExistsAsync("Crag", good));
         Assert.Equal(ImportStatus.Staged, await db.ImportBatches.AsNoTracking().Where(b => b.Id == staged.BatchId).Select(b => b.Status).SingleAsync());
     }
 
@@ -322,10 +359,9 @@ public class WebImportTests(PostgresFixture fixture)
         var summary = await Repository().CommitAsync(staged.BatchId, staged.Crags);
 
         Assert.Equal(1, summary.AreasCreated);
-        await using var db = fixture.CreateContext();
-        var area = await db.Areas.AsNoTracking().SingleAsync(a => a.Name == region);
-        Assert.Equal(parentId, area.ParentId);
-        Assert.Equal(AreaKind.Region, area.Kind);
+        var area = await NodeAsync("Area", region);
+        Assert.Equal(parentId, await TargetAsync(area.Id, "IN"));
+        Assert.Equal("region", Prop(area, "kind"));
 
         var (orphanRegion, orphanCrag) = ($"Region {Word()}", $"Crag {Word()}");
         var orphan = await StageAsync(Text(orphanRegion, orphanCrag), new ExtractedPage([], [new ExtractedCrag(orphanCrag, orphanRegion, null, null, null)], []));
@@ -356,10 +392,14 @@ public class WebImportTests(PostgresFixture fixture)
 
         Assert.Equal(new UndoSummary(1, 1, 1, []), undo with { Skipped = [] });
         Assert.Empty(undo.Skipped);
-        await using var db = fixture.CreateContext();
-        Assert.False(await db.Routes.AnyAsync(r => r.Name == route));
-        Assert.False(await db.Crags.AnyAsync(c => c.Name == crag));
-        Assert.False(await db.Areas.AnyAsync(a => a.Name == region));
+        await using var db = _store.CreateDbContext();
+        Assert.False(await ExistsAsync("Route", route));
+        Assert.False(await ExistsAsync("Crag", crag));
+        Assert.False(await ExistsAsync("Area", region));
+
+        // Every link went with its records, and the counts are back to nothing.
+        Assert.Empty(await db.NodeLinks.ToListAsync());
+        Assert.All(await db.LinkDefinitions.ToListAsync(), d => Assert.Equal(0, d.Links));
         Assert.False(await db.ExternalRefs.AnyAsync(r => r.ImportBatchId == staged.BatchId));
         Assert.Equal(ImportStatus.Undone, await db.ImportBatches.AsNoTracking().Where(b => b.Id == staged.BatchId).Select(b => b.Status).SingleAsync());
     }
@@ -368,44 +408,40 @@ public class WebImportTests(PostgresFixture fixture)
     public async Task Undo_keeps_a_route_with_an_ascent_and_everything_above_it_and_can_run_again()
     {
         var (staged, region, crag, route) = await CommitNewAsync();
-        await using var db = fixture.CreateContext();
-        var routeId = await db.Routes.AsNoTracking().Where(r => r.Name == route).Select(r => r.Id).SingleAsync();
-        var ascent = new Ascent { UserId = AppUser.DefaultId, RouteId = routeId, Date = new DateOnly(2020, 1, 1), DatePrecision = DatePrecision.Day, Style = AscentStyle.Lead, Source = DataSource.Manual };
-        db.Ascents.Add(ascent);
-        await db.SaveChangesAsync();
+        var routeId = (await NodeAsync("Route", route)).Id;
+        var ascent = await AddAsync("Ascent", route, new JsonObject { ["date"] = "2020-01-01", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual" }, "OF", routeId);
 
         var undo = await Repository().UndoAsync(staged.BatchId);
 
+        await using var db = _store.CreateDbContext();
         Assert.Equal(0, undo.RoutesDeleted);
         Assert.Contains(undo.Skipped, s => s.Contains(route) && s.Contains("1 ascent"));
         Assert.Contains(undo.Skipped, s => s.Contains(crag));
         Assert.Contains(undo.Skipped, s => s.Contains(region));
-        Assert.True(await db.Routes.AnyAsync(r => r.Id == routeId));
-        Assert.True(await db.ExternalRefs.AnyAsync(r => r.EntityType == ExternalEntityType.Route && r.EntityId == routeId));
+        Assert.True(await db.Nodes.AnyAsync(n => n.Id == routeId));
+        Assert.True(await db.ExternalRefs.AnyAsync(r => r.NodeId == routeId));
         Assert.Equal(ImportStatus.Committed, await db.ImportBatches.AsNoTracking().Where(b => b.Id == staged.BatchId).Select(b => b.Status).SingleAsync());
 
-        await db.Ascents.Where(a => a.Id == ascent.Id).ExecuteDeleteAsync();
+        await db.NodeLinks.Where(l => l.SourceId == ascent).ExecuteDeleteAsync();
+        await db.Nodes.Where(n => n.Id == ascent).ExecuteDeleteAsync();
         var again = await Repository().UndoAsync(staged.BatchId);
         Assert.Empty(again.Skipped);
-        Assert.False(await db.Routes.AnyAsync(r => r.Id == routeId));
+        Assert.False(await db.Nodes.AnyAsync(n => n.Id == routeId));
     }
 
     [Fact]
     public async Task Undo_keeps_a_row_edited_since_the_import()
     {
         var (staged, _, _, route) = await CommitNewAsync();
-        await using (var db = fixture.CreateContext())
+        await using (var db = _store.CreateDbContext())
         {
-            var row = await db.Routes.SingleAsync(r => r.Name == route);
-            row.Grade = "Changed";
-            await db.SaveChangesAsync();
+            await db.Nodes.Where(n => n.Type == "Route" && n.Name == route).ExecuteUpdateAsync(u => u.SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow.AddMinutes(1)));
         }
 
         var undo = await Repository().UndoAsync(staged.BatchId);
 
         Assert.Contains(undo.Skipped, s => s.Contains(route) && s.Contains("edited"));
-        await using var check = fixture.CreateContext();
-        Assert.True(await check.Routes.AnyAsync(r => r.Name == route));
+        Assert.True(await ExistsAsync("Route", route));
     }
 
     [Fact]
@@ -420,8 +456,8 @@ public class WebImportTests(PostgresFixture fixture)
         var undo = await Repository().UndoAsync(staged.BatchId);
 
         Assert.Empty(undo.Skipped);
-        await using var db = fixture.CreateContext();
-        Assert.True(await db.Routes.AnyAsync(r => r.Id == existing.RouteId));
+        await using var db = _store.CreateDbContext();
+        Assert.True(await db.Nodes.AnyAsync(n => n.Id == existing.RouteId));
         Assert.False(await db.ExternalRefs.AnyAsync(r => r.ImportBatchId == staged.BatchId));
     }
 
@@ -446,7 +482,6 @@ public class WebImportTests(PostgresFixture fixture)
         var routes = staged.Crags.SelectMany(c => c.Routes).ToList();
         Assert.Equal(5, routes.Count);
         Assert.DoesNotContain(routes, r => r.Grade == "E9 7a");
-        Assert.DoesNotContain(routes, r => r.Summary == "takes the obvious crack for 20m");
         Assert.Equal(4, staged.Warnings.Count);
     }
 }

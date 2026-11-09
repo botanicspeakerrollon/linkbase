@@ -1,6 +1,5 @@
 @page "/import/{BatchId:long}"
 @inject WebImportRepository Repository
-@inject AreaRepository Areas
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 
@@ -66,16 +65,16 @@ else
                     <MudChip T="string" Size="Size.Small" Color="@MatchColor(crag.Match)">@crag.Match</MudChip>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="long" Value="crag.Choice" ValueChanged="@(choice => ChooseCragAsync(crag, choice))" Label="Use" Disabled="@(!crag.Include)"
+                    <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Value="crag.Choice" ValueChanged="@(choice => ChooseCragAsync(crag, choice))" Label="Use" Disabled="@(!crag.Include)"
                                ToStringFunc="@(choice => ChoiceLabel(crag, choice))">
                         @if (crag.Match == StagedMatch.Ambiguous)
                         {
-                            <MudSelectItem T="long" Value="StagedRow.Undecided">Choose…</MudSelectItem>
+                            <MudSelectItem T="string" Value="StagedRow.Undecided">Choose…</MudSelectItem>
                         }
-                        <MudSelectItem T="long" Value="StagedRow.CreateNew">Create a new crag</MudSelectItem>
+                        <MudSelectItem T="string" Value="StagedRow.CreateNew">Create a new crag</MudSelectItem>
                         @foreach (var candidate in crag.Candidates)
                         {
-                            <MudSelectItem T="long" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
+                            <MudSelectItem T="string" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
@@ -83,7 +82,7 @@ else
                 @if (crag.Include && crag.Choice == StagedRow.CreateNew)
                 {
                     <MudItem xs="12" md="4">
-                        <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="AreaOption" Value="@AreaValue(crag)" ValueChanged="@(area => SetArea(crag, area))" Label="Area" Clearable="true"
+                        <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="AreaChoice" Value="@AreaValue(crag)" ValueChanged="@(area => SetArea(crag, area))" Label="Area" Clearable="true"
                                          SearchFunc="SearchAreasAsync" ToStringFunc="@(a => a?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true"
                                          HelperText="@AreaHelp(crag)">
                             <ItemTemplate Context="option">@option.Path</ItemTemplate>
@@ -136,23 +135,22 @@ else
                         </TemplateColumn>
                         <PropertyColumn Property="x => x.LengthM" Title="m" />
                         <PropertyColumn Property="x => x.Pitches" Title="Pitches" />
-                        <PropertyColumn Property="x => x.Summary" Title="Summary" />
                         <TemplateColumn Title="Match" Editable="false">
                             <CellTemplate>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                                     <MudChip T="string" Size="Size.Small" Color="@MatchColor(context.Item.Match)">@context.Item.Match</MudChip>
                                     @if (context.Item.Candidates.Count > 0)
                                     {
-                                        <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="long" @bind-Value="context.Item.Choice" Dense="true" Style="min-width: 11rem"
+                                        <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" @bind-Value="context.Item.Choice" Dense="true" Style="min-width: 11rem"
                                                    ToStringFunc="@(choice => ChoiceLabel(context.Item, choice))">
                                             @if (context.Item.Match == StagedMatch.Ambiguous)
                                             {
-                                                <MudSelectItem T="long" Value="StagedRow.Undecided">Choose…</MudSelectItem>
+                                                <MudSelectItem T="string" Value="StagedRow.Undecided">Choose…</MudSelectItem>
                                             }
-                                            <MudSelectItem T="long" Value="StagedRow.CreateNew">Create new</MudSelectItem>
+                                            <MudSelectItem T="string" Value="StagedRow.CreateNew">Create new</MudSelectItem>
                                             @foreach (var candidate in context.Item.Candidates)
                                             {
-                                                <MudSelectItem T="long" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
+                                                <MudSelectItem T="string" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
                                             }
                                         </MudSelect>
                                     }
@@ -184,7 +182,6 @@ else
     private bool _loaded;
     private bool _saving;
     private string? _error;
-    private readonly Dictionary<long, string> _areaNames = [];
     private readonly List<BreadcrumbItem> _crumbs = [new("Import", "/import"), new("Review", null, disabled: true)];
 
     protected override async Task OnParametersSetAsync()
@@ -203,29 +200,29 @@ else
     private static string CandidateLabel(MatchCandidate candidate) =>
         candidate.Detail is null ? candidate.Name : $"{candidate.Name} ({candidate.Detail})";
 
-    private static string ChoiceLabel(StagedRow row, long choice) => choice switch
+    private static string ChoiceLabel(StagedRow row, string choice) => choice switch
     {
         StagedRow.Undecided => "Choose…",
         StagedRow.CreateNew => "Create new",
         _ => row.Candidates.FirstOrDefault(c => c.Id == choice) is { } candidate ? CandidateLabel(candidate) : "",
     };
 
-    private async Task ChooseCragAsync(StagedCrag crag, long choice)
+    private async Task ChooseCragAsync(StagedCrag crag, string choice)
     {
         crag.Choice = choice;
         await Repository.RematchRoutesAsync(BatchId, _import!.SourceUrl, crag);
     }
 
-    private static AreaOption? AreaValue(StagedCrag crag)
+    private static AreaChoice? AreaValue(StagedCrag crag)
     {
         var id = crag.AreaId ?? crag.NewAreaParentId;
-        return id is { } areaId ? new AreaOption(areaId, crag.AreaLabel ?? "", crag.AreaLabel ?? "") : null;
+        return id is { } areaId ? new AreaChoice(areaId, crag.AreaLabel ?? "", crag.AreaLabel ?? "") : null;
     }
 
     private static string AreaHelp(StagedCrag crag) =>
         crag.ExtractedArea is { } area ? $"The text says: {area}" : "The text doesn't say";
 
-    private static void SetArea(StagedCrag crag, AreaOption? area)
+    private static void SetArea(StagedCrag crag, AreaChoice? area)
     {
         crag.AreaLabel = area?.Name;
         if (string.IsNullOrWhiteSpace(crag.NewAreaName))
@@ -258,8 +255,8 @@ else
     private static void SetNewAreaIsCountry(StagedCrag crag, bool isCountry) =>
         crag.NewAreaKind = isCountry ? AreaKind.Country : null;
 
-    private async Task<IEnumerable<AreaOption>> SearchAreasAsync(string text, CancellationToken cancellationToken) =>
-        await Areas.SearchAsync(text, cancellationToken);
+    private async Task<IEnumerable<AreaChoice>> SearchAreasAsync(string text, CancellationToken cancellationToken) =>
+        await Repository.SearchAreasAsync(text, cancellationToken);
 
     private async Task CommitAsync()
     {

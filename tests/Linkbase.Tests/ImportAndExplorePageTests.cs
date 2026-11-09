@@ -1,5 +1,6 @@
 using System.Net;
 using Bunit;
+using System.Text.Json.Nodes;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
@@ -19,6 +20,21 @@ namespace Linkbase.Tests;
 [Collection(PostgresCollection.Name)]
 public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 {
+    private ModelFactory? _store;
+
+    // The climbing model in a database of its own, which the page and the repository read instead of the shared one.
+    private async Task<ModelFactory> StoreAsync()
+    {
+        if (_store is null)
+        {
+            _store = await ClimbingStore.CreateAsync(Fixture);
+            Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(_store);
+            Services.AddSingleton<WebImportRepository>();
+        }
+
+        return _store;
+    }
+
     private void UseExtractor(Func<string, CancellationToken, Task<ExtractedPage>> answer, Func<HttpResponseMessage>? page = null)
     {
         Services.AddSingleton<IClimbingExtractor>(new StubExtractor(answer));
@@ -128,20 +144,14 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 
     private async Task<long> CommitAsync(string crag, string route, string country)
     {
-        await using (var db = Fixture.CreateContext())
-        {
-            db.Areas.Add(new Area { UserId = AppUser.DefaultId, Name = country, Kind = AreaKind.Country });
-            await db.SaveChangesAsync();
-        }
+        var store = await StoreAsync();
+        var areaId = await ClimbingStore.AddCountryAsync(store, country);
 
         var service = Services.GetRequiredService<WebImportService>();
         var repository = Services.GetRequiredService<WebImportRepository>();
         var batch = await service.ExtractFromTextAsync($"{crag}\n{route}", null, null, CancellationToken.None);
         var staged = (await repository.LoadStagedAsync(batch))!;
-        await using (var db = Fixture.CreateContext())
-        {
-            staged.Crags[0].AreaId = await db.Areas.Where(a => a.Name == country).Select(a => a.Id).SingleAsync();
-        }
+        staged.Crags[0].AreaId = areaId;
 
         await repository.CommitAsync(batch, staged.Crags);
         return batch;
@@ -174,16 +184,10 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
         var (crag, route, country) = (Unique("Crag"), Unique("Route"), Unique("Country"));
         UseExtractor((_, _) => Task.FromResult(Page(crag, route)));
         await CommitAsync(crag, route, country);
-        await using (var db = Fixture.CreateContext())
+        await using (var db = _store!.CreateDbContext())
         {
-            var routeId = await db.Routes.Where(r => r.Name == route).Select(r => r.Id).SingleAsync();
-            await Services.GetRequiredService<AscentRepository>().CreateAsync(new AscentInput
-            {
-                RouteId = routeId,
-                Date = new DateOnly(2020, 1, 1),
-                DatePrecision = DatePrecision.Day,
-                Style = AscentStyle.Lead,
-            });
+            var routeId = await db.Nodes.Where(n => n.Type == "Route" && n.Name == route).Select(n => n.Id).SingleAsync();
+            await ClimbingStore.AddAsync(_store, "Ascent", route, new JsonObject { ["date"] = "2020-01-01", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual" }, "OF", routeId);
         }
 
         var cut = RenderPage<ImportPage>();
@@ -235,8 +239,26 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 [Collection(PostgresCollection.Name)]
 public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
 {
+    private ModelFactory? _store;
+
+    // The climbing model in a database of its own, which the page and the repository read instead of the shared one.
+    private async Task<ModelFactory> StoreAsync()
+    {
+        if (_store is null)
+        {
+            _store = await ClimbingStore.CreateAsync(Fixture);
+            Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(_store);
+            Services.AddSingleton<WebImportRepository>();
+        }
+
+        return _store;
+    }
+
+    private async Task<ClimbingStore.Place> PlaceAsync() => await ClimbingStore.AddPlaceAsync(await StoreAsync());
+
     private async Task<long> StageAsync(string text, ExtractedPage page, string? url = null)
     {
+        await StoreAsync();
         var service = new WebImportService(
             new PageTextFetcher(new HttpClient()),
             new StubExtractor((_, _) => Task.FromResult(page)),
@@ -282,7 +304,7 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
     [Fact]
     public async Task A_new_crag_can_be_given_a_new_area_and_added()
     {
-        var s = await SeedAsync();
+        var s = await PlaceAsync();
         var (crag, route, area) = (Unique("Crag"), Unique("Route"), Unique("New area"));
         var batch = await StageAsync($"{crag}\n{route}\n{s.Country}", Page(crag, s.Country, route));
         var cut = RenderPage<StagePage>(p => p.Add(x => x.BatchId, batch));
@@ -302,10 +324,13 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
 
         Told("Added 1 new route and 1 new crag.");
         NavigatedTo("/import");
-        await using var db = Fixture.CreateContext();
-        var saved = await db.Crags.AsNoTracking().Where(c => c.Name == crag).Select(c => new { Area = c.Area.Name, c.Area.ParentId }).SingleAsync();
+        await using var db = _store!.CreateDbContext();
+        var saved = await db.NodeLinks.AsNoTracking()
+            .Where(l => l.RelType == "IN" && l.Source.Type == "Crag" && l.Source.Name == crag)
+            .Select(l => new { Area = l.Target.Name, AreaId = l.TargetId })
+            .SingleAsync();
         Assert.Equal(area, saved.Area);
-        Assert.Equal(s.AreaId, saved.ParentId);
+        Assert.Equal(s.AreaId, await db.NodeLinks.AsNoTracking().Where(l => l.RelType == "IN" && l.SourceId == saved.AreaId).Select(l => l.TargetId).SingleAsync());
 
         var reviewed = RenderPage<StagePage>(p => p.Add(x => x.BatchId, batch));
         Sees(reviewed, "so there's nothing left to review");
@@ -314,7 +339,7 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
     [Fact]
     public async Task A_new_area_name_set_first_keeps_the_area_chosen_after_as_its_parent()
     {
-        var s = await SeedAsync();
+        var s = await PlaceAsync();
         var (crag, area) = (Unique("Crag"), Unique("New area"));
         var batch = await StageAsync(crag, Page(crag, null));
         var cut = RenderPage<StagePage>(p => p.Add(x => x.BatchId, batch));
@@ -322,14 +347,15 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
 
         var newArea = cut.FindComponents<MudTextField<string>>().First(f => f.Instance.Label == "Or a new area named");
         await SetAsync(cut, newArea.Instance.ValueChanged, area);
-        var picker = cut.FindComponent<MudAutocomplete<AreaOption>>();
-        await SetAsync(cut, picker.Instance.ValueChanged, new AreaOption(s.AreaId, s.Country, s.Country));
+        var picker = cut.FindComponent<MudAutocomplete<AreaChoice>>();
+        await SetAsync(cut, picker.Instance.ValueChanged, new AreaChoice(s.AreaId, s.Country, s.Country));
 
         Press(cut, "Add to logbook");
 
         Told("Added");
-        await using var db = Fixture.CreateContext();
-        Assert.Equal(s.AreaId, await db.Crags.AsNoTracking().Where(c => c.Name == crag).Select(c => c.Area.ParentId).SingleAsync());
+        await using var db = _store!.CreateDbContext();
+        var newAreaId = await db.NodeLinks.AsNoTracking().Where(l => l.RelType == "IN" && l.Source.Type == "Crag" && l.Source.Name == crag).Select(l => l.TargetId).SingleAsync();
+        Assert.Equal(s.AreaId, await db.NodeLinks.AsNoTracking().Where(l => l.RelType == "IN" && l.SourceId == newAreaId).Select(l => l.TargetId).SingleAsync());
     }
 
     [Fact]
@@ -353,17 +379,20 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
         Press(cut, "Add to logbook");
 
         Told("Added");
-        await using var db = Fixture.CreateContext();
-        var saved = await db.Crags.AsNoTracking().Where(c => c.Name == crag).Select(c => new { c.Area.Name, c.Area.Kind, c.Area.ParentId }).SingleAsync();
+        await using var db = _store!.CreateDbContext();
+        var saved = await db.NodeLinks.AsNoTracking()
+            .Where(l => l.RelType == "IN" && l.Source.Type == "Crag" && l.Source.Name == crag)
+            .Select(l => new { l.Target.Id, l.Target.Name, l.Target.Props })
+            .SingleAsync();
         Assert.Equal(country, saved.Name);
-        Assert.Equal(AreaKind.Country, saved.Kind);
-        Assert.Null(saved.ParentId);
+        Assert.Equal("country", (string?)JsonNode.Parse(saved.Props)!["kind"]);
+        Assert.False(await db.NodeLinks.AnyAsync(l => l.RelType == "IN" && l.SourceId == saved.Id));
     }
 
     [Fact]
     public async Task The_country_choice_goes_once_a_parent_is_chosen()
     {
-        var s = await SeedAsync();
+        var s = await PlaceAsync();
         var crag = Unique("Crag");
         var batch = await StageAsync(crag, Page(crag, null));
         var cut = RenderPage<StagePage>(p => p.Add(x => x.BatchId, batch));
@@ -373,7 +402,7 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
         await SetAsync(cut, newArea.Instance.ValueChanged, Unique("New area"));
         Sees(cut, "It's a country");
 
-        await SetAsync(cut, cut.FindComponent<MudAutocomplete<AreaOption>>().Instance.ValueChanged, new AreaOption(s.AreaId, s.Country, s.Country));
+        await SetAsync(cut, cut.FindComponent<MudAutocomplete<AreaChoice>>().Instance.ValueChanged, new AreaChoice(s.AreaId, s.Country, s.Country));
 
         DoesNotSee(cut, "It's a country");
     }
@@ -395,12 +424,12 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
     [Fact]
     public async Task An_ambiguous_crag_must_be_chosen_and_its_routes_rematch()
     {
-        var s = await SeedAsync();
-        var twin = await SeedAsync();
-        await using (var db = Fixture.CreateContext())
+        var s = await PlaceAsync();
+        var twin = await PlaceAsync();
+        await using (var db = _store!.CreateDbContext())
         {
-            await db.Crags.Where(c => c.Id == twin.CragId).ExecuteUpdateAsync(u => u.SetProperty(c => c.Name, s.Crag).SetProperty(c => c.UpdatedAt, DateTimeOffset.UtcNow));
-            await db.Routes.Where(r => r.Id == twin.RouteId).ExecuteUpdateAsync(u => u.SetProperty(r => r.Name, s.Route + " two").SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
+            await db.Nodes.Where(n => n.Id == twin.CragId).ExecuteUpdateAsync(u => u.SetProperty(n => n.Name, s.Crag).SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow));
+            await db.Nodes.Where(n => n.Id == twin.RouteId).ExecuteUpdateAsync(u => u.SetProperty(n => n.Name, s.Route + " two").SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow));
         }
 
         var batch = await StageAsync($"{s.Crag}\n{s.Route}", Page(s.Crag, null, s.Route));
@@ -408,7 +437,7 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
         Sees(cut, "Ambiguous");
         Sees(cut, "Choose…");
 
-        var select = cut.FindComponents<MudSelect<long>>().First(f => f.Instance.Label == "Use");
+        var select = cut.FindComponents<MudSelect<string>>().First(f => f.Instance.Label == "Use");
         await SetAsync(cut, select.Instance.ValueChanged, s.CragId);
 
         Sees(cut, "Existing");

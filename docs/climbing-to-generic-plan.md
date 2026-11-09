@@ -17,7 +17,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
 | Later features G7, G8, G9 | Done: forms that create linked records, sorting and filtering, staged imports |
 | 2. Climbing model file and converter | Done: `models/climbing/model.json`, `climbing to-generic` and `climbing verify-generic`. Tested on made-up data; **not yet run on the real logbook**, which needs your database. See [models](models.md#climbing-in-the-generic-store) |
 | 3. Module behaviour on the generic store | Done: `ClimbingRecordHook` keeps `grade_rank`, names ascents after their routes and rebuilds trips; `GenericTripService` rebuilds the `Trip` records. A test checks that its trips match the typed tables' |
-| 4. Port the module pages | In progress: Browse and the typed Add ascent page are gone, the Logbook reads the generic store (`LogbookRepository`; its Add button is the generic form), and Insights reads it through the `climbing_*` views (migration `ClimbingInsightsOnGenericStore`). Web import is still on the typed tables |
+| 4. Port the module pages | Done: Browse and the typed Add ascent page are gone, the Logbook reads the generic store (`LogbookRepository`; its Add button is the generic form), Insights reads it through the `climbing_*` views (migration `ClimbingInsightsOnGenericStore`), and web import matches, commits and undoes on Area, Crag and Route records (`WebImportRepository`, keeping its own review screen). A route's summary is no longer kept, because the model has no description field |
 | 5. Imports | Done: `GenericAscentImportService` loads the UKC and Mountain Project parsers' rows into the generic store as one undoable batch per file. `climbing import <model> ukc\|mp\|all [--fresh]` runs it, and a test checks it gives what the typed importer gives. `climbing verify-generic <model> --imported` checks an imported store against the typed tables, matching trips by key because they're numbered afresh. Run on the real logbook: matches. The typed importer stays until step 6 |
 | 6. Switch | Not started. Needs your go-ahead |
 
@@ -35,7 +35,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
    (`/data/{Type}/{Key}`).
 2. Run `climbing to-generic climbing-generic` against your own logbook and read what `verify-generic` says. That shows whether
    the real data has anything the made-up data doesn't, such as a value outside a choice field's options. Result: success. 
-**Until step 6, the Logbook shows the generic store only.** On the real model, whose data is still in the typed tables, it says it has no ascents. Import (web import) still uses the typed tables, so on "Climbing (generic)" it is empty or writes to the wrong store. Insights, like the Logbook, is empty on the real model until step 6.
+**Until step 6, the Logbook shows the generic store only.** On the real model, whose data is still in the typed tables, it says it has no ascents. Insights and web import, like the Logbook, read and write the generic store, so on the real model they are empty or write to the generic store until step 6.
 
 3. Step 4, one page at a time, each leaving the app working: Logbook and Add ascent first, since the generic list (G8) and form
    (G7) can replace them, then Insights, then web import onto generic staging (G9). Add `Climbing` to the generic model's
