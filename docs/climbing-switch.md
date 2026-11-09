@@ -19,7 +19,19 @@ here has been run against your real database yet: the sandbox I work in can't re
 Copy the new folder in `backups/` off this PC. The rehearsal restores it into a throwaway container and must say
 `Recovery works.` Run it from `main`, which still knows the typed tables.
 
-## 2. Copy the logbook into the generic store
+## 2. Bring the database up to date
+
+The copy needs the generic store's tables and the views Insights reads, and the real database only has the migrations you've
+applied so far. This changes the real database, adding tables and views and never removing any, so it comes after the backup:
+
+```powershell
+dotnet ef database update --project src/Linkbase
+```
+
+(`model migrate` does the same for every model, including the sample databases.) Skip it only if you know it's current:
+`dotnet ef migrations list --project src/Linkbase` marks pending ones.
+
+## 3. Copy the logbook into the generic store
 
 On `main`, with the app stopped (`dotnet run` holds the Debug build open, so stop it or use `-c Release`):
 
@@ -32,20 +44,20 @@ target is the database the typed tables are in. The command copies every record,
 then checks the copy against the typed tables, and prints `... matches the typed tables.` If it prints differences instead, stop
 and tell me what it says. It only reads the typed tables and can be repeated: each run replaces the generic store.
 
-Until step 4 the Explore page will probably show records twice, once from each side, because its views still read both. The Logbook,
+Until step 5 the Explore page will probably show records twice, once from each side, because its views still read both. The Logbook,
 Insights and web import already read only the generic store. Open them and look at your own data.
 
 Import batches made before this don't carry over. Undoing a web import made before the switch will no longer take its rows
 back, because the copy doesn't mark them as that batch's. Imports from now on can be undone as before.
 
-## 3. Check it
+## 4. Check it
 
 - Logbook: the number of ascents matches what you had, and a few you know well look right.
 - Insights: the trips and partners tabs have your history.
 - A trip: **Explore** one and look at its ascents.
 - Optional: `dotnet run --project src/Linkbase -- climbing verify-generic climbing` repeats the check.
 
-## 4. Take the typed tables away
+## 5. Take the typed tables away
 
 Back up once more (`./scripts/backup-db.ps1`), then, with the app stopped:
 
@@ -55,14 +67,14 @@ dotnet ef database update --project src/Linkbase
 ```
 
 The migration is `SwitchClimbingToGenericStore`. It **can't be reversed**: its `Down` refuses, and the way back is restoring
-the backup you just took. Before it changes anything it checks that each typed table that has rows has records of its type in
-the generic store, and that old external ids have new ones. If either is missing it stops with a message saying to run step 2.
+the backup you just took. Before it changes anything it checks that the generic store holds at least as many records of each type as the
+typed tables, and at least as many external ids as the old ones. If either is short it stops with a message saying to run step 3.
 Then it points the graph views at the generic store only and drops the typed tables, their views and the old external id
 columns.
 
 If you run `model migrate` instead, it applies to every model, including the sample databases. That's harmless for them.
 
-## 5. Afterwards
+## 6. Afterwards
 
 ```powershell
 ./scripts/rehearse-recovery.ps1
@@ -77,5 +89,5 @@ climbing_generic"`, and remove its entry from `appsettings.Development.json`.
 
 ## If something goes wrong
 
-- Restore the backup: [operations](operations.md#restoring). Nothing in steps 1 to 3 changes the typed tables.
+- Restore the backup: [operations](operations.md#restoring). Nothing before step 5 changes the typed tables, and step 2 only adds to the database.
 - The migration runs in one transaction, so a failure part-way leaves the database as it was.
