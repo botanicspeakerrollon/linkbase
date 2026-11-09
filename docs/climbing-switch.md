@@ -6,8 +6,8 @@ Step 6 of [the plan](climbing-to-generic-plan.md). Your real logbook is still in
 The code for the second half is on the branch `climbing-generic-step6-switch`, not on `main`, so that nothing drops a table
 before the data has been copied. Its migration also refuses to run until the copy is there (see below).
 
-**The order matters.** Do the steps in sequence, on this PC, with the app stopped except where a step says otherwise. Nothing
-here has been run against your real database yet: the sandbox I work in can't reach it.
+**The order matters.** Do the steps in sequence, on this PC, with the app stopped except where a step says otherwise. This
+has now been run once, on 2026-11-09, so what follows is the record of how, and the way to repeat it.
 
 ## 1. Back up and prove the backup works
 
