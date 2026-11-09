@@ -1,0 +1,46 @@
+id,name,kind,parent
+gb,Great Britain,country,
+fr,France,country,
+es,Spain,country,
+it,Italy,country,
+us,United States,country,
+gr,Greece,country,
+peak,Peak District,region,gb
+lakes,Lake District,region,gb
+wales,Snowdonia,region,gb
+south,South West England,region,gb
+scot,Scottish Highlands,region,gb
+yorks,Yorkshire Dales,region,gb
+ceuse,Ceuse,region,fr
+font,Fontainebleau,region,fr
+cham,Chamonix,region,fr
+cat,Catalonia,region,es
+and,Andalucia,region,es
+mall,Mallorca,region,es
+dol,Dolomites,region,it
+fin,Finale Ligure,region,it
+ut,Utah,region,us
+ca,California,region,us
+kal,Kalymnos,region,gr
+stan,Stanage,area,peak
+burb,Burbage,area,peak
+froggatt,Froggatt,area,peak
+gogarth,Gogarth,area,wales
+llanb,Llanberis Pass,area,wales
+gimmer,Langdale,area,lakes
+borrow,Borrowdale,area,lakes
+portland,Portland,area,south
+swanage,Swanage,area,south
+cheddar,Cheddar Gorge,area,south
+cairn,Cairngorms,area,scot
+skye,Isle of Skye,area,scot
+malham,Malham,area,yorks
+kilnsey,Kilnsey,area,yorks
+siurana,Siurana,area,cat
+margalef,Margalef,area,cat
+chulilla,Chulilla,area,and
+sapo,El Chorro,area,and
+moab,Moab,area,ut
+josh,Joshua Tree,area,ca
+bleau3,Bas Cuvier,area,font
+mont,Mont Aigu,area,font

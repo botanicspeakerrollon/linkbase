@@ -1,0 +1,1556 @@
+id,name,date,date_precision,style,style_raw,notes,my_rating,source,route,partner
+a1,Sleepy Direct,2016-03-07,day,second,Seconded,Windy belay,4,manual,r48,
+a2,Dancing Arete,2016-03-07,day,onsight,Onsight,Greasy start,1,csv,r44,
+a3,Broken Ramp,2016-03-11,day,second,Seconded,,3,manual,r206,pt9
+a4,Sleepy Ramp,2016-03-11,day,onsight,Onsight,,3,manual,r200,pt9
+a5,Silent Edge,2016-03-01,month,onsight,Onsight,,3,csv,r203,pt9
+a6,Pale Direct,2016-03-12,day,top_rope,Top rope,,,manual,r196,pt3
+a7,Golden Route,2016-03-01,month,onsight,Onsight,Rain at the top,,csv,r205,pt3
+a8,Sleepy Ramp,2016-03-12,day,onsight,Onsight,,,csv,r200,pt3
+a9,Crimson Nose,2016-03-13,day,onsight,Onsight,,,ukc,r120,pt5
+a10,Shattered Nose,2016-03-13,day,lead,Led,,4,ukc,r117,pt5
+a11,Crimson Nose,2016-03-01,month,lead,Led,,4,manual,r120,
+a12,Lonely Traverse,2016-03-01,month,onsight,Onsight,,,ukc,r111,pt9
+a13,Amber Face,2016-06-02,day,second,Seconded,Great climbing,3,ukc,r130,pt10
+a14,Bitter Pillar,2016-06-02,day,flash,Flash,,,ukc,r131,pt10
+a15,Gentle Corner,2016-06-01,month,onsight,Onsight,,,ukc,r146,pt5
+a16,Golden Groove,2016-06-01,month,lead,Led,,,manual,r142,pt5
+a17,Broken Route,2016-06-03,day,onsight,Onsight,,1,ukc,r32,pt4
+a18,Silent Traverse,2016-06-03,day,lead,Led,,4,ukc,r28,
+a19,Bitter Wall,2016-06-15,day,lead,Led,,2,manual,r213,
+a20,Northern Ramp,2016-06-15,day,lead,Led,,,manual,r211,
+a21,Gentle Crack,2016-06-15,day,lead,Led,,5,ukc,r208,
+a22,Rusty Route,2016-06-16,day,second,Seconded,Great climbing,,csv,r217,pt7
+a23,Dancing Corner,2016-06-16,day,redpoint,Redpoint,,2,ukc,r216,pt7
+a24,Wild Rib,2016-06-16,day,second,Seconded,,4,ukc,r207,pt7
+a25,Velvet Rib,2016-06-22,day,second,Seconded,Crowded,,manual,r43,pt7
+a26,Pale Route,2016-06-22,day,redpoint,Redpoint,,4,csv,r39,pt7
+a27,Broken Buttress,2016-07-05,day,onsight,Onsight,,,csv,r286,pt6
+a28,Iron Crack,2016-07-05,day,send,Send,,4,ukc,r280,pt6
+a29,Crooked Pillar,2016-07-06,day,onsight,Onsight,Rain at the top,,ukc,r252,
+a30,Crooked Groove,2016-07-06,day,onsight,Onsight,,,ukc,r251,pt3
+a31,Iron Crack,2016-07-07,day,send,Send,Would repeat,4,ukc,r280,
+a32,Hollow Gully,2016-07-07,day,send,Send,,4,ukc,r276,
+a33,Pale Buttress,2016-07-08,day,send,Send,,,ukc,r285,pt2
+a34,Sleepy Nose,2016-07-08,day,send,Send,,4,ukc,r275,pt2
+a35,Broken Buttress,2016-07-09,day,send,Send,,,csv,r286,pt9
+a36,Wandering Arete,2016-07-09,day,send,Send,,,ukc,r281,
+a37,Silent Route,2016-07-10,day,send,Send,Would repeat,4,ukc,r279,pt9
+a38,Sleepy Groove,2016-07-10,day,onsight,Onsight,Rain at the top,3,manual,r282,pt9
+a39,Amber Corner,2016-07-11,day,send,Send,,,ukc,r277,pt5
+a40,Hollow Gully,2016-07-11,day,send,Send,,,csv,r276,pt5
+a41,Crooked Pillar,2016-07-12,day,hangdog,Hangdog,Cold fingers,,ukc,r252,
+a42,Wandering Route,2016-07-12,day,lead,Led,,,csv,r253,
+a43,Dancing Route,2016-07-13,day,send,Send,,2,manual,r278,pt11
+a44,Hollow Gully,2016-07-13,day,send,Send,Windy belay,,ukc,r276,pt11
+a45,Hollow Gully,2016-07-14,day,onsight,Onsight,,,ukc,r276,
+a46,Sleepy Groove,2016-07-14,day,send,Send,,4,ukc,r282,
+a47,Gentle Gully,2016-07-12,day,lead,Led,,1,manual,r163,pt4
+a48,Broken Edge,2016-07-01,month,onsight,Onsight,,4,ukc,r165,pt4
+a49,Rusty Arete,2016-07-20,day,redpoint,Redpoint,,5,csv,r197,pt4
+a50,Quiet Flake,2016-07-20,day,lead,Led,,3,manual,r204,pt4
+a51,Hidden Arete,2016-08-14,day,lead,Led,,1,ukc,r55,pt6
+a52,Golden Route,2016-08-25,day,second,Seconded,Windy belay,2,manual,r205,pt6
+a53,Broken Ramp,2016-08-25,day,lead,Led,Greasy start,,ukc,r206,pt6
+a54,Sleepy Ramp,2016-08-25,day,onsight,Onsight,,,manual,r200,pt6
+a55,Rusty Arete,2016-08-25,day,flash,Flash,,1,ukc,r197,pt6
+a56,Sleepy Ramp,2016-08-01,month,second,Seconded,Soft for the grade,,manual,r200,
+a57,Rusty Arete,2016-08-26,day,top_rope,Top rope,,,csv,r197,
+a58,Rusty Ramp,2016-08-26,day,onsight,Onsight,,,csv,r198,
+a59,Silent Edge,2016-08-26,day,top_rope,Top rope,Windy belay,,csv,r203,
+a60,Wandering Gully,2016-08-27,day,second,Seconded,Cold fingers,,manual,r195,pt4
+a61,Wild Face,2016-08-27,day,lead,Led,,3,csv,r199,pt4
+a62,Broken Ramp,2016-08-27,day,onsight,Onsight,Would repeat,3,manual,r206,pt4
+a63,Rusty Ramp,2016-08-27,day,top_rope,Top rope,,,ukc,r198,pt4
+a64,Broken Nose,2016-09-03,day,top_rope,Top rope,Greasy start,3,ukc,r30,
+a65,Burning Buttress,2016-09-03,day,lead,Led,,5,ukc,r29,
+a66,Amber Groove,2016-09-03,day,onsight,Onsight,,4,manual,r24,
+a67,Northern Pillar,2016-09-04,day,redpoint,Redpoint,,3,ukc,r27,pt5
+a68,Silent Groove,2016-09-04,day,lead,Led,,1,ukc,r25,pt5
+a69,Broken Route,2016-09-04,day,onsight,Onsight,,,csv,r32,pt5
+a70,Broken Route,2016-09-01,month,redpoint,Redpoint,Bring extra cams,2,manual,r32,pt10
+a71,Broken Nose,2016-09-05,day,flash,Flash,,4,csv,r30,pt10
+a72,Northern Pillar,2016-09-05,day,onsight,Onsight,,3,ukc,r27,pt10
+a73,Velvet Rib,2016-09-01,month,lead,Led,,,ukc,r43,pt12
+a74,Wild Direct,2016-09-09,day,lead,Led,,,ukc,r35,pt12
+a75,Wild Buttress,2016-09-09,day,top_rope,Top rope,,3,manual,r36,
+a76,Pale Route,2016-09-09,day,top_rope,Top rope,Polished holds,4,manual,r39,pt12
+a77,Gentle Traverse,2016-10-06,day,lead,Led,,3,csv,r79,
+a78,Iron Buttress,2016-10-07,day,second,Seconded,Cold fingers,,manual,r97,pt7
+a79,Silent Gully,2016-10-23,day,top_rope,Top rope,,5,ukc,r172,
+a80,Wandering Pillar,2016-10-23,day,onsight,Onsight,Soft for the grade,2,manual,r182,pt1
+a81,Rusty Buttress,2016-10-23,day,lead,Led,Crowded,,csv,r173,pt1
+a82,Pale Flake,2016-10-24,day,redpoint,Redpoint,,2,manual,r184,pt11
+a83,Wild Edge,2016-10-24,day,lead,Led,Polished holds,,ukc,r183,pt11
+a84,Narrow Corner,2016-10-24,day,lead,Led,,5,ukc,r187,pt11
+a85,Dancing Roof,2016-10-01,month,redpoint,Redpoint,Hard for the grade,,ukc,r181,
+a86,Pale Ramp,2016-10-25,day,lead,Led,,,ukc,r174,pt10
+a87,Wandering Pillar,2016-10-25,day,lead,Led,,3,csv,r182,pt10
+a88,Sleepy Route,2016-10-26,day,onsight,Onsight,,4,ukc,r179,
+a89,Wandering Pillar,2016-10-26,day,second,Seconded,,4,csv,r182,
+a90,Lonely Route,2016-10-26,day,lead,Led,,,manual,r175,
+a91,Quiet Corner,2016-11-01,month,redpoint,Redpoint,,4,ukc,r337,pt7
+a92,Wandering Rib,2016-11-16,day,redpoint,Redpoint,,4,ukc,r338,pt7
+a93,Wandering Chimney,2016-11-16,day,onsight,Onsight,,1,ukc,r333,pt7
+a94,Narrow Face,2016-11-16,day,redpoint,Redpoint,,2,csv,r331,pt7
+a95,Gentle Roof,2016-11-17,day,lead,Led,,4,manual,r332,pt2
+a96,Wandering Rib,2016-11-17,day,hangdog,Hangdog,,,csv,r338,pt2
+a97,Lonely Ramp,2016-11-17,day,redpoint,Redpoint,,,csv,r336,pt2
+a98,Shattered Arete,2016-11-17,day,onsight,Onsight,,,ukc,r335,pt2
+a99,Rusty Wall,2016-11-18,day,lead,Led,,,manual,r329,pt4
+a100,Narrow Face,2016-11-18,day,flash,Flash,,3,manual,r331,pt4
+a101,Broken Pillar,2016-11-18,day,hangdog,Hangdog,,,csv,r334,pt4
+a102,Rusty Slab,2016-11-18,day,onsight,Onsight,Loved it,3,ukc,r328,
+a103,Shattered Arete,2016-11-19,day,redpoint,Redpoint,,,csv,r335,
+a104,Rusty Wall,2016-11-19,day,flash,Flash,,,csv,r329,
+a105,Wandering Rib,2016-11-01,month,redpoint,Redpoint,,,manual,r338,
+a106,Wandering Chimney,2016-11-19,day,onsight,Onsight,,,ukc,r333,
+a107,Broken Pillar,2016-11-20,day,lead,Led,,4,manual,r334,pt10
+a108,Gentle Roof,2016-11-20,day,lead,Led,,,csv,r332,pt10
+a109,Rusty Slab,2016-11-20,day,redpoint,Redpoint,,,ukc,r328,pt10
+a110,Quiet Corner,2016-11-20,day,lead,Led,Hard for the grade,,csv,r337,pt10
+a111,Wandering Corner,2016-11-21,day,onsight,Onsight,,3,csv,r339,pt1
+a112,Lonely Ramp,2016-11-21,day,onsight,Onsight,,,ukc,r336,pt1
+a113,Wandering Rib,2016-11-21,day,hangdog,Hangdog,Hard for the grade,1,csv,r338,pt1
+a114,Quiet Corner,2016-11-21,day,flash,Flash,,,csv,r337,pt1
+a115,Wandering Chimney,2016-11-22,day,lead,Led,,1,manual,r333,
+a116,Shattered Crack,2016-11-01,month,onsight,Onsight,,4,manual,r330,pt3
+a117,Gentle Roof,2016-11-22,day,redpoint,Redpoint,,1,ukc,r332,pt3
+a118,Lonely Ramp,2016-11-22,day,onsight,Onsight,,2,ukc,r336,pt3
+a119,Wandering Rib,2016-11-23,day,flash,Flash,,4,ukc,r338,pt8
+a120,Wandering Corner,2016-11-23,day,redpoint,Redpoint,Polished holds,1,ukc,r339,pt8
+a121,Gentle Roof,2016-11-23,day,redpoint,Redpoint,,,csv,r332,pt8
+a122,Rusty Wall,2016-11-23,day,hangdog,Hangdog,,,ukc,r329,pt8
+a123,Broken Pillar,2016-11-24,day,lead,Led,Cold fingers,3,ukc,r334,pt2
+a124,Wandering Rib,2016-11-24,day,lead,Led,,,ukc,r338,pt2
+a125,Wandering Chimney,2016-11-24,day,lead,Led,Would repeat,3,csv,r333,pt2
+a126,Wandering Corner,2016-11-24,day,redpoint,Redpoint,Windy belay,2,csv,r339,pt2
+a127,Wandering Rib,2016-11-25,day,redpoint,Redpoint,,4,csv,r338,pt11
+a128,Wandering Corner,2016-11-25,day,hangdog,Hangdog,,,ukc,r339,pt11
+a129,Narrow Face,2016-11-25,day,onsight,Onsight,,,ukc,r331,pt11
+a130,Shattered Crack,2016-11-01,month,hangdog,Hangdog,,4,ukc,r330,pt11
+a131,Broken Pillar,2016-11-26,day,hangdog,Hangdog,,,csv,r334,
+a132,Narrow Face,2016-11-26,day,redpoint,Redpoint,Greasy start,,ukc,r331,
+a133,Quiet Corner,2016-11-26,day,hangdog,Hangdog,,,ukc,r337,
+a134,Wandering Chimney,2016-11-01,month,redpoint,Redpoint,,,csv,r333,
+a135,Shattered Arete,2016-11-27,day,hangdog,Hangdog,Crowded,,ukc,r335,
+a136,Narrow Face,2016-11-01,month,redpoint,Redpoint,,4,ukc,r331,
+a137,Quiet Corner,2016-11-01,month,redpoint,Redpoint,,,ukc,r337,
+a138,Wandering Chimney,2016-11-27,day,onsight,Onsight,,3,ukc,r333,
+a139,Wandering Chimney,2016-11-28,day,onsight,Onsight,Soft for the grade,,ukc,r333,pt8
+a140,Narrow Face,2016-11-28,day,redpoint,Redpoint,Perfect conditions,,manual,r331,
+a141,Rusty Wall,2016-11-28,day,hangdog,Hangdog,,3,manual,r329,pt8
+a142,Quiet Corner,2016-11-28,day,hangdog,Hangdog,,4,ukc,r337,pt8
+a143,Bitter Flake,2016-11-25,day,second,Seconded,,2,ukc,r177,
+a144,Dancing Roof,2016-11-25,day,second,Seconded,,2,ukc,r181,pt10
+a145,Velvet Pillar,2016-11-25,day,onsight,Onsight,Would repeat,2,ukc,r178,pt10
+a146,Lonely Route,2016-11-25,day,redpoint,Redpoint,,3,manual,r175,
+a147,Silent Gully,2016-11-26,day,second,Seconded,Polished holds,3,ukc,r172,
+a148,Bitter Flake,2016-11-26,day,flash,Flash,Windy belay,,ukc,r177,
+a149,Silent Slab,2016-11-26,day,redpoint,Redpoint,,,ukc,r171,
+a150,Gentle Route,2016-11-26,day,redpoint,Redpoint,,1,ukc,r170,
+a151,Wild Edge,2016-11-27,day,lead,Led,,3,ukc,r183,
+a152,Lonely Corner,2016-11-27,day,redpoint,Redpoint,Loved it,,manual,r188,
+a153,Shattered Chimney,2016-11-27,day,lead,Led,Would repeat,3,manual,r185,
+a154,Velvet Slab,2016-11-27,day,redpoint,Redpoint,,3,csv,r190,
+a155,Lonely Groove,2017-03-06,day,flash,Flash,,,ukc,r37,
+a156,Narrow Arete,2017-03-06,day,lead,Led,,,ukc,r41,
+a157,Wild Traverse,2017-03-07,day,lead,Led,,,manual,r42,
+a158,Wild Direct,2017-03-07,day,redpoint,Redpoint,,3,manual,r35,
+a159,Pale Route,2017-03-08,day,lead,Led,,3,ukc,r39,pt9
+a160,Lonely Groove,2017-03-01,month,lead,Led,,,csv,r37,pt9
+a161,Pale Route,2017-03-01,month,flash,Flash,Bring extra cams,,ukc,r39,pt5
+a162,Wild Buttress,2017-03-09,day,lead,Led,,5,ukc,r36,pt5
+a163,Wild Direct,2017-03-09,day,onsight,Onsight,,,csv,r35,
+a164,Dancing Wall,2017-04-13,day,top_rope,Top rope,,,ukc,r244,pt3
+a165,Golden Buttress,2017-04-13,day,redpoint,Redpoint,,5,ukc,r241,pt3
+a166,Velvet Chimney,2017-05-03,day,lead,Led,,,manual,r46,pt8
+a167,Shattered Flake,2017-05-27,day,lead,Led,Soft for the grade,,ukc,r164,pt4
+a168,Iron Wall,2017-05-27,day,second,Seconded,Bring extra cams,4,ukc,r168,pt4
+a169,Quiet Pillar,2017-05-27,day,second,Seconded,,,ukc,r169,
+a170,Shattered Flake,2017-05-28,day,lead,Led,,4,ukc,r164,
+a171,Broken Roof,2017-05-28,day,onsight,Onsight,,,csv,r166,
+a172,Velvet Direct,2017-05-28,day,redpoint,Redpoint,,,csv,r162,
+a173,Velvet Chimney,2017-06-13,day,lead,Led,Would repeat,1,manual,r46,
+a174,Dancing Nose,2017-06-14,day,second,Seconded,,,csv,r53,
+a175,Hidden Arete,2017-06-15,day,onsight,Onsight,,,csv,r55,pt9
+a176,Bitter Arete,2017-06-16,day,onsight,Onsight,Long run-out,,ukc,r54,
+a177,Northern Pillar,2017-07-02,day,lead,Led,,5,csv,r27,pt5
+a178,Burning Traverse,2017-07-02,day,lead,Led,,3,ukc,r33,pt5
+a179,Burning Route,2017-07-05,day,onsight,Onsight,,,ukc,r229,pt7
+a180,Burning Edge,2017-07-05,day,onsight,Onsight,,5,ukc,r226,
+a181,Sleepy Chimney,2017-07-05,day,lead,Led,,3,csv,r227,pt7
+a182,Broken Traverse,2017-07-05,day,second,Seconded,Greasy start,5,csv,r219,pt7
+a183,Northern Crack,2017-07-25,day,second,Seconded,,3,manual,r92,
+a184,Sleepy Face,2017-07-26,day,lead,Led,,4,manual,r94,pt7
+a185,Rusty Groove,2017-08-07,day,redpoint,Redpoint,Greasy start,2,csv,r11,pt1
+a186,Dancing Traverse,2017-08-07,day,onsight,Onsight,,1,csv,r9,pt1
+a187,Iron Traverse,2017-08-08,day,lead,Led,Perfect conditions,,ukc,r3,pt9
+a188,Lonely Nose,2017-08-08,day,redpoint,Redpoint,,,csv,r4,pt9
+a189,Rusty Groove,2017-08-09,day,lead,Led,Crowded,,csv,r11,pt1
+a190,Crooked Roof,2017-08-09,day,lead,Led,,5,ukc,r1,pt1
+a191,Crimson Nose,2017-09-03,day,top_rope,Top rope,,,csv,r120,
+a192,Shattered Nose,2017-09-03,day,lead,Led,,5,ukc,r117,
+a193,Sleepy Arete,2017-09-04,day,redpoint,Redpoint,,3,ukc,r140,pt10
+a194,Rusty Chimney,2017-09-04,day,onsight,Onsight,,2,csv,r137,pt10
+a195,Gentle Corner,2017-09-05,day,second,Seconded,,,ukc,r146,pt10
+a196,Wandering Ramp,2017-09-05,day,second,Seconded,Greasy start,4,ukc,r141,pt10
+a197,Shattered Direct,2017-09-06,day,lead,Led,Great climbing,,csv,r145,pt2
+a198,Sleepy Arete,2017-09-06,day,second,Seconded,,3,ukc,r140,
+a199,Wild Direct,2017-09-07,day,flash,Flash,,,ukc,r35,pt2
+a200,Pale Route,2017-09-07,day,onsight,Onsight,,3,ukc,r39,pt2
+a201,Wild Buttress,2017-09-07,day,onsight,Onsight,,,ukc,r36,
+a202,Wild Traverse,2017-09-07,day,redpoint,Redpoint,,2,manual,r42,pt2
+a203,Wild Slab,2017-09-08,day,redpoint,Redpoint,,,ukc,r6,pt3
+a204,Silent Chimney,2017-09-08,day,lead,Led,,4,ukc,r10,pt3
+a205,Crooked Buttress,2017-09-01,month,flash,Flash,,,ukc,r12,pt3
+a206,Bitter Gully,2017-09-08,day,redpoint,Redpoint,,3,ukc,r7,pt3
+a207,Lonely Groove,2017-09-09,day,onsight,Onsight,,,ukc,r37,pt9
+a208,Narrow Arete,2017-09-09,day,second,Seconded,,3,ukc,r41,pt9
+a209,Pale Route,2017-09-09,day,redpoint,Redpoint,,,ukc,r39,pt9
+a210,Velvet Rib,2017-09-09,day,redpoint,Redpoint,,3,ukc,r43,pt9
+a211,Wild Pillar,2017-10-09,day,lead,Led,,,csv,r189,pt6
+a212,Narrow Corner,2017-10-09,day,second,Seconded,Perfect conditions,2,ukc,r187,pt6
+a213,Iron Corner,2017-10-09,day,lead,Led,Soft for the grade,,ukc,r192,pt6
+a214,Bitter Flake,2017-10-10,day,onsight,Onsight,,,manual,r177,pt3
+a215,Pale Ramp,2017-10-10,day,flash,Flash,Greasy start,4,csv,r174,
+a216,Silent Slab,2017-10-10,day,lead,Led,,,csv,r171,pt3
+a217,Silent Slab,2017-10-11,day,lead,Led,Bring extra cams,,ukc,r171,pt6
+a218,Velvet Pillar,2017-10-01,month,onsight,Onsight,,,manual,r178,pt6
+a219,Wandering Pillar,2017-10-11,day,onsight,Onsight,,1,csv,r182,pt6
+a220,Slender Traverse,2017-10-01,month,lead,Led,Perfect conditions,,ukc,r193,pt12
+a221,Wild Edge,2017-10-12,day,lead,Led,,,ukc,r183,pt12
+a222,Pale Flake,2017-10-12,day,second,Seconded,,,ukc,r184,pt12
+a223,Lonely Chimney,2017-10-09,day,onsight,Onsight,,,manual,r366,pt7
+a224,Silent Nose,2017-10-09,day,redpoint,Redpoint,,5,ukc,r368,pt7
+a225,Broken Chimney,2017-10-09,day,lead,Led,Would repeat,,ukc,r364,pt7
+a226,Burning Arete,2017-10-10,day,flash,Flash,Polished holds,,ukc,r377,pt5
+a227,Amber Pillar,2017-10-10,day,lead,Led,,4,manual,r370,pt5
+a228,Velvet Arete,2017-10-10,day,onsight,Onsight,Cold fingers,3,csv,r372,pt5
+a229,Lonely Chimney,2017-10-11,day,flash,Flash,,,ukc,r366,pt9
+a230,Quiet Gully,2017-10-11,day,redpoint,Redpoint,,3,manual,r369,pt9
+a231,Silent Wall,2017-10-01,month,hangdog,Hangdog,,5,ukc,r363,pt9
+a232,Rusty Traverse,2017-10-12,day,lead,Led,,1,ukc,r380,pt9
+a233,Hidden Traverse,2017-10-12,day,redpoint,Redpoint,,,ukc,r379,pt9
+a234,Pale Gully,2017-10-12,day,redpoint,Redpoint,Perfect conditions,4,manual,r378,pt9
+a235,Silent Rib,2017-10-13,day,flash,Flash,,,manual,r382,
+a236,Amber Pillar,2017-10-13,day,redpoint,Redpoint,,,manual,r370,
+a237,Lonely Flake,2017-10-13,day,redpoint,Redpoint,,4,manual,r381,
+a238,Lonely Flake,2017-10-14,day,lead,Led,Windy belay,,ukc,r381,pt6
+a239,Hidden Traverse,2017-10-01,month,redpoint,Redpoint,Cold fingers,,ukc,r379,pt6
+a240,Burning Arete,2017-10-14,day,redpoint,Redpoint,Windy belay,4,csv,r377,pt6
+a241,Rusty Gully,2017-10-15,day,redpoint,Redpoint,,,ukc,r360,
+a242,Silent Wall,2017-10-15,day,flash,Flash,Crowded,,ukc,r363,
+a243,Velvet Corner,2017-10-15,day,hangdog,Hangdog,Crowded,,ukc,r367,
+a244,Rusty Traverse,2017-10-16,day,onsight,Onsight,Crowded,3,ukc,r380,pt11
+a245,Amber Pillar,2017-10-16,day,hangdog,Hangdog,,,csv,r370,pt11
+a246,Gentle Pillar,2017-10-16,day,lead,Led,,,csv,r375,pt11
+a247,Quiet Gully,2017-10-01,month,onsight,Onsight,Long run-out,3,manual,r369,pt11
+a248,Broken Chimney,2017-10-17,day,redpoint,Redpoint,,1,ukc,r364,pt11
+a249,Narrow Nose,2017-10-17,day,flash,Flash,Long run-out,,manual,r361,pt11
+a250,Amber Pillar,2017-10-18,day,lead,Led,,,manual,r370,pt9
+a251,Velvet Arete,2017-10-18,day,hangdog,Hangdog,,,ukc,r372,pt9
+a252,Amber Nose,2017-10-01,month,redpoint,Redpoint,,3,manual,r373,pt9
+a253,Rusty Pillar,2017-10-19,day,hangdog,Hangdog,,,ukc,r371,
+a254,Burning Arete,2017-10-19,day,onsight,Onsight,,,csv,r377,
+a255,Amber Nose,2017-10-19,day,flash,Flash,Loved it,,csv,r373,
+a256,Amber Slab,2017-11-21,day,second,Seconded,,4,ukc,r238,pt4
+a257,Slender Groove,2017-11-21,day,lead,Led,,4,ukc,r231,pt4
+a258,Wild Wall,2017-11-22,day,redpoint,Redpoint,Perfect conditions,,ukc,r232,
+a259,Crimson Rib,2017-11-22,day,flash,Flash,Crowded,3,ukc,r230,
+a260,Lonely Edge,2017-11-01,month,top_rope,Top rope,Long run-out,,csv,r240,pt6
+a261,Shattered Slab,2017-11-23,day,onsight,Onsight,Soft for the grade,,ukc,r236,pt6
+a262,Northern Edge,2018-02-14,day,lead,Led,,,manual,r321,pt7
+a263,Hidden Face,2018-02-14,day,lead,Led,,,ukc,r320,pt7
+a264,Northern Rib,2018-02-14,day,lead,Led,Perfect conditions,,csv,r322,pt7
+a265,Shattered Groove,2018-02-15,day,lead,Led,Great climbing,4,csv,r327,pt9
+a266,Gentle Nose,2018-02-15,day,redpoint,Redpoint,,,ukc,r324,pt9
+a267,Northern Rib,2018-02-15,day,lead,Led,,4,manual,r322,pt9
+a268,Crooked Chimney,2018-02-16,day,redpoint,Redpoint,,5,ukc,r325,
+a269,Silent Direct,2018-02-16,day,redpoint,Redpoint,,1,manual,r326,pt1
+a270,Broken Corner,2018-02-16,day,redpoint,Redpoint,,,csv,r319,pt1
+a271,Gentle Nose,2018-02-17,day,redpoint,Redpoint,,3,ukc,r324,
+a272,Northern Rib,2018-02-17,day,onsight,Onsight,,4,csv,r322,pt10
+a273,Hidden Face,2018-02-17,day,hangdog,Hangdog,Crowded,,ukc,r320,
+a274,Sleepy Edge,2018-02-18,day,onsight,Onsight,,3,csv,r323,
+a275,Shattered Groove,2018-02-18,day,lead,Led,Cold fingers,,ukc,r327,
+a276,Gentle Nose,2018-02-18,day,redpoint,Redpoint,,4,ukc,r324,
+a277,Hidden Face,2018-02-19,day,onsight,Onsight,,4,ukc,r320,pt6
+a278,Sleepy Edge,2018-02-19,day,flash,Flash,,,manual,r323,pt6
+a279,Northern Rib,2018-02-19,day,hangdog,Hangdog,Greasy start,3,csv,r322,pt6
+a280,Shattered Groove,2018-02-20,day,lead,Led,Loved it,,manual,r327,pt4
+a281,Gentle Nose,2018-02-20,day,onsight,Onsight,,5,ukc,r324,pt4
+a282,Hidden Face,2018-02-20,day,hangdog,Hangdog,Hard for the grade,2,ukc,r320,pt4
+a283,Silent Direct,2018-02-21,day,hangdog,Hangdog,Rain at the top,4,ukc,r326,pt9
+a284,Broken Corner,2018-02-21,day,onsight,Onsight,Bring extra cams,,ukc,r319,pt9
+a285,Crooked Chimney,2018-02-21,day,redpoint,Redpoint,,2,manual,r325,pt9
+a286,Northern Rib,2018-02-22,day,onsight,Onsight,,5,csv,r322,pt1
+a287,Broken Corner,2018-02-22,day,onsight,Onsight,,3,manual,r319,pt1
+a288,Crooked Chimney,2018-02-22,day,redpoint,Redpoint,Rain at the top,,ukc,r325,pt1
+a289,Silent Direct,2018-02-23,day,onsight,Onsight,,,ukc,r326,pt12
+a290,Broken Corner,2018-02-23,day,flash,Flash,Soft for the grade,4,ukc,r319,pt12
+a291,Gentle Nose,2018-02-23,day,lead,Led,,2,ukc,r324,pt12
+a292,Lonely Direct,2018-03-13,day,redpoint,Redpoint,Rain at the top,,ukc,r101,pt10
+a293,Crimson Buttress,2018-03-13,day,lead,Led,Perfect conditions,1,csv,r103,pt10
+a294,Slender Slab,2018-03-13,day,lead,Led,,,manual,r105,pt10
+a295,Narrow Arete,2018-04-02,day,lead,Led,Long run-out,3,csv,r41,pt12
+a296,Velvet Rib,2018-04-02,day,onsight,Onsight,Perfect conditions,1,csv,r43,pt12
+a297,Wild Buttress,2018-04-03,day,lead,Led,,1,ukc,r36,
+a298,Pale Route,2018-04-03,day,lead,Led,Bring extra cams,,manual,r39,
+a299,Wild Direct,2018-05-02,day,lead,Led,,,manual,r35,
+a300,Crimson Edge,2018-05-02,day,top_rope,Top rope,Hard for the grade,,ukc,r40,
+a301,Velvet Rib,2018-05-02,day,onsight,Onsight,,,manual,r43,
+a302,Wild Traverse,2018-05-02,day,flash,Flash,,,manual,r42,
+a303,Pale Route,2018-05-03,day,flash,Flash,Rain at the top,4,ukc,r39,pt8
+a304,Velvet Rib,2018-05-03,day,second,Seconded,Cold fingers,,manual,r43,pt8
+a305,Crimson Edge,2018-05-03,day,second,Seconded,Crowded,,ukc,r40,pt8
+a306,Wild Traverse,2018-05-03,day,top_rope,Top rope,,4,ukc,r42,pt8
+a307,Velvet Rib,2018-05-04,day,onsight,Onsight,,2,ukc,r43,pt3
+a308,Wild Direct,2018-05-04,day,lead,Led,,,ukc,r35,
+a309,Wild Buttress,2018-05-04,day,onsight,Onsight,,,ukc,r36,
+a310,Lonely Groove,2018-05-04,day,second,Seconded,,5,csv,r37,pt3
+a311,Golden Flake,2018-05-21,day,flash,Flash,,,manual,r158,pt3
+a312,Wandering Nose,2018-05-21,day,second,Seconded,,2,manual,r160,pt3
+a313,Crimson Slab,2018-05-21,day,lead,Led,,5,ukc,r148,pt3
+a314,Narrow Groove,2018-05-21,day,lead,Led,,3,csv,r154,pt3
+a315,Bitter Arete,2018-06-07,day,lead,Led,,1,ukc,r54,pt4
+a316,Sleepy Direct,2018-06-08,day,second,Seconded,,,ukc,r48,
+a317,Bitter Arete,2018-06-09,day,onsight,Onsight,,,ukc,r54,pt7
+a318,Crimson Edge,2018-06-08,day,lead,Led,Crowded,,manual,r40,pt2
+a319,Wild Traverse,2018-06-08,day,lead,Led,Windy belay,,ukc,r42,
+a320,Pale Route,2018-06-08,day,second,Seconded,,4,ukc,r39,pt2
+a321,Pale Route,2018-06-09,day,lead,Led,,2,ukc,r39,
+a322,Velvet Rib,2018-06-09,day,lead,Led,,,csv,r43,
+a323,Lonely Groove,2018-06-09,day,redpoint,Redpoint,,4,ukc,r37,
+a324,Silent Route,2018-06-09,day,send,Send,,,ukc,r279,pt6
+a325,Amber Corner,2018-06-09,day,send,Send,,5,ukc,r277,pt6
+a326,Dancing Route,2018-06-10,day,send,Send,,,csv,r278,pt6
+a327,Silent Flake,2018-06-10,day,onsight,Onsight,,,manual,r283,pt6
+a328,Sleepy Groove,2018-06-11,day,send,Send,Hard for the grade,1,ukc,r282,
+a329,Wandering Arete,2018-06-11,day,send,Send,,3,ukc,r281,
+a330,Quiet Arete,2018-06-12,day,send,Send,Hard for the grade,,ukc,r284,
+a331,Broken Buttress,2018-06-12,day,send,Send,,,ukc,r286,
+a332,Sleepy Groove,2018-06-13,day,flash,Flash,,4,manual,r282,
+a333,Amber Corner,2018-06-13,day,onsight,Onsight,,,ukc,r277,pt4
+a334,Sleepy Nose,2018-06-14,day,send,Send,Would repeat,,ukc,r275,pt12
+a335,Sleepy Groove,2018-06-14,day,onsight,Onsight,Cold fingers,3,ukc,r282,pt12
+a336,Sleepy Groove,2018-06-15,day,send,Send,,4,ukc,r282,
+a337,Broken Buttress,2018-06-15,day,send,Send,,3,manual,r286,
+a338,Dancing Route,2018-06-16,day,send,Send,,3,ukc,r278,
+a339,Wandering Arete,2018-06-16,day,flash,Flash,,4,manual,r281,pt2
+a340,Broken Buttress,2018-06-17,day,onsight,Onsight,,,ukc,r286,pt10
+a341,Sleepy Groove,2018-06-17,day,send,Send,Greasy start,4,ukc,r282,pt10
+a342,Wandering Arete,2018-06-18,day,send,Send,,1,ukc,r281,pt11
+a343,Sleepy Nose,2018-06-18,day,send,Send,,,ukc,r275,pt11
+a344,Silent Route,2018-06-19,day,send,Send,,,ukc,r279,
+a345,Sleepy Groove,2018-06-19,day,send,Send,,,ukc,r282,pt7
+a346,Pale Buttress,2018-06-20,day,send,Send,,,ukc,r285,pt9
+a347,Silent Flake,2018-06-20,day,onsight,Onsight,,4,ukc,r283,pt9
+a348,Quiet Arete,2018-06-21,day,send,Send,,3,ukc,r284,pt4
+a349,Sleepy Nose,2018-06-21,day,onsight,Onsight,,,manual,r275,pt4
+a350,Slender Pillar,2018-06-12,day,flash,Flash,,3,ukc,r214,pt7
+a351,Wild Rib,2018-06-12,day,second,Seconded,,4,manual,r207,pt7
+a352,Northern Ramp,2018-06-13,day,lead,Led,,3,csv,r211,pt11
+a353,Hollow Route,2018-06-13,day,second,Seconded,,,manual,r218,pt11
+a354,Northern Ramp,2018-06-14,day,redpoint,Redpoint,,,csv,r211,pt6
+a355,Iron Pillar,2018-06-14,day,onsight,Onsight,Soft for the grade,3,manual,r209,pt6
+a356,Wandering Groove,2018-06-15,day,lead,Led,,4,manual,r201,pt7
+a357,Broken Ramp,2018-06-15,day,top_rope,Top rope,Bring extra cams,,ukc,r206,pt7
+a358,Pale Route,2018-06-19,day,flash,Flash,,,ukc,r39,pt2
+a359,Golden Traverse,2018-06-20,day,second,Seconded,,,ukc,r38,
+a360,Wild Buttress,2018-06-21,day,top_rope,Top rope,,1,ukc,r36,
+a361,Crimson Wall,2018-06-21,day,flash,Flash,,,csv,r49,pt12
+a362,Crooked Route,2018-06-21,day,redpoint,Redpoint,Hard for the grade,3,ukc,r51,pt12
+a363,Wild Face,2018-06-25,day,top_rope,Top rope,,,manual,r199,pt4
+a364,Burning Flake,2018-07-17,day,second,Seconded,Greasy start,,manual,r115,pt4
+a365,Lonely Traverse,2018-07-17,day,second,Seconded,,,manual,r111,pt4
+a366,Hidden Direct,2018-07-17,day,lead,Led,Greasy start,,ukc,r113,pt4
+a367,Shattered Route,2018-07-18,day,onsight,Onsight,,,ukc,r129,
+a368,Wild Roof,2018-07-18,day,flash,Flash,Rain at the top,4,csv,r124,pt9
+a369,Bitter Pillar,2018-07-18,day,second,Seconded,,4,manual,r131,pt9
+a370,Silent Buttress,2018-07-19,day,onsight,Onsight,Bring extra cams,,ukc,r127,pt12
+a371,Wild Roof,2018-07-19,day,second,Seconded,,,manual,r124,
+a372,Amber Direct,2018-07-19,day,lead,Led,Would repeat,,ukc,r126,pt12
+a373,Wild Roof,2018-07-20,day,onsight,Onsight,,3,manual,r124,pt7
+a374,Shattered Route,2018-07-20,day,onsight,Onsight,,3,csv,r129,pt7
+a375,Amber Face,2018-07-20,day,top_rope,Top rope,,1,ukc,r130,pt7
+a376,Iron Route,2018-07-21,day,flash,Flash,Loved it,3,ukc,r134,pt9
+a377,Bitter Pillar,2018-07-21,day,lead,Led,,5,ukc,r131,pt9
+a378,Golden Nose,2018-07-21,day,redpoint,Redpoint,,5,ukc,r125,pt9
+a379,Bitter Ramp,2018-07-24,day,redpoint,Redpoint,,,ukc,r221,pt11
+a380,Pale Arete,2018-07-24,day,lead,Led,,,ukc,r225,pt11
+a381,Burning Route,2018-07-24,day,onsight,Onsight,,,manual,r229,pt11
+a382,Golden Direct,2018-07-24,day,lead,Led,,4,ukc,r223,pt11
+a383,Sleepy Chimney,2018-07-25,day,onsight,Onsight,,,ukc,r227,pt12
+a384,Quiet Buttress,2018-07-25,day,lead,Led,,,csv,r224,pt12
+a385,Bitter Roof,2018-07-25,day,lead,Led,Rain at the top,,ukc,r220,pt12
+a386,Wild Flake,2018-07-25,day,flash,Flash,Great climbing,4,ukc,r222,pt12
+a387,Narrow Crack,2018-08-09,day,flash,Flash,,,manual,r34,pt11
+a388,Crimson Chimney,2018-08-10,day,onsight,Onsight,Greasy start,,ukc,r31,pt2
+a389,Broken Nose,2018-08-11,day,lead,Led,,5,csv,r30,
+a390,Sleepy Ramp,2018-09-09,day,lead,Led,Great climbing,,ukc,r200,pt12
+a391,Wandering Gully,2018-09-09,day,lead,Led,,,ukc,r195,pt12
+a392,Rusty Arete,2018-09-09,day,lead,Led,Cold fingers,,ukc,r197,pt12
+a393,Burning Pillar,2018-09-10,day,redpoint,Redpoint,Long run-out,1,csv,r237,pt1
+a394,Wild Wall,2018-09-10,day,lead,Led,,,csv,r232,pt1
+a395,Gentle Slab,2018-09-11,day,onsight,Onsight,,4,ukc,r233,pt4
+a396,Sleepy Gully,2018-09-11,day,redpoint,Redpoint,Would repeat,,ukc,r239,pt4
+a397,Gentle Slab,2018-09-12,day,redpoint,Redpoint,Crowded,,manual,r233,
+a398,Slender Groove,2018-09-12,day,onsight,Onsight,,,ukc,r231,pt9
+a399,Burning Pillar,2018-09-13,day,lead,Led,,4,csv,r237,pt1
+a400,Slender Groove,2018-09-13,day,onsight,Onsight,,,ukc,r231,pt1
+a401,Bitter Arete,2018-09-11,day,second,Seconded,,,ukc,r54,
+a402,Crooked Route,2018-09-11,day,lead,Led,Windy belay,4,ukc,r51,pt3
+a403,Bitter Crack,2018-09-13,day,redpoint,Redpoint,,,manual,r397,pt7
+a404,Pale Corner,2018-09-13,day,lead,Led,,2,csv,r403,pt7
+a405,Broken Gully,2018-09-13,day,hangdog,Hangdog,Cold fingers,2,manual,r401,pt7
+a406,Bitter Groove,2018-09-13,day,redpoint,Redpoint,,,ukc,r406,pt7
+a407,Broken Direct,2018-09-14,day,redpoint,Redpoint,,,ukc,r391,pt10
+a408,Dancing Groove,2018-09-14,day,onsight,Onsight,,,ukc,r394,pt10
+a409,Crooked Nose,2018-09-14,day,lead,Led,,4,ukc,r393,pt10
+a410,Pale Rib,2018-09-14,day,redpoint,Redpoint,,3,ukc,r385,pt10
+a411,Velvet Crack,2018-09-15,day,redpoint,Redpoint,,,manual,r390,pt9
+a412,Crooked Rib,2018-09-15,day,redpoint,Redpoint,,,ukc,r388,pt9
+a413,Crooked Gully,2018-09-15,day,onsight,Onsight,Bring extra cams,,manual,r384,pt9
+a414,Hidden Flake,2018-09-15,day,redpoint,Redpoint,,5,csv,r387,pt9
+a415,Gentle Buttress,2018-09-16,day,hangdog,Hangdog,,,ukc,r389,pt6
+a416,Pale Rib,2018-09-16,day,redpoint,Redpoint,Soft for the grade,,ukc,r385,pt6
+a417,Crooked Gully,2018-09-16,day,flash,Flash,,,manual,r384,pt6
+a418,Northern Nose,2018-09-16,day,redpoint,Redpoint,Cold fingers,,ukc,r386,pt6
+a419,Hidden Flake,2018-09-17,day,onsight,Onsight,,2,ukc,r387,
+a420,Crooked Gully,2018-09-17,day,onsight,Onsight,Rain at the top,2,ukc,r384,
+a421,Pale Rib,2018-09-17,day,onsight,Onsight,,4,ukc,r385,
+a422,Crooked Nose,2018-09-17,day,onsight,Onsight,,,ukc,r393,
+a423,Bitter Groove,2018-09-18,day,flash,Flash,,,ukc,r406,
+a424,Dancing Buttress,2018-09-18,day,lead,Led,Windy belay,,ukc,r405,
+a425,Broken Gully,2018-09-18,day,lead,Led,,,csv,r401,pt7
+a426,Bitter Crack,2018-09-18,day,redpoint,Redpoint,,4,ukc,r397,pt7
+a427,Velvet Crack,2018-09-19,day,hangdog,Hangdog,,,csv,r390,
+a428,Crooked Nose,2018-09-19,day,hangdog,Hangdog,Polished holds,5,ukc,r393,
+a429,Crooked Rib,2018-09-19,day,redpoint,Redpoint,,,csv,r388,
+a430,Broken Direct,2018-09-19,day,redpoint,Redpoint,,,manual,r391,
+a431,Golden Roof,2018-09-20,day,lead,Led,,,ukc,r392,pt6
+a432,Northern Nose,2018-09-20,day,onsight,Onsight,,,csv,r386,pt6
+a433,Broken Direct,2018-09-20,day,lead,Led,,,ukc,r391,pt6
+a434,Pale Rib,2018-09-20,day,redpoint,Redpoint,,3,ukc,r385,pt6
+a435,Broken Gully,2018-09-21,day,onsight,Onsight,,5,manual,r401,pt12
+a436,Bitter Edge,2018-09-21,day,redpoint,Redpoint,,3,csv,r399,
+a437,Shattered Roof,2018-09-21,day,redpoint,Redpoint,,,ukc,r396,pt12
+a438,Bitter Crack,2018-09-21,day,redpoint,Redpoint,,,csv,r397,pt12
+a439,Broken Direct,2018-09-22,day,hangdog,Hangdog,,,csv,r391,pt11
+a440,Crooked Rib,2018-09-22,day,hangdog,Hangdog,,,csv,r388,
+a441,Hidden Flake,2018-09-22,day,lead,Led,,,ukc,r387,pt11
+a442,Northern Roof,2018-09-22,day,onsight,Onsight,,3,manual,r383,pt11
+a443,Shattered Roof,2018-09-23,day,redpoint,Redpoint,,3,manual,r396,pt9
+a444,Bitter Edge,2018-09-23,day,hangdog,Hangdog,,,ukc,r399,pt9
+a445,Bitter Groove,2018-09-23,day,lead,Led,,,ukc,r406,pt9
+a446,Quiet Nose,2018-09-23,day,lead,Led,,,ukc,r402,pt9
+a447,Quiet Nose,2018-09-24,day,redpoint,Redpoint,,5,manual,r402,
+a448,Amber Arete,2018-09-24,day,lead,Led,,,ukc,r395,
+a449,Bitter Groove,2018-09-24,day,hangdog,Hangdog,Windy belay,2,manual,r406,
+a450,Amber Chimney,2018-09-24,day,onsight,Onsight,Loved it,,manual,r398,
+a451,Northern Buttress,2018-09-25,day,lead,Led,Perfect conditions,3,ukc,r400,
+a452,Broken Gully,2018-09-25,day,lead,Led,,,ukc,r401,
+a453,Shattered Roof,2018-09-25,day,hangdog,Hangdog,,4,ukc,r396,
+a454,Quiet Nose,2018-09-25,day,flash,Flash,,,ukc,r402,
+a455,Dancing Gully,2018-09-20,day,onsight,Onsight,Greasy start,,manual,r21,pt7
+a456,Crooked Traverse,2018-09-20,day,onsight,Onsight,Loved it,4,ukc,r16,pt7
+a457,Hollow Corner,2018-09-20,day,redpoint,Redpoint,,,csv,r14,pt7
+a458,Rusty Nose,2018-09-20,day,lead,Led,,,ukc,r18,pt7
+a459,Broken Wall,2018-09-21,day,lead,Led,,,manual,r15,pt8
+a460,Dancing Flake,2018-09-21,day,lead,Led,,5,ukc,r20,pt8
+a461,Dancing Gully,2018-09-21,day,lead,Led,Windy belay,,manual,r21,pt8
+a462,Rusty Nose,2018-09-21,day,onsight,Onsight,,,ukc,r18,
+a463,Northern Corner,2018-09-22,day,lead,Led,,,manual,r19,pt1
+a464,Rusty Nose,2018-09-22,day,lead,Led,,,manual,r18,pt1
+a465,Broken Wall,2018-09-22,day,lead,Led,,1,csv,r15,pt1
+a466,Hidden Nose,2018-09-22,day,onsight,Onsight,Loved it,,ukc,r23,pt1
+a467,Hollow Corner,2018-09-23,day,redpoint,Redpoint,,3,csv,r14,pt12
+a468,Broken Wall,2018-09-23,day,second,Seconded,,,ukc,r15,pt12
+a469,Rusty Nose,2018-09-23,day,lead,Led,Great climbing,,csv,r18,pt12
+a470,Wandering Flake,2018-09-23,day,lead,Led,,3,manual,r17,pt12
+a471,Crimson Wall,2018-10-20,day,second,Seconded,,,ukc,r49,pt3
+a472,Hollow Ramp,2018-10-21,day,lead,Led,Greasy start,2,ukc,r5,
+a473,Crooked Face,2018-10-22,day,redpoint,Redpoint,,3,csv,r47,
+a474,Wild Buttress,2019-03-01,day,lead,Led,Bring extra cams,4,ukc,r36,pt8
+a475,Lonely Groove,2019-03-01,day,onsight,Onsight,,,manual,r37,pt8
+a476,Dancing Traverse,2019-03-03,day,flash,Flash,,,ukc,r9,pt4
+a477,Iron Traverse,2019-03-03,day,lead,Led,Great climbing,,ukc,r3,pt4
+a478,Bitter Gully,2019-03-03,day,onsight,Onsight,Polished holds,,csv,r7,pt4
+a479,Slender Corner,2019-03-04,day,flash,Flash,,,ukc,r13,
+a480,Dancing Traverse,2019-03-04,day,onsight,Onsight,,,ukc,r9,
+a481,Wild Slab,2019-03-04,day,lead,Led,Soft for the grade,2,csv,r6,
+a482,Crooked Roof,2019-03-05,day,lead,Led,,,csv,r1,
+a483,Lonely Nose,2019-03-05,day,second,Seconded,,,manual,r4,
+a484,Slender Corner,2019-03-05,day,redpoint,Redpoint,,,manual,r13,
+a485,Crooked Roof,2019-03-06,day,lead,Led,,,manual,r1,
+a486,Silent Chimney,2019-03-06,day,redpoint,Redpoint,,3,ukc,r10,
+a487,Hollow Direct,2019-03-06,day,onsight,Onsight,Crowded,3,csv,r2,
+a488,Pale Nose,2019-03-04,day,hangdog,Hangdog,,5,manual,r442,pt3
+a489,Wandering Wall,2019-03-04,day,redpoint,Redpoint,Windy belay,4,manual,r440,pt3
+a490,Slender Roof,2019-03-04,day,redpoint,Redpoint,Windy belay,4,csv,r435,pt3
+a491,Hidden Groove,2019-03-04,day,onsight,Onsight,,3,ukc,r432,pt3
+a492,Narrow Traverse,2019-03-05,day,redpoint,Redpoint,,4,ukc,r355,pt6
+a493,Gentle Chimney,2019-03-05,day,redpoint,Redpoint,,,csv,r358,pt6
+a494,Slender Ramp,2019-03-05,day,lead,Led,Hard for the grade,,ukc,r353,pt6
+a495,Burning Corner,2019-03-05,day,lead,Led,,,manual,r350,pt6
+a496,Golden Gully,2019-03-06,day,onsight,Onsight,Crowded,,csv,r441,
+a497,Burning Gully,2019-03-06,day,redpoint,Redpoint,Soft for the grade,3,csv,r429,
+a498,Slender Roof,2019-03-06,day,hangdog,Hangdog,,,csv,r435,
+a499,Slender Edge,2019-03-06,day,hangdog,Hangdog,Hard for the grade,2,csv,r437,
+a500,Slender Edge,2019-03-07,day,lead,Led,,4,csv,r437,pt4
+a501,Slender Roof,2019-03-07,day,hangdog,Hangdog,Would repeat,4,manual,r435,pt4
+a502,Burning Ramp,2019-03-07,day,redpoint,Redpoint,,2,csv,r438,pt4
+a503,Crooked Wall,2019-03-07,day,onsight,Onsight,,2,ukc,r430,pt4
+a504,Velvet Traverse,2019-03-08,day,redpoint,Redpoint,Windy belay,,ukc,r359,pt7
+a505,Narrow Traverse,2019-03-08,day,onsight,Onsight,,,csv,r355,pt7
+a506,Slender Ramp,2019-03-08,day,lead,Led,Loved it,,ukc,r353,pt7
+a507,Burning Corner,2019-03-08,day,lead,Led,Bring extra cams,,csv,r350,pt7
+a508,Slender Ramp,2019-03-09,day,onsight,Onsight,,1,ukc,r353,pt10
+a509,Lonely Buttress,2019-03-09,day,redpoint,Redpoint,,1,ukc,r351,pt10
+a510,Gentle Chimney,2019-03-09,day,redpoint,Redpoint,,3,ukc,r358,pt10
+a511,Narrow Traverse,2019-03-09,day,onsight,Onsight,,,ukc,r355,pt10
+a512,Golden Gully,2019-03-10,day,onsight,Onsight,,,ukc,r441,
+a513,Wild Chimney,2019-03-10,day,flash,Flash,,,ukc,r439,
+a514,Burning Gully,2019-03-10,day,redpoint,Redpoint,,3,manual,r429,
+a515,Crimson Face,2019-03-10,day,redpoint,Redpoint,Soft for the grade,,ukc,r434,
+a516,Slender Edge,2019-03-11,day,lead,Led,Greasy start,,ukc,r437,pt7
+a517,Crimson Face,2019-03-11,day,redpoint,Redpoint,Crowded,,ukc,r434,pt7
+a518,Slender Roof,2019-03-11,day,onsight,Onsight,,4,ukc,r435,pt7
+a519,Wild Gully,2019-03-11,day,onsight,Onsight,,,ukc,r433,pt7
+a520,Golden Gully,2019-03-12,day,hangdog,Hangdog,Perfect conditions,3,ukc,r441,
+a521,Slender Roof,2019-03-12,day,redpoint,Redpoint,,3,csv,r435,pt5
+a522,Wild Chimney,2019-03-12,day,lead,Led,,3,csv,r439,pt5
+a523,Wandering Wall,2019-03-12,day,redpoint,Redpoint,,,ukc,r440,pt5
+a524,Hidden Crack,2019-04-01,day,onsight,Onsight,,,csv,r99,
+a525,Narrow Ramp,2019-04-01,day,redpoint,Redpoint,Loved it,,ukc,r100,
+a526,Amber Traverse,2019-04-04,day,lead,Led,,,ukc,r144,pt7
+a527,Sleepy Arete,2019-04-04,day,lead,Led,,4,csv,r140,pt7
+a528,Silent Buttress,2019-04-05,day,second,Seconded,Loved it,4,ukc,r127,pt12
+a529,Shattered Route,2019-04-05,day,lead,Led,,,csv,r129,
+a530,Northern Pillar,2019-04-07,day,onsight,Onsight,Windy belay,,csv,r27,pt2
+a531,Crimson Chimney,2019-04-07,day,flash,Flash,,5,ukc,r31,pt2
+a532,Narrow Crack,2019-04-07,day,flash,Flash,,,manual,r34,pt2
+a533,Burning Traverse,2019-04-07,day,redpoint,Redpoint,,,ukc,r33,pt2
+a534,Crimson Chimney,2019-04-08,day,onsight,Onsight,Windy belay,,ukc,r31,pt4
+a535,Iron Arete,2019-04-08,day,flash,Flash,,,ukc,r26,pt4
+a536,Amber Groove,2019-04-08,day,lead,Led,,3,ukc,r24,pt4
+a537,Northern Pillar,2019-04-08,day,lead,Led,Soft for the grade,,ukc,r27,pt4
+a538,Amber Groove,2019-04-09,day,second,Seconded,Rain at the top,,csv,r24,pt12
+a539,Crimson Chimney,2019-04-09,day,redpoint,Redpoint,Perfect conditions,,csv,r31,pt12
+a540,Silent Traverse,2019-04-09,day,second,Seconded,,,manual,r28,pt12
+a541,Narrow Crack,2019-04-09,day,onsight,Onsight,,3,ukc,r34,pt12
+a542,Amber Groove,2019-04-10,day,flash,Flash,,,csv,r24,pt10
+a543,Broken Nose,2019-04-10,day,onsight,Onsight,,,ukc,r30,pt10
+a544,Northern Pillar,2019-04-10,day,lead,Led,,,manual,r27,
+a545,Broken Route,2019-04-10,day,lead,Led,,,ukc,r32,pt10
+a546,Pale Ramp,2019-05-14,day,top_rope,Top rope,,4,ukc,r174,pt8
+a547,Velvet Pillar,2019-05-14,day,lead,Led,,,ukc,r178,pt8
+a548,Broken Nose,2019-05-19,day,lead,Led,,,ukc,r30,pt12
+a549,Iron Arete,2019-05-20,day,lead,Led,Soft for the grade,,csv,r26,pt4
+a550,Dancing Traverse,2019-05-21,day,lead,Led,,,ukc,r9,
+a551,Wandering Groove,2019-06-03,day,lead,Led,,2,ukc,r201,
+a552,Silent Edge,2019-06-03,day,lead,Led,Cold fingers,3,csv,r203,
+a553,Golden Route,2019-06-03,day,redpoint,Redpoint,,5,csv,r205,
+a554,Wild Face,2019-06-04,day,top_rope,Top rope,Greasy start,,ukc,r199,pt2
+a555,Rusty Ramp,2019-06-04,day,second,Seconded,,1,ukc,r198,pt2
+a556,Hollow Wall,2019-06-04,day,onsight,Onsight,,2,ukc,r202,pt2
+a557,Rusty Ramp,2019-06-05,day,onsight,Onsight,,,ukc,r198,pt2
+a558,Wild Face,2019-06-05,day,lead,Led,Perfect conditions,,ukc,r199,pt2
+a559,Silent Edge,2019-06-05,day,onsight,Onsight,,3,ukc,r203,pt2
+a560,Wandering Groove,2019-06-06,day,lead,Led,Bring extra cams,2,ukc,r201,pt1
+a561,Golden Route,2019-06-06,day,lead,Led,Loved it,,csv,r205,pt1
+a562,Hollow Wall,2019-06-06,day,lead,Led,Polished holds,,manual,r202,pt1
+a563,Golden Traverse,2019-06-05,day,lead,Led,,2,csv,r38,pt2
+a564,Wild Traverse,2019-06-05,day,onsight,Onsight,Soft for the grade,4,manual,r42,pt2
+a565,Lonely Groove,2019-06-06,day,flash,Flash,Loved it,,ukc,r37,pt1
+a566,Wild Direct,2019-06-06,day,top_rope,Top rope,,4,ukc,r35,pt1
+a567,Wild Direct,2019-06-07,day,lead,Led,,1,csv,r35,pt10
+a568,Velvet Rib,2019-06-07,day,lead,Led,Greasy start,5,ukc,r43,pt10
+a569,Burning Buttress,2019-06-17,day,top_rope,Top rope,Long run-out,,manual,r29,
+a570,Broken Nose,2019-06-18,day,lead,Led,,,manual,r30,
+a571,Bitter Ramp,2019-07-22,day,second,Seconded,,5,csv,r221,pt7
+a572,Bitter Roof,2019-07-22,day,second,Seconded,,4,ukc,r220,pt7
+a573,Silent Gully,2019-08-03,day,onsight,Onsight,,1,ukc,r172,
+a574,Shattered Rib,2019-08-03,day,lead,Led,,2,ukc,r180,
+a575,Shattered Rib,2019-08-04,day,second,Seconded,Bring extra cams,,ukc,r180,pt6
+a576,Sleepy Route,2019-08-04,day,lead,Led,Windy belay,,csv,r179,pt6
+a577,Wandering Nose,2019-08-05,day,top_rope,Top rope,,,ukc,r160,pt6
+a578,Lonely Roof,2019-08-05,day,top_rope,Top rope,Cold fingers,,ukc,r150,pt6
+a579,Quiet Buttress,2019-08-17,day,lead,Led,,,ukc,r224,
+a580,Northern Traverse,2019-08-17,day,lead,Led,,,ukc,r228,
+a581,Hollow Gully,2019-08-20,day,onsight,Onsight,,,ukc,r276,pt3
+a582,Amber Corner,2019-08-20,day,onsight,Onsight,Hard for the grade,2,manual,r277,pt3
+a583,Quiet Arete,2019-08-21,day,send,Send,,3,ukc,r284,pt2
+a584,Sleepy Groove,2019-08-21,day,send,Send,,,csv,r282,pt2
+a585,Amber Corner,2019-08-22,day,send,Send,Greasy start,,csv,r277,pt3
+a586,Silent Flake,2019-08-22,day,send,Send,,,manual,r283,pt3
+a587,Shattered Pillar,2019-08-23,day,hangdog,Hangdog,,,csv,r260,pt5
+a588,Crimson Pillar,2019-08-23,day,onsight,Onsight,,1,ukc,r259,pt5
+a589,Wild Arete,2019-08-24,day,lead,Led,,,manual,r258,pt11
+a590,Rusty Direct,2019-08-24,day,redpoint,Redpoint,,,ukc,r261,pt11
+a591,Sleepy Groove,2019-08-25,day,onsight,Onsight,,,csv,r282,
+a592,Sleepy Nose,2019-08-25,day,send,Send,,,csv,r275,pt2
+a593,Crooked Groove,2019-08-26,day,redpoint,Redpoint,,3,ukc,r251,pt1
+a594,Crimson Pillar,2019-08-26,day,lead,Led,,,csv,r259,pt1
+a595,Wild Arete,2019-08-27,day,onsight,Onsight,,4,manual,r258,pt11
+a596,Dancing Direct,2019-08-27,day,lead,Led,Perfect conditions,3,csv,r257,pt11
+a597,Wild Ramp,2019-10-04,day,lead,Led,,3,ukc,r110,pt5
+a598,Silent Face,2019-10-04,day,lead,Led,,4,manual,r106,pt5
+a599,Slender Slab,2019-10-04,day,onsight,Onsight,Hard for the grade,,manual,r105,pt5
+a600,Crimson Direct,2019-10-05,day,onsight,Onsight,,,manual,r107,pt6
+a601,Wild Ramp,2019-10-05,day,onsight,Onsight,,,ukc,r110,pt6
+a602,Crimson Buttress,2019-10-05,day,redpoint,Redpoint,,2,csv,r103,pt6
+a603,Crimson Direct,2019-10-06,day,onsight,Onsight,,,ukc,r107,pt8
+a604,Wandering Face,2019-10-06,day,second,Seconded,,3,manual,r108,pt8
+a605,Gentle Rib,2019-10-06,day,lead,Led,,,ukc,r104,pt8
+a606,Hollow Direct,2019-10-05,day,second,Seconded,,4,manual,r2,pt3
+a607,Dancing Gully,2019-10-06,day,second,Seconded,,,manual,r21,pt6
+a608,Hollow Corner,2019-10-07,day,top_rope,Top rope,,,manual,r14,pt4
+a609,Quiet Slab,2019-10-12,day,top_rope,Top rope,Hard for the grade,2,ukc,r424,pt1
+a610,Crimson Roof,2019-10-12,day,flash,Flash,Polished holds,,manual,r428,pt1
+a611,Hidden Buttress,2019-10-12,day,onsight,Onsight,,2,ukc,r425,pt1
+a612,Quiet Face,2019-10-12,day,lead,Led,Great climbing,5,ukc,r423,pt1
+a613,Iron Rib,2019-10-13,day,send,Send,Rain at the top,1,ukc,r416,pt2
+a614,Gentle Groove,2019-10-13,day,send,Send,,1,ukc,r414,pt2
+a615,Velvet Groove,2019-10-13,day,flash,Flash,Crowded,3,ukc,r408,pt2
+a616,Silent Crack,2019-10-13,day,send,Send,Polished holds,,ukc,r412,pt2
+a617,Narrow Slab,2019-10-14,day,flash,Flash,,,manual,r417,pt6
+a618,Velvet Groove,2019-10-14,day,send,Send,Would repeat,5,ukc,r408,
+a619,Slender Wall,2019-10-14,day,send,Send,,5,ukc,r411,pt6
+a620,Gentle Groove,2019-10-14,day,send,Send,,3,csv,r414,pt6
+a621,Rusty Edge,2019-10-15,day,send,Send,,,manual,r415,pt12
+a622,Slender Wall,2019-10-15,day,send,Send,,,manual,r411,pt12
+a623,Velvet Groove,2019-10-15,day,send,Send,,,manual,r408,pt12
+a624,Pale Groove,2019-10-15,day,send,Send,,3,ukc,r409,pt12
+a625,Hidden Buttress,2019-10-16,day,flash,Flash,,4,manual,r425,pt10
+a626,Golden Rib,2019-10-16,day,second,Seconded,,4,manual,r422,pt10
+a627,Quiet Face,2019-10-16,day,lead,Led,Would repeat,,manual,r423,pt10
+a628,Pale Chimney,2019-10-16,day,lead,Led,Great climbing,2,manual,r426,pt10
+a629,Northern Face,2019-10-17,day,send,Send,,1,ukc,r413,pt5
+a630,Velvet Nose,2019-10-17,day,send,Send,Cold fingers,,ukc,r407,pt5
+a631,Gentle Groove,2019-10-17,day,flash,Flash,,,manual,r414,pt5
+a632,Narrow Slab,2019-10-17,day,onsight,Onsight,,4,ukc,r417,
+a633,Hidden Buttress,2019-10-18,day,second,Seconded,Greasy start,,csv,r425,pt3
+a634,Quiet Slab,2019-10-18,day,redpoint,Redpoint,Hard for the grade,,ukc,r424,pt3
+a635,Wandering Buttress,2019-10-18,day,onsight,Onsight,,,manual,r419,pt3
+a636,Crimson Roof,2019-10-18,day,lead,Led,,1,manual,r428,pt3
+a637,Silent Edge,2019-10-15,day,flash,Flash,,4,csv,r203,pt10
+a638,Rusty Ramp,2019-10-15,day,lead,Led,,4,csv,r198,pt10
+a639,Broken Ramp,2019-10-15,day,lead,Led,,3,ukc,r206,pt10
+a640,Hollow Wall,2019-10-15,day,redpoint,Redpoint,,,manual,r202,pt10
+a641,Wild Groove,2019-10-18,day,second,Seconded,,,csv,r82,pt8
+a642,Sleepy Slab,2019-10-18,day,lead,Led,,,manual,r84,pt8
+a643,Golden Wall,2019-10-18,day,lead,Led,,3,csv,r87,pt8
+a644,Quiet Traverse,2019-10-19,day,flash,Flash,,3,csv,r83,pt2
+a645,Sleepy Slab,2019-10-19,day,redpoint,Redpoint,,3,csv,r84,pt2
+a646,Lonely Wall,2019-10-19,day,flash,Flash,,,csv,r88,pt2
+a647,Burning Slab,2020-08-14,day,lead,Led,,1,manual,r66,
+a648,Rusty Corner,2020-08-14,day,second,Seconded,,2,ukc,r60,
+a649,Burning Rib,2020-08-14,day,lead,Led,Soft for the grade,1,manual,r61,
+a650,Wandering Traverse,2020-08-15,day,lead,Led,,2,manual,r62,
+a651,Hidden Chimney,2020-08-15,day,second,Seconded,,2,ukc,r56,pt8
+a652,Burning Slab,2020-08-15,day,redpoint,Redpoint,,5,ukc,r66,pt8
+a653,Quiet Groove,2020-08-16,day,onsight,Onsight,,,ukc,r63,
+a654,Crimson Crack,2020-08-16,day,top_rope,Top rope,,4,manual,r58,
+a655,Hollow Face,2020-08-16,day,lead,Led,Soft for the grade,1,ukc,r59,
+a656,Wild Slab,2020-09-02,day,second,Seconded,,3,csv,r6,pt3
+a657,Bitter Gully,2020-09-02,day,onsight,Onsight,,,csv,r7,pt3
+a658,Wild Slab,2020-09-03,day,onsight,Onsight,,,ukc,r6,pt9
+a659,Iron Traverse,2020-09-03,day,top_rope,Top rope,,3,ukc,r3,pt9
+a660,Slender Corner,2020-09-04,day,lead,Led,Long run-out,4,manual,r13,pt5
+a661,Rusty Groove,2020-09-04,day,redpoint,Redpoint,Polished holds,4,ukc,r11,pt5
+a662,Slender Gully,2020-09-12,day,lead,Led,Crowded,4,ukc,r138,pt2
+a663,Wild Slab,2020-09-19,day,top_rope,Top rope,Would repeat,,csv,r6,pt11
+a664,Crooked Roof,2020-09-19,day,lead,Led,,,manual,r1,pt11
+a665,Crooked Buttress,2020-09-19,day,lead,Led,,3,manual,r12,pt11
+a666,Burning Buttress,2020-10-01,day,lead,Led,,,ukc,r29,pt1
+a667,Gentle Rib,2020-10-02,day,redpoint,Redpoint,,4,manual,r104,pt4
+a668,Velvet Flake,2020-10-02,day,flash,Flash,,,ukc,r109,pt4
+a669,Slender Slab,2020-10-02,day,top_rope,Top rope,,,ukc,r105,pt4
+a670,Hidden Wall,2020-10-02,day,redpoint,Redpoint,,,csv,r102,pt4
+a671,Iron Buttress,2020-10-03,day,lead,Led,Cold fingers,,ukc,r97,pt8
+a672,Sleepy Face,2020-10-03,day,lead,Led,Crowded,4,ukc,r94,pt8
+a673,Gentle Arete,2020-10-03,day,lead,Led,,,csv,r93,pt8
+a674,Burning Crack,2020-10-03,day,lead,Led,,,ukc,r90,pt8
+a675,Velvet Chimney,2021-03-10,day,lead,Led,,2,manual,r46,pt3
+a676,Dancing Nose,2021-03-10,day,lead,Led,,4,ukc,r53,pt3
+a677,Bitter Arete,2021-03-10,day,second,Seconded,,,csv,r54,pt3
+a678,Hidden Arete,2021-03-10,day,top_rope,Top rope,,5,ukc,r55,pt3
+a679,Silent Traverse,2021-03-11,day,onsight,Onsight,Long run-out,1,ukc,r28,
+a680,Iron Arete,2021-03-11,day,second,Seconded,Rain at the top,4,ukc,r26,
+a681,Silent Groove,2021-03-11,day,second,Seconded,,,csv,r25,
+a682,Crimson Chimney,2021-03-11,day,redpoint,Redpoint,,4,ukc,r31,
+a683,Pale Roof,2021-03-15,day,hangdog,Hangdog,,4,manual,r310,pt2
+a684,Crooked Flake,2021-03-15,day,redpoint,Redpoint,Would repeat,,manual,r312,pt2
+a685,Hidden Rib,2021-03-15,day,flash,Flash,,2,csv,r313,pt2
+a686,Hollow Traverse,2021-03-15,day,onsight,Onsight,,3,ukc,r308,pt2
+a687,Quiet Route,2021-03-15,day,lead,Led,Polished holds,,ukc,r318,pt2
+a688,Crooked Flake,2021-03-16,day,redpoint,Redpoint,Crowded,4,ukc,r312,
+a689,Hidden Rib,2021-03-16,day,lead,Led,,,ukc,r313,pt2
+a690,Shattered Gully,2021-03-16,day,onsight,Onsight,,3,csv,r317,pt2
+a691,Pale Roof,2021-03-16,day,lead,Led,,1,manual,r310,pt2
+a692,Slender Nose,2021-03-16,day,redpoint,Redpoint,,5,manual,r315,pt2
+a693,Shattered Gully,2021-03-17,day,hangdog,Hangdog,,,ukc,r317,
+a694,Gentle Flake,2021-03-17,day,redpoint,Redpoint,,,manual,r314,pt3
+a695,Hollow Traverse,2021-03-17,day,redpoint,Redpoint,,4,csv,r308,pt3
+a696,Crimson Groove,2021-03-17,day,redpoint,Redpoint,,,ukc,r309,pt3
+a697,Hidden Rib,2021-03-17,day,lead,Led,,5,ukc,r313,pt3
+a698,Quiet Wall,2021-03-18,day,lead,Led,,4,manual,r316,pt11
+a699,Gentle Flake,2021-03-18,day,onsight,Onsight,,3,csv,r314,pt11
+a700,Crimson Groove,2021-03-18,day,onsight,Onsight,,5,ukc,r309,pt11
+a701,Hollow Traverse,2021-03-18,day,redpoint,Redpoint,,,ukc,r308,pt11
+a702,Pale Roof,2021-03-18,day,redpoint,Redpoint,Perfect conditions,,csv,r310,pt11
+a703,Crimson Flake,2021-03-19,day,onsight,Onsight,,,ukc,r311,pt2
+a704,Hollow Traverse,2021-03-19,day,onsight,Onsight,,3,ukc,r308,pt2
+a705,Gentle Flake,2021-03-19,day,flash,Flash,Soft for the grade,5,manual,r314,pt2
+a706,Hidden Rib,2021-03-19,day,lead,Led,,2,ukc,r313,pt2
+a707,Crimson Groove,2021-03-19,day,lead,Led,Soft for the grade,,ukc,r309,pt2
+a708,Gentle Flake,2021-03-20,day,hangdog,Hangdog,,4,csv,r314,pt2
+a709,Hollow Traverse,2021-03-20,day,redpoint,Redpoint,,2,ukc,r308,
+a710,Pale Roof,2021-03-20,day,onsight,Onsight,,,manual,r310,pt2
+a711,Crooked Flake,2021-03-20,day,hangdog,Hangdog,,3,csv,r312,
+a712,Crimson Flake,2021-03-20,day,redpoint,Redpoint,,4,ukc,r311,pt2
+a713,Hidden Rib,2021-03-21,day,redpoint,Redpoint,,3,csv,r313,pt1
+a714,Shattered Gully,2021-03-21,day,onsight,Onsight,Hard for the grade,,manual,r317,pt1
+a715,Gentle Flake,2021-03-21,day,redpoint,Redpoint,,4,manual,r314,pt1
+a716,Quiet Wall,2021-03-21,day,onsight,Onsight,Perfect conditions,4,ukc,r316,pt1
+a717,Hollow Traverse,2021-03-21,day,redpoint,Redpoint,,4,ukc,r308,pt1
+a718,Crooked Flake,2021-03-22,day,lead,Led,,,ukc,r312,pt9
+a719,Crimson Groove,2021-03-22,day,lead,Led,,3,ukc,r309,pt9
+a720,Crimson Flake,2021-03-22,day,redpoint,Redpoint,,3,ukc,r311,pt9
+a721,Gentle Flake,2021-03-22,day,redpoint,Redpoint,,,ukc,r314,pt9
+a722,Quiet Wall,2021-03-22,day,flash,Flash,,4,ukc,r316,pt9
+a723,Hollow Traverse,2021-03-23,day,onsight,Onsight,,,csv,r308,pt5
+a724,Gentle Flake,2021-03-23,day,flash,Flash,Windy belay,1,ukc,r314,pt5
+a725,Hidden Rib,2021-03-23,day,redpoint,Redpoint,,,ukc,r313,pt5
+a726,Quiet Route,2021-03-23,day,redpoint,Redpoint,Crowded,,csv,r318,
+a727,Crooked Flake,2021-03-23,day,lead,Led,Polished holds,5,ukc,r312,pt5
+a728,Quiet Wall,2021-03-24,day,redpoint,Redpoint,,1,ukc,r316,pt12
+a729,Hollow Traverse,2021-03-24,day,hangdog,Hangdog,,2,ukc,r308,pt12
+a730,Quiet Route,2021-03-24,day,flash,Flash,,,ukc,r318,pt12
+a731,Slender Nose,2021-03-24,day,redpoint,Redpoint,Polished holds,3,csv,r315,pt12
+a732,Crimson Flake,2021-03-24,day,redpoint,Redpoint,,4,csv,r311,pt12
+a733,Hollow Edge,2021-04-27,day,redpoint,Redpoint,,2,csv,r248,
+a734,Lonely Pillar,2021-04-27,day,onsight,Onsight,Loved it,5,manual,r249,
+a735,Hollow Edge,2021-04-28,day,flash,Flash,,,csv,r248,pt8
+a736,Gentle Face,2021-04-28,day,lead,Led,Rain at the top,4,csv,r242,pt8
+a737,Gentle Face,2021-04-29,day,lead,Led,Polished holds,4,ukc,r242,
+a738,Dancing Wall,2021-04-29,day,lead,Led,,3,ukc,r244,
+a739,Dancing Chimney,2021-04-30,day,lead,Led,,,ukc,r246,
+a740,Dancing Wall,2021-04-30,day,redpoint,Redpoint,,3,ukc,r244,pt8
+a741,Iron Slab,2021-05-04,day,onsight,Onsight,,5,csv,r52,
+a742,Dancing Arete,2021-05-04,day,redpoint,Redpoint,,,manual,r44,pt4
+a743,Bitter Nose,2021-05-05,day,onsight,Onsight,,,csv,r45,
+a744,Slender Rib,2021-05-05,day,lead,Led,,3,ukc,r50,
+a745,Iron Slab,2021-05-06,day,lead,Led,,,csv,r52,
+a746,Hidden Arete,2021-05-06,day,lead,Led,Loved it,1,ukc,r55,
+a747,Pale Route,2021-05-06,day,redpoint,Redpoint,,,ukc,r39,
+a748,Wild Buttress,2021-05-06,day,flash,Flash,,2,ukc,r36,
+a749,Hidden Arete,2021-05-17,day,lead,Led,,,ukc,r55,pt10
+a750,Velvet Chimney,2021-05-18,day,lead,Led,Bring extra cams,4,ukc,r46,pt1
+a751,Hidden Arete,2021-05-19,day,second,Seconded,,3,ukc,r55,pt6
+a752,Dancing Arete,2021-05-20,day,second,Seconded,Polished holds,2,manual,r44,pt4
+a753,Quiet Direct,2021-05-20,day,onsight,Onsight,,,csv,r132,
+a754,Silent Buttress,2021-05-20,day,top_rope,Top rope,,2,manual,r127,
+a755,Rusty Rib,2021-05-20,day,lead,Led,,,ukc,r123,
+a756,Iron Route,2021-05-20,day,second,Seconded,Rain at the top,1,ukc,r134,
+a757,Lonely Traverse,2021-05-21,day,lead,Led,Hard for the grade,4,ukc,r111,pt5
+a758,Pale Wall,2021-05-21,day,onsight,Onsight,Greasy start,3,ukc,r114,pt5
+a759,Hollow Arete,2021-05-21,day,top_rope,Top rope,,,manual,r116,pt5
+a760,Broken Rib,2021-05-21,day,lead,Led,,,ukc,r118,
+a761,Crimson Nose,2021-05-22,day,second,Seconded,Perfect conditions,,ukc,r120,pt7
+a762,Hidden Direct,2021-05-22,day,second,Seconded,Cold fingers,2,ukc,r113,pt7
+a763,Shattered Nose,2021-05-22,day,flash,Flash,,,ukc,r117,
+a764,Hollow Arete,2021-05-22,day,lead,Led,Windy belay,,manual,r116,
+a765,Shattered Nose,2021-05-23,day,top_rope,Top rope,,3,csv,r117,pt1
+a766,Hollow Arete,2021-05-23,day,onsight,Onsight,,,ukc,r116,pt1
+a767,Burning Flake,2021-05-23,day,lead,Led,,2,csv,r115,
+a768,Sleepy Corner,2021-05-23,day,second,Seconded,Bring extra cams,,ukc,r119,pt1
+a769,Broken Nose,2021-05-24,day,onsight,Onsight,,3,manual,r30,pt6
+a770,Broken Route,2021-05-25,day,lead,Led,,4,csv,r32,pt9
+a771,Pale Crack,2021-07-09,day,lead,Led,,,csv,r76,pt9
+a772,Bitter Corner,2021-07-09,day,redpoint,Redpoint,,,ukc,r80,pt9
+a773,Hidden Slab,2021-07-09,day,lead,Led,,3,manual,r70,pt9
+a774,Dancing Edge,2021-07-09,day,onsight,Onsight,,3,ukc,r68,pt9
+a775,Hidden Arete,2021-07-17,day,onsight,Onsight,,5,manual,r55,
+a776,Bitter Arete,2021-07-17,day,second,Seconded,Loved it,,csv,r54,
+a777,Velvet Chimney,2021-07-17,day,second,Seconded,,5,ukc,r46,
+a778,Crooked Arete,2021-08-05,day,lead,Led,,,ukc,r64,pt7
+a779,Crimson Crack,2021-08-06,day,second,Seconded,Windy belay,,manual,r58,
+a780,Golden Face,2021-08-06,day,lead,Led,Bring extra cams,3,ukc,r152,
+a781,Gentle Ramp,2021-08-06,day,lead,Led,,,ukc,r155,pt2
+a782,Iron Route,2021-08-14,day,flash,Flash,,4,ukc,r134,pt4
+a783,Shattered Route,2021-08-14,day,lead,Led,,3,ukc,r129,pt4
+a784,Velvet Face,2021-08-15,day,onsight,Onsight,,,ukc,r122,
+a785,Pale Wall,2021-08-15,day,lead,Led,,,manual,r114,
+a786,Shattered Route,2021-08-16,day,lead,Led,,5,ukc,r129,pt6
+a787,Iron Route,2021-08-16,day,second,Seconded,Cold fingers,3,manual,r134,pt6
+a788,Pale Wall,2021-08-17,day,onsight,Onsight,,,ukc,r114,
+a789,Burning Flake,2021-08-17,day,redpoint,Redpoint,,,ukc,r115,
+a790,Quiet Ramp,2021-08-20,day,top_rope,Top rope,,3,csv,r247,pt6
+a791,Iron Edge,2021-08-20,day,second,Seconded,,4,manual,r245,pt6
+a792,Silent Ramp,2021-08-20,day,lead,Led,,4,ukc,r243,pt6
+a793,Dancing Chimney,2021-08-20,day,second,Seconded,,,manual,r246,pt6
+a794,Dancing Chimney,2021-08-21,day,onsight,Onsight,,2,ukc,r246,pt3
+a795,Iron Edge,2021-08-21,day,second,Seconded,,,ukc,r245,pt3
+a796,Lonely Pillar,2021-08-21,day,onsight,Onsight,,,ukc,r249,pt3
+a797,Hollow Edge,2021-08-21,day,flash,Flash,,3,csv,r248,pt3
+a798,Crooked Edge,2021-09-05,day,lead,Led,Greasy start,3,ukc,r67,
+a799,Broken Flake,2021-09-05,day,flash,Flash,,3,ukc,r65,pt9
+a800,Hidden Chimney,2021-09-05,day,lead,Led,,5,ukc,r56,
+a801,Crimson Crack,2021-09-05,day,lead,Led,,2,manual,r58,pt9
+a802,Northern Flake,2021-09-22,day,lead,Led,,5,manual,r81,pt1
+a803,Lonely Arete,2021-09-22,day,onsight,Onsight,,,manual,r89,pt1
+a804,Wandering Crack,2021-10-18,day,onsight,Onsight,,,csv,r362,pt12
+a805,Quiet Gully,2021-10-18,day,redpoint,Redpoint,,,ukc,r369,pt12
+a806,Rusty Flake,2021-10-18,day,redpoint,Redpoint,,,ukc,r365,pt12
+a807,Broken Chimney,2021-10-19,day,onsight,Onsight,,1,ukc,r364,
+a808,Rusty Flake,2021-10-19,day,redpoint,Redpoint,,,ukc,r365,
+a809,Lonely Chimney,2021-10-19,day,flash,Flash,Bring extra cams,3,csv,r366,
+a810,Silent Nose,2021-10-20,day,onsight,Onsight,Bring extra cams,,manual,r368,
+a811,Silent Wall,2021-10-20,day,redpoint,Redpoint,,,ukc,r363,
+a812,Rusty Gully,2021-10-20,day,onsight,Onsight,Long run-out,5,manual,r360,
+a813,Wandering Crack,2021-10-21,day,redpoint,Redpoint,,,ukc,r362,
+a814,Velvet Corner,2021-10-21,day,onsight,Onsight,,,ukc,r367,pt2
+a815,Rusty Flake,2021-10-21,day,redpoint,Redpoint,Great climbing,,manual,r365,pt2
+a816,Silent Nose,2021-10-22,day,redpoint,Redpoint,,,manual,r368,pt4
+a817,Rusty Gully,2021-10-22,day,onsight,Onsight,,,ukc,r360,pt4
+a818,Silent Wall,2021-10-22,day,redpoint,Redpoint,Soft for the grade,4,ukc,r363,pt4
+a819,Broken Chimney,2021-10-23,day,flash,Flash,,,ukc,r364,pt12
+a820,Silent Wall,2021-10-23,day,redpoint,Redpoint,,,ukc,r363,pt12
+a821,Rusty Gully,2021-10-23,day,onsight,Onsight,,3,ukc,r360,pt12
+a822,Quiet Gully,2021-10-24,day,redpoint,Redpoint,,,ukc,r369,pt7
+a823,Rusty Flake,2021-10-24,day,redpoint,Redpoint,Soft for the grade,,csv,r365,pt7
+a824,Silent Wall,2021-10-24,day,hangdog,Hangdog,,4,csv,r363,pt7
+a825,Velvet Corner,2021-10-25,day,redpoint,Redpoint,,4,ukc,r367,pt9
+a826,Quiet Gully,2021-10-25,day,lead,Led,Soft for the grade,,ukc,r369,pt9
+a827,Wandering Crack,2021-10-25,day,lead,Led,,,manual,r362,pt9
+a828,Wandering Crack,2021-10-26,day,redpoint,Redpoint,,,csv,r362,pt4
+a829,Broken Chimney,2021-10-26,day,flash,Flash,,,manual,r364,pt4
+a830,Silent Wall,2021-10-26,day,onsight,Onsight,,3,ukc,r363,pt4
+a831,Rusty Gully,2021-10-27,day,redpoint,Redpoint,Would repeat,1,csv,r360,pt8
+a832,Velvet Corner,2021-10-27,day,flash,Flash,Polished holds,3,ukc,r367,pt8
+a833,Silent Wall,2021-10-27,day,onsight,Onsight,,,manual,r363,pt8
+a834,Silent Nose,2021-10-28,day,onsight,Onsight,,3,csv,r368,
+a835,Rusty Flake,2021-10-28,day,redpoint,Redpoint,,5,csv,r365,
+a836,Velvet Corner,2021-10-28,day,lead,Led,,2,csv,r367,
+a837,Lonely Nose,2022-04-11,day,second,Seconded,Would repeat,3,manual,r4,pt8
+a838,Hollow Ramp,2022-04-11,day,lead,Led,,5,ukc,r5,pt8
+a839,Bitter Gully,2022-04-11,day,lead,Led,,,ukc,r7,pt8
+a840,Hollow Crack,2022-04-12,day,lead,Led,Cold fingers,,csv,r8,
+a841,Bitter Gully,2022-04-12,day,lead,Led,,3,ukc,r7,pt2
+a842,Dancing Traverse,2022-04-12,day,lead,Led,,4,manual,r9,pt2
+a843,Lonely Nose,2022-04-13,day,lead,Led,Bring extra cams,,manual,r4,pt10
+a844,Crooked Buttress,2022-04-13,day,lead,Led,,4,ukc,r12,pt10
+a845,Dancing Traverse,2022-04-13,day,lead,Led,Rain at the top,4,csv,r9,pt10
+a846,Northern Pillar,2022-05-04,day,lead,Led,Perfect conditions,,ukc,r27,pt7
+a847,Amber Groove,2022-05-04,day,onsight,Onsight,,2,ukc,r24,pt7
+a848,Burning Buttress,2022-05-04,day,second,Seconded,Rain at the top,,csv,r29,pt7
+a849,Northern Pillar,2022-05-05,day,lead,Led,,4,csv,r27,pt6
+a850,Silent Traverse,2022-05-05,day,redpoint,Redpoint,,,ukc,r28,pt6
+a851,Silent Groove,2022-05-05,day,second,Seconded,Cold fingers,,ukc,r25,pt6
+a852,Narrow Crack,2022-05-06,day,onsight,Onsight,Polished holds,3,ukc,r34,pt3
+a853,Silent Traverse,2022-05-06,day,redpoint,Redpoint,,,manual,r28,pt3
+a854,Silent Groove,2022-05-06,day,lead,Led,,,ukc,r25,pt3
+a855,Rusty Buttress,2022-05-08,day,top_rope,Top rope,,,ukc,r173,
+a856,Pale Ramp,2022-05-08,day,second,Seconded,Long run-out,,ukc,r174,
+a857,Lonely Route,2022-05-08,day,flash,Flash,,,ukc,r175,
+a858,Crimson Corner,2022-05-17,day,redpoint,Redpoint,,,csv,r270,pt9
+a859,Narrow Pillar,2022-05-17,day,hangdog,Hangdog,,,manual,r269,pt9
+a860,Lonely Crack,2022-05-18,day,redpoint,Redpoint,,,manual,r263,pt3
+a861,Amber Ramp,2022-05-18,day,lead,Led,,4,csv,r266,pt3
+a862,Lonely Crack,2022-05-19,day,onsight,Onsight,Crowded,5,ukc,r263,pt7
+a863,Slender Crack,2022-05-19,day,hangdog,Hangdog,,3,manual,r265,pt7
+a864,Bitter Rib,2022-05-20,day,redpoint,Redpoint,Windy belay,,manual,r264,pt1
+a865,Amber Ramp,2022-05-20,day,onsight,Onsight,,,ukc,r266,pt1
+a866,Amber Ramp,2022-05-21,day,hangdog,Hangdog,Cold fingers,4,ukc,r266,pt8
+a867,Bitter Rib,2022-05-21,day,lead,Led,Rain at the top,,ukc,r264,pt8
+a868,Narrow Pillar,2022-05-22,day,onsight,Onsight,,,manual,r269,pt4
+a869,Wild Corner,2022-05-22,day,lead,Led,,,csv,r271,pt4
+a870,Wandering Roof,2022-05-23,day,lead,Led,,,csv,r273,pt8
+a871,Amber Ramp,2022-05-23,day,redpoint,Redpoint,,3,csv,r266,
+a872,Amber Ramp,2022-05-24,day,redpoint,Redpoint,,,ukc,r266,
+a873,Golden Ramp,2022-05-24,day,redpoint,Redpoint,Bring extra cams,,ukc,r267,
+a874,Slender Traverse,2022-06-23,day,lead,Led,,5,manual,r193,pt5
+a875,Wild Pillar,2022-06-23,day,lead,Led,Would repeat,1,manual,r189,
+a876,Shattered Chimney,2022-06-23,day,lead,Led,,,manual,r185,
+a877,Wild Edge,2022-06-24,day,second,Seconded,,5,ukc,r183,pt2
+a878,Wild Pillar,2022-06-24,day,second,Seconded,,,ukc,r189,pt2
+a879,Pale Flake,2022-06-24,day,second,Seconded,Loved it,,csv,r184,pt2
+a880,Bitter Route,2022-06-25,day,onsight,Onsight,,,csv,r191,
+a881,Wild Edge,2022-06-25,day,lead,Led,,,csv,r183,
+a882,Velvet Route,2022-06-25,day,lead,Led,,,manual,r194,
+a883,Crooked Crack,2022-07-09,day,onsight,Onsight,Polished holds,2,ukc,r86,pt8
+a884,Northern Flake,2022-07-10,day,lead,Led,,1,csv,r81,
+a885,Pale Route,2022-07-15,day,onsight,Onsight,Windy belay,,csv,r39,pt5
+a886,Wild Traverse,2022-07-15,day,flash,Flash,,4,ukc,r42,pt5
+a887,Pale Route,2022-07-16,day,second,Seconded,,3,manual,r39,pt3
+a888,Lonely Groove,2022-07-16,day,lead,Led,,,csv,r37,
+a889,Wild Buttress,2022-07-17,day,lead,Led,,,ukc,r36,pt4
+a890,Lonely Groove,2022-07-17,day,redpoint,Redpoint,Long run-out,,ukc,r37,pt4
+a891,Crimson Edge,2022-07-23,day,second,Seconded,,,ukc,r40,pt12
+a892,Wild Traverse,2022-07-23,day,lead,Led,,4,ukc,r42,pt12
+a893,Wild Buttress,2022-07-23,day,second,Seconded,,3,csv,r36,pt12
+a894,Pale Route,2022-07-23,day,lead,Led,Bring extra cams,,csv,r39,
+a895,Velvet Rib,2022-07-24,day,lead,Led,,,csv,r43,pt5
+a896,Wild Direct,2022-07-24,day,lead,Led,Hard for the grade,1,ukc,r35,pt5
+a897,Narrow Arete,2022-07-24,day,lead,Led,Windy belay,,manual,r41,pt5
+a898,Wild Traverse,2022-07-24,day,onsight,Onsight,Soft for the grade,,csv,r42,pt5
+a899,Wild Buttress,2022-07-25,day,onsight,Onsight,,3,csv,r36,pt9
+a900,Wild Traverse,2022-07-25,day,onsight,Onsight,,3,manual,r42,pt9
+a901,Wild Direct,2022-07-25,day,lead,Led,,,ukc,r35,pt9
+a902,Crimson Edge,2022-07-25,day,second,Seconded,Long run-out,,csv,r40,
+a903,Pale Route,2022-07-26,day,lead,Led,,,ukc,r39,pt5
+a904,Wild Direct,2022-07-26,day,second,Seconded,,4,csv,r35,pt5
+a905,Narrow Arete,2022-07-26,day,redpoint,Redpoint,,5,csv,r41,
+a906,Wild Traverse,2022-07-26,day,second,Seconded,,,manual,r42,pt5
+a907,Crimson Chimney,2022-08-24,day,lead,Led,Long run-out,,csv,r31,pt3
+a908,Silent Traverse,2022-08-24,day,flash,Flash,,3,ukc,r28,pt3
+a909,Crooked Face,2022-08-25,day,onsight,Onsight,,4,ukc,r47,pt9
+a910,Crimson Wall,2022-08-25,day,onsight,Onsight,,2,ukc,r49,pt9
+a911,Rusty Corner,2022-09-02,day,redpoint,Redpoint,,3,ukc,r60,pt10
+a912,Northern Groove,2022-09-02,day,second,Seconded,,,csv,r57,pt10
+a913,Burning Slab,2022-09-02,day,second,Seconded,,,manual,r66,pt10
+a914,Hidden Chimney,2022-09-02,day,redpoint,Redpoint,Windy belay,,csv,r56,pt10
+a915,Hollow Face,2022-09-03,day,lead,Led,,3,csv,r59,pt6
+a916,Crooked Arete,2022-09-03,day,second,Seconded,,,csv,r64,pt6
+a917,Burning Slab,2022-09-03,day,lead,Led,,,ukc,r66,pt6
+a918,Crimson Crack,2022-09-03,day,second,Seconded,,3,ukc,r58,pt6
+a919,Slender Pillar,2022-09-09,day,lead,Led,,3,ukc,r214,pt11
+a920,Sleepy Ramp,2022-09-10,day,lead,Led,Perfect conditions,,ukc,r200,
+a921,Burning Buttress,2022-09-23,day,lead,Led,,2,csv,r29,pt7
+a922,Crimson Chimney,2022-09-23,day,second,Seconded,Cold fingers,,manual,r31,pt7
+a923,Lonely Nose,2022-09-23,day,lead,Led,,2,ukc,r4,pt2
+a924,Rusty Groove,2022-09-23,day,onsight,Onsight,,,ukc,r11,pt2
+a925,Silent Chimney,2022-09-24,day,top_rope,Top rope,,,ukc,r10,pt6
+a926,Dancing Traverse,2022-09-24,day,lead,Led,,4,ukc,r9,pt6
+a927,Bitter Gully,2022-09-25,day,onsight,Onsight,,,manual,r7,
+a928,Dancing Traverse,2022-09-25,day,lead,Led,,5,ukc,r9,pt9
+a929,Hollow Crack,2022-09-26,day,redpoint,Redpoint,,5,ukc,r8,
+a930,Slender Corner,2022-09-26,day,onsight,Onsight,,2,csv,r13,
+a931,Rusty Nose,2022-10-04,day,lead,Led,,,ukc,r18,pt1
+a932,Dancing Flake,2022-10-04,day,lead,Led,,,csv,r20,pt1
+a933,Northern Corner,2022-10-05,day,lead,Led,,1,manual,r19,pt10
+a934,Crooked Traverse,2022-10-05,day,lead,Led,,5,ukc,r16,pt10
+a935,Hidden Nose,2022-10-06,day,redpoint,Redpoint,,5,ukc,r23,pt9
+a936,Dancing Gully,2022-10-06,day,second,Seconded,,,ukc,r21,pt9
+a937,Burning Traverse,2022-10-22,day,redpoint,Redpoint,Greasy start,,ukc,r33,
+a938,Crimson Chimney,2022-10-22,day,second,Seconded,,4,ukc,r31,pt11
+a939,Silent Traverse,2022-10-22,day,lead,Led,,,ukc,r28,pt11
+a940,Broken Nose,2022-10-22,day,redpoint,Redpoint,Long run-out,,csv,r30,pt11
+a941,Iron Corner,2022-10-26,day,redpoint,Redpoint,,3,manual,r192,pt6
+a942,Narrow Corner,2022-10-27,day,onsight,Onsight,,1,ukc,r187,pt7
+a943,Bitter Route,2022-10-28,day,flash,Flash,,4,manual,r191,pt9
+a944,Slender Traverse,2022-10-29,day,second,Seconded,Greasy start,4,manual,r193,pt6
+a945,Amber Flake,2022-11-19,day,hangdog,Hangdog,,,ukc,r343,pt2
+a946,Lonely Gully,2022-11-19,day,lead,Led,,,ukc,r340,pt2
+a947,Lonely Slab,2022-11-19,day,onsight,Onsight,,,ukc,r348,pt2
+a948,Burning Nose,2022-11-19,day,hangdog,Hangdog,,4,manual,r349,pt2
+a949,Silent Pillar,2022-11-19,day,onsight,Onsight,,,manual,r342,pt2
+a950,Golden Pillar,2022-11-20,day,flash,Flash,Polished holds,2,ukc,r345,
+a951,Lonely Slab,2022-11-20,day,onsight,Onsight,,,csv,r348,
+a952,Silent Pillar,2022-11-20,day,hangdog,Hangdog,Windy belay,4,manual,r342,
+a953,Lonely Gully,2022-11-20,day,redpoint,Redpoint,,,manual,r340,
+a954,Burning Nose,2022-11-20,day,redpoint,Redpoint,Windy belay,4,ukc,r349,
+a955,Silent Pillar,2022-11-21,day,onsight,Onsight,Rain at the top,,ukc,r342,pt2
+a956,Lonely Gully,2022-11-21,day,redpoint,Redpoint,,,csv,r340,pt2
+a957,Lonely Slab,2022-11-21,day,lead,Led,,,ukc,r348,pt2
+a958,Golden Edge,2022-11-21,day,redpoint,Redpoint,Greasy start,4,ukc,r341,pt2
+a959,Rusty Crack,2022-11-21,day,lead,Led,,,ukc,r344,pt2
+a960,Crooked Chimney,2022-11-22,day,redpoint,Redpoint,Crowded,,ukc,r325,
+a961,Northern Rib,2022-11-22,day,flash,Flash,,,csv,r322,
+a962,Hidden Face,2022-11-22,day,lead,Led,,,manual,r320,
+a963,Silent Direct,2022-11-22,day,redpoint,Redpoint,,,ukc,r326,
+a964,Sleepy Edge,2022-11-22,day,redpoint,Redpoint,Would repeat,1,csv,r323,
+a965,Broken Corner,2022-11-23,day,lead,Led,,,manual,r319,pt6
+a966,Hidden Face,2022-11-23,day,redpoint,Redpoint,,4,manual,r320,pt6
+a967,Gentle Nose,2022-11-23,day,onsight,Onsight,,4,ukc,r324,pt6
+a968,Crooked Chimney,2022-11-23,day,hangdog,Hangdog,,5,manual,r325,pt6
+a969,Silent Direct,2022-11-23,day,hangdog,Hangdog,,4,manual,r326,pt6
+a970,Shattered Gully,2022-11-24,day,flash,Flash,Cold fingers,2,manual,r317,pt8
+a971,Hidden Rib,2022-11-24,day,redpoint,Redpoint,,3,ukc,r313,pt8
+a972,Quiet Route,2022-11-24,day,lead,Led,,,manual,r318,pt8
+a973,Quiet Wall,2022-11-24,day,redpoint,Redpoint,,,csv,r316,pt8
+a974,Pale Roof,2022-11-24,day,lead,Led,,,manual,r310,pt8
+a975,Hidden Rib,2022-11-25,day,onsight,Onsight,,,ukc,r313,pt4
+a976,Crimson Flake,2022-11-25,day,redpoint,Redpoint,,4,ukc,r311,pt4
+a977,Shattered Gully,2022-11-25,day,redpoint,Redpoint,,1,csv,r317,pt4
+a978,Gentle Flake,2022-11-25,day,lead,Led,,,csv,r314,pt4
+a979,Crooked Flake,2022-11-25,day,flash,Flash,Perfect conditions,1,csv,r312,pt4
+a980,Silent Pillar,2022-11-26,day,hangdog,Hangdog,Bring extra cams,4,csv,r342,pt11
+a981,Lonely Slab,2022-11-26,day,hangdog,Hangdog,Bring extra cams,3,ukc,r348,pt11
+a982,Crimson Route,2022-11-26,day,redpoint,Redpoint,,1,csv,r346,pt11
+a983,Golden Edge,2022-11-26,day,onsight,Onsight,Greasy start,4,ukc,r341,pt11
+a984,Amber Flake,2022-11-26,day,hangdog,Hangdog,,,ukc,r343,pt11
+a985,Crooked Chimney,2022-11-27,day,hangdog,Hangdog,Bring extra cams,,manual,r325,pt8
+a986,Silent Direct,2022-11-27,day,redpoint,Redpoint,Would repeat,2,ukc,r326,pt8
+a987,Hidden Face,2022-11-27,day,hangdog,Hangdog,,5,ukc,r320,pt8
+a988,Northern Edge,2022-11-27,day,redpoint,Redpoint,Polished holds,,ukc,r321,pt8
+a989,Broken Corner,2022-11-27,day,onsight,Onsight,Soft for the grade,,ukc,r319,pt8
+a990,Shattered Flake,2023-03-19,day,lead,Led,,,ukc,r164,pt1
+a991,Velvet Direct,2023-03-19,day,lead,Led,,3,csv,r162,pt1
+a992,Broken Roof,2023-03-19,day,lead,Led,,,ukc,r166,pt1
+a993,Shattered Flake,2023-03-20,day,onsight,Onsight,,,ukc,r164,
+a994,Dancing Crack,2023-03-20,day,lead,Led,Cold fingers,,csv,r161,
+a995,Gentle Gully,2023-03-20,day,lead,Led,,1,ukc,r163,
+a996,Velvet Direct,2023-03-21,day,second,Seconded,,3,csv,r162,
+a997,Dancing Crack,2023-03-21,day,redpoint,Redpoint,Cold fingers,,csv,r161,
+a998,Gentle Gully,2023-03-21,day,onsight,Onsight,,,ukc,r163,
+a999,Hidden Wall,2023-05-01,day,lead,Led,,3,csv,r102,pt3
+a1000,Wild Ramp,2023-05-01,day,lead,Led,,2,manual,r110,pt3
+a1001,Crimson Buttress,2023-05-01,day,onsight,Onsight,,,ukc,r103,pt3
+a1002,Wild Buttress,2023-05-20,day,lead,Led,,,ukc,r36,
+a1003,Velvet Rib,2023-05-20,day,lead,Led,,,manual,r43,pt12
+a1004,Wild Direct,2023-05-20,day,top_rope,Top rope,,,ukc,r35,pt12
+a1005,Golden Traverse,2023-05-20,day,lead,Led,,,ukc,r38,pt12
+a1006,Pale Route,2023-05-21,day,onsight,Onsight,,,ukc,r39,
+a1007,Narrow Arete,2023-05-21,day,lead,Led,,,ukc,r41,
+a1008,Wild Buttress,2023-05-21,day,onsight,Onsight,Perfect conditions,3,csv,r36,
+a1009,Crimson Edge,2023-05-21,day,top_rope,Top rope,,2,ukc,r40,
+a1010,Wild Direct,2023-05-22,day,lead,Led,,3,csv,r35,pt5
+a1011,Wild Traverse,2023-05-22,day,lead,Led,,4,manual,r42,pt5
+a1012,Wild Buttress,2023-05-22,day,onsight,Onsight,,3,csv,r36,pt5
+a1013,Golden Traverse,2023-05-22,day,lead,Led,Long run-out,,csv,r38,pt5
+a1014,Rusty Chimney,2023-06-11,day,lead,Led,,3,ukc,r137,pt6
+a1015,Golden Arete,2023-06-11,day,top_rope,Top rope,Perfect conditions,1,ukc,r143,pt6
+a1016,Gentle Corner,2023-06-11,day,second,Seconded,,,ukc,r146,pt6
+a1017,Bitter Crack,2023-06-17,day,hangdog,Hangdog,,,csv,r397,pt5
+a1018,Dancing Buttress,2023-06-17,day,flash,Flash,Would repeat,4,ukc,r405,
+a1019,Amber Chimney,2023-06-17,day,lead,Led,Hard for the grade,,csv,r398,pt5
+a1020,Broken Gully,2023-06-17,day,redpoint,Redpoint,,2,ukc,r401,pt5
+a1021,Hidden Flake,2023-06-18,day,lead,Led,,4,csv,r387,pt3
+a1022,Gentle Buttress,2023-06-18,day,lead,Led,,,manual,r389,pt3
+a1023,Velvet Crack,2023-06-18,day,lead,Led,,5,ukc,r390,pt3
+a1024,Golden Roof,2023-06-18,day,redpoint,Redpoint,,,manual,r392,pt3
+a1025,Amber Chimney,2023-06-19,day,onsight,Onsight,,3,manual,r398,pt4
+a1026,Bitter Groove,2023-06-19,day,lead,Led,Windy belay,3,ukc,r406,pt4
+a1027,Quiet Nose,2023-06-19,day,lead,Led,,,ukc,r402,
+a1028,Pale Corner,2023-06-19,day,lead,Led,Loved it,2,ukc,r403,pt4
+a1029,Amber Arete,2023-06-20,day,onsight,Onsight,,4,csv,r395,pt12
+a1030,Sleepy Buttress,2023-06-20,day,flash,Flash,,3,csv,r404,
+a1031,Dancing Buttress,2023-06-20,day,hangdog,Hangdog,,3,csv,r405,pt12
+a1032,Northern Buttress,2023-06-20,day,lead,Led,Long run-out,1,csv,r400,pt12
+a1033,Crooked Nose,2023-06-21,day,redpoint,Redpoint,,,ukc,r393,
+a1034,Dancing Groove,2023-06-21,day,redpoint,Redpoint,,,csv,r394,
+a1035,Velvet Crack,2023-06-21,day,hangdog,Hangdog,Crowded,1,csv,r390,
+a1036,Golden Roof,2023-06-21,day,flash,Flash,Windy belay,3,ukc,r392,
+a1037,Broken Direct,2023-06-22,day,onsight,Onsight,,3,manual,r391,
+a1038,Crooked Rib,2023-06-22,day,onsight,Onsight,,2,csv,r388,
+a1039,Dancing Groove,2023-06-22,day,redpoint,Redpoint,,,manual,r394,
+a1040,Hidden Flake,2023-06-22,day,redpoint,Redpoint,,3,ukc,r387,
+a1041,Northern Nose,2023-06-23,day,redpoint,Redpoint,,3,ukc,r386,pt1
+a1042,Golden Roof,2023-06-23,day,redpoint,Redpoint,,4,ukc,r392,pt1
+a1043,Northern Roof,2023-06-23,day,hangdog,Hangdog,,,csv,r383,pt1
+a1044,Crooked Gully,2023-06-23,day,onsight,Onsight,Long run-out,,ukc,r384,pt1
+a1045,Bitter Edge,2023-06-24,day,onsight,Onsight,,,manual,r399,
+a1046,Amber Chimney,2023-06-24,day,hangdog,Hangdog,,,ukc,r398,
+a1047,Broken Gully,2023-06-24,day,lead,Led,,,ukc,r401,
+a1048,Northern Buttress,2023-06-24,day,lead,Led,Soft for the grade,2,manual,r400,
+a1049,Crooked Nose,2023-06-25,day,lead,Led,,4,ukc,r393,pt7
+a1050,Northern Roof,2023-06-25,day,redpoint,Redpoint,,4,ukc,r383,pt7
+a1051,Velvet Crack,2023-06-25,day,lead,Led,,,manual,r390,pt7
+a1052,Northern Nose,2023-06-25,day,redpoint,Redpoint,Would repeat,,ukc,r386,pt7
+a1053,Golden Roof,2023-06-26,day,redpoint,Redpoint,Bring extra cams,,manual,r392,pt2
+a1054,Gentle Buttress,2023-06-26,day,lead,Led,,,csv,r389,
+a1055,Hidden Flake,2023-06-26,day,onsight,Onsight,Loved it,,manual,r387,pt2
+a1056,Crooked Rib,2023-06-26,day,lead,Led,,4,ukc,r388,
+a1057,Crooked Gully,2023-06-27,day,onsight,Onsight,,4,manual,r384,pt5
+a1058,Broken Direct,2023-06-27,day,redpoint,Redpoint,Bring extra cams,,manual,r391,pt5
+a1059,Golden Roof,2023-06-27,day,redpoint,Redpoint,,1,ukc,r392,pt5
+a1060,Crooked Rib,2023-06-27,day,redpoint,Redpoint,,,csv,r388,
+a1061,Hidden Nose,2023-06-27,day,lead,Led,,3,csv,r23,pt2
+a1062,Crooked Traverse,2023-06-27,day,lead,Led,,,csv,r16,pt2
+a1063,Wandering Flake,2023-06-27,day,second,Seconded,,,ukc,r17,pt2
+a1064,Silent Edge,2023-07-04,day,lead,Led,,,ukc,r203,
+a1065,Wandering Groove,2023-07-05,day,second,Seconded,,,csv,r201,
+a1066,Wandering Flake,2023-07-15,day,onsight,Onsight,,,csv,r17,pt11
+a1067,Hollow Corner,2023-07-15,day,lead,Led,Cold fingers,,ukc,r14,
+a1068,Crooked Traverse,2023-07-15,day,onsight,Onsight,Greasy start,2,manual,r16,pt11
+a1069,Crooked Direct,2023-07-16,day,onsight,Onsight,,,manual,r22,pt7
+a1070,Hidden Nose,2023-07-16,day,second,Seconded,,2,manual,r23,pt7
+a1071,Dancing Flake,2023-07-16,day,lead,Led,Loved it,5,csv,r20,pt7
+a1072,Dancing Gully,2023-07-17,day,redpoint,Redpoint,,,ukc,r21,pt9
+a1073,Hollow Corner,2023-07-17,day,onsight,Onsight,Great climbing,,manual,r14,pt9
+a1074,Hidden Nose,2023-07-17,day,lead,Led,,4,csv,r23,
+a1075,Wandering Flake,2023-07-18,day,lead,Led,,1,csv,r17,
+a1076,Crooked Direct,2023-07-18,day,redpoint,Redpoint,,,manual,r22,pt5
+a1077,Hidden Nose,2023-07-18,day,lead,Led,,,ukc,r23,pt5
+a1078,Shattered Slab,2023-07-19,day,onsight,Onsight,,4,ukc,r236,pt12
+a1079,Slender Groove,2023-07-19,day,onsight,Onsight,,,ukc,r231,pt12
+a1080,Sleepy Gully,2023-07-19,day,second,Seconded,,,manual,r239,pt12
+a1081,Burning Pillar,2023-07-19,day,top_rope,Top rope,,3,ukc,r237,pt12
+a1082,Golden Buttress,2023-07-26,day,top_rope,Top rope,,,manual,r241,
+a1083,Lonely Pillar,2023-07-27,day,lead,Led,Polished holds,,ukc,r249,
+a1084,Amber Slab,2023-07-28,day,redpoint,Redpoint,,4,ukc,r238,
+a1085,Shattered Slab,2023-07-29,day,onsight,Onsight,,,csv,r236,pt3
+a1086,Iron Slab,2023-08-15,day,onsight,Onsight,,,ukc,r52,pt7
+a1087,Dancing Arete,2023-08-15,day,onsight,Onsight,Crowded,3,ukc,r44,pt7
+a1088,Crooked Route,2023-08-15,day,top_rope,Top rope,,4,ukc,r51,pt7
+a1089,Crooked Route,2023-08-16,day,redpoint,Redpoint,,,csv,r51,pt10
+a1090,Slender Rib,2023-08-16,day,second,Seconded,,4,csv,r50,pt10
+a1091,Sleepy Direct,2023-08-16,day,onsight,Onsight,,3,ukc,r48,pt10
+a1092,Crooked Face,2023-08-17,day,lead,Led,,5,manual,r47,
+a1093,Bitter Arete,2023-08-17,day,redpoint,Redpoint,,4,csv,r54,
+a1094,Crooked Route,2023-08-17,day,onsight,Onsight,Crowded,,csv,r51,
+a1095,Gentle Arete,2023-09-04,day,redpoint,Redpoint,,,csv,r93,pt5
+a1096,Velvet Gully,2023-09-04,day,second,Seconded,Long run-out,3,ukc,r96,pt5
+a1097,Northern Crack,2023-09-04,day,second,Seconded,,5,manual,r92,pt5
+a1098,Northern Crack,2023-09-05,day,second,Seconded,,5,ukc,r92,pt7
+a1099,Hidden Crack,2023-09-05,day,second,Seconded,Windy belay,,manual,r99,pt7
+a1100,Velvet Gully,2023-09-05,day,onsight,Onsight,,4,manual,r96,pt7
+a1101,Hollow Crack,2023-09-06,day,onsight,Onsight,Rain at the top,,ukc,r8,pt3
+a1102,Bitter Gully,2023-09-06,day,lead,Led,Windy belay,,csv,r7,pt3
+a1103,Slender Corner,2023-09-07,day,lead,Led,Cold fingers,3,ukc,r13,pt2
+a1104,Dancing Traverse,2023-09-07,day,onsight,Onsight,,,ukc,r9,pt2
+a1105,Wild Buttress,2023-09-08,day,onsight,Onsight,,3,manual,r36,pt5
+a1106,Narrow Arete,2023-09-08,day,lead,Led,,2,ukc,r41,pt5
+a1107,Silent Groove,2023-09-10,day,top_rope,Top rope,,,ukc,r25,
+a1108,Burning Buttress,2023-09-10,day,lead,Led,,,ukc,r29,
+a1109,Burning Traverse,2023-09-10,day,second,Seconded,,3,csv,r33,
+a1110,Narrow Arete,2023-09-11,day,flash,Flash,,,manual,r41,pt12
+a1111,Velvet Rib,2023-09-11,day,onsight,Onsight,,,ukc,r43,pt12
+a1112,Lonely Groove,2023-09-11,day,onsight,Onsight,,5,manual,r37,
+a1113,Amber Groove,2023-09-12,day,second,Seconded,,,csv,r24,pt3
+a1114,Northern Pillar,2023-09-12,day,onsight,Onsight,,4,csv,r27,pt3
+a1115,Crimson Chimney,2023-09-12,day,lead,Led,Bring extra cams,,csv,r31,
+a1116,Broken Nose,2023-09-13,day,lead,Led,Great climbing,4,ukc,r30,pt7
+a1117,Burning Traverse,2023-09-13,day,onsight,Onsight,,4,ukc,r33,pt7
+a1118,Burning Buttress,2023-09-13,day,lead,Led,Soft for the grade,4,ukc,r29,pt7
+a1119,Velvet Buttress,2023-09-12,day,lead,Led,,3,csv,r156,pt4
+a1120,Broken Edge,2023-09-13,day,lead,Led,,4,ukc,r165,pt3
+a1121,Rusty Nose,2023-09-14,day,lead,Led,,3,manual,r18,
+a1122,Crooked Direct,2023-09-14,day,top_rope,Top rope,Hard for the grade,3,ukc,r22,pt10
+a1123,Dancing Flake,2023-09-14,day,lead,Led,Windy belay,4,csv,r20,pt10
+a1124,Broken Wall,2023-09-14,day,redpoint,Redpoint,,3,csv,r15,pt10
+a1125,Hollow Corner,2023-09-15,day,lead,Led,Great climbing,5,csv,r14,pt7
+a1126,Rusty Nose,2023-09-15,day,lead,Led,,,manual,r18,pt7
+a1127,Northern Corner,2023-09-15,day,lead,Led,,,manual,r19,pt7
+a1128,Hidden Nose,2023-09-15,day,second,Seconded,,,ukc,r23,pt7
+a1129,Crooked Edge,2023-09-15,day,lead,Led,Hard for the grade,,manual,r67,pt1
+a1130,Wild Traverse,2023-09-17,day,top_rope,Top rope,Perfect conditions,,csv,r42,pt7
+a1131,Wild Direct,2023-09-17,day,lead,Led,,,csv,r35,pt7
+a1132,Lonely Groove,2023-09-17,day,redpoint,Redpoint,,,csv,r37,
+a1133,Wild Traverse,2023-09-18,day,onsight,Onsight,,,csv,r42,
+a1134,Crimson Edge,2023-09-18,day,onsight,Onsight,,3,ukc,r40,pt6
+a1135,Wild Buttress,2023-09-18,day,onsight,Onsight,,1,csv,r36,pt6
+a1136,Golden Traverse,2023-09-19,day,onsight,Onsight,,4,manual,r38,
+a1137,Crimson Edge,2023-09-19,day,flash,Flash,Bring extra cams,5,ukc,r40,
+a1138,Narrow Arete,2023-09-19,day,lead,Led,,3,csv,r41,
+a1139,Velvet Rib,2023-09-19,day,onsight,Onsight,,4,ukc,r43,
+a1140,Wild Buttress,2023-09-19,day,second,Seconded,,,csv,r36,
+a1141,Quiet Slab,2023-10-16,day,lead,Led,Bring extra cams,3,manual,r424,
+a1142,Golden Crack,2023-10-16,day,onsight,Onsight,,,ukc,r420,
+a1143,Pale Chimney,2023-10-16,day,redpoint,Redpoint,Soft for the grade,,ukc,r426,
+a1144,Narrow Chimney,2023-10-16,day,lead,Led,,,ukc,r427,
+a1145,Hidden Buttress,2023-10-16,day,onsight,Onsight,,3,manual,r425,
+a1146,Quiet Face,2023-10-17,day,second,Seconded,,,ukc,r423,pt2
+a1147,Wandering Buttress,2023-10-17,day,second,Seconded,,4,ukc,r419,pt2
+a1148,Hidden Buttress,2023-10-17,day,lead,Led,Polished holds,,ukc,r425,pt2
+a1149,Narrow Chimney,2023-10-17,day,second,Seconded,Bring extra cams,,ukc,r427,pt2
+a1150,Golden Rib,2023-10-17,day,lead,Led,,,manual,r422,pt2
+a1151,Gentle Edge,2023-10-18,day,second,Seconded,,1,ukc,r418,pt9
+a1152,Pale Chimney,2023-10-18,day,lead,Led,,3,manual,r426,pt9
+a1153,Hidden Buttress,2023-10-18,day,onsight,Onsight,,4,ukc,r425,pt9
+a1154,Golden Crack,2023-10-18,day,second,Seconded,,3,manual,r420,pt9
+a1155,Wandering Buttress,2023-10-18,day,lead,Led,,2,ukc,r419,pt9
+a1156,Golden Rib,2023-10-19,day,redpoint,Redpoint,,,ukc,r422,
+a1157,Pale Chimney,2023-10-19,day,second,Seconded,,4,ukc,r426,
+a1158,Quiet Slab,2023-10-19,day,lead,Led,Windy belay,4,manual,r424,
+a1159,Hidden Buttress,2023-10-19,day,lead,Led,,,csv,r425,
+a1160,Crimson Roof,2023-10-19,day,second,Seconded,,,ukc,r428,
+a1161,Quiet Slab,2023-10-20,day,second,Seconded,,4,ukc,r424,pt4
+a1162,Dancing Slab,2023-10-20,day,lead,Led,Loved it,2,manual,r421,
+a1163,Golden Crack,2023-10-20,day,onsight,Onsight,,,ukc,r420,pt4
+a1164,Quiet Face,2023-10-20,day,lead,Led,,,ukc,r423,pt4
+a1165,Golden Rib,2023-10-20,day,onsight,Onsight,,,manual,r422,pt4
+a1166,Hidden Buttress,2023-10-21,day,lead,Led,,,ukc,r425,pt9
+a1167,Quiet Face,2023-10-21,day,lead,Led,Greasy start,,manual,r423,pt9
+a1168,Gentle Edge,2023-10-21,day,lead,Led,,3,csv,r418,pt9
+a1169,Narrow Chimney,2023-10-21,day,second,Seconded,Would repeat,2,manual,r427,pt9
+a1170,Wandering Buttress,2023-10-21,day,lead,Led,,,manual,r419,pt9
+a1171,Dancing Gully,2023-11-07,day,lead,Led,,2,manual,r21,pt8
+a1172,Broken Wall,2023-11-07,day,second,Seconded,,,ukc,r15,pt8
+a1173,Northern Corner,2023-11-07,day,flash,Flash,,,ukc,r19,pt8
+a1174,Northern Corner,2023-11-08,day,top_rope,Top rope,,3,ukc,r19,pt7
+a1175,Wandering Flake,2023-11-08,day,lead,Led,,,ukc,r17,pt7
+a1176,Dancing Gully,2023-11-08,day,onsight,Onsight,,4,csv,r21,
+a1177,Crooked Direct,2023-11-09,day,second,Seconded,,,csv,r22,pt12
+a1178,Northern Corner,2023-11-09,day,second,Seconded,,4,ukc,r19,pt12
+a1179,Hollow Corner,2023-11-09,day,lead,Led,,3,csv,r14,pt12
+a1180,Bitter Wall,2023-11-27,day,redpoint,Redpoint,,1,ukc,r213,
+a1181,Hollow Route,2023-11-27,day,lead,Led,,3,ukc,r218,
+a1182,Burning Roof,2023-11-28,day,lead,Led,Cold fingers,3,manual,r215,pt3
+a1183,Amber Rib,2023-11-28,day,flash,Flash,Polished holds,,ukc,r210,pt3
+a1184,Bitter Wall,2023-11-29,day,lead,Led,,,manual,r213,pt3
+a1185,Northern Ramp,2023-11-29,day,lead,Led,,,csv,r211,pt3
+a1186,Golden Corner,2024-03-12,day,redpoint,Redpoint,,,manual,r352,pt6
+a1187,Narrow Traverse,2024-03-12,day,redpoint,Redpoint,Hard for the grade,,ukc,r355,pt6
+a1188,Burning Chimney,2024-03-13,day,hangdog,Hangdog,Long run-out,,csv,r357,pt9
+a1189,Burning Corner,2024-03-13,day,onsight,Onsight,Long run-out,,manual,r350,
+a1190,Gentle Chimney,2024-03-14,day,redpoint,Redpoint,Hard for the grade,,ukc,r358,pt5
+a1191,Lonely Buttress,2024-03-14,day,hangdog,Hangdog,Long run-out,5,csv,r351,pt5
+a1192,Velvet Traverse,2024-03-15,day,redpoint,Redpoint,Great climbing,,manual,r359,
+a1193,Burning Chimney,2024-03-15,day,redpoint,Redpoint,,,ukc,r357,
+a1194,Burning Corner,2024-03-16,day,redpoint,Redpoint,,5,ukc,r350,pt10
+a1195,Gentle Chimney,2024-03-16,day,redpoint,Redpoint,Long run-out,,csv,r358,pt10
+a1196,Narrow Traverse,2024-03-17,day,hangdog,Hangdog,,,ukc,r355,pt9
+a1197,Velvet Traverse,2024-03-17,day,redpoint,Redpoint,,2,ukc,r359,
+a1198,Velvet Traverse,2024-03-18,day,flash,Flash,Loved it,3,ukc,r359,
+a1199,Lonely Buttress,2024-03-18,day,hangdog,Hangdog,,,ukc,r351,
+a1200,Shattered Face,2024-03-19,day,onsight,Onsight,,1,csv,r354,pt3
+a1201,Golden Corner,2024-03-19,day,redpoint,Redpoint,,,csv,r352,pt3
+a1202,Burning Chimney,2024-03-20,day,lead,Led,Soft for the grade,5,manual,r357,pt12
+a1203,Velvet Traverse,2024-03-20,day,flash,Flash,Loved it,2,ukc,r359,pt12
+a1204,Gentle Chimney,2024-03-21,day,lead,Led,,3,csv,r358,pt4
+a1205,Burning Chimney,2024-03-21,day,hangdog,Hangdog,,1,manual,r357,pt4
+a1206,Quiet Chimney,2024-03-22,day,flash,Flash,,4,ukc,r356,
+a1207,Narrow Traverse,2024-03-22,day,redpoint,Redpoint,,,ukc,r355,pt7
+a1208,Silent Groove,2024-03-22,day,onsight,Onsight,Soft for the grade,3,csv,r25,pt1
+a1209,Amber Groove,2024-03-22,day,lead,Led,,,ukc,r24,pt1
+a1210,Silent Traverse,2024-03-23,day,lead,Led,,4,csv,r28,pt4
+a1211,Silent Groove,2024-03-23,day,onsight,Onsight,Soft for the grade,,ukc,r25,pt4
+a1212,Broken Nose,2024-03-24,day,second,Seconded,,2,csv,r30,pt2
+a1213,Silent Groove,2024-03-24,day,redpoint,Redpoint,Rain at the top,,ukc,r25,pt2
+a1214,Hollow Crack,2024-03-25,day,onsight,Onsight,,1,manual,r8,pt1
+a1215,Wild Slab,2024-03-26,day,onsight,Onsight,,,csv,r6,
+a1216,Crooked Buttress,2024-03-27,day,lead,Led,,1,ukc,r12,pt1
+a1217,Silent Chimney,2024-03-28,day,top_rope,Top rope,,,ukc,r10,pt11
+a1218,Sleepy Gully,2024-04-07,day,second,Seconded,Crowded,,csv,r239,
+a1219,Crimson Rib,2024-04-07,day,onsight,Onsight,Cold fingers,2,csv,r230,pt11
+a1220,Shattered Slab,2024-04-07,day,lead,Led,,3,csv,r236,pt11
+a1221,Wild Wall,2024-04-07,day,redpoint,Redpoint,,4,csv,r232,pt11
+a1222,Burning Pillar,2024-04-08,day,lead,Led,,,csv,r237,pt7
+a1223,Lonely Edge,2024-04-08,day,second,Seconded,,5,manual,r240,pt7
+a1224,Gentle Slab,2024-04-08,day,lead,Led,,4,manual,r233,pt7
+a1225,Wild Wall,2024-04-08,day,redpoint,Redpoint,,,csv,r232,pt7
+a1226,Bitter Direct,2024-04-09,day,second,Seconded,,4,manual,r234,pt1
+a1227,Burning Pillar,2024-04-09,day,lead,Led,,5,ukc,r237,pt1
+a1228,Slender Groove,2024-04-09,day,second,Seconded,Hard for the grade,4,csv,r231,pt1
+a1229,Gentle Slab,2024-04-09,day,second,Seconded,,,manual,r233,pt1
+a1230,Dancing Nose,2024-05-05,day,flash,Flash,Polished holds,,manual,r53,pt5
+a1231,Iron Traverse,2024-05-08,day,redpoint,Redpoint,,,ukc,r3,
+a1232,Crooked Route,2024-05-09,day,lead,Led,,2,manual,r51,pt3
+a1233,Crooked Buttress,2024-05-10,day,lead,Led,,1,ukc,r12,pt5
+a1234,Hollow Ramp,2024-05-11,day,onsight,Onsight,,4,ukc,r5,pt7
+a1235,Slender Corner,2024-05-11,day,onsight,Onsight,Crowded,4,csv,r13,pt7
+a1236,Lonely Nose,2024-05-11,day,onsight,Onsight,,,manual,r4,pt7
+a1237,Crooked Buttress,2024-05-11,day,onsight,Onsight,,,ukc,r12,pt7
+a1238,Bitter Gully,2024-05-17,day,onsight,Onsight,,4,ukc,r7,
+a1239,Rusty Groove,2024-05-17,day,onsight,Onsight,Great climbing,,csv,r11,
+a1240,Hollow Ramp,2024-05-18,day,redpoint,Redpoint,,3,csv,r5,pt3
+a1241,Bitter Gully,2024-05-18,day,lead,Led,,4,csv,r7,pt3
+a1242,Crooked Buttress,2024-05-19,day,lead,Led,Bring extra cams,3,ukc,r12,
+a1243,Crooked Roof,2024-05-19,day,second,Seconded,,3,csv,r1,
+a1244,Crimson Crack,2024-06-24,day,lead,Led,,3,ukc,r58,pt3
+a1245,Burning Slab,2024-06-24,day,top_rope,Top rope,,,ukc,r66,pt3
+a1246,Hollow Face,2024-06-24,day,lead,Led,,,ukc,r59,pt3
+a1247,Wandering Traverse,2024-06-24,day,redpoint,Redpoint,,5,csv,r62,pt3
+a1248,Crimson Edge,2024-06-25,day,top_rope,Top rope,Perfect conditions,5,ukc,r40,pt11
+a1249,Velvet Rib,2024-06-25,day,redpoint,Redpoint,Perfect conditions,1,csv,r43,
+a1250,Wild Traverse,2024-06-25,day,redpoint,Redpoint,Long run-out,,manual,r42,
+a1251,Wild Buttress,2024-06-25,day,lead,Led,,2,ukc,r36,pt11
+a1252,Crimson Edge,2024-06-26,day,redpoint,Redpoint,,,ukc,r40,pt8
+a1253,Lonely Groove,2024-06-26,day,second,Seconded,,,csv,r37,pt8
+a1254,Wild Direct,2024-06-26,day,lead,Led,,,csv,r35,pt8
+a1255,Narrow Arete,2024-06-26,day,lead,Led,,,ukc,r41,pt8
+a1256,Rusty Direct,2024-07-01,day,redpoint,Redpoint,Polished holds,,csv,r261,pt9
+a1257,Crooked Pillar,2024-07-01,day,redpoint,Redpoint,,4,csv,r252,pt9
+a1258,Wild Arete,2024-07-02,day,flash,Flash,Polished holds,,ukc,r258,pt8
+a1259,Shattered Pillar,2024-07-02,day,hangdog,Hangdog,,,csv,r260,pt8
+a1260,Crooked Slab,2024-07-03,day,second,Seconded,,,manual,r306,
+a1261,Shattered Buttress,2024-07-03,day,second,Seconded,,,ukc,r298,
+a1262,Crooked Slab,2024-07-04,day,lead,Led,,4,ukc,r306,pt3
+a1263,Shattered Buttress,2024-07-04,day,lead,Led,,,csv,r298,pt3
+a1264,Crimson Pillar,2024-07-05,day,onsight,Onsight,,,ukc,r259,pt5
+a1265,Crooked Groove,2024-07-05,day,redpoint,Redpoint,,5,manual,r251,pt5
+a1266,Shattered Pillar,2024-07-06,day,redpoint,Redpoint,Long run-out,,ukc,r260,pt1
+a1267,Wild Arete,2024-07-06,day,redpoint,Redpoint,,3,ukc,r258,pt1
+a1268,Pale Face,2024-07-07,day,lead,Led,,4,csv,r303,pt2
+a1269,Shattered Buttress,2024-07-07,day,second,Seconded,Windy belay,,manual,r298,pt2
+a1270,Bitter Slab,2024-07-08,day,redpoint,Redpoint,,3,ukc,r254,pt11
+a1271,Crooked Groove,2024-07-08,day,lead,Led,,4,csv,r251,pt11
+a1272,Bitter Slab,2024-07-09,day,hangdog,Hangdog,,5,ukc,r254,pt8
+a1273,Iron Chimney,2024-07-09,day,lead,Led,,2,ukc,r250,pt8
+a1274,Crimson Pillar,2024-07-10,day,redpoint,Redpoint,,4,csv,r259,pt9
+a1275,Rusty Direct,2024-07-10,day,onsight,Onsight,,5,ukc,r261,pt9
+a1276,Rusty Direct,2024-07-11,day,hangdog,Hangdog,,5,ukc,r261,
+a1277,Crimson Pillar,2024-07-11,day,onsight,Onsight,Loved it,3,csv,r259,
+a1278,Burning Groove,2024-07-12,day,second,Seconded,,1,csv,r301,
+a1279,Crimson Traverse,2024-07-12,day,lead,Led,Rain at the top,,ukc,r299,pt5
+a1280,Narrow Gully,2024-07-13,day,lead,Led,,4,csv,r305,pt9
+a1281,Burning Groove,2024-07-13,day,lead,Led,,5,ukc,r301,pt9
+a1282,Golden Arete,2024-09-04,day,top_rope,Top rope,,,csv,r143,pt2
+a1283,Shattered Direct,2024-09-04,day,lead,Led,Long run-out,3,ukc,r145,pt2
+a1284,Pale Slab,2024-09-04,day,lead,Led,,,ukc,r139,pt2
+a1285,Quiet Ramp,2024-09-07,day,flash,Flash,,1,manual,r247,pt10
+a1286,Hollow Edge,2024-09-08,day,redpoint,Redpoint,,3,manual,r248,
+a1287,Iron Edge,2024-09-09,day,second,Seconded,,,ukc,r245,pt8
+a1288,Iron Edge,2024-09-10,day,onsight,Onsight,,,manual,r245,pt7
+a1289,Broken Chimney,2024-10-05,day,lead,Led,,,csv,r364,pt12
+a1290,Silent Nose,2024-10-05,day,flash,Flash,,3,manual,r368,
+a1291,Wandering Crack,2024-10-05,day,onsight,Onsight,,,manual,r362,pt12
+a1292,Lonely Chimney,2024-10-05,day,redpoint,Redpoint,,,manual,r366,
+a1293,Silent Wall,2024-10-06,day,onsight,Onsight,,2,manual,r363,pt12
+a1294,Quiet Gully,2024-10-06,day,redpoint,Redpoint,,,ukc,r369,pt12
+a1295,Velvet Corner,2024-10-06,day,onsight,Onsight,,3,ukc,r367,pt12
+a1296,Narrow Nose,2024-10-06,day,onsight,Onsight,,,ukc,r361,pt12
+a1297,Broken Chimney,2024-10-07,day,hangdog,Hangdog,Perfect conditions,1,ukc,r364,pt9
+a1298,Rusty Flake,2024-10-07,day,hangdog,Hangdog,,,ukc,r365,pt9
+a1299,Lonely Chimney,2024-10-07,day,hangdog,Hangdog,,,manual,r366,pt9
+a1300,Rusty Gully,2024-10-07,day,redpoint,Redpoint,,4,ukc,r360,pt9
+a1301,Rusty Flake,2024-10-08,day,redpoint,Redpoint,,,csv,r365,
+a1302,Silent Nose,2024-10-08,day,redpoint,Redpoint,Perfect conditions,1,ukc,r368,
+a1303,Rusty Gully,2024-10-08,day,onsight,Onsight,,,manual,r360,
+a1304,Lonely Chimney,2024-10-08,day,redpoint,Redpoint,Cold fingers,,manual,r366,
+a1305,Silent Nose,2024-10-09,day,redpoint,Redpoint,,5,manual,r368,
+a1306,Quiet Gully,2024-10-09,day,redpoint,Redpoint,,,csv,r369,
+a1307,Velvet Corner,2024-10-09,day,hangdog,Hangdog,,4,ukc,r367,
+a1308,Narrow Nose,2024-10-09,day,redpoint,Redpoint,Long run-out,,ukc,r361,
+a1309,Broken Chimney,2024-10-10,day,flash,Flash,Greasy start,,csv,r364,
+a1310,Quiet Gully,2024-10-10,day,lead,Led,Polished holds,,ukc,r369,
+a1311,Velvet Corner,2024-10-10,day,redpoint,Redpoint,,,ukc,r367,
+a1312,Lonely Chimney,2024-10-10,day,onsight,Onsight,Crowded,3,manual,r366,
+a1313,Broken Chimney,2024-10-11,day,redpoint,Redpoint,,5,ukc,r364,pt3
+a1314,Rusty Flake,2024-10-11,day,redpoint,Redpoint,Soft for the grade,,ukc,r365,pt3
+a1315,Rusty Gully,2024-10-11,day,onsight,Onsight,,3,ukc,r360,pt3
+a1316,Silent Wall,2024-10-11,day,lead,Led,,1,manual,r363,pt3
+a1317,Wandering Crack,2024-10-12,day,onsight,Onsight,,,ukc,r362,pt9
+a1318,Quiet Gully,2024-10-12,day,redpoint,Redpoint,Polished holds,,ukc,r369,pt9
+a1319,Silent Wall,2024-10-12,day,redpoint,Redpoint,,,csv,r363,
+a1320,Lonely Chimney,2024-10-12,day,lead,Led,,,manual,r366,pt9
+a1321,Silent Nose,2024-10-13,day,onsight,Onsight,,,ukc,r368,pt6
+a1322,Wandering Crack,2024-10-13,day,hangdog,Hangdog,,,manual,r362,pt6
+a1323,Broken Chimney,2024-10-13,day,onsight,Onsight,Loved it,,ukc,r364,pt6
+a1324,Rusty Gully,2024-10-13,day,onsight,Onsight,,2,csv,r360,pt6
+a1325,Rusty Gully,2024-10-14,day,onsight,Onsight,Loved it,,ukc,r360,
+a1326,Narrow Nose,2024-10-14,day,redpoint,Redpoint,,1,ukc,r361,
+a1327,Silent Wall,2024-10-14,day,hangdog,Hangdog,,5,ukc,r363,
+a1328,Rusty Flake,2024-10-14,day,redpoint,Redpoint,,4,ukc,r365,
+a1329,Wandering Crack,2024-10-15,day,redpoint,Redpoint,Crowded,,ukc,r362,pt9
+a1330,Rusty Flake,2024-10-15,day,redpoint,Redpoint,,1,manual,r365,pt9
+a1331,Lonely Chimney,2024-10-15,day,redpoint,Redpoint,,4,csv,r366,pt9
+a1332,Silent Nose,2024-10-15,day,onsight,Onsight,,1,manual,r368,pt9
+a1333,Shattered Route,2024-11-08,day,onsight,Onsight,Perfect conditions,3,manual,r129,pt8
+a1334,Bitter Pillar,2024-11-08,day,lead,Led,,,ukc,r131,pt8
+a1335,Hollow Route,2024-11-16,day,second,Seconded,,,csv,r218,
+a1336,Iron Pillar,2024-11-16,day,onsight,Onsight,Rain at the top,,csv,r209,
+a1337,Burning Roof,2024-11-16,day,top_rope,Top rope,,,manual,r215,
+a1338,Gentle Crack,2024-11-16,day,lead,Led,,4,ukc,r208,
+a1339,Shattered Traverse,2024-11-17,day,second,Seconded,,,ukc,r212,pt1
+a1340,Bitter Wall,2024-11-17,day,second,Seconded,Rain at the top,3,ukc,r213,pt1
+a1341,Rusty Route,2024-11-17,day,lead,Led,Crowded,4,manual,r217,pt1
+a1342,Iron Pillar,2024-11-17,day,top_rope,Top rope,,4,manual,r209,
+a1343,Burning Roof,2024-11-18,day,redpoint,Redpoint,,4,ukc,r215,pt2
+a1344,Northern Ramp,2024-11-18,day,second,Seconded,,,ukc,r211,pt2
+a1345,Iron Pillar,2024-11-18,day,flash,Flash,Windy belay,,ukc,r209,pt2
+a1346,Amber Rib,2024-11-18,day,lead,Led,,5,ukc,r210,pt2
+a1347,Northern Ramp,2024-11-19,day,lead,Led,,,manual,r211,pt12
+a1348,Shattered Traverse,2024-11-19,day,lead,Led,,,ukc,r212,pt12
+a1349,Amber Rib,2024-11-19,day,top_rope,Top rope,Polished holds,3,ukc,r210,pt12
+a1350,Wild Rib,2024-11-19,day,lead,Led,,,ukc,r207,pt12
+a1351,Narrow Groove,2024-11-24,day,onsight,Onsight,,,ukc,r154,pt6
+a1352,Velvet Buttress,2024-11-24,day,second,Seconded,,,manual,r156,pt6
+a1353,Crimson Slab,2024-11-25,day,lead,Led,,,ukc,r148,
+a1354,Golden Face,2024-11-25,day,second,Seconded,,3,ukc,r152,
+a1355,Rusty Buttress,2024-11-26,day,top_rope,Top rope,,,csv,r173,pt2
+a1356,Gentle Route,2024-11-26,day,redpoint,Redpoint,,4,ukc,r170,pt2
+a1357,Bitter Gully,2024-11-24,day,second,Seconded,Cold fingers,,csv,r7,pt9
+a1358,Dancing Traverse,2024-11-24,day,lead,Led,,4,csv,r9,pt9
+a1359,Wild Slab,2024-11-25,day,lead,Led,,,manual,r6,pt5
+a1360,Hollow Crack,2024-11-25,day,lead,Led,Crowded,4,manual,r8,pt5
+a1361,Dancing Traverse,2024-11-26,day,onsight,Onsight,Bring extra cams,,ukc,r9,
+a1362,Crooked Buttress,2024-11-26,day,lead,Led,,3,csv,r12,
+a1363,Bitter Gully,2024-11-27,day,lead,Led,Soft for the grade,,manual,r7,pt1
+a1364,Hollow Crack,2024-11-27,day,second,Seconded,,,ukc,r8,pt1
+a1365,Hidden Rib,2025-02-10,day,lead,Led,,1,ukc,r313,pt12
+a1366,Quiet Route,2025-02-10,day,onsight,Onsight,Crowded,3,manual,r318,pt12
+a1367,Crooked Flake,2025-02-10,day,flash,Flash,Greasy start,,ukc,r312,pt12
+a1368,Crimson Groove,2025-02-10,day,redpoint,Redpoint,,2,ukc,r309,pt12
+a1369,Shattered Gully,2025-02-10,day,flash,Flash,,2,ukc,r317,pt12
+a1370,Hollow Traverse,2025-02-11,day,lead,Led,Cold fingers,4,csv,r308,pt11
+a1371,Crooked Flake,2025-02-11,day,hangdog,Hangdog,,1,csv,r312,pt11
+a1372,Pale Roof,2025-02-11,day,flash,Flash,,,csv,r310,pt11
+a1373,Slender Nose,2025-02-11,day,redpoint,Redpoint,,3,csv,r315,
+a1374,Hidden Rib,2025-02-11,day,redpoint,Redpoint,,,ukc,r313,pt11
+a1375,Slender Nose,2025-02-12,day,redpoint,Redpoint,,3,ukc,r315,pt5
+a1376,Gentle Flake,2025-02-12,day,onsight,Onsight,,2,ukc,r314,pt5
+a1377,Crimson Groove,2025-02-12,day,flash,Flash,,,manual,r309,pt5
+a1378,Shattered Gully,2025-02-12,day,lead,Led,,3,csv,r317,
+a1379,Hidden Rib,2025-02-12,day,redpoint,Redpoint,Rain at the top,1,ukc,r313,pt5
+a1380,Crimson Groove,2025-02-13,day,redpoint,Redpoint,Soft for the grade,2,manual,r309,pt5
+a1381,Quiet Wall,2025-02-13,day,onsight,Onsight,,,manual,r316,pt5
+a1382,Hidden Rib,2025-02-13,day,lead,Led,,,manual,r313,pt5
+a1383,Slender Nose,2025-02-13,day,hangdog,Hangdog,,,ukc,r315,pt5
+a1384,Quiet Route,2025-02-13,day,redpoint,Redpoint,,,ukc,r318,pt5
+a1385,Slender Nose,2025-02-14,day,redpoint,Redpoint,,,ukc,r315,pt12
+a1386,Hollow Traverse,2025-02-14,day,redpoint,Redpoint,,,manual,r308,
+a1387,Pale Roof,2025-02-14,day,flash,Flash,,,ukc,r310,pt12
+a1388,Crimson Flake,2025-02-14,day,onsight,Onsight,Rain at the top,,manual,r311,pt12
+a1389,Hidden Rib,2025-02-14,day,onsight,Onsight,,,manual,r313,
+a1390,Crooked Flake,2025-02-15,day,redpoint,Redpoint,,,csv,r312,
+a1391,Hollow Traverse,2025-02-15,day,hangdog,Hangdog,,,csv,r308,pt11
+a1392,Hidden Rib,2025-02-15,day,onsight,Onsight,,,ukc,r313,pt11
+a1393,Pale Roof,2025-02-15,day,redpoint,Redpoint,,,csv,r310,pt11
+a1394,Quiet Wall,2025-02-15,day,hangdog,Hangdog,,,ukc,r316,pt11
+a1395,Quiet Wall,2025-02-16,day,flash,Flash,,1,ukc,r316,pt8
+a1396,Hidden Rib,2025-02-16,day,lead,Led,,3,manual,r313,pt8
+a1397,Crimson Groove,2025-02-16,day,redpoint,Redpoint,,,ukc,r309,pt8
+a1398,Crimson Flake,2025-02-16,day,redpoint,Redpoint,,,ukc,r311,pt8
+a1399,Shattered Gully,2025-02-16,day,redpoint,Redpoint,,,manual,r317,pt8
+a1400,Pale Roof,2025-02-17,day,onsight,Onsight,,,ukc,r310,
+a1401,Quiet Route,2025-02-17,day,flash,Flash,Long run-out,,csv,r318,
+a1402,Shattered Gully,2025-02-17,day,redpoint,Redpoint,,,manual,r317,
+a1403,Gentle Flake,2025-02-17,day,onsight,Onsight,,4,csv,r314,
+a1404,Hidden Rib,2025-02-17,day,hangdog,Hangdog,,4,manual,r313,
+a1405,Crimson Flake,2025-02-18,day,onsight,Onsight,,,csv,r311,pt1
+a1406,Pale Roof,2025-02-18,day,lead,Led,,3,manual,r310,pt1
+a1407,Hidden Rib,2025-02-18,day,redpoint,Redpoint,Greasy start,2,ukc,r313,pt1
+a1408,Hollow Traverse,2025-02-18,day,lead,Led,Perfect conditions,,manual,r308,pt1
+a1409,Quiet Route,2025-02-18,day,redpoint,Redpoint,Windy belay,,manual,r318,pt1
+a1410,Crimson Flake,2025-02-19,day,lead,Led,,3,ukc,r311,pt3
+a1411,Quiet Route,2025-02-19,day,hangdog,Hangdog,,3,csv,r318,pt3
+a1412,Gentle Flake,2025-02-19,day,redpoint,Redpoint,,3,manual,r314,
+a1413,Slender Nose,2025-02-19,day,redpoint,Redpoint,,3,manual,r315,pt3
+a1414,Pale Roof,2025-02-19,day,hangdog,Hangdog,,,csv,r310,pt3
+a1415,Northern Corner,2025-03-03,day,top_rope,Top rope,Greasy start,,ukc,r19,pt5
+a1416,Rusty Nose,2025-03-05,day,lead,Led,,,csv,r18,pt5
+a1417,Hollow Corner,2025-03-05,day,lead,Led,Cold fingers,3,csv,r14,
+a1418,Pale Route,2025-03-06,day,redpoint,Redpoint,Crowded,4,ukc,r39,pt3
+a1419,Wild Direct,2025-03-06,day,second,Seconded,,4,manual,r35,pt3
+a1420,Lonely Groove,2025-03-07,day,lead,Led,Rain at the top,,csv,r37,pt2
+a1421,Velvet Rib,2025-03-07,day,onsight,Onsight,,4,manual,r43,pt2
+a1422,Golden Traverse,2025-03-08,day,lead,Led,Hard for the grade,,ukc,r38,pt1
+a1423,Wild Direct,2025-03-08,day,onsight,Onsight,,4,ukc,r35,pt1
+a1424,Rusty Arete,2025-03-09,day,onsight,Onsight,,5,csv,r197,pt10
+a1425,Hollow Wall,2025-03-09,day,second,Seconded,Long run-out,3,ukc,r202,pt10
+a1426,Quiet Flake,2025-03-09,day,lead,Led,,1,csv,r204,pt10
+a1427,Rusty Ramp,2025-03-10,day,lead,Led,,,ukc,r198,pt10
+a1428,Wandering Groove,2025-03-10,day,lead,Led,,,csv,r201,pt10
+a1429,Hollow Wall,2025-03-10,day,second,Seconded,,2,manual,r202,pt10
+a1430,Hollow Wall,2025-03-11,day,flash,Flash,Long run-out,,manual,r202,pt5
+a1431,Golden Route,2025-03-11,day,lead,Led,Polished holds,,csv,r205,pt5
+a1432,Pale Direct,2025-03-11,day,flash,Flash,,3,ukc,r196,
+a1433,Northern Corner,2025-03-18,day,lead,Led,,,manual,r19,pt3
+a1434,Crooked Traverse,2025-03-18,day,lead,Led,,1,ukc,r16,pt3
+a1435,Crooked Direct,2025-03-19,day,lead,Led,Polished holds,2,ukc,r22,pt8
+a1436,Crooked Traverse,2025-03-19,day,lead,Led,,4,ukc,r16,pt8
+a1437,Northern Corner,2025-03-20,day,onsight,Onsight,,1,manual,r19,pt1
+a1438,Dancing Gully,2025-03-20,day,lead,Led,Crowded,,ukc,r21,pt1
+a1439,Lonely Groove,2025-04-06,day,lead,Led,Windy belay,3,ukc,r37,pt7
+a1440,Wild Buttress,2025-04-06,day,lead,Led,,1,ukc,r36,pt7
+a1441,Wild Traverse,2025-04-06,day,onsight,Onsight,Windy belay,,ukc,r42,pt7
+a1442,Crimson Edge,2025-04-06,day,second,Seconded,,4,csv,r40,pt7
+a1443,Wild Slab,2025-04-23,day,lead,Led,Loved it,,csv,r6,
+a1444,Crooked Buttress,2025-04-23,day,second,Seconded,,3,ukc,r12,pt3
+a1445,Silent Chimney,2025-04-23,day,redpoint,Redpoint,,4,ukc,r10,pt3
+a1446,Iron Traverse,2025-04-23,day,redpoint,Redpoint,,4,manual,r3,pt3
+a1447,Hollow Direct,2025-04-24,day,lead,Led,,2,ukc,r2,
+a1448,Crooked Buttress,2025-04-24,day,lead,Led,,,ukc,r12,
+a1449,Slender Corner,2025-04-24,day,redpoint,Redpoint,,3,ukc,r13,
+a1450,Rusty Groove,2025-04-24,day,lead,Led,,,csv,r11,
+a1451,Dancing Traverse,2025-04-25,day,second,Seconded,,4,csv,r9,pt9
+a1452,Crooked Roof,2025-04-25,day,onsight,Onsight,,,manual,r1,
+a1453,Hollow Direct,2025-04-25,day,lead,Led,,,csv,r2,
+a1454,Rusty Groove,2025-04-25,day,redpoint,Redpoint,,3,manual,r11,pt9
+a1455,Bitter Route,2025-05-13,day,onsight,Onsight,,,manual,r191,pt6
+a1456,Velvet Slab,2025-05-14,day,second,Seconded,,,ukc,r190,pt10
+a1457,Wild Traverse,2025-05-23,day,second,Seconded,,5,manual,r42,pt5
+a1458,Velvet Rib,2025-05-23,day,onsight,Onsight,,4,ukc,r43,pt5
+a1459,Narrow Arete,2025-05-23,day,lead,Led,Long run-out,3,manual,r41,pt5
+a1460,Silent Traverse,2025-05-27,day,onsight,Onsight,,3,ukc,r28,pt10
+a1461,Narrow Crack,2025-05-27,day,onsight,Onsight,,,manual,r34,pt10
+a1462,Iron Arete,2025-05-28,day,redpoint,Redpoint,,5,ukc,r26,pt11
+a1463,Crimson Chimney,2025-05-28,day,lead,Led,,,manual,r31,pt11
+a1464,Broken Route,2025-05-29,day,flash,Flash,,,manual,r32,pt6
+a1465,Silent Groove,2025-05-29,day,second,Seconded,,,csv,r25,pt6
+a1466,Northern Pillar,2025-05-30,day,lead,Led,,,ukc,r27,pt8
+a1467,Silent Traverse,2025-05-30,day,redpoint,Redpoint,Bring extra cams,4,csv,r28,pt8
+a1468,Narrow Arete,2025-06-04,day,second,Seconded,,1,csv,r41,pt11
+a1469,Golden Traverse,2025-06-04,day,second,Seconded,,2,ukc,r38,pt11
+a1470,Velvet Rib,2025-06-04,day,lead,Led,Windy belay,3,csv,r43,pt11
+a1471,Slender Chimney,2025-06-12,day,send,Send,,,ukc,r294,
+a1472,Silent Arete,2025-06-12,day,flash,Flash,,1,csv,r296,
+a1473,Hollow Roof,2025-06-12,day,send,Send,,,ukc,r290,
+a1474,Lonely Rib,2025-06-12,day,send,Send,,,manual,r292,
+a1475,Rusty Face,2025-06-12,day,send,Send,,,ukc,r287,
+a1476,Dancing Ramp,2025-06-13,day,second,Seconded,,4,ukc,r307,pt8
+a1477,Shattered Buttress,2025-06-13,day,second,Seconded,Cold fingers,,csv,r298,pt8
+a1478,Slender Direct,2025-06-13,day,lead,Led,,3,manual,r304,pt8
+a1479,Iron Gully,2025-06-13,day,second,Seconded,,,ukc,r300,pt8
+a1480,Burning Groove,2025-06-13,day,second,Seconded,Bring extra cams,1,csv,r301,pt8
+a1481,Sleepy Pillar,2025-06-14,day,send,Send,Long run-out,4,ukc,r297,pt4
+a1482,Rusty Face,2025-06-14,day,flash,Flash,,,csv,r287,pt4
+a1483,Silent Arete,2025-06-14,day,send,Send,,,ukc,r296,pt4
+a1484,Hollow Roof,2025-06-14,day,send,Send,,,manual,r290,pt4
+a1485,Hidden Pillar,2025-06-14,day,onsight,Onsight,Bring extra cams,2,ukc,r289,pt4
+a1486,Dancing Route,2025-06-15,day,send,Send,,3,csv,r278,pt3
+a1487,Quiet Arete,2025-06-15,day,send,Send,Loved it,4,csv,r284,pt3
+a1488,Silent Flake,2025-06-15,day,send,Send,,1,ukc,r283,
+a1489,Sleepy Nose,2025-06-15,day,send,Send,,2,manual,r275,pt3
+a1490,Broken Buttress,2025-06-15,day,flash,Flash,,4,ukc,r286,pt3
+a1491,Wandering Arete,2025-06-16,day,flash,Flash,,3,ukc,r281,pt1
+a1492,Silent Flake,2025-06-16,day,send,Send,,,manual,r283,pt1
+a1493,Broken Buttress,2025-06-16,day,send,Send,,,ukc,r286,pt1
+a1494,Sleepy Nose,2025-06-16,day,onsight,Onsight,,4,ukc,r275,pt1
+a1495,Dancing Route,2025-06-16,day,send,Send,,2,csv,r278,pt1
+a1496,Shattered Buttress,2025-06-17,day,lead,Led,,1,ukc,r298,
+a1497,Dancing Ramp,2025-06-17,day,lead,Led,,,ukc,r307,
+a1498,Crimson Traverse,2025-06-17,day,second,Seconded,Great climbing,2,ukc,r299,
+a1499,Narrow Gully,2025-06-17,day,lead,Led,Windy belay,,csv,r305,
+a1500,Bitter Chimney,2025-06-17,day,second,Seconded,,,ukc,r302,
+a1501,Rusty Face,2025-06-18,day,flash,Flash,Would repeat,,ukc,r287,
+a1502,Quiet Roof,2025-06-18,day,send,Send,,,manual,r291,
+a1503,Silent Arete,2025-06-18,day,flash,Flash,,,ukc,r296,
+a1504,Hollow Roof,2025-06-18,day,send,Send,,4,ukc,r290,
+a1505,Sleepy Pillar,2025-06-18,day,send,Send,Great climbing,4,ukc,r297,
+a1506,Narrow Roof,2025-06-19,day,send,Send,,,manual,r293,
+a1507,Silent Arete,2025-06-19,day,onsight,Onsight,,2,manual,r296,
+a1508,Hollow Roof,2025-06-19,day,onsight,Onsight,,4,csv,r290,
+a1509,Rusty Face,2025-06-19,day,send,Send,Windy belay,,manual,r287,
+a1510,Sleepy Pillar,2025-06-19,day,send,Send,,,ukc,r297,
+a1511,Slender Direct,2025-06-20,day,second,Seconded,,,csv,r304,pt6
+a1512,Dancing Ramp,2025-06-20,day,second,Seconded,,,csv,r307,pt6
+a1513,Burning Groove,2025-06-20,day,second,Seconded,,,ukc,r301,
+a1514,Crimson Traverse,2025-06-20,day,second,Seconded,,3,ukc,r299,pt6
+a1515,Pale Face,2025-06-20,day,second,Seconded,,3,csv,r303,pt6
+a1516,Iron Crack,2025-06-21,day,send,Send,,,csv,r280,
+a1517,Wandering Arete,2025-06-21,day,send,Send,,4,ukc,r281,
+a1518,Quiet Arete,2025-06-21,day,send,Send,,4,ukc,r284,
+a1519,Dancing Route,2025-06-21,day,onsight,Onsight,,,manual,r278,
+a1520,Pale Buttress,2025-06-21,day,send,Send,Polished holds,5,ukc,r285,
+a1521,Lonely Nose,2025-06-20,day,second,Seconded,Perfect conditions,,ukc,r4,pt3
+a1522,Rusty Chimney,2025-07-01,day,onsight,Onsight,,,csv,r137,
+a1523,Gentle Corner,2025-07-01,day,top_rope,Top rope,,4,ukc,r146,pt1
+a1524,Broken Ramp,2025-07-18,day,second,Seconded,,4,csv,r206,
+a1525,Rusty Route,2025-07-19,day,top_rope,Top rope,Soft for the grade,,ukc,r217,pt8
+a1526,Quiet Flake,2025-07-20,day,second,Seconded,Rain at the top,,manual,r204,
+a1527,Silent Chimney,2025-07-22,day,lead,Led,,4,manual,r10,pt2
+a1528,Hollow Direct,2025-07-22,day,lead,Led,Cold fingers,,ukc,r2,pt2
+a1529,Iron Traverse,2025-07-22,day,redpoint,Redpoint,Polished holds,4,csv,r3,
+a1530,Crooked Ramp,2025-08-12,day,onsight,Onsight,,,manual,r149,pt2
+a1531,Iron Groove,2025-08-12,day,onsight,Onsight,,,csv,r147,pt2
+a1532,Narrow Wall,2025-08-12,day,lead,Led,,,ukc,r159,pt2
+a1533,Wandering Nose,2025-08-13,day,lead,Led,Rain at the top,,csv,r160,pt4
+a1534,Crimson Slab,2025-08-13,day,flash,Flash,Hard for the grade,,csv,r148,pt4
+a1535,Golden Face,2025-08-13,day,lead,Led,Crowded,2,ukc,r152,pt4
+a1536,Slender Arete,2025-09-03,day,flash,Flash,,4,ukc,r91,
+a1537,Gentle Arete,2025-09-03,day,second,Seconded,Windy belay,5,ukc,r93,
+a1538,Amber Crack,2025-09-04,day,onsight,Onsight,,,manual,r95,pt10
+a1539,Hidden Crack,2025-09-04,day,lead,Led,Rain at the top,,ukc,r99,pt10
+a1540,Golden Traverse,2025-09-11,day,lead,Led,,3,ukc,r38,pt1
+a1541,Wild Traverse,2025-09-11,day,lead,Led,,,ukc,r42,pt1
+a1542,Lonely Groove,2025-09-11,day,second,Seconded,,,ukc,r37,pt1
+a1543,Dancing Traverse,2025-09-15,day,onsight,Onsight,Greasy start,1,csv,r9,pt5
+a1544,Hollow Ramp,2025-09-15,day,second,Seconded,Long run-out,,manual,r5,pt5
+a1545,Wild Slab,2025-09-15,day,onsight,Onsight,,5,csv,r6,pt5
+a1546,Broken Flake,2025-10-15,day,redpoint,Redpoint,,4,ukc,r65,
+a1547,Burning Rib,2025-10-15,day,onsight,Onsight,,5,ukc,r61,pt5
+a1548,Crimson Crack,2025-11-02,day,lead,Led,,5,csv,r58,
+a1549,Burning Slab,2025-11-02,day,onsight,Onsight,,,ukc,r66,
+a1550,Burning Slab,2025-11-03,day,onsight,Onsight,,4,csv,r66,
+a1551,Hollow Face,2025-11-03,day,lead,Led,,,ukc,r59,
+a1552,Quiet Groove,2025-11-04,day,lead,Led,,,ukc,r63,pt9
+a1553,Crimson Crack,2025-11-04,day,second,Seconded,,,ukc,r58,pt9
+a1554,Wandering Traverse,2025-11-05,day,lead,Led,,,ukc,r62,pt3
+a1555,Broken Flake,2025-11-05,day,redpoint,Redpoint,,4,csv,r65,pt3
