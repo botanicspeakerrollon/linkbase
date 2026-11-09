@@ -77,8 +77,7 @@ public class ExtractionEdgeCaseTests
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class WebImportEdgeCaseTests(PostgresFixture fixture) : IAsyncLifetime
+public class WebImportEdgeCaseTests(PostgresFixture fixture) : IAsyncLifetime, IClassFixture<PostgresFixture>
 {
     private ModelFactory _store = null!;
 
@@ -233,8 +232,7 @@ public class WebImportEdgeCaseTests(PostgresFixture fixture) : IAsyncLifetime
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class ContextEdgeCaseTests(PostgresFixture fixture)
+public class ContextEdgeCaseTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     [Fact]
     public void Saving_synchronously_stamps_timestamps_too()

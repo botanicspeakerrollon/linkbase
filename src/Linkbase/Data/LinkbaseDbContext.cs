@@ -58,6 +58,8 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             // UKC climb 123 are different records.
             externalRef.HasIndex(r => new { r.Source, r.NodeType, r.ExternalId }).IsUnique();
             externalRef.HasIndex(r => r.NodeId);
+            externalRef.Property(r => r.NodeId).HasDefaultValue("");
+            externalRef.Property(r => r.NodeType).HasDefaultValue("");
 
             // No foreign key to node: a model reload truncates node, and that would have to truncate the refs too.
         });
@@ -79,6 +81,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         {
             field.HasOne(f => f.NodeType).WithMany(t => t.Fields).HasForeignKey(f => f.NodeTypeName);
             field.HasIndex(f => new { f.NodeTypeName, f.Key }).IsUnique();
+            field.Property(f => f.Required).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<LinkDefinition>(link =>
@@ -86,6 +89,8 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             link.HasOne(l => l.Source).WithMany().HasForeignKey(l => l.SourceType);
             link.HasOne(l => l.Target).WithMany().HasForeignKey(l => l.TargetType);
             link.HasIndex(l => new { l.SourceType, l.RelType, l.TargetType }).IsUnique();
+            link.Property(l => l.Required).HasDefaultValue(false);
+            link.Property(l => l.Links).HasDefaultValue(0L);
         });
 
         modelBuilder.Entity<Node>(node =>

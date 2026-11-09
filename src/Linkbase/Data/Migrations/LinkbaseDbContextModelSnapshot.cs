@@ -70,12 +70,16 @@ namespace Linkbase.Data.Migrations
 
                     b.Property<string>("NodeId")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("text")
+                        .HasDefaultValue("")
                         .HasColumnName("node_id");
 
                     b.Property<string>("NodeType")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("text")
+                        .HasDefaultValue("")
                         .HasColumnName("node_type");
 
                     b.Property<string>("Source")
@@ -137,7 +141,9 @@ namespace Linkbase.Data.Migrations
                         .HasColumnName("owner");
 
                     b.Property<bool>("Required")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(false)
                         .HasColumnName("required");
 
                     b.Property<string>("Type")
@@ -320,7 +326,9 @@ namespace Linkbase.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<long>("Links")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
                         .HasColumnName("links");
 
                     b.Property<string>("RelType")
@@ -329,7 +337,9 @@ namespace Linkbase.Data.Migrations
                         .HasColumnName("rel_type");
 
                     b.Property<bool>("Required")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(false)
                         .HasColumnName("required");
 
                     b.Property<string>("SourceType")

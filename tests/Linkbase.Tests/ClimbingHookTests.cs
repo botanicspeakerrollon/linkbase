@@ -10,10 +10,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Linkbase.Tests;
 
 // The climbing module's behaviour on the generic store: grade ranks, ascents named for their routes, and trips. Everything
-// here is made up. See docs/climbing-to-generic-plan.md.
+// here is made up. See docs/history/climbing-to-generic-plan.md.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable
+public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable, IClassFixture<PostgresFixture>
 {
     private static readonly string ModelPath = RepoPaths.Resolve("models/climbing/model.json");
     private readonly string _corrections = Path.Combine(Path.GetTempPath(), $"corrections-{Guid.NewGuid():N}.json");

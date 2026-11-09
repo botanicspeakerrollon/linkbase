@@ -544,8 +544,7 @@ public class PatternBuilderEdgeCaseTests
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class DatabaseStatusTests(PostgresFixture fixture)
+public class DatabaseStatusTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     [Fact]
     public async Task Database_status_reports_connected_and_up_to_date()

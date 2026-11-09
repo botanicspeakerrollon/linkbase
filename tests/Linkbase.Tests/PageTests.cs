@@ -4,7 +4,7 @@ using Linkbase.Components.Pages;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
-using Linkbase.Domains.Climbing.Features.Ascents;
+using Linkbase.Domains.Climbing.Features.Logbook;
 using Linkbase.Domains.Climbing.Features.Insights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +15,7 @@ using Npgsql;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class HomePageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public class HomePageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     private sealed class FactoryFor(string connectionString) : IDbContextFactory<LinkbaseDbContext>
     {
@@ -84,8 +83,7 @@ public class ErrorPageTests : BunitContext
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     // The made-up climbing model in a database of its own, which the page reads instead of the shared one.
     private async Task<ModelFactory> GenericAsync()
@@ -186,8 +184,7 @@ public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class InsightsPageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public class InsightsPageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     // The made-up climbing model in a database of its own, which the page reads instead of the shared one.
     private async Task GenericAsync()

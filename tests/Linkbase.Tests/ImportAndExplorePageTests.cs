@@ -17,8 +17,7 @@ using MudBlazor;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     private ModelFactory? _store;
 
@@ -231,13 +230,12 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 
         await DisposeComponentsAsync();
 
-        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(30));
     }
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     private ModelFactory? _store;
 
@@ -460,8 +458,7 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class ExplorePageTests : UiTestBase
+public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 {
     private readonly BunitJSModuleInterop _graph;
 
@@ -1176,8 +1173,7 @@ public class ExplorePageTests : UiTestBase
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture)
+public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     private static readonly GraphSchema Schema = new(
         [new GraphConnection("Route", "AT", "Crag")],

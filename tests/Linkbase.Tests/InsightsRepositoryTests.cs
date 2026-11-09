@@ -7,8 +7,7 @@ namespace Linkbase.Tests;
 // in Wessex in May 2020, a July 2021 ascent in Gaule on a trip abroad, and a repeat of the first route in 2022 with only
 // the year known. Sam Example climbed the first and the third.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class InsightsRepositoryTests(PostgresFixture fixture)
+public sealed class InsightsRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private async Task<InsightsRepository> ConvertedAsync()
     {

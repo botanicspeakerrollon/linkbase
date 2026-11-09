@@ -375,8 +375,7 @@ public class GraphPatternSqlTests
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime
+public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime, IClassFixture<PostgresFixture>
 {
     private ModelFactory _store = null!;
 

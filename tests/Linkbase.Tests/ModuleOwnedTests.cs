@@ -121,8 +121,7 @@ public sealed class RecordHooksTests
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable
+public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, IClassFixture<PostgresFixture>
 {
     private readonly string _folder = Path.Combine(Path.GetTempPath(), $"linkbase-owned-{Guid.NewGuid():N}");
     private readonly FakeClimbingHook _hook = new();
@@ -422,8 +421,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable
 
 // The generated pages show a module's derived records and kept fields, but offer no way to change them.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class ModuleOwnedPageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public sealed class ModuleOwnedPageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     // The model file and its CSV files are only needed while loading.
     private async Task UseOwnedModelAsync()

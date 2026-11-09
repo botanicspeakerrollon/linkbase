@@ -10,8 +10,7 @@ namespace Linkbase.Tests;
 
 // The web import over the generic store. Each test gets a database of its own with the climbing model loaded and no records.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class WebImportTests(PostgresFixture fixture) : IAsyncLifetime
+public class WebImportTests(PostgresFixture fixture) : IAsyncLifetime, IClassFixture<PostgresFixture>
 {
     private ModelFactory _store = null!;
     private int _next;

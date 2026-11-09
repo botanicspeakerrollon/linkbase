@@ -35,7 +35,7 @@ replaces everything, edits included.
 ## Climbing in the generic store
 
 Climbing's records are in the generic store like any other model's. Its model file is `models/climbing/model.json`, and the
-Climbing module keeps the grade rank and the trips. See [the plan](climbing-to-generic-plan.md).
+Climbing module keeps the grade rank and the trips. See [the plan](history/climbing-to-generic-plan.md).
 
 ## Adding a model
 

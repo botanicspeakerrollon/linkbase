@@ -9,8 +9,7 @@ namespace Linkbase.Tests;
 
 // The graph over climbing records in the generic store. Each test builds what it needs in a database of its own.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class GraphRepositoryTests(PostgresFixture fixture)
+public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private static string Unique(string name) => $"{name} {Guid.NewGuid():N}";
 

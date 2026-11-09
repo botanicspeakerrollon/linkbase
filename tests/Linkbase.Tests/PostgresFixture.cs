@@ -12,10 +12,13 @@ namespace Linkbase.Tests;
 // One database per test run, with the real migrations applied. Tests share it, so each one creates its own uniquely named
 // rows rather than assuming an empty table.
 //
+// Every test class asks for a PostgresFixture, which is only a handle on the one server for the whole run (PostgresServer),
+// so classes run in parallel instead of queueing behind a shared collection. The server is torn down when the process exits.
+//
 // Normally it's a Postgres container from Testcontainers. Where Docker isn't available, such as a CI runner without
 // Docker-in-Docker, LINKBASE_TEST_CONNECTION names a Postgres server instead (a GitLab `services: postgres`, say), whose
 // user can create databases. The run then creates its own databases there and drops them all at the end.
-public sealed class PostgresFixture : IAsyncLifetime
+internal sealed class PostgresServer
 {
     public const string ServerVariable = "LINKBASE_TEST_CONNECTION";
 
@@ -24,7 +27,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     private readonly List<string> _created = [];
     private string _connectionString = "";
 
-    public PostgresFixture()
+    public PostgresServer()
     {
         if (_server is null)
         {
@@ -39,7 +42,7 @@ public sealed class PostgresFixture : IAsyncLifetime
 
     public IDbContextFactory<LinkbaseDbContext> ContextFactory() => new TestContextFactory(this);
 
-    private sealed class TestContextFactory(PostgresFixture fixture) : IDbContextFactory<LinkbaseDbContext>
+    private sealed class TestContextFactory(PostgresServer fixture) : IDbContextFactory<LinkbaseDbContext>
     {
         public LinkbaseDbContext CreateDbContext() => fixture.CreateContext();
     }
@@ -108,7 +111,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     // A database with no tables at all, as an app pointed at a new server would find.
     public Task<string> CreateEmptyDatabaseAsync() => CreateDatabaseAsync($"empty_{Guid.NewGuid():N}");
 
-    public async Task InitializeAsync()
+    public async Task StartAsync()
     {
         if (_container is not null)
         {
@@ -124,7 +127,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         await db.Database.MigrateAsync();
     }
 
-    public async Task DisposeAsync()
+    public async Task StopAsync()
     {
         if (_container is not null)
         {
@@ -163,8 +166,33 @@ public sealed class PostgresFixture : IAsyncLifetime
     }
 }
 
-[CollectionDefinition(Name)]
-public sealed class PostgresCollection : ICollectionFixture<PostgresFixture>
+public sealed class PostgresFixture : IAsyncLifetime
 {
-    public const string Name = "Postgres";
+    private static readonly Lazy<Task<PostgresServer>> Server = new(StartAsync);
+
+    private PostgresServer _server = null!;
+
+    private static async Task<PostgresServer> StartAsync()
+    {
+        var server = new PostgresServer();
+        await server.StartAsync();
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => server.StopAsync().GetAwaiter().GetResult();
+        return server;
+    }
+
+    public async Task InitializeAsync() => _server = await Server.Value;
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    public string ConnectionString => _server.ConnectionString;
+
+    public LinkbaseDbContext CreateContext() => _server.CreateContext();
+
+    public IDbContextFactory<LinkbaseDbContext> ContextFactory() => _server.ContextFactory();
+
+    public Task<string> CreateModelDatabaseAsync(string insertRowsSql) => _server.CreateModelDatabaseAsync(insertRowsSql);
+
+    public Task<string> CreateClimbingDatabaseAsync() => _server.CreateClimbingDatabaseAsync();
+
+    public Task<string> CreateEmptyDatabaseAsync() => _server.CreateEmptyDatabaseAsync();
 }

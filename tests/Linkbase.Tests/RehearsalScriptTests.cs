@@ -7,8 +7,7 @@ namespace Linkbase.Tests;
 // scripts/rehearse-recovery.ps1 needs Docker and the real database, so it can't run here. Its SQL can: this runs the same
 // text against the made-up logbook, so a column or view that goes missing shows up in the tests rather than in a recovery.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class RehearsalScriptTests(PostgresFixture fixture)
+public sealed class RehearsalScriptTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private static string Script => File.ReadAllText(RepoPaths.Resolve("scripts/rehearse-recovery.ps1"));
 
