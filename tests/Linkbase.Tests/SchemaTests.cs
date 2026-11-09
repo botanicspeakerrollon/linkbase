@@ -5,8 +5,7 @@ using Npgsql;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class SchemaTests(PostgresFixture fixture)
+public class SchemaTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private const long DefaultUserId = 1;
 

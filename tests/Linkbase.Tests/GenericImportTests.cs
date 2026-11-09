@@ -9,8 +9,7 @@ namespace Linkbase.Tests;
 // The UKC and Mountain Project parsers writing into the generic store. Everything here is made up. See
 // docs/climbing-to-generic-plan.md.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class GenericImportTests : IDisposable
+public sealed class GenericImportTests : IDisposable, IClassFixture<PostgresFixture>
 {
     private readonly PostgresFixture _fixture;
     private readonly string _root = Path.Combine(Path.GetTempPath(), $"logbook-generic-import-{Guid.NewGuid():N}");

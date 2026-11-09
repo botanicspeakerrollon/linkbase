@@ -7,8 +7,7 @@ namespace Linkbase.Tests;
 
 // The Logbook's queries over the generic store, on the made-up logbook from GenericConversionTests.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class LogbookRepositoryTests(PostgresFixture fixture)
+public sealed class LogbookRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private async Task<(LogbookRepository Logbook, ModelFactory Target)> ConvertedAsync()
     {

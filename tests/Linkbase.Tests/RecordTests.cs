@@ -19,8 +19,7 @@ internal sealed class ModelFactory(string connectionString) : IDbContextFactory<
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class RecordRepositoryTests(PostgresFixture fixture)
+public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private static readonly string Example = RepoPaths.Resolve("models/consultancy/model.json");
 
@@ -395,8 +394,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
 
 // The generated pages, against a model database of their own so they don't disturb the climbing data the other tests use.
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     private RecordRepository Records => Services.GetRequiredService<RecordRepository>();
 

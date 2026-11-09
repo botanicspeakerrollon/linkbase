@@ -13,8 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable
+public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClassFixture<PostgresFixture>
 {
     private readonly List<string> _files = [];
 
@@ -413,8 +412,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable
 }
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fixture)
+public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
 {
     [Fact]
     public async Task Uploads_maps_checks_imports_and_undoes()

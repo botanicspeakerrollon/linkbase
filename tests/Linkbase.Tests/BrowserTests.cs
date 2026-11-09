@@ -83,8 +83,7 @@ internal static class RunningApp
 }
 
 [Trait("Category", "Browser")]
-[Collection(PostgresCollection.Name)]
-public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
+public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, IClassFixture<PostgresFixture>
 {
     private const float RailWidth = 56;
     private const string Positions = "() => import('/js/graph.js').then(m => m.positions())";

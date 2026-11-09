@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable
+public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, IClassFixture<PostgresFixture>
 {
     private readonly List<string> _files = [];
 

@@ -7,8 +7,7 @@ using Npgsql;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class HealthTests(PostgresFixture fixture)
+public sealed class HealthTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
     private static ModelCatalog Catalog(params (string Key, string Connection)[] models)
     {

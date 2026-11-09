@@ -12,8 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Linkbase.Tests;
 
 [Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
+public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, IClassFixture<PostgresFixture>
 {
     private static readonly string Example = RepoPaths.Resolve("models/consultancy/model.json");
     private readonly string _folder = Path.Combine(Path.GetTempPath(), $"linkbase-model-{Guid.NewGuid():N}");
