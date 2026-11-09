@@ -89,7 +89,7 @@
     <aside class="explore-panel">
         @if (_selected is { } node)
         {
-            <MudChip T="string" Size="Size.Small" Style="@ChipStyle(node.Label)" Class="ma-0 mb-1">@node.Label</MudChip>
+            <MudChip T="string" Size="Size.Small" Style="@($"background-color: {GraphStyle.For(node, _schema).Color}; color: #ffffff")" Class="ma-0 mb-1">@node.Label</MudChip>
             <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@node.Name</MudText>
 
             @if (node.Properties.Count > 0)
@@ -303,7 +303,7 @@
         try
         {
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/graph.js");
-            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => GraphStyle.For(label, _schema)).ToList());
+            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => GraphStyle.For(label, _schema)).Concat(_schema.Labels.SelectMany(GraphStyle.KindStylesOf)).ToList());
         }
         catch (JSException ex)
         {
@@ -540,7 +540,7 @@
     private (object[] Nodes, object[] Edges) CanvasElements()
     {
         var visible = VisibleNodes.Select(n => n.Id).ToHashSet();
-        var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, caption = GraphStyle.Caption(n) }).ToArray();
+        var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, kind = n.Property("kind"), caption = GraphStyle.Caption(n) }).ToArray();
         var edges = _edges
             .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId))
             .Select(e => (object)new { id = $"{e.SourceId}|{e.RelType}|{e.TargetId}", source = e.SourceId, target = e.TargetId, relType = e.Caption ?? e.RelType })

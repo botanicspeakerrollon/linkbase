@@ -88,6 +88,18 @@ public class GraphStyleTests
     }
 
     [Fact]
+    public void Countries_are_areas_drawn_in_their_own_style()
+    {
+        var country = new GraphNode("area:1", "Area", "France", [new GraphProperty("kind", "country")]);
+        var region = new GraphNode("area:2", "Area", "Jura", [new GraphProperty("kind", "region")]);
+
+        Assert.NotEqual(GraphStyle.For(region).Color, GraphStyle.For(country).Color);
+        Assert.Equal(GraphStyle.For("Area").Color, GraphStyle.For(region).Color);
+        Assert.Single(GraphStyle.KindStylesOf("Area"));
+        Assert.Empty(GraphStyle.KindStylesOf("Crag"));
+    }
+
+    [Fact]
     public void Property_titles_read_naturally() => Assert.Equal("Rock type", GraphStyle.PropertyTitle("rock_type"));
 }
 

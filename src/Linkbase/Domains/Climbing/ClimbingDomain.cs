@@ -29,8 +29,8 @@ public sealed class ClimbingDomain : IDomainModule
 
     public IReadOnlyList<LabelStyle> LabelStyles { get; } =
     [
-        new("Country", "#2563eb", Icons.Material.Filled.Public),
         new("Area", "#0e7490", Icons.Material.Filled.Map),
+        new("Area", "#2563eb", Icons.Material.Filled.Public) { Kind = "country" },
         new("Crag", "#a16207", Icons.Material.Filled.Terrain),
         new("Route", "#7c3aed", Icons.Material.Filled.Timeline)
         {

@@ -60,7 +60,7 @@ export async function create(element, dotNetRef, labelStyles) {
     destroy();
 
     const nodeStyles = labelStyles.map(s => ({
-        selector: `node[label = "${s.label}"]`,
+        selector: s.kind ? `node[label = "${s.label}"][kind = "${s.kind}"]` : `node[label = "${s.label}"]`,
         style: { 'background-color': s.color, 'background-image': iconImage(s.icon) },
     }));
 
@@ -309,7 +309,7 @@ export function update(nodes, edges, anchorId) {
 
     const added = nodes
         .filter(n => cy.getElementById(n.id).empty())
-        .map(n => cy.add({ group: 'nodes', data: { id: n.id, label: n.label, caption: n.caption } }));
+        .map(n => cy.add({ group: 'nodes', data: { id: n.id, label: n.label, kind: n.kind, caption: n.caption } }));
     for (const edge of edges) {
         if (cy.getElementById(edge.id).empty()) {
             cy.add({ group: 'edges', data: { id: edge.id, source: edge.source, target: edge.target, relType: edge.relType } });
@@ -409,7 +409,7 @@ export function restore(nodes, edges, savedPositions) {
         const saved = positionById.get(node.id);
         cy.add({
             group: 'nodes',
-            data: { id: node.id, label: node.label, caption: node.caption },
+            data: { id: node.id, label: node.label, kind: node.kind, caption: node.caption },
             position: saved ? { x: saved.x, y: saved.y } : { x: 0, y: 0 },
         });
     }
