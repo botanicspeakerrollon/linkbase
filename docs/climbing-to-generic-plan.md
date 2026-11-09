@@ -19,7 +19,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
 | 3. Module behaviour on the generic store | Done: `ClimbingRecordHook` keeps `grade_rank`, names ascents after their routes and rebuilds trips; `GenericTripService` rebuilds the `Trip` records. A test checks that its trips match the typed tables' |
 | 4. Port the module pages | Done: Browse and the typed Add ascent page are gone, the Logbook reads the generic store (`LogbookRepository`; its Add button is the generic form), Insights reads it through the `climbing_*` views (migration `ClimbingInsightsOnGenericStore`), and web import matches, commits and undoes on Area, Crag and Route records (`WebImportRepository`, keeping its own review screen). A route's summary is no longer kept, because the model has no description field |
 | 5. Imports | Done: `GenericAscentImportService` loads the UKC and Mountain Project parsers' rows into the generic store as one undoable batch per file. `climbing import <model> ukc\|mp\|all [--fresh]` runs it, and a test checks it gives what the typed importer gives. `climbing verify-generic <model> --imported` checks an imported store against the typed tables, matching trips by key because they're numbered afresh. Run on the real logbook: matches. The typed importer stays until step 6 |
-| 6. Switch | Not started. Needs your go-ahead |
+| 6. Switch | Prepared, not run. The steps are in [climbing-switch](climbing-switch.md). The drop is on the branch `climbing-generic-step6-switch`: a migration that refuses to run until the logbook has been copied, the typed code and tests gone, and a rehearsal script that checks the generic records. Copying your real logbook and merging the branch are yours to do |
 
 **Two gaps in step 3.**
 - The hook only runs for a model that lists `Climbing` under `Domains`, and that also turns on the module's pages, which still
@@ -41,7 +41,7 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
    (G7) can replace them, then Insights, then web import onto generic staging (G9). Add `Climbing` to the generic model's
    `Domains` as these land.
 4. Step 5, the UKC and Mountain Project parsers writing through the generic import path.
-5. Step 6, the switch.
+5. Step 6, the switch: follow [climbing-switch](climbing-switch.md).
 
 ## Why
 
