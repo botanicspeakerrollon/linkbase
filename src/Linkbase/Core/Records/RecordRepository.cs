@@ -5,6 +5,7 @@ using Linkbase.Core.Models;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
 
@@ -39,6 +40,15 @@ public sealed record RecordType(string Name, string? Color, string? Icon, IReadO
 public sealed record RecordRow(string Id, string Key, string Name, IReadOnlyDictionary<string, string> Values);
 
 public sealed record RecordRows(int Total, IReadOnlyList<RecordRow> Rows);
+
+// How a filter compares a field: Contains for text and lists, Is for choices and booleans (and exact numbers and dates),
+// AtLeast and AtMost for the ends of a number or date range.
+public enum FilterOp { Contains, Is, AtLeast, AtMost }
+
+public sealed record RecordFilter(string Field, FilterOp Op, string Value);
+
+// Sorts by a field's key, or by Name or Key (the default), which are always there. Blank values come last either way.
+public sealed record RecordSort(string Field, bool Descending = false);
 
 public sealed record RecordDetail(
     string Id, string Type, string Key, string Name, IReadOnlyDictionary<string, string> Values, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
@@ -101,23 +111,111 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         (await TypesAsync(cancellationToken)).FirstOrDefault(t => t.Name == name);
 
     // In name order, or only those whose name or any value contains the search text.
-    public async Task<RecordRows> ListAsync(string type, string? search, int page, int pageSize, CancellationToken cancellationToken = default)
+    public Task<RecordRows> ListAsync(string type, string? search, int page, int pageSize, CancellationToken cancellationToken = default) =>
+        ListAsync(type, search, null, [], page, pageSize, cancellationToken);
+
+    // Sorted by a field and narrowed by filters on fields, as well as the search. Values are JSON, so a field is a lookup in
+    // props; a field filtered often can have an expression index (docs/climbing-to-generic-plan.md).
+    public async Task<RecordRows> ListAsync(
+        string type, string? search, RecordSort? sort, IReadOnlyList<RecordFilter> filters, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var query = db.Nodes.AsNoTracking().Where(n => n.Type == type && n.UserId == AppUser.DefaultId);
-        if (!string.IsNullOrWhiteSpace(search))
+        var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
+        var parameters = new List<(string Name, object Value, NpgsqlDbType Type)>();
+        string Add(object value, NpgsqlDbType dbType)
         {
-            var pattern = $"%{EscapeLike(search.Trim())}%";
-            query = query.Where(n => EF.Functions.ILike(n.SearchText!, pattern));
+            var name = $"p{parameters.Count}";
+            parameters.Add((name, value, dbType));
+            return $"@{name}";
         }
 
-        var total = await query.CountAsync(cancellationToken);
-        var rows = await query
-            .OrderBy(n => n.Name).ThenBy(n => n.Key)
-            .Skip(page * pageSize).Take(pageSize)
-            .Select(n => new { n.Id, n.Key, n.Name, n.Props })
+        var where = new List<string> { $"type = {Add(type, NpgsqlDbType.Text)}", $"user_id = {Add(AppUser.DefaultId, NpgsqlDbType.Bigint)}" };
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            where.Add($"search_text ILIKE {Add($"%{EscapeLike(search.Trim())}%", NpgsqlDbType.Text)}");
+        }
+
+        foreach (var filter in filters)
+        {
+            where.Add(FilterSql(definition, filter, Add));
+        }
+
+        var order = OrderSql(definition, sort, Add);
+        var from = $"FROM node WHERE {string.Join(" AND ", where)}";
+        var offset = Add(page * pageSize, NpgsqlDbType.Integer);
+        var limit = Add(pageSize, NpgsqlDbType.Integer);
+
+        // Field keys and values only ever go in as parameters, so this is built from fixed pieces.
+        var countSql = "SELECT count(*)::int AS \"Value\" " + from;
+        var rowsSql = "SELECT id AS \"Id\", key AS \"Key\", name AS \"Name\", props::text AS \"Props\" " + from
+            + " ORDER BY " + order + " OFFSET " + offset + " LIMIT " + limit;
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var total = await db.Database.SqlQueryRaw<int>(countSql, Materialize(parameters)).SingleAsync(cancellationToken);
+        var rows = await db.Database
+            .SqlQueryRaw<RawRecord>(rowsSql, Materialize(parameters))
             .ToListAsync(cancellationToken);
         return new RecordRows(total, rows.Select(r => new RecordRow(r.Id, r.Key, r.Name, Values(r.Props))).ToList());
+    }
+
+    private sealed record RawRecord(string Id, string Key, string Name, string Props);
+
+    // Each command needs parameter objects of its own.
+    private static object[] Materialize(List<(string Name, object Value, NpgsqlDbType Type)> parameters) =>
+        parameters.Select(p => (object)new NpgsqlParameter(p.Name, p.Type) { Value = p.Value }).ToArray();
+
+    private static RecordField FieldFor(RecordType type, string key) =>
+        type.Fields.FirstOrDefault(f => f.Key == key) ?? throw new LinkbaseValidationException($"{type.Name} has no field called {key}.");
+
+    private static string FilterSql(RecordType type, RecordFilter filter, Func<object, NpgsqlDbType, string> add)
+    {
+        var field = FieldFor(type, filter.Field);
+        var value = filter.Value.Trim();
+        var column = $"props ->> {add(field.Key, NpgsqlDbType.Text)}";
+        switch (field.Type, filter.Op)
+        {
+            case (FieldType.Text or FieldType.List, FilterOp.Contains):
+                return $"{column} ILIKE {add($"%{EscapeLike(value)}%", NpgsqlDbType.Text)}";
+            case (FieldType.Choice, FilterOp.Is):
+                return $"{column} = {add(FieldValues.MatchChoice(value, field.Options) ?? throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."), NpgsqlDbType.Text)}";
+            case (FieldType.Boolean, FilterOp.Is):
+                return $"{column} = {add(bool.TryParse(value, out var flag) ? (flag ? "true" : "false") : throw new LinkbaseValidationException($"{Title(field.Key)} must be true or false."), NpgsqlDbType.Text)}";
+            case (FieldType.Number, FilterOp.Is or FilterOp.AtLeast or FilterOp.AtMost):
+                if (!decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var number))
+                {
+                    throw new LinkbaseValidationException($"{Title(field.Key)} must be a number, such as 12.5.");
+                }
+
+                return $"({column})::numeric {Compare(filter.Op)} {add(number, NpgsqlDbType.Numeric)}";
+            case (FieldType.Date, FilterOp.Is or FilterOp.AtLeast or FilterOp.AtMost):
+                if (!DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                {
+                    throw new LinkbaseValidationException($"{Title(field.Key)} must be a date, such as 2026-11-06.");
+                }
+
+                // Dates are stored as yyyy-MM-dd, which sorts as text.
+                return $"{column} {Compare(filter.Op)} {add(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NpgsqlDbType.Text)}";
+            default:
+                throw new LinkbaseValidationException($"{Title(field.Key)} can't be filtered that way.");
+        }
+    }
+
+    private static string Compare(FilterOp op) => op switch { FilterOp.AtLeast => ">=", FilterOp.AtMost => "<=", _ => "=" };
+
+    private static string OrderSql(RecordType type, RecordSort? sort, Func<object, NpgsqlDbType, string> add)
+    {
+        var direction = sort?.Descending == true ? "DESC" : "ASC";
+        switch (sort?.Field)
+        {
+            case null or "" or "name":
+                return $"name {direction}, key {direction}";
+            case "key":
+                return $"key {direction}, name";
+            default:
+                var field = FieldFor(type, sort.Field);
+                var column = $"props ->> {add(field.Key, NpgsqlDbType.Text)}";
+                var expression = field.Type == FieldType.Number ? $"({column})::numeric" : field.Type is FieldType.Text or FieldType.Choice or FieldType.List ? $"lower({column})" : column;
+                return $"{expression} {direction} NULLS LAST, name, key";
+        }
     }
 
     public async Task<RecordDetail?> GetAsync(string type, string key, CancellationToken cancellationToken = default)

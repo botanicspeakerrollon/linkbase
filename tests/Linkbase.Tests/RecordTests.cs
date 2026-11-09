@@ -60,6 +60,53 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture)
     }
 
     [Fact]
+    public async Task Sorts_by_any_field_with_blanks_last_and_numbers_as_numbers()
+    {
+        var (_, records) = await ExampleAsync();
+
+        var byBudget = await records.ListAsync("Project", null, new RecordSort("budget", true), [], 0, 50);
+        Assert.Equal(["Patient portal", "Timetable app"], byBudget.Rows.Take(2).Select(r => r.Name));
+        var byJoined = await records.ListAsync("Person", null, new RecordSort("joined"), [], 0, 3);
+        Assert.Equal(["Chloe Marsh", "Ava Lindqvist", "Hugo Brandt"], byJoined.Rows.Select(r => r.Name));
+        var byKey = await records.ListAsync("Person", null, new RecordSort("key", true), [], 0, 1);
+        Assert.Equal("p8", byKey.Rows.Single().Key);
+        var bySkills = await records.ListAsync("Person", null, new RecordSort("skills"), [], 0, 50);
+        Assert.Equal("Finn Doyle", bySkills.Rows[^1].Name);
+    }
+
+    [Fact]
+    public async Task Filters_by_field_and_combines_filters_with_search_and_paging()
+    {
+        var (_, records) = await ExampleAsync();
+
+        var active = await records.ListAsync("Project", null, null, [new RecordFilter("status", FilterOp.Is, "Active")], 0, 50);
+        Assert.Equal(["Booking redesign", "Repairs tracker", "Stock forecasting"], active.Rows.Select(r => r.Name));
+
+        var expensive = await records.ListAsync("Project", null, null,
+            [new RecordFilter("budget", FilterOp.AtLeast, "40000"), new RecordFilter("budget", FilterOp.AtMost, "85000")], 0, 50);
+        Assert.Equal(["Booking redesign", "Stock forecasting", "Timetable app"], expensive.Rows.Select(r => r.Name));
+
+        var recent = await records.ListAsync("Person", null, null, [new RecordFilter("joined", FilterOp.AtLeast, "2022-01-01")], 0, 1);
+        Assert.Equal(3, recent.Total);
+        Assert.Single(recent.Rows);
+
+        var postgres = await records.ListAsync("Person", "engineer", null, [new RecordFilter("skills", FilterOp.Contains, "postgres")], 0, 50);
+        Assert.Equal(["Chloe Marsh", "Dev Raman", "Grace Ito"], postgres.Rows.Select(r => r.Name));
+    }
+
+    [Fact]
+    public async Task Refuses_filters_and_sorts_that_do_not_fit_the_type()
+    {
+        var (_, records) = await ExampleAsync();
+
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.ListAsync("Person", null, new RecordSort("nope"), [], 0, 10));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.ListAsync("Person", null, null, [new RecordFilter("nope", FilterOp.Is, "x")], 0, 10));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.ListAsync("Project", null, null, [new RecordFilter("budget", FilterOp.Is, "lots")], 0, 10));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.ListAsync("Project", null, null, [new RecordFilter("status", FilterOp.Is, "gone")], 0, 10));
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.ListAsync("Person", null, null, [new RecordFilter("title", FilterOp.AtLeast, "a")], 0, 10));
+    }
+
+    [Fact]
     public async Task Shows_a_record_and_its_links_both_ways()
     {
         var (_, records) = await ExampleAsync();

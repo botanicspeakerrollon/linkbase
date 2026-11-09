@@ -156,8 +156,11 @@ can be up to 100 MB, with commas or semicolons. The batch records the file's nam
 
 Each type in a model file gets a place in the rail, and pages generated from its definition, with nothing to write:
 
-- **The list** (`/data/<Type>`) shows every record in name order, 50 at a time, with up to six of its fields. Search finds any
-  part of the name or a value.
+- **The list** (`/data/<Type>`) shows every record, 50 at a time, with up to six of its fields. Search finds any part of the
+  name or a value. Clicking a heading sorts by that field (again for the other way, a third time for name order), with blank
+  values last. Filters narrow it by field: text and lists contain the text, choices and booleans are one value, and numbers
+  and dates have a from and a to. Values are JSON, so a filter is a lookup in `props`; if one is used often on a big model,
+  give it an expression index.
 - **The record** (`/data/<Type>/<key>`) shows all its values and its links, grouped by relationship and either way round. A
   group shows its first 25 links and how many there are. Explore's "Open and edit" comes here too.
 - **Adding and editing** use a form with a box for each field, checked against its type. A list takes one value per line,

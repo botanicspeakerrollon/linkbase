@@ -1,0 +1,72 @@
+@* One box for each field of a type, to narrow a list of its records. Text and lists contain the text, choices and booleans
+   are one of their values, and numbers and dates have a from and a to. *@
+<MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2" Class="mb-3">
+    @foreach (var field in Type.Fields)
+    {
+        var key = field.Key;
+        var label = RecordRepository.Title(key);
+        @switch (field.Type)
+        {
+            case FieldType.Choice:
+                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Clearable="true" Style="min-width: 10rem"
+                           Value="@Get(key, FilterOp.Is)" ValueChanged="@(v => SetAsync(key, FilterOp.Is, v))" ToStringFunc="@(v => v ?? "")">
+                    @foreach (var option in field.Options)
+                    {
+                        <MudSelectItem Value="@option">@option</MudSelectItem>
+                    }
+                </MudSelect>
+                break;
+            case FieldType.Boolean:
+                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Clearable="true" Style="min-width: 8rem"
+                           Value="@Get(key, FilterOp.Is)" ValueChanged="@(v => SetAsync(key, FilterOp.Is, v))" ToStringFunc="@(v => v switch { "true" => "Yes", "false" => "No", _ => "" })">
+                    <MudSelectItem Value="@("true")" />
+                    <MudSelectItem Value="@("false")" />
+                </MudSelect>
+                break;
+            case FieldType.Number:
+            case FieldType.Date:
+                var hint = field.Type == FieldType.Date ? "yyyy-MM-dd" : "";
+                <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@($"{label} from")" Placeholder="@hint" Clearable="true" Style="max-width: 9rem"
+                              Value="@Get(key, FilterOp.AtLeast)" ValueChanged="@(v => SetAsync(key, FilterOp.AtLeast, v))" DebounceInterval="400" />
+                <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@($"{label} to")" Placeholder="@hint" Clearable="true" Style="max-width: 9rem"
+                              Value="@Get(key, FilterOp.AtMost)" ValueChanged="@(v => SetAsync(key, FilterOp.AtMost, v))" DebounceInterval="400" />
+                break;
+            default:
+                <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Clearable="true" Style="max-width: 12rem"
+                              Value="@Get(key, FilterOp.Contains)" ValueChanged="@(v => SetAsync(key, FilterOp.Contains, v))" DebounceInterval="300" />
+                break;
+        }
+    }
+</MudStack>
+
+@code {
+    [Parameter, EditorRequired] public RecordType Type { get; set; } = null!;
+    [Parameter] public EventCallback<IReadOnlyList<RecordFilter>> FiltersChanged { get; set; }
+
+    private readonly Dictionary<(string Field, FilterOp Op), string> _values = [];
+
+    protected override void OnParametersSet()
+    {
+        // A different type has different fields, so start again.
+        if (_values.Keys.Any(k => Type.Fields.All(f => f.Key != k.Field)))
+        {
+            _values.Clear();
+        }
+    }
+
+    private string? Get(string field, FilterOp op) => _values.GetValueOrDefault((field, op));
+
+    private async Task SetAsync(string field, FilterOp op, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _values.Remove((field, op));
+        }
+        else
+        {
+            _values[(field, op)] = value.Trim();
+        }
+
+        await FiltersChanged.InvokeAsync(_values.Select(v => new RecordFilter(v.Key.Field, v.Key.Op, v.Value)).ToList());
+    }
+}

@@ -23,19 +23,24 @@ else if (_type is not null)
     <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="_search" ValueChanged="SearchAsync" DebounceInterval="300"
                   Label="Search" Placeholder="Any part of the name or a value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                   Clearable="true" Class="mb-3" Style="max-width: 32rem" />
+    <RecordFilterBar Type="_type" FiltersChanged="FilterAsync" />
 
     <MudDataGrid @ref="_grid" T="RecordRow" ServerData="LoadAsync" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.None">
         <Columns>
-            <PropertyColumn Property="x => x.Name" Title="Name">
+            <PropertyColumn Property="x => x.Name" Sortable="false">
+                <HeaderTemplate>@SortHeader("name", "Name")</HeaderTemplate>
                 <CellTemplate>
                     <MudLink Href="@GraphStyle.RecordLink(Type, context.Item.Key)">@context.Item.Name</MudLink>
                 </CellTemplate>
             </PropertyColumn>
-            <PropertyColumn Property="x => x.Key" Title="Key" />
+            <PropertyColumn Property="x => x.Key" Sortable="false">
+                <HeaderTemplate>@SortHeader("key", "Key")</HeaderTemplate>
+            </PropertyColumn>
             @foreach (var field in _type.Fields.Take(MaxColumns))
             {
                 var key = field.Key;
-                <TemplateColumn T="RecordRow" Title="@RecordRepository.Title(key)">
+                <TemplateColumn T="RecordRow" Sortable="false">
+                    <HeaderTemplate>@SortHeader(key, RecordRepository.Title(key))</HeaderTemplate>
                     <CellTemplate>@Shown(field, context.Item.Values.GetValueOrDefault(key))</CellTemplate>
                 </TemplateColumn>
             }
@@ -60,6 +65,8 @@ else if (_type is not null)
     private LabelStyle? _style;
     private string? _search;
     private bool _missing;
+    private RecordSort? _sort;
+    private IReadOnlyList<RecordFilter> _filters = [];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -67,6 +74,8 @@ else if (_type is not null)
         _missing = _type is null;
         _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
         _search = null;
+        _sort = null;
+        _filters = [];
         if (_grid is not null)
         {
             await _grid.ReloadServerData();
@@ -75,14 +84,37 @@ else if (_type is not null)
 
     private async Task<GridData<RecordRow>> LoadAsync(GridState<RecordRow> state, CancellationToken cancellationToken)
     {
-        var page = await Records.ListAsync(Type, _search, state.Page, state.PageSize, cancellationToken);
+        var page = await Records.ListAsync(Type, _search, _sort, _filters, state.Page, state.PageSize, cancellationToken);
         return new GridData<RecordRow> { Items = page.Rows, TotalItems = page.Total };
     }
 
     private async Task SearchAsync(string? text)
     {
         _search = text;
-        await _grid!.ReloadServerData();
+        _grid!.NavigateTo(Page.First);
+        await _grid.ReloadServerData();
+    }
+
+    private async Task FilterAsync(IReadOnlyList<RecordFilter> filters)
+    {
+        _filters = filters;
+        _grid!.NavigateTo(Page.First);
+        await _grid.ReloadServerData();
+    }
+
+    // Clicking a heading sorts by it, then the other way round, then back to name order.
+    private RenderFragment SortHeader(string field, string title) => __builder =>
+    {
+        var current = _sort?.Field == field ? _sort : null;
+        <MudTableSortLabel SortDirection="@(current is null ? SortDirection.None : current.Descending ? SortDirection.Descending : SortDirection.Ascending)"
+                           SortDirectionChanged="@(_ => SortAsync(field))" T="object">@title</MudTableSortLabel>
+    };
+
+    private async Task SortAsync(string field)
+    {
+        _sort = _sort?.Field != field ? new RecordSort(field) : _sort.Descending ? null : new RecordSort(field, true);
+        _grid!.NavigateTo(Page.First);
+        await _grid.ReloadServerData();
     }
 
     private async Task AddAsync()
