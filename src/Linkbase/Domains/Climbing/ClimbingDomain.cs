@@ -23,7 +23,6 @@ public sealed class ClimbingDomain : IDomainModule
     public IReadOnlyList<NavItem> NavItems { get; } =
     [
         new("logbook", "Logbook", Icons.Material.Outlined.MenuBook),
-        new("ascents/new", "Add ascent", Icons.Material.Filled.Add, ExactMatch: true),
         new("import", "Import", Icons.Material.Outlined.CloudDownload),
         new("insights", "Insights", Icons.Material.Outlined.Insights),
     ];
@@ -42,7 +41,6 @@ public sealed class ClimbingDomain : IDomainModule
         {
             // Captioned by date and style, because an ascent's name is its route's.
             Caption = AscentCaption,
-            Link = node => $"/ascents/{node.EntityId}",
         },
         new("Partner", "#c2410c", Icons.Material.Filled.Person),
         new("Trip", "#be185d", Icons.Material.Filled.Flight),

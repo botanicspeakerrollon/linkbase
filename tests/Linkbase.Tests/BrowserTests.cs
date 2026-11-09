@@ -215,7 +215,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     public async Task Every_page_is_dark_and_free_of_console_errors()
     {
         var s = await SeedAsync();
-        foreach (var path in new[] { "/", "/logbook", "/ascents/new", "/explore", "/insights", "/import" })
+        foreach (var path in new[] { "/", "/logbook", "/explore", "/insights", "/import" })
         {
             await _page.GotoAsync(_url + path, new() { WaitUntil = WaitUntilState.NetworkIdle });
 
@@ -716,29 +716,6 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime
     {
         public Task<ExtractedPage> ExtractAsync(string text, IReadOnlyList<string> knownCrags, CancellationToken cancellationToken) =>
             Task.FromResult(page);
-    }
-
-    [Fact]
-    public async Task An_ascent_added_through_the_form_returns_to_the_logbook()
-    {
-        var (crag, route, country) = ($"Crag {Guid.NewGuid():N}", $"Route {Guid.NewGuid():N}", $"Country {Guid.NewGuid():N}");
-        await _page.GotoAsync($"{_url}/ascents/new", new() { WaitUntil = WaitUntilState.NetworkIdle });
-
-        await PickAsync("Crag", crag, $"Create new crag: {crag}");
-        await PickAsync("Area for the new crag", country, $"Create new country: {country}");
-        await PickAsync("Route", route, $"Create new route: {route}");
-        await SeesOptionAsync(FieldNamed("Grade system"), "UK trad");
-        await SeesOptionAsync(FieldNamed("Discipline"), "Trad");
-        await SeesOptionAsync(FieldNamed("Date is"), "Exact day");
-        await SeesOptionAsync(FieldNamed("Style"), "Top rope");
-        await FieldNamed("Grade").Locator("input").First.FillAsync("E1 5b");
-        await FieldNamed("Grade").Locator("input").First.BlurAsync();
-        await Button("Save").ClickAsync();
-
-        // The form still writes the typed tables and the Logbook reads the generic store, so the ascent isn't listed yet.
-        await _page.WaitForURLAsync("**/logbook");
-        await Assertions.Expect(_page.GetByRole(AriaRole.Heading, new() { Name = "Logbook" })).ToBeVisibleAsync();
-        Assert.Empty(_consoleErrors);
     }
 
     [Fact]
