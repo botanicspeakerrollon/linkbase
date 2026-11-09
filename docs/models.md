@@ -166,7 +166,10 @@ Each type in a model file gets a place in the rail, and pages generated from its
 - **Adding and editing** use a form with a box for each field, checked against its type. A list takes one value per line,
   and a required field can't be left empty. A new record's key is made from its name, such as `zoe-adams`, unless one is
   given, and can't change afterwards, because the record's id is made from it. A new record also chooses the records its
-  required links go to, and is saved with them.
+  required links go to, and is saved with them. Each of those can be a new record instead: "New Route" opens the same form
+  for it, which can create records of its own in turn, such as a Route's Crag. Nothing is saved until the outer form is, and
+  then all of it is, in one transaction, so a failure leaves none of them behind. "Add link" can create the other end too,
+  but that one is saved straight away.
 - **Links** can be added only where the model has a relationship, and removed one at a time, except a record's last link of
   a kind its type requires. A record that still has links can't be deleted, like anything else in the app. Its own required
   links don't count: they go with it.

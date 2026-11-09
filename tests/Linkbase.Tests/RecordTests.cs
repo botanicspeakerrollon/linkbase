@@ -493,6 +493,74 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     }
 
     [Fact]
+    public async Task A_new_record_can_create_the_record_its_link_requires()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
+        var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Book"));
+
+        Press(cut, "Add Book");
+        Type(Dialogs, "Name", "Quiet Ice");
+        Type(Dialogs, "Isbn", "333");
+        Press(Dialogs, "New Author");
+
+        // The new author's dialog is on top of the book's, so its fields and buttons are the last ones.
+        Dialogs.WaitForAssertion(() => Assert.Equal(2, Dialogs.FindAll(".mud-dialog").Count));
+        ClickFresh(Dialogs, () => Dialogs.FindAll(".mud-dialog")[1].QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Save"));
+        Sees(Dialogs, "A record needs a name");
+        Dialogs.FindAll(".mud-dialog")[1].QuerySelector("input")!.Change("Zed Quark");
+        ClickFresh(Dialogs, () => Dialogs.FindAll(".mud-dialog")[1].QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Save"));
+
+        Sees(Dialogs, "New Author: Zed Quark");
+        Assert.Null(await Records.GetAsync("Author", "zed-quark"));
+        Press(Dialogs, "Save");
+
+        NavigatedTo("/data/Book/quiet-ice");
+        var book = (await Records.GetAsync("Book", "quiet-ice"))!;
+        Assert.Equal("Zed Quark", (await Records.LinksAsync(book.Id)).Single().Links.Single().OtherName);
+    }
+
+    [Fact]
+    public async Task Linked_records_are_created_with_the_record_or_not_at_all()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        var records = new RecordRepository(factory);
+        var none = new Dictionary<string, string?>();
+
+        var key = await records.CreateAsync("Book", null, new RecordInput("Quiet Ice", new Dictionary<string, string?> { ["isbn"] = "333" })
+        {
+            Creates = [new NewLinkedRecord("WRITTEN_BY", "Author", null, new RecordInput("Zed Quark", none))],
+        });
+        var links = await records.LinksAsync($"book:{key}");
+        Assert.Equal("Zed Quark", links.Single().Links.Single().OtherName);
+        Assert.Single(await records.RelationshipsAsync());
+
+        // A book that fails to save takes the author created for it with it.
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.CreateAsync("Book", null, new RecordInput("No isbn", none)
+        {
+            Creates = [new NewLinkedRecord("WRITTEN_BY", "Author", null, new RecordInput("Ghost Writer", none))],
+        }));
+        Assert.Equal("Isbn is required.", ex.Message);
+        Assert.Null(await records.GetAsync("Author", "ghost-writer"));
+
+        // The author can't be given a key that is taken, and nothing is left behind.
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.CreateAsync("Book", null, new RecordInput("Dup", new Dictionary<string, string?> { ["isbn"] = "1" })
+        {
+            Creates = [new NewLinkedRecord("WRITTEN_BY", "Author", "a1", new RecordInput("Again", none))],
+        }));
+        Assert.Null(await records.GetAsync("Book", "dup"));
+
+        // A link the model doesn't have is refused.
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.CreateAsync("Book", null, new RecordInput("Odd", new Dictionary<string, string?> { ["isbn"] = "2" })
+        {
+            Creates = [new NewLinkedRecord("WRITTEN_BY", "Book", null, new RecordInput("Sub", new Dictionary<string, string?> { ["isbn"] = "3" }) { Links = [new NewLink("WRITTEN_BY", "author:a1")] })],
+        }));
+        Assert.Null(await records.GetAsync("Book", "sub"));
+    }
+
+    [Fact]
     public async Task Home_links_a_model_files_types_to_their_lists()
     {
         await UseExampleAsync();

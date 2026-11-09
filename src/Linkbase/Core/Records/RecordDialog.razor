@@ -1,7 +1,10 @@
 @using System.Globalization
 @inject RecordRepository Records
+@inject IDialogService Dialogs
 
-@* Adds or edits a record, with a box for each of its type's fields. A new record also chooses the links its type requires. *@
+@* Adds or edits a record, with a box for each of its type's fields. A new record also chooses the links its type requires, from
+   the records there are or by creating one, which can need records of its own. A dialog in Collect mode saves nothing: it
+   hands back what to create, and the dialog that asked saves everything together. *@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form">
@@ -61,15 +64,28 @@
                 @foreach (var link in Type.RequiredLinks)
                 {
                     var needed = link;
-                    <MudAutocomplete T="RecordOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@needed.OtherType"
-                                     HelperText="@($"{Type.Name} {needed.RelType} {needed.OtherType}")"
-                                     Value="@_links.GetValueOrDefault(needed)" ValueChanged="@(o => _links[needed] = o)"
-                                     SearchFunc="@((text, token) => SearchAsync(needed, text, token))" ToStringFunc="@(o => o?.Name)"
-                                     DebounceInterval="200" ResetValueOnEmptyText="true" Required="true" RequiredError="@($"Choose its {needed.OtherType}")">
-                        <ItemTemplate Context="option">
-                            @option.Name <MudText Typo="Typo.caption" Inline="true">@option.Key</MudText>
-                        </ItemTemplate>
-                    </MudAutocomplete>
+                    @if (_creates.TryGetValue(needed, out var pending))
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                            <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" OnClose="@(() => _creates.Remove(needed))">New @needed.OtherType: @pending.Input.Name</MudChip>
+                            <MudText Typo="Typo.caption">@Type.Name @needed.RelType @needed.OtherType</MudText>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Start">
+                            <MudAutocomplete T="RecordOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@needed.OtherType"
+                                             HelperText="@($"{Type.Name} {needed.RelType} {needed.OtherType}")"
+                                             Value="@_links.GetValueOrDefault(needed)" ValueChanged="@(o => _links[needed] = o)"
+                                             SearchFunc="@((text, token) => SearchAsync(needed, text, token))" ToStringFunc="@(o => o?.Name)"
+                                             DebounceInterval="200" ResetValueOnEmptyText="true" Required="true" RequiredError="@($"Choose its {needed.OtherType}")">
+                                <ItemTemplate Context="option">
+                                    @option.Name <MudText Typo="Typo.caption" Inline="true">@option.Key</MudText>
+                                </ItemTemplate>
+                            </MudAutocomplete>
+                            <MudButton OnClick="@(() => CreateAsync(needed))" Variant="Variant.Text" Class="mt-2" StartIcon="@Icons.Material.Filled.Add">New @needed.OtherType</MudButton>
+                        </MudStack>
+                    }
                 }
             }
         </MudForm>
@@ -91,6 +107,9 @@
     // Null to add a new record.
     [Parameter] public RecordDetail? Record { get; set; }
 
+    // Hand back the record to create instead of saving it, for a dialog that is creating a record for another to link to.
+    [Parameter] public bool Collect { get; set; }
+
     private MudForm? _form;
     private string? _name;
     private string? _key;
@@ -99,6 +118,9 @@
 
     // The record chosen for each link the type requires.
     private readonly Dictionary<RequiredLink, RecordOption?> _links = [];
+
+    // The record to create for each link the type requires, instead of choosing one that is there.
+    private readonly Dictionary<RequiredLink, PendingRecord> _creates = [];
     private const int Suggestions = 20;
 
     protected override void OnInitialized()
@@ -117,6 +139,24 @@
     private async Task<IEnumerable<RecordOption>> SearchAsync(RequiredLink link, string text, CancellationToken cancellationToken) =>
         await Records.FindAsync(link.OtherType, text, Suggestions, cancellationToken);
 
+    private async Task CreateAsync(RequiredLink link)
+    {
+        var other = await Records.TypeAsync(link.OtherType);
+        if (other is null)
+        {
+            _error = $"There's no type called {link.OtherType}.";
+            return;
+        }
+
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, other }, { d => d.Collect, true } };
+        var dialog = await Dialogs.ShowAsync<RecordDialog>($"New {link.OtherType}", parameters);
+        if (await dialog.Result is { Canceled: false, Data: PendingRecord pending })
+        {
+            _creates[link] = pending;
+            _links.Remove(link);
+        }
+    }
+
     private async Task SaveAsync()
     {
         await _form!.ValidateAsync();
@@ -130,7 +170,14 @@
             var input = new RecordInput(_name!, _values)
             {
                 Links = _links.Where(l => l.Value is not null).Select(l => new NewLink(l.Key.RelType, l.Value!.Id)).ToList(),
+                Creates = _creates.Select(c => new NewLinkedRecord(c.Key.RelType, c.Key.OtherType, c.Value.Key, c.Value.Input)).ToList(),
             };
+            if (Collect)
+            {
+                Instance.Close(DialogResult.Ok(new PendingRecord(Type.Name, string.IsNullOrWhiteSpace(_key) ? null : _key, input)));
+                return;
+            }
+
             var key = Record is null ? await Records.CreateAsync(Type.Name, _key, input) : Record.Key;
             if (Record is not null)
             {
@@ -145,3 +192,4 @@
         }
     }
 }
+

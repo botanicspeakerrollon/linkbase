@@ -58,7 +58,17 @@ public sealed record RecordDetail(
 public sealed record RecordInput(string Name, IReadOnlyDictionary<string, string?> Values)
 {
     public IReadOnlyList<NewLink> Links { get; init; } = [];
+
+    // Records to create along with it, each linked to it, such as the Route and Crag a new Ascent needs. They can need
+    // records of their own. All are saved together or not at all.
+    public IReadOnlyList<NewLinkedRecord> Creates { get; init; } = [];
 }
+
+// A record a dialog has collected the details of, to be created by whoever asked for it.
+public sealed record PendingRecord(string Type, string? Key, RecordInput Input);
+
+// A record to create and link the new record to: Key is made from the name when empty, as for any new record.
+public sealed record NewLinkedRecord(string RelType, string Type, string? Key, RecordInput Input);
 
 // A link from a new record to one already here.
 public sealed record NewLink(string RelType, string TargetId);
@@ -119,7 +129,8 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
     public async Task<RecordRows> ListAsync(
         string type, string? search, RecordSort? sort, IReadOnlyList<RecordFilter> filters, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
+        // A type that isn't there, such as one an undone import took away, has no records.
+        var definition = await TypeAsync(type, cancellationToken) ?? new RecordType(type, null, null, []);
         var parameters = new List<(string Name, object Value, NpgsqlDbType Type)>();
         string Add(object value, NpgsqlDbType dbType)
         {
@@ -315,15 +326,32 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
     }
 
     // The key is made from the name when none is given, and can't change afterwards, because the record's id is made from it.
-    // The record and its links are saved together, so a record never exists without the links its type requires.
+    // The record, the records it creates and all their links are saved together, so a record never exists without the links
+    // its type requires.
     public async Task<string> CreateAsync(string type, string? key, RecordInput input, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var created = await CreateInAsync(db, type, key, input, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return created;
+    }
+
+    private async Task<string> CreateInAsync(LinkbaseDbContext db, string type, string? key, RecordInput input, CancellationToken cancellationToken)
     {
         var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
         var name = Name(input);
         var props = Props(definition, input);
 
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var links = await NewLinksAsync(db, definition, input.Links, cancellationToken);
+        // The records it creates go first, so they can be linked to.
+        var requested = input.Links.ToList();
+        foreach (var create in input.Creates)
+        {
+            var targetKey = await CreateInAsync(db, create.Type, create.Key, create.Input, cancellationToken);
+            requested.Add(new NewLink(create.RelType, $"{create.Type.ToLowerInvariant()}:{targetKey}"));
+        }
+
+        var links = await NewLinksAsync(db, definition, requested, cancellationToken);
         if (string.IsNullOrWhiteSpace(key))
         {
             key = await FreeKeyAsync(db, type, Slug(name), cancellationToken);
@@ -338,7 +366,6 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
         }
 
         var id = $"{type.ToLowerInvariant()}:{key}";
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         db.Nodes.Add(new Node
         {
             Id = id,
@@ -355,7 +382,6 @@ public sealed class RecordRepository(IDbContextFactory<LinkbaseDbContext> contex
             await CountAsync(db, type, group.Key.RelType, group.Key.TargetType, group.Count(), cancellationToken);
         }
 
-        await transaction.CommitAsync(cancellationToken);
         return key;
     }
 

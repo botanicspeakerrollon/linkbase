@@ -1,4 +1,5 @@
 @inject RecordRepository Records
+@inject IDialogService Dialogs
 
 @* Links a record to another, by one of the relationships its model allows. *@
 <MudDialog>
@@ -13,6 +14,7 @@
             </MudSelect>
             @if (_option is not null)
             {
+                <MudStack Row="true" AlignItems="AlignItems.Start">
                 <MudAutocomplete @key="_option" T="RecordOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@_option.OtherType" @bind-Value="_other"
                                  SearchFunc="SearchAsync" ToStringFunc="@(o => o?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true"
                                  Required="true" RequiredError="@($"Choose a {_option.OtherType}")">
@@ -20,6 +22,8 @@
                         @option.Name <MudText Typo="Typo.caption" Inline="true">@option.Key</MudText>
                     </ItemTemplate>
                 </MudAutocomplete>
+                <MudButton OnClick="CreateAsync" Variant="Variant.Text" Class="mt-2" StartIcon="@Icons.Material.Filled.Add">New @_option.OtherType</MudButton>
+                </MudStack>
             }
         </MudForm>
         @if (_error is not null)
@@ -53,6 +57,23 @@
 
     private async Task<IEnumerable<RecordOption>> SearchAsync(string text, CancellationToken cancellationToken) =>
         await Records.FindAsync(_option!.OtherType, text, Suggestions, cancellationToken);
+
+    // Creates a record of the other type, here and now, and chooses it.
+    private async Task CreateAsync()
+    {
+        var type = await Records.TypeAsync(_option!.OtherType);
+        if (type is null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, type } };
+        var dialog = await Dialogs.ShowAsync<RecordDialog>($"New {type.Name}", parameters);
+        if (await dialog.Result is { Canceled: false, Data: string key })
+        {
+            _other = (await Records.FindAsync(type.Name, key, 1)).FirstOrDefault(o => o.Key == key);
+        }
+    }
 
     private async Task SaveAsync()
     {
