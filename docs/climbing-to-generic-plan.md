@@ -29,9 +29,12 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
   so there was nothing to remove there.
 
 **What's next.**
-1. Answer the open decision on **Browse**. Remove it, or keep the area tree as a module page?
+1. ~~Decide on **Browse**.~~ Removed. The pages, their dialogs and tests are gone, along with the nav item. The module no longer
+   links to crag and route pages: the Logbook, Insights and web import review show names as plain text, and Explore has no
+   "Open and edit" button for areas, crags and routes. Both come back when step 4 moves the pages onto the generic record pages
+   (`/data/{Type}/{Key}`).
 2. Run `climbing to-generic climbing-generic` against your own logbook and read what `verify-generic` says. That shows whether
-   the real data has anything the made-up data doesn't, such as a value outside a choice field's options.
+   the real data has anything the made-up data doesn't, such as a value outside a choice field's options. Result: success. 
 3. Step 4, one page at a time, each leaving the app working: Logbook and Add ascent first, since the generic list (G8) and form
    (G7) can replace them, then Insights, then web import onto generic staging (G9). Add `Climbing` to the generic model's
    `Domains` as these land.
@@ -112,7 +115,7 @@ keep working.
 | --- | --- |
 | Logbook: a grid with filters and a summary | A module page over the generic store. Later it could be a generic list with sorting and filters (G8) |
 | Add or edit an ascent, creating a route, crag and area inline | A module page that writes through `RecordRepository`. Later it could be a generic form that can create linked records (G7) |
-| Browse: area tree, crag and route pages, dialogs | **Removed**, in favour of the generic record pages and Explore. To decide: keep the area tree as a module page? |
+| Browse: area tree, crag and route pages, dialogs | **Removed**, in favour of the generic record pages and Explore |
 | Insights: ten SQL reports | A module page with its queries rewritten over `node` and `node_link`. Replaced later by saved searches and dashboards (G10) |
 | Climbing home page stats | Generic home page stats, as the other models have |
 | Web import (`/import`, staging, review, undo) | A module page on generic staging (G9), then made generic for any model |
@@ -166,7 +169,7 @@ Each step leaves the app working, and the real data isn't touched until step 6.
 3. **Module behaviour on the generic store.** Grade rank, trips with `corrections.json`, captions. A rebuilt trip list must
    match today's.
 4. **Port the module pages, one at a time.** Logbook, Add ascent, Insights and web import read and write the generic store.
-   Browse goes.
+   (Browse is already gone.)
 5. **Imports.** The UKC and MP parsers write through the generic import path. `import all` rebuilds a fresh climbing model on
    demand, and an end-to-end test runs it on made-up export files in CI.
 6. **Switch.**
@@ -177,7 +180,6 @@ Each step leaves the app working, and the real data isn't touched until step 6.
 
 ## Decisions to make
 
-- **Browse.** Remove it, or keep the area tree as a module page?
 - **Route descriptions.** Dropped from the model file, because no route has one. Say if that's wrong before step 6.
 - **Demo.** A made-up climbing logbook can be generated once step 2 exists, the same way the consultancy sample is. The
   real logbook can't be the demo, because the repo must stay anonymous.

@@ -72,7 +72,7 @@ default. The graph views look expensive to the planner even when the work is sma
 query. The app turns JIT off for all its connections, in `ModelCatalog.ConnectionString`, which adds `Options=-c jit=off`.
 The databases keep their default settings.
 
-Measured on 7 November 2026, medians of five runs on the real climbing data. Every other query on the Browse, Ascents and
+Measured on 7 November 2026, medians of five runs on the real climbing data. Every other query on the Ascents and
 Insights pages, and the rest of Explore, came within 2 ms either way.
 
 | Climbing | JIT on | JIT off |

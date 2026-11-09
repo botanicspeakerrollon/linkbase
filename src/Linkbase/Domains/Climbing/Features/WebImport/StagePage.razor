@@ -78,10 +78,6 @@ else
                             <MudSelectItem T="long" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
                         }
                     </MudSelect>
-                    @if (crag.Choice > 0)
-                    {
-                        <MudLink Href="@($"/browse/crag/{crag.Choice}")" Target="_blank" Typo="Typo.caption">Open this crag</MudLink>
-                    }
                 </MudItem>
 
                 @if (crag.Include && crag.Choice == StagedRow.CreateNew)
@@ -159,10 +155,6 @@ else
                                                 <MudSelectItem T="long" Value="candidate.Id">@CandidateLabel(candidate)</MudSelectItem>
                                             }
                                         </MudSelect>
-                                    }
-                                    @if (context.Item.Choice > 0)
-                                    {
-                                        <MudLink Href="@($"/browse/route/{context.Item.Choice}")" Target="_blank" Typo="Typo.caption">Open</MudLink>
                                     }
                                 </MudStack>
                             </CellTemplate>
