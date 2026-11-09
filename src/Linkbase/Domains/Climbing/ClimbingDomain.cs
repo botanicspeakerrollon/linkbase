@@ -24,21 +24,19 @@ public sealed class ClimbingDomain : IDomainModule
     [
         new("logbook", "Logbook", Icons.Material.Outlined.MenuBook),
         new("ascents/new", "Add ascent", Icons.Material.Filled.Add, ExactMatch: true),
-        new("browse", "Browse", Icons.Material.Outlined.AccountTree),
         new("import", "Import", Icons.Material.Outlined.CloudDownload),
         new("insights", "Insights", Icons.Material.Outlined.Insights),
     ];
 
     public IReadOnlyList<LabelStyle> LabelStyles { get; } =
     [
-        new("Country", "#2563eb", Icons.Material.Filled.Public) { Link = node => $"/browse/area/{node.EntityId}" },
-        new("Area", "#0e7490", Icons.Material.Filled.Map) { Link = node => $"/browse/area/{node.EntityId}" },
-        new("Crag", "#a16207", Icons.Material.Filled.Terrain) { Link = node => $"/browse/crag/{node.EntityId}" },
+        new("Country", "#2563eb", Icons.Material.Filled.Public),
+        new("Area", "#0e7490", Icons.Material.Filled.Map),
+        new("Crag", "#a16207", Icons.Material.Filled.Terrain),
         new("Route", "#7c3aed", Icons.Material.Filled.Timeline)
         {
             // Routes show their grade.
             Caption = node => node.Property("grade") is { } grade ? $"{node.Name} {grade}" : node.Name,
-            Link = node => $"/browse/route/{node.EntityId}",
         },
         new("Ascent", "#15803d", Icons.Material.Filled.Flag)
         {
@@ -69,6 +67,7 @@ public sealed class ClimbingDomain : IDomainModule
         services.AddScoped<ReconciliationService>();
         services.AddScoped<AreaRepository>();
         services.AddScoped<AscentRepository>();
+        services.AddScoped<LogbookRepository>();
         services.AddScoped<CragRepository>();
         services.AddScoped<RouteRepository>();
         services.AddScoped<PartnerRepository>();

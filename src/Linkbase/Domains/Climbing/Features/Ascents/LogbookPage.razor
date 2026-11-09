@@ -1,13 +1,17 @@
 @page "/logbook"
-@inject AscentRepository Ascents
-@inject AreaRepository Areas
-@inject CragRepository Crags
+@using Linkbase.Core.Explore
+@using Linkbase.Core.Records
+@inject LogbookRepository Logbook
+@inject RecordRepository Records
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Logbook</PageTitle>
 
 <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h4" HtmlTag="h1">Logbook</MudText>
-    <MudButton Href="/ascents/new" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add ascent</MudButton>
+    <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add ascent</MudButton>
 </MudStack>
 
 <MudPaper Class="pa-4 mb-4" Elevation="1">
@@ -19,20 +23,12 @@
             <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="To" Date="_to" DateChanged="@(d => SetFilterAsync(() => _to = d))" Clearable="true" DateFormat="yyyy-MM-dd" />
         </MudItem>
         <MudItem xs="12" md="4">
-            <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="AreaOption" Label="Area" Value="_area" ValueChanged="@(a => SetFilterAsync(() => _area = a))"
-                             SearchFunc="SearchAreasAsync" ToStringFunc="@(a => a?.Name)" Clearable="true" DebounceInterval="200" ResetValueOnEmptyText="true">
-                <ItemTemplate Context="option">
-                    @option.Path
-                </ItemTemplate>
-            </MudAutocomplete>
+            <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="RecordOption" Label="Area" Value="_area" ValueChanged="@(a => SetFilterAsync(() => _area = a))"
+                             SearchFunc="SearchAreasAsync" ToStringFunc="@(a => a?.Name)" Clearable="true" DebounceInterval="200" ResetValueOnEmptyText="true" />
         </MudItem>
         <MudItem xs="12" md="4">
-            <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="CragOption" Label="Crag" Value="_crag" ValueChanged="@(c => SetFilterAsync(() => _crag = c))"
-                             SearchFunc="SearchCragsAsync" ToStringFunc="@(c => c?.Name)" Clearable="true" DebounceInterval="200" ResetValueOnEmptyText="true">
-                <ItemTemplate Context="option">
-                    @option.Name <MudText Typo="Typo.caption" Inline="true">@option.Place</MudText>
-                </ItemTemplate>
-            </MudAutocomplete>
+            <MudAutocomplete Variant="Variant.Outlined" Margin="Margin.Dense" T="RecordOption" Label="Crag" Value="_crag" ValueChanged="@(c => SetFilterAsync(() => _crag = c))"
+                             SearchFunc="SearchCragsAsync" ToStringFunc="@(c => c?.Name)" Clearable="true" DebounceInterval="200" ResetValueOnEmptyText="true" />
         </MudItem>
         <MudItem xs="12" sm="4">
             <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="GradeSystem?" ToStringFunc="@(v => Labels.Of(v))" Label="Grade system" Value="_gradeSystem" ValueChanged="@(v => SetFilterAsync(() => _gradeSystem = v))" Clearable="true">
@@ -61,6 +57,14 @@
     </MudGrid>
 </MudPaper>
 
+@if (_stats is { Total: 0 } && _unfiltered)
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">
+        This model has no ascents in the generic store. A logbook that still lives in the typed tables comes across at the switch
+        (see docs/climbing-to-generic-plan.md).
+    </MudAlert>
+}
+
 @if (_stats is not null)
 {
     <MudExpansionPanels Class="mb-4">
@@ -76,7 +80,7 @@
                                 <tr>
                                     <td>@Labels.Of(hardest.System)</td>
                                     <td><strong>@hardest.Grade</strong></td>
-                                    <td><MudLink Href="@($"/browse/route/{hardest.RouteId}")">@hardest.RouteName</MudLink></td>
+                                    <td>@hardest.RouteName</td>
                                 </tr>
                             }
                         </tbody>
@@ -109,11 +113,11 @@
     </MudExpansionPanels>
 }
 
-<MudDataGrid @ref="_grid" T="AscentRow" ServerData="LoadAsync" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.Single">
+<MudDataGrid @ref="_grid" T="LogbookRow" ServerData="LoadAsync" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.Single">
     <Columns>
         <TemplateColumn Sortable="false">
             <CellTemplate>
-                <MudIconButton Href="@($"/ascents/{context.Item.Id}")" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@($"Edit ascent of {context.Item.RouteName}")" />
+                <MudIconButton Href="@GraphStyle.RecordLink("Ascent", context.Item.Key)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="@($"Open ascent of {context.Item.RouteName}")" />
             </CellTemplate>
         </TemplateColumn>
         <PropertyColumn Property="x => x.Date" Title="Date" InitialDirection="SortDirection.Descending">
@@ -123,13 +127,13 @@
         </PropertyColumn>
         <PropertyColumn Property="x => x.RouteName" Title="Route">
             <CellTemplate>
-                <MudLink Href="@($"/browse/route/{context.Item.RouteId}")" Style="white-space: nowrap">@context.Item.RouteName</MudLink>
+                <span style="white-space: nowrap">@context.Item.RouteName</span>
             </CellTemplate>
         </PropertyColumn>
         <PropertyColumn Property="x => x.Grade" Title="Grade" Sortable="false" />
         <PropertyColumn Property="x => x.CragName" Title="Crag">
             <CellTemplate>
-                <MudLink Href="@($"/browse/crag/{context.Item.CragId}")" Style="white-space: nowrap">@context.Item.CragName</MudLink>
+                <span style="white-space: nowrap">@context.Item.CragName</span>
             </CellTemplate>
         </PropertyColumn>
         <PropertyColumn Property="x => x.Style" Title="Style">
@@ -152,22 +156,24 @@
         </PropertyColumn>
     </Columns>
     <PagerContent>
-        <MudDataGridPager T="AscentRow" PageSizeOptions="@(new[] { 25, 50, 100, 250 })" />
+        <MudDataGridPager T="LogbookRow" PageSizeOptions="@(new[] { 25, 50, 100, 250 })" />
     </PagerContent>
 </MudDataGrid>
 
 @code {
-    private MudDataGrid<AscentRow>? _grid;
-    private AscentStats? _stats;
+    private MudDataGrid<LogbookRow>? _grid;
+    private LogbookStats? _stats;
     private DateTime? _from;
     private DateTime? _to;
-    private AreaOption? _area;
-    private CragOption? _crag;
+    private RecordOption? _area;
+    private RecordOption? _crag;
     private GradeSystem? _gradeSystem;
     private Discipline? _discipline;
     private AscentStyle? _style;
 
-    private AscentFilter Filter => new()
+    private bool _unfiltered => Filter == new LogbookFilter();
+
+    private LogbookFilter Filter => new()
     {
         From = _from is { } from ? DateOnly.FromDateTime(from) : null,
         To = _to is { } to ? DateOnly.FromDateTime(to) : null,
@@ -180,36 +186,54 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _stats = await Ascents.StatsAsync(Filter);
+        _stats = await Logbook.StatsAsync(Filter);
     }
 
     private async Task SetFilterAsync(Action change)
     {
         change();
-        _stats = await Ascents.StatsAsync(Filter);
+        _stats = await Logbook.StatsAsync(Filter);
         if (_grid is not null)
         {
             await _grid.ReloadServerData();
         }
     }
 
-    private async Task<GridData<AscentRow>> LoadAsync(GridState<AscentRow> state, CancellationToken cancellationToken)
+    private async Task<GridData<LogbookRow>> LoadAsync(GridState<LogbookRow> state, CancellationToken cancellationToken)
     {
         var sort = state.SortDefinitions.FirstOrDefault();
         var field = sort?.SortBy switch
         {
-            nameof(AscentRow.RouteName) => AscentSort.Route,
-            nameof(AscentRow.CragName) => AscentSort.Crag,
-            nameof(AscentRow.Style) => AscentSort.Style,
+            nameof(LogbookRow.RouteName) => AscentSort.Route,
+            nameof(LogbookRow.CragName) => AscentSort.Crag,
+            nameof(LogbookRow.Style) => AscentSort.Style,
             _ => AscentSort.Date,
         };
-        var page = await Ascents.SearchAsync(Filter, field, sort?.Descending ?? true, state.Page, state.PageSize, cancellationToken);
-        return new GridData<AscentRow> { Items = page.Rows, TotalItems = page.Total };
+        var page = await Logbook.SearchAsync(Filter, field, sort?.Descending ?? true, state.Page, state.PageSize, cancellationToken);
+        return new GridData<LogbookRow> { Items = page.Rows, TotalItems = page.Total };
     }
 
-    private async Task<IEnumerable<AreaOption>> SearchAreasAsync(string text, CancellationToken cancellationToken) =>
-        await Areas.SearchAsync(text, cancellationToken);
+    private async Task<IEnumerable<RecordOption>> SearchAreasAsync(string text, CancellationToken cancellationToken) =>
+        await Records.FindAsync("Area", text, 20, cancellationToken);
 
-    private async Task<IEnumerable<CragOption>> SearchCragsAsync(string text, CancellationToken cancellationToken) =>
-        await Crags.FindCragCandidatesAsync(text, cancellationToken);
+    private async Task<IEnumerable<RecordOption>> SearchCragsAsync(string text, CancellationToken cancellationToken) =>
+        await Records.FindAsync("Crag", text, 20, cancellationToken);
+
+    // The generic form, which can create the route and its crag as well.
+    private async Task AddAsync()
+    {
+        var type = await Records.TypeAsync("Ascent");
+        if (type is null)
+        {
+            Snackbar.Add("This model has no Ascent type.", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, type } };
+        var dialog = await Dialogs.ShowAsync<RecordDialog>("Add Ascent", parameters);
+        if (await dialog.Result is { Canceled: false, Data: string key })
+        {
+            Navigation.NavigateTo(GraphStyle.RecordLink("Ascent", key));
+        }
+    }
 }

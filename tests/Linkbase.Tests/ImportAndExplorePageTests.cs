@@ -411,9 +411,7 @@ public class StagePageTests(PostgresFixture fixture) : UiTestBase(fixture)
         var select = cut.FindComponents<MudSelect<long>>().First(f => f.Instance.Label == "Use");
         await SetAsync(cut, select.Instance.ValueChanged, s.CragId);
 
-        Sees(cut, "Open this crag");
         Sees(cut, "Existing");
-        Sees(cut, ">Open<");
         Press(cut, "Add to logbook");
         Told("Matched 1 route and 1 crag already in your logbook.");
     }
@@ -523,7 +521,6 @@ public class ExplorePageTests : UiTestBase
 
         Sees(cut, s.Crag);
         Assert.Contains("select", GraphCalls);
-        Sees(cut, "Open and edit");
         DoesNotSee(cut, "Type anything above");
     }
 
@@ -629,7 +626,7 @@ public class ExplorePageTests : UiTestBase
         Sees(cut, "Click a node for its details");
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
-        Sees(cut, "Open and edit");
+        Sees(cut, s.Crag + "</h2>");
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked("crag:-1"));
         Sees(cut, "Click a node for its details");

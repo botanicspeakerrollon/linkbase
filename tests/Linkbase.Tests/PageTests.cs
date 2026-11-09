@@ -1,10 +1,10 @@
 using Bunit;
+using Linkbase.Core;
 using Linkbase.Components.Pages;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
 using Linkbase.Domains.Climbing.Features.Ascents;
-using Linkbase.Domains.Climbing.Features.Browse;
 using Linkbase.Domains.Climbing.Features.Insights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -87,86 +87,102 @@ public class ErrorPageTests : BunitContext
 [Collection(PostgresCollection.Name)]
 public class LogbookPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 {
+    // The made-up climbing model in a database of its own, which the page reads instead of the shared one.
+    private async Task<ModelFactory> GenericAsync()
+    {
+        var (source, target) = await GenericConversionTests.TypedAsync(Fixture);
+        await new GenericConverter(source, target).ConvertAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(target);
+        Services.AddSingleton<LogbookRepository>();
+        return target;
+    }
+
     [Fact]
     public async Task Lists_ascents_with_the_summary()
     {
-        var s = await SeedAsync(date: new DateOnly(2098, 3, 1), notes: "A fine day");
+        await GenericAsync();
         var cut = RenderPage<LogbookPage>();
 
-        Sees(cut, s.Route);
-        Sees(cut, s.Crag);
-        Sees(cut, s.Partner);
-        Sees(cut, "A fine day");
-        Sees(cut, "Summary:");
+        Sees(cut, "Crack of Dawn");
+        Sees(cut, "Hollow Tor");
+        Sees(cut, "Sam Example");
+        Sees(cut, "Cold hands");
+        Sees(cut, "Summary: 4 ascents");
         cut.Find(".mud-expand-panel-header").Click();
         Sees(cut, "Hardest clean ascent");
-        Sees(cut, "2098");
+        Sees(cut, "E1 5b");
+        Sees(cut, "2022");
     }
 
     [Fact]
     public async Task Filters_reload_the_grid_and_the_summary()
     {
-        var s = await SeedAsync(date: new DateOnly(2097, 3, 1));
-        var other = await SeedAsync(date: new DateOnly(2097, 3, 2));
+        await GenericAsync();
         var cut = RenderPage<LogbookPage>();
-        Sees(cut, other.Route);
+        Sees(cut, "La Bleue");
 
-        Pick(cut, "Area", s.Country, s.Country);
-        Sees(cut, s.Route);
-        DoesNotSee(cut, other.Route);
-        Sees(cut, "Summary: 1 ascents");
+        Pick(cut, "Area", "Wessex", "Wessex");
+        Sees(cut, "Crack of Dawn");
+        DoesNotSee(cut, "La Bleue");
+        Sees(cut, "Summary: 3 ascents");
 
-        Pick(cut, "Crag", s.Crag, s.Crag);
-        Sees(cut, s.Route);
+        Pick(cut, "Crag", "Hollow", "Hollow Tor");
+        Sees(cut, "Crack of Dawn");
 
         var pickers = cut.FindComponents<MudDatePicker>();
-        await SetAsync(cut, pickers[0].Instance.DateChanged, new DateTime(2097, 1, 1));
-        await SetAsync(cut, pickers[1].Instance.DateChanged, new DateTime(2097, 12, 31));
-        Sees(cut, s.Route);
+        await SetAsync(cut, pickers[0].Instance.DateChanged, new DateTime(2020, 5, 3));
+        await SetAsync(cut, pickers[1].Instance.DateChanged, new DateTime(2020, 12, 31));
+        Sees(cut, "Summary: 1 ascents");
+        Sees(cut, "Slab Happy");
+        DoesNotSee(cut, "Crack of Dawn");
 
         await SetAsync(cut, cut.FindComponent<MudSelect<GradeSystem?>>().Instance.ValueChanged, GradeSystem.UkTrad);
         await SetAsync(cut, cut.FindComponent<MudSelect<Discipline?>>().Instance.ValueChanged, Discipline.Trad);
-        await SetAsync(cut, cut.FindComponent<MudSelect<AscentStyle?>>().Instance.ValueChanged, AscentStyle.Lead);
-        Sees(cut, s.Route);
+        await SetAsync(cut, cut.FindComponent<MudSelect<AscentStyle?>>().Instance.ValueChanged, AscentStyle.Redpoint);
+        Sees(cut, "Slab Happy");
 
         await SetAsync(cut, cut.FindComponent<MudSelect<AscentStyle?>>().Instance.ValueChanged, AscentStyle.Solo);
-        DoesNotSee(cut, s.Route);
+        DoesNotSee(cut, "Slab Happy");
     }
 
     [Theory]
-    [InlineData(nameof(AscentRow.RouteName))]
-    [InlineData(nameof(AscentRow.CragName))]
-    [InlineData(nameof(AscentRow.Style))]
-    [InlineData(nameof(AscentRow.Date))]
+    [InlineData(nameof(LogbookRow.RouteName))]
+    [InlineData(nameof(LogbookRow.CragName))]
+    [InlineData(nameof(LogbookRow.Style))]
+    [InlineData(nameof(LogbookRow.Date))]
     public async Task Sorts_by_each_column(string column)
     {
-        var s = await SeedAsync(date: new DateOnly(2096, 3, 1));
+        await GenericAsync();
         var cut = RenderPage<LogbookPage>();
         Sees(cut, "Summary:");
-        Pick(cut, "Area", s.Country, s.Country);
-        Sees(cut, s.Route);
+        Sees(cut, "Crack of Dawn");
 
-        var grid = cut.FindComponent<MudDataGrid<AscentRow>>();
+        var grid = cut.FindComponent<MudDataGrid<LogbookRow>>();
         await grid.InvokeAsync(() => grid.Instance.SetSortAsync(column, SortDirection.Ascending, a => a.Id));
 
-        Sees(cut, s.Route);
+        Sees(cut, "Crack of Dawn");
     }
 
     [Fact]
-    public async Task Shows_each_kind_of_summary_row()
+    public async Task Links_each_ascent_to_its_record_page()
     {
-        var s = await SeedAsync(date: new DateOnly(2095, 3, 1));
-        await using (var db = Fixture.CreateContext())
-        {
-            await db.Routes.Where(r => r.Id == s.RouteId).ExecuteUpdateAsync(u => u.SetProperty(r => r.Discipline, (Discipline?)null).SetProperty(r => r.UpdatedAt, DateTimeOffset.UtcNow));
-        }
+        await GenericAsync();
+        var cut = RenderPage<LogbookPage>();
+        Sees(cut, "Crack of Dawn");
+
+        cut.WaitForAssertion(() => Assert.Contains(cut.FindAll("a"), a => a.GetAttribute("href")?.StartsWith("/data/Ascent/", StringComparison.Ordinal) == true));
+    }
+
+    [Fact]
+    public async Task Says_so_when_the_model_has_no_ascents_in_the_generic_store()
+    {
+        var empty = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(empty);
+        Services.AddSingleton<LogbookRepository>();
 
         var cut = RenderPage<LogbookPage>();
-        Sees(cut, "Summary:");
-        Pick(cut, "Area", s.Country, s.Country);
-        Sees(cut, "Summary: 1 ascents");
-        cut.Find(".mud-expand-panel-header").Click();
-        Sees(cut, "None");
+
+        Sees(cut, "no ascents in the generic store");
     }
 }
 
@@ -357,285 +373,6 @@ public class AscentFormPageTests(PostgresFixture fixture) : UiTestBase(fixture)
 
         Told("Ascent deleted.");
         Assert.False(await db.Ascents.AnyAsync(a => a.Id == s.AscentId));
-    }
-}
-
-[Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class BrowsePageTests(PostgresFixture fixture) : UiTestBase(fixture)
-{
-    [Fact]
-    public async Task Walks_from_countries_to_a_crag()
-    {
-        var s = await SeedAsync();
-        var top = RenderPage<BrowsePage>();
-        Sees(top, s.Country);
-        Sees(top, "Country");
-
-        var area = RenderPage<BrowsePage>(p => p.Add(x => x.AreaId, s.AreaId));
-        Sees(area, s.Crag);
-        Sees(area, "Browse");
-    }
-
-    [Fact]
-    public async Task Lists_sub_areas_of_an_area()
-    {
-        var s = await SeedAsync();
-        var child = Unique("Region");
-        await using (var db = Fixture.CreateContext())
-        {
-            db.Areas.Add(new Area { UserId = AppUser.DefaultId, Name = child, Kind = AreaKind.Region, ParentId = s.AreaId });
-            await db.SaveChangesAsync();
-        }
-
-        var cut = RenderPage<BrowsePage>(p => p.Add(x => x.AreaId, s.AreaId));
-        Sees(cut, child);
-        Sees(cut, ">Area<");
-    }
-
-    [Fact]
-    public void Says_when_an_area_is_gone()
-    {
-        var cut = RenderPage<BrowsePage>(p => p.Add(x => x.AreaId, -1));
-        Sees(cut, "This area no longer exists.");
-    }
-}
-
-[Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class CragPageTests(PostgresFixture fixture) : UiTestBase(fixture)
-{
-    [Fact]
-    public void Says_when_the_crag_is_gone()
-    {
-        var cut = RenderPage<CragPage>(p => p.Add(x => x.Id, -1));
-        Sees(cut, "This crag no longer exists.");
-    }
-
-    [Fact]
-    public async Task Shows_its_facts_and_routes()
-    {
-        var s = await SeedAsync();
-        await Services.GetRequiredService<CragRepository>().UpdateAsync(s.CragId, new CragInput(s.Crag, s.AreaId, "Gritstone", 53.1234, -1.5, ["Alias"], "Windy"));
-
-        var cut = RenderPage<CragPage>(p => p.Add(x => x.Id, s.CragId));
-
-        Sees(cut, "1 route");
-        Sees(cut, "Gritstone");
-        Sees(cut, "53.1234, -1.5");
-        Sees(cut, "Also known as Alias");
-        Sees(cut, "Windy");
-        Sees(cut, s.Route);
-        Sees(cut, "2015");
-
-        foreach (var column in new[] { "Route", "Ascents", "Last climbed" })
-        {
-            ClickFresh(cut, () => cut.FindAll(".mud-table-sort-label").First(l => l.TextContent.Trim() == column));
-        }
-
-        Sees(cut, s.Route);
-    }
-
-    [Fact]
-    public async Task Edits_in_a_dialog()
-    {
-        var s = await SeedAsync();
-        var cut = RenderPage<CragPage>(p => p.Add(x => x.Id, s.CragId));
-
-        Press(cut, "Edit");
-        Sees(Dialogs, "Other names");
-        Press(Dialogs, "Cancel");
-        Dialogs.WaitForAssertion(() => Assert.False(HasControl(Dialogs, "Cancel")));
-
-        Press(cut, "Edit");
-        var renamed = Unique("Renamed");
-        Type(Dialogs, "Name", renamed);
-        Type(Dialogs, "Other names", "One, Two");
-        // Part of the name, because the field already holds all of it and retyping that wouldn't search.
-        Pick(Dialogs, "Area", s.Country[..^1], s.Country);
-        Press(Dialogs, "Save");
-
-        Told("Crag saved.");
-        Sees(cut, renamed);
-        Sees(cut, "Also known as One, Two");
-    }
-
-    [Fact]
-    public async Task The_dialog_requires_a_name_and_reports_rejection()
-    {
-        var s = await SeedAsync();
-        var cut = RenderPage<CragPage>(p => p.Add(x => x.Id, s.CragId));
-
-        Press(cut, "Edit");
-        Sees(Dialogs, "Other names");
-        Type(Dialogs, "Name", "");
-        Press(Dialogs, "Save");
-        Sees(Dialogs, "A crag needs a name");
-
-        Type(Dialogs, "Name", Unique("Renamed"));
-        Type(Dialogs, "Latitude", "45");
-        await using (var db = Fixture.CreateContext())
-        {
-            await db.ExternalRefs.Where(r => r.EntityId == s.CragId).ExecuteDeleteAsync();
-            await db.AscentPartners.Where(a => a.AscentId == s.AscentId).ExecuteDeleteAsync();
-            await db.Ascents.Where(a => a.Id == s.AscentId).ExecuteDeleteAsync();
-            await db.Routes.Where(r => r.Id == s.RouteId).ExecuteDeleteAsync();
-            await db.Crags.Where(c => c.Id == s.CragId).ExecuteDeleteAsync();
-        }
-
-        Press(Dialogs, "Save");
-        Sees(Dialogs, "mud-alert");
-    }
-
-    [Fact]
-    public async Task Delete_asks_first_and_refuses_when_routes_remain()
-    {
-        var s = await SeedAsync();
-        var cut = RenderPage<CragPage>(p => p.Add(x => x.Id, s.CragId));
-
-        Press(cut, "Delete");
-        Press(Dialogs, "Cancel");
-        Dialogs.WaitForAssertion(() => Assert.False(HasControl(Dialogs, "Cancel")));
-
-        Press(cut, "Delete");
-        Press(Dialogs, "Delete");
-        cut.WaitForAssertion(() => Assert.NotEmpty(Snackbar.ShownSnackbars));
-        Assert.Equal("/", CurrentPath);
-    }
-
-    [Fact]
-    public async Task Deletes_an_empty_crag()
-    {
-        var s = await SeedAsync();
-        await using (var db = Fixture.CreateContext())
-        {
-            await db.AscentPartners.Where(a => a.AscentId == s.AscentId).ExecuteDeleteAsync();
-            await db.Ascents.Where(a => a.Id == s.AscentId).ExecuteDeleteAsync();
-            await db.Routes.Where(r => r.Id == s.RouteId).ExecuteDeleteAsync();
-        }
-
-        var cut = RenderPage<CragPage>(p => p.Add(x => x.Id, s.CragId));
-        Press(cut, "Delete");
-        Press(Dialogs, "Delete");
-
-        Told("Crag deleted.");
-        NavigatedTo($"/browse/area/{s.AreaId}");
-    }
-}
-
-[Trait("Category", "Database")]
-[Collection(PostgresCollection.Name)]
-public class RoutePageTests(PostgresFixture fixture) : UiTestBase(fixture)
-{
-    [Fact]
-    public void Says_when_the_route_is_gone()
-    {
-        var cut = RenderPage<RoutePage>(p => p.Add(x => x.Id, -1));
-        Sees(cut, "This route no longer exists.");
-    }
-
-    [Fact]
-    public async Task Shows_its_facts_and_ascents()
-    {
-        var s = await SeedAsync(notes: "Good", rating: 2);
-        await Services.GetRequiredService<RouteRepository>().UpdateAsync(s.RouteId, new RouteInput(s.Route, "VS 4c", GradeSystem.UkTrad, Discipline.Trad, 20, 2, "My note", s.CragId));
-
-        var cut = RenderPage<RoutePage>(p => p.Add(x => x.Id, s.RouteId));
-
-        Sees(cut, "VS 4c");
-        Sees(cut, "20 m");
-        Sees(cut, "2 pitches");
-        Sees(cut, "My note");
-        Sees(cut, "My ascents (1)");
-        Sees(cut, s.Partner);
-        Sees(cut, "Good");
-    }
-
-    [Fact]
-    public async Task A_bare_route_with_one_pitch_and_no_ascents()
-    {
-        var s = await SeedAsync();
-        await Services.GetRequiredService<RouteRepository>().UpdateAsync(s.RouteId, new RouteInput(s.Route, null, null, null, null, 1, null, s.CragId));
-        var one = RenderPage<RoutePage>(p => p.Add(x => x.Id, s.RouteId));
-        Sees(one, "1 pitch");
-
-        await Services.GetRequiredService<RouteRepository>().UpdateAsync(s.RouteId, new RouteInput(s.Route, null, null, null, null, null, null, s.CragId));
-        await Services.GetRequiredService<AscentRepository>().DeleteAsync(s.AscentId);
-        var bare = RenderPage<RoutePage>(p => p.Add(x => x.Id, s.RouteId));
-        Sees(bare, "My ascents (0)");
-        Assert.DoesNotContain("<table", bare.Markup);
-    }
-
-    [Fact]
-    public async Task Edits_in_a_dialog()
-    {
-        var s = await SeedAsync();
-        var other = await SeedAsync();
-        var cut = RenderPage<RoutePage>(p => p.Add(x => x.Id, s.RouteId));
-
-        Press(cut, "Edit");
-        Sees(Dialogs, "A short note in your own words");
-        Press(Dialogs, "Cancel");
-        Dialogs.WaitForAssertion(() => Assert.False(HasControl(Dialogs, "Cancel")));
-
-        Press(cut, "Edit");
-        var renamed = Unique("Renamed");
-        Type(Dialogs, "Name", renamed);
-        Type(Dialogs, "Grade", "E5 6a");
-        Pick(Dialogs, "Crag", other.Crag, other.Crag);
-        Press(Dialogs, "Save");
-
-        Told("Route saved.");
-        Sees(cut, renamed);
-        Sees(cut, "E5 6a");
-        Assert.Equal(other.CragId, (await Services.GetRequiredService<RouteRepository>().GetAsync(s.RouteId))!.CragId);
-    }
-
-    [Fact]
-    public async Task The_dialog_requires_a_name_and_reports_rejection()
-    {
-        var s = await SeedAsync();
-        var cut = RenderPage<RoutePage>(p => p.Add(x => x.Id, s.RouteId));
-
-        Press(cut, "Edit");
-        Sees(Dialogs, "A short note in your own words");
-        Type(Dialogs, "Name", "");
-        Press(Dialogs, "Save");
-        Sees(Dialogs, "A route needs a name");
-
-        Type(Dialogs, "Name", s.Route);
-        await using (var db = Fixture.CreateContext())
-        {
-            await db.AscentPartners.Where(a => a.AscentId == s.AscentId).ExecuteDeleteAsync();
-            await db.Ascents.Where(a => a.Id == s.AscentId).ExecuteDeleteAsync();
-            await db.Routes.Where(r => r.Id == s.RouteId).ExecuteDeleteAsync();
-        }
-
-        Press(Dialogs, "Save");
-        Sees(Dialogs, "mud-alert");
-    }
-
-    [Fact]
-    public async Task Delete_asks_first_refuses_with_ascents_and_deletes_without()
-    {
-        var s = await SeedAsync();
-        var cut = RenderPage<RoutePage>(p => p.Add(x => x.Id, s.RouteId));
-
-        Press(cut, "Delete");
-        Press(Dialogs, "Cancel");
-        Dialogs.WaitForAssertion(() => Assert.False(HasControl(Dialogs, "Cancel")));
-
-        Press(cut, "Delete");
-        Press(Dialogs, "Delete");
-        cut.WaitForAssertion(() => Assert.NotEmpty(Snackbar.ShownSnackbars));
-        Assert.Equal("/", CurrentPath);
-        Dialogs.WaitForAssertion(() => Assert.False(HasControl(Dialogs, "Delete")));
-
-        await Services.GetRequiredService<AscentRepository>().DeleteAsync(s.AscentId);
-        Press(cut, "Delete");
-        Press(Dialogs, "Delete");
-        Told("Route deleted.");
-        NavigatedTo($"/browse/crag/{s.CragId}");
     }
 }
 

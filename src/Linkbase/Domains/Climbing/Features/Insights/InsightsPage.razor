@@ -222,9 +222,9 @@ else
                     <HeaderContent><MudTh>Year</MudTh><MudTh>Route</MudTh><MudTh>Grade</MudTh><MudTh>Crag</MudTh><MudTh>Style</MudTh><MudTh>Partners</MudTh><MudTh>Notes</MudTh></HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Year">@context.Year</MudTd>
-                        <MudTd DataLabel="Route"><MudLink Href="@($"/browse/route/{context.RouteId}")">@context.Route</MudLink></MudTd>
+                        <MudTd DataLabel="Route">@context.Route</MudTd>
                         <MudTd DataLabel="Grade">@context.Grade</MudTd>
-                        <MudTd DataLabel="Crag"><MudLink Href="@($"/browse/crag/{context.CragId}")">@context.Crag</MudLink></MudTd>
+                        <MudTd DataLabel="Crag">@context.Crag</MudTd>
                         <MudTd DataLabel="Style">@Labels.Of(SnakeCaseEnumConverter<AscentStyle>.FromStore(context.Style))</MudTd>
                         <MudTd DataLabel="Partners">@string.Join(", ", context.Partners)</MudTd>
                         <MudTd DataLabel="Notes">@context.Notes</MudTd>

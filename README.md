@@ -164,7 +164,7 @@ src/Linkbase/
   Domains/      RegisteredDomains, and one folder per domain
     Climbing/
       Data/     Repositories and services
-      Features/ One folder per feature: Ascents (the Logbook page), Browse, Home, Insights, WebImport, Admin
+      Features/ One folder per feature: Ascents (the Logbook page), Home, Insights, WebImport, Admin
       Import/   Parsers, corrections, trip rules, admin commands, and the web extraction pipeline in Web/
 tests/Linkbase.Tests/
 data/samples/   Your export files (git-ignored)

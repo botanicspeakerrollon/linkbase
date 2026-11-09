@@ -89,9 +89,6 @@ public class GraphStyleTests
 
     [Fact]
     public void Property_titles_read_naturally() => Assert.Equal("Rock type", GraphStyle.PropertyTitle("rock_type"));
-
-    [Fact]
-    public void Area_links_go_to_browse() => Assert.Equal("/browse/area/3", GraphStyle.Link(new GraphNode("area:3", "Area", "A", [])));
 }
 
 public class ExtractorHttpTests
