@@ -1,0 +1,443 @@
+id,name,crag,grade,grade_system,discipline,length_m,pitches,grade_rank
+r1,Crooked Roof,stanage-pop,E3 6a,uk_trad,trad,39,1,15.18
+r2,Hollow Direct,stanage-pop,MVS 4b,uk_trad,trad,15,1,9.13
+r3,Iron Traverse,stanage-pop,MVS 4b,uk_trad,trad,38,1,9.13
+r4,Lonely Nose,stanage-pop,D,uk_trad,trad,22,1,2
+r5,Hollow Ramp,stanage-pop,E2 5b,uk_trad,trad,38,1,14.16
+r6,Wild Slab,stanage-pop,HS,uk_trad,trad,26,1,8
+r7,Bitter Gully,stanage-pop,E4 6a,uk_trad,trad,28,1,16.18
+r8,Hollow Crack,stanage-pop,HVS 5a,uk_trad,trad,26,1,11.15
+r9,Dancing Traverse,stanage-pop,E1 5c,uk_trad,trad,34,1,13.17
+r10,Silent Chimney,stanage-pop,E2 5c,uk_trad,trad,21,1,14.17
+r11,Rusty Groove,stanage-pop,S,uk_trad,trad,41,1,7
+r12,Crooked Buttress,stanage-pop,E1 5b,uk_trad,trad,39,1,13.16
+r13,Slender Corner,stanage-pop,D,uk_trad,trad,34,1,2
+r14,Hollow Corner,stanage-high,E3 6a,uk_trad,trad,45,1,15.18
+r15,Broken Wall,stanage-high,HS,uk_trad,trad,22,1,8
+r16,Crooked Traverse,stanage-high,HS,uk_trad,trad,34,1,8
+r17,Wandering Flake,stanage-high,E2 5b,uk_trad,trad,37,1,14.16
+r18,Rusty Nose,stanage-high,D,uk_trad,trad,26,1,2
+r19,Northern Corner,stanage-high,E3 6a,uk_trad,trad,17,1,15.18
+r20,Dancing Flake,stanage-high,E1 5c,uk_trad,trad,16,1,13.17
+r21,Dancing Gully,stanage-high,E3 5c,uk_trad,trad,22,1,15.17
+r22,Crooked Direct,stanage-high,S,uk_trad,trad,20,1,7
+r23,Hidden Nose,stanage-high,E3 5c,uk_trad,trad,102,3,15.17
+r24,Amber Groove,burbage-n,E4 6a,uk_trad,trad,37,1,16.18
+r25,Silent Groove,burbage-n,E3 5c,uk_trad,trad,38,1,15.17
+r26,Iron Arete,burbage-n,E4 6a,uk_trad,trad,31,1,16.18
+r27,Northern Pillar,burbage-n,E2 5c,uk_trad,trad,37,1,14.17
+r28,Silent Traverse,burbage-n,D,uk_trad,trad,40,1,2
+r29,Burning Buttress,burbage-n,HVD,uk_trad,trad,24,1,5
+r30,Broken Nose,burbage-n,MVS 4b,uk_trad,trad,21,1,9.13
+r31,Crimson Chimney,burbage-n,HS,uk_trad,trad,43,1,8
+r32,Broken Route,burbage-n,E2 5b,uk_trad,trad,39,1,14.16
+r33,Burning Traverse,burbage-n,E1 5b,uk_trad,trad,41,1,13.16
+r34,Narrow Crack,burbage-n,E3 6a,uk_trad,trad,32,1,15.18
+r35,Wild Direct,burbage-s,E3 6a,uk_trad,trad,44,1,15.18
+r36,Wild Buttress,burbage-s,E2 5b,uk_trad,trad,15,1,14.16
+r37,Lonely Groove,burbage-s,E2 5c,uk_trad,trad,24,1,14.17
+r38,Golden Traverse,burbage-s,VD,uk_trad,trad,42,1,4
+r39,Pale Route,burbage-s,E2 5c,uk_trad,trad,99,3,14.17
+r40,Crimson Edge,burbage-s,E3 5c,uk_trad,trad,37,1,15.17
+r41,Narrow Arete,burbage-s,E3 6a,uk_trad,trad,176,4,15.18
+r42,Wild Traverse,burbage-s,MVS 4b,uk_trad,trad,21,1,9.13
+r43,Velvet Rib,burbage-s,HVD,uk_trad,trad,42,1,5
+r44,Dancing Arete,froggatt-e,MVS 4b,uk_trad,trad,27,1,9.13
+r45,Bitter Nose,froggatt-e,E2 5b,uk_trad,trad,21,1,14.16
+r46,Velvet Chimney,froggatt-e,HVS 5b,uk_trad,trad,16,1,11.16
+r47,Crooked Face,froggatt-e,HS,uk_trad,trad,21,1,8
+r48,Sleepy Direct,froggatt-e,HVS 5b,uk_trad,trad,18,1,11.16
+r49,Crimson Wall,froggatt-e,HS,uk_trad,trad,26,1,8
+r50,Slender Rib,froggatt-e,E1 5b,uk_trad,trad,114,3,13.16
+r51,Crooked Route,froggatt-e,HVS 5b,uk_trad,trad,26,1,11.16
+r52,Iron Slab,froggatt-e,E4 6a,uk_trad,trad,39,1,16.18
+r53,Dancing Nose,froggatt-e,E3 5c,uk_trad,trad,16,1,15.17
+r54,Bitter Arete,froggatt-e,HVS 5a,uk_trad,trad,25,1,11.15
+r55,Hidden Arete,froggatt-e,HVS 5a,uk_trad,trad,45,1,11.15
+r56,Hidden Chimney,curbar,E4 6a,uk_trad,trad,62,2,16.18
+r57,Northern Groove,curbar,E1 5c,uk_trad,trad,88,2,13.17
+r58,Crimson Crack,curbar,E4 6a,uk_trad,trad,27,1,16.18
+r59,Hollow Face,curbar,S,uk_trad,trad,38,1,7
+r60,Rusty Corner,curbar,HVS 5a,uk_trad,trad,38,1,11.15
+r61,Burning Rib,curbar,HS,uk_trad,trad,24,1,8
+r62,Wandering Traverse,curbar,E3 5c,uk_trad,trad,43,1,15.17
+r63,Quiet Groove,curbar,HVS 5a,uk_trad,trad,41,1,11.15
+r64,Crooked Arete,curbar,HVS 5a,uk_trad,trad,27,1,11.15
+r65,Broken Flake,curbar,E1 5b,uk_trad,trad,45,1,13.16
+r66,Burning Slab,curbar,VD,uk_trad,trad,28,1,4
+r67,Crooked Edge,curbar,MVS 4b,uk_trad,trad,37,1,9.13
+r68,Dancing Edge,gogarth-main,E2 5b,uk_trad,trad,31,1,14.16
+r69,Golden Chimney,gogarth-main,HS,uk_trad,trad,23,1,8
+r70,Hidden Slab,gogarth-main,S,uk_trad,trad,29,1,7
+r71,Hidden Edge,gogarth-main,E3 6a,uk_trad,trad,111,3,15.18
+r72,Iron Nose,gogarth-main,HVS 5a,uk_trad,trad,29,1,11.15
+r73,Quiet Edge,gogarth-main,HVS 5a,uk_trad,trad,45,1,11.15
+r74,Slender Buttress,gogarth-main,VD,uk_trad,trad,36,1,4
+r75,Northern Slab,gogarth-main,HVD,uk_trad,trad,40,1,5
+r76,Pale Crack,gogarth-main,HVD,uk_trad,trad,28,1,5
+r77,Sleepy Flake,gogarth-main,E2 5b,uk_trad,trad,34,1,14.16
+r78,Sleepy Roof,gogarth-main,HVS 5b,uk_trad,trad,96,3,11.16
+r79,Gentle Traverse,gogarth-main,E2 5b,uk_trad,trad,38,1,14.16
+r80,Bitter Corner,gogarth-main,E3 5c,uk_trad,trad,31,1,15.17
+r81,Northern Flake,gogarth-north,E3 6a,uk_trad,trad,37,1,15.18
+r82,Wild Groove,gogarth-north,E3 5c,uk_trad,trad,36,1,15.17
+r83,Quiet Traverse,gogarth-north,E4 6a,uk_trad,trad,30,1,16.18
+r84,Sleepy Slab,gogarth-north,D,uk_trad,trad,25,1,2
+r85,Silent Roof,gogarth-north,VD,uk_trad,trad,33,1,4
+r86,Crooked Crack,gogarth-north,E1 5c,uk_trad,trad,31,1,13.17
+r87,Golden Wall,gogarth-north,E2 5b,uk_trad,trad,36,1,14.16
+r88,Lonely Wall,gogarth-north,D,uk_trad,trad,45,1,2
+r89,Lonely Arete,gogarth-north,VD,uk_trad,trad,28,1,4
+r90,Burning Crack,dinas-cromlech,HVS 5a,uk_trad,trad,34,1,11.15
+r91,Slender Arete,dinas-cromlech,D,uk_trad,trad,15,1,2
+r92,Northern Crack,dinas-cromlech,E1 5c,uk_trad,trad,32,1,13.17
+r93,Gentle Arete,dinas-cromlech,HS,uk_trad,trad,38,1,8
+r94,Sleepy Face,dinas-cromlech,E3 6a,uk_trad,trad,39,1,15.18
+r95,Amber Crack,dinas-cromlech,E3 6a,uk_trad,trad,25,1,15.18
+r96,Velvet Gully,dinas-cromlech,E3 6a,uk_trad,trad,28,1,15.18
+r97,Iron Buttress,dinas-cromlech,E2 5c,uk_trad,trad,19,1,14.17
+r98,Velvet Wall,dinas-cromlech,E3 5c,uk_trad,trad,120,4,15.17
+r99,Hidden Crack,dinas-cromlech,HVS 5b,uk_trad,trad,38,1,11.16
+r100,Narrow Ramp,dinas-cromlech,HS,uk_trad,trad,35,1,8
+r101,Lonely Direct,clogwyn,E2 5c,uk_trad,trad,22,1,14.17
+r102,Hidden Wall,clogwyn,MVS 4b,uk_trad,trad,38,1,9.13
+r103,Crimson Buttress,clogwyn,E3 6a,uk_trad,trad,40,1,15.18
+r104,Gentle Rib,clogwyn,S,uk_trad,trad,26,1,7
+r105,Slender Slab,clogwyn,HS,uk_trad,trad,26,1,8
+r106,Silent Face,clogwyn,HVS 5b,uk_trad,trad,44,1,11.16
+r107,Crimson Direct,clogwyn,E2 5c,uk_trad,trad,18,1,14.17
+r108,Wandering Face,clogwyn,E1 5b,uk_trad,trad,43,1,13.16
+r109,Velvet Flake,clogwyn,MVS 4b,uk_trad,trad,28,1,9.13
+r110,Wild Ramp,clogwyn,E3 5c,uk_trad,trad,20,1,15.17
+r111,Lonely Traverse,gimmer-crag,E3 5c,uk_trad,trad,18,1,15.17
+r112,Burning Direct,gimmer-crag,D,uk_trad,trad,35,1,2
+r113,Hidden Direct,gimmer-crag,MVS 4b,uk_trad,trad,25,1,9.13
+r114,Pale Wall,gimmer-crag,HVD,uk_trad,trad,24,1,5
+r115,Burning Flake,gimmer-crag,HVS 5b,uk_trad,trad,31,1,11.16
+r116,Hollow Arete,gimmer-crag,HS,uk_trad,trad,44,1,8
+r117,Shattered Nose,gimmer-crag,E2 5c,uk_trad,trad,29,1,14.17
+r118,Broken Rib,gimmer-crag,HVS 5a,uk_trad,trad,29,1,11.15
+r119,Sleepy Corner,gimmer-crag,E3 5c,uk_trad,trad,40,1,15.17
+r120,Crimson Nose,gimmer-crag,HS,uk_trad,trad,36,1,8
+r121,Hidden Gully,gimmer-crag,VD,uk_trad,trad,23,1,4
+r122,Velvet Face,gimmer-crag,HVD,uk_trad,trad,26,1,5
+r123,Rusty Rib,raven,E1 5c,uk_trad,trad,44,1,13.17
+r124,Wild Roof,raven,HS,uk_trad,trad,164,4,8
+r125,Golden Nose,raven,E2 5b,uk_trad,trad,32,1,14.16
+r126,Amber Direct,raven,HS,uk_trad,trad,23,1,8
+r127,Silent Buttress,raven,E3 5c,uk_trad,trad,123,3,15.17
+r128,Dancing Rib,raven,HVS 5a,uk_trad,trad,88,2,11.15
+r129,Shattered Route,raven,HS,uk_trad,trad,16,1,8
+r130,Amber Face,raven,S,uk_trad,trad,43,1,7
+r131,Bitter Pillar,raven,HVS 5b,uk_trad,trad,29,1,11.16
+r132,Quiet Direct,raven,E3 6a,uk_trad,trad,90,2,15.18
+r133,Slender Flake,raven,E3 6a,uk_trad,trad,31,1,15.18
+r134,Iron Route,raven,E1 5c,uk_trad,trad,42,1,13.17
+r135,Iron Roof,raven,E3 6a,uk_trad,trad,21,1,15.18
+r136,Sleepy Traverse,shepherds,E1 5c,uk_trad,trad,39,1,13.17
+r137,Rusty Chimney,shepherds,HVD,uk_trad,trad,43,1,5
+r138,Slender Gully,shepherds,VD,uk_trad,trad,30,1,4
+r139,Pale Slab,shepherds,S,uk_trad,trad,37,1,7
+r140,Sleepy Arete,shepherds,E1 5b,uk_trad,trad,23,1,13.16
+r141,Wandering Ramp,shepherds,MVS 4b,uk_trad,trad,16,1,9.13
+r142,Golden Groove,shepherds,VD,uk_trad,trad,41,1,4
+r143,Golden Arete,shepherds,E4 6a,uk_trad,trad,40,1,16.18
+r144,Amber Traverse,shepherds,E2 5b,uk_trad,trad,44,1,14.16
+r145,Shattered Direct,shepherds,S,uk_trad,trad,45,1,7
+r146,Gentle Corner,shepherds,D,uk_trad,trad,24,1,2
+r147,Iron Groove,portland-cave,D,uk_trad,trad,23,1,2
+r148,Crimson Slab,portland-cave,MVS 4b,uk_trad,trad,39,1,9.13
+r149,Crooked Ramp,portland-cave,MVS 4b,uk_trad,trad,44,1,9.13
+r150,Lonely Roof,portland-cave,HS,uk_trad,trad,40,1,8
+r151,Hollow Groove,portland-cave,MVS 4b,uk_trad,trad,38,1,9.13
+r152,Golden Face,portland-cave,HVD,uk_trad,trad,22,1,5
+r153,Crooked Corner,portland-cave,S,uk_trad,trad,114,3,7
+r154,Narrow Groove,portland-cave,E3 5c,uk_trad,trad,45,1,15.17
+r155,Gentle Ramp,portland-cave,E1 5b,uk_trad,trad,20,1,13.16
+r156,Velvet Buttress,portland-cave,HVS 5b,uk_trad,trad,29,1,11.16
+r157,Bitter Buttress,portland-cave,E3 6a,uk_trad,trad,44,1,15.18
+r158,Golden Flake,portland-cave,E3 5c,uk_trad,trad,93,3,15.17
+r159,Narrow Wall,portland-cave,E1 5b,uk_trad,trad,34,1,13.16
+r160,Wandering Nose,portland-cave,E1 5c,uk_trad,trad,39,1,13.17
+r161,Dancing Crack,portland-bill,HVS 5b,uk_trad,trad,28,1,11.16
+r162,Velvet Direct,portland-bill,HVS 5b,uk_trad,trad,90,3,11.16
+r163,Gentle Gully,portland-bill,S,uk_trad,trad,20,1,7
+r164,Shattered Flake,portland-bill,HS,uk_trad,trad,22,1,8
+r165,Broken Edge,portland-bill,HVS 5b,uk_trad,trad,24,1,11.16
+r166,Broken Roof,portland-bill,HS,uk_trad,trad,34,1,8
+r167,Bitter Face,portland-bill,MVS 4b,uk_trad,trad,102,3,9.13
+r168,Iron Wall,portland-bill,MVS 4b,uk_trad,trad,17,1,9.13
+r169,Quiet Pillar,portland-bill,D,uk_trad,trad,24,1,2
+r170,Gentle Route,dancing,E2 5c,uk_trad,trad,15,1,14.17
+r171,Silent Slab,dancing,E2 5b,uk_trad,trad,164,4,14.16
+r172,Silent Gully,dancing,E1 5b,uk_trad,trad,39,1,13.16
+r173,Rusty Buttress,dancing,E1 5c,uk_trad,trad,35,1,13.17
+r174,Pale Ramp,dancing,D,uk_trad,trad,36,1,2
+r175,Lonely Route,dancing,E1 5b,uk_trad,trad,16,1,13.16
+r176,Iron Face,dancing,D,uk_trad,trad,21,1,2
+r177,Bitter Flake,dancing,E4 6a,uk_trad,trad,37,1,16.18
+r178,Velvet Pillar,dancing,VD,uk_trad,trad,15,1,4
+r179,Sleepy Route,dancing,E3 6a,uk_trad,trad,31,1,15.18
+r180,Shattered Rib,dancing,MVS 4b,uk_trad,trad,41,1,9.13
+r181,Dancing Roof,dancing,HVS 5a,uk_trad,trad,31,1,11.15
+r182,Wandering Pillar,dancing,E2 5b,uk_trad,trad,22,1,14.16
+r183,Wild Edge,cheddar-main,VD,uk_trad,trad,135,3,4
+r184,Pale Flake,cheddar-main,E3 6a,uk_trad,trad,30,1,15.18
+r185,Shattered Chimney,cheddar-main,E3 5c,uk_trad,trad,40,1,15.17
+r186,Amber Roof,cheddar-main,E3 6a,uk_trad,trad,37,1,15.18
+r187,Narrow Corner,cheddar-main,E2 5c,uk_trad,trad,36,1,14.17
+r188,Lonely Corner,cheddar-main,E1 5c,uk_trad,trad,29,1,13.17
+r189,Wild Pillar,cheddar-main,D,uk_trad,trad,20,1,2
+r190,Velvet Slab,cheddar-main,HVS 5a,uk_trad,trad,31,1,11.15
+r191,Bitter Route,cheddar-main,HVD,uk_trad,trad,20,1,5
+r192,Iron Corner,cheddar-main,E3 6a,uk_trad,trad,45,1,15.18
+r193,Slender Traverse,cheddar-main,E2 5c,uk_trad,trad,31,1,14.17
+r194,Velvet Route,cheddar-main,HVS 5b,uk_trad,trad,38,1,11.16
+r195,Wandering Gully,coire,E2 5c,uk_trad,trad,172,4,14.17
+r196,Pale Direct,coire,HVS 5a,uk_trad,trad,70,2,11.15
+r197,Rusty Arete,coire,E4 6a,uk_trad,trad,120,4,16.18
+r198,Rusty Ramp,coire,S,uk_trad,trad,37,1,7
+r199,Wild Face,coire,E3 5c,uk_trad,trad,24,1,15.17
+r200,Sleepy Ramp,coire,D,uk_trad,trad,60,2,2
+r201,Wandering Groove,coire,HVS 5b,uk_trad,trad,42,1,11.16
+r202,Hollow Wall,coire,E4 6a,uk_trad,trad,38,1,16.18
+r203,Silent Edge,coire,HVS 5a,uk_trad,trad,36,1,11.15
+r204,Quiet Flake,coire,E2 5c,uk_trad,trad,17,1,14.17
+r205,Golden Route,coire,HVD,uk_trad,trad,35,1,5
+r206,Broken Ramp,coire,HVS 5a,uk_trad,trad,88,2,11.15
+r207,Wild Rib,skye-cuillin,E3 5c,uk_trad,trad,35,1,15.17
+r208,Gentle Crack,skye-cuillin,HS,uk_trad,trad,26,1,8
+r209,Iron Pillar,skye-cuillin,D,uk_trad,trad,36,1,2
+r210,Amber Rib,skye-cuillin,HVS 5a,uk_trad,trad,22,1,11.15
+r211,Northern Ramp,skye-cuillin,VD,uk_trad,trad,41,1,4
+r212,Shattered Traverse,skye-cuillin,E1 5b,uk_trad,trad,24,1,13.16
+r213,Bitter Wall,skye-cuillin,HVS 5b,uk_trad,trad,43,1,11.16
+r214,Slender Pillar,skye-cuillin,E1 5b,uk_trad,trad,45,1,13.16
+r215,Burning Roof,skye-cuillin,VD,uk_trad,trad,105,3,4
+r216,Dancing Corner,skye-cuillin,VD,uk_trad,trad,21,1,4
+r217,Rusty Route,skye-cuillin,HVD,uk_trad,trad,36,1,5
+r218,Hollow Route,skye-cuillin,VD,uk_trad,trad,22,1,4
+r219,Broken Traverse,malham-cove,E2 5b,uk_trad,trad,20,1,14.16
+r220,Bitter Roof,malham-cove,E4 6a,uk_trad,trad,32,1,16.18
+r221,Bitter Ramp,malham-cove,S,uk_trad,trad,76,2,7
+r222,Wild Flake,malham-cove,E2 5b,uk_trad,trad,21,1,14.16
+r223,Golden Direct,malham-cove,E2 5b,uk_trad,trad,18,1,14.16
+r224,Quiet Buttress,malham-cove,MVS 4b,uk_trad,trad,23,1,9.13
+r225,Pale Arete,malham-cove,VD,uk_trad,trad,18,1,4
+r226,Burning Edge,malham-cove,E1 5c,uk_trad,trad,33,1,13.17
+r227,Sleepy Chimney,malham-cove,HVS 5b,uk_trad,trad,31,1,11.16
+r228,Northern Traverse,malham-cove,VD,uk_trad,trad,45,1,4
+r229,Burning Route,malham-cove,HVS 5a,uk_trad,trad,34,1,11.15
+r230,Crimson Rib,gordale,VD,uk_trad,trad,41,1,4
+r231,Slender Groove,gordale,E2 5c,uk_trad,trad,30,1,14.17
+r232,Wild Wall,gordale,E1 5b,uk_trad,trad,38,1,13.16
+r233,Gentle Slab,gordale,E1 5b,uk_trad,trad,82,2,13.16
+r234,Bitter Direct,gordale,E2 5b,uk_trad,trad,35,1,14.16
+r235,Gentle Wall,gordale,D,uk_trad,trad,29,1,2
+r236,Shattered Slab,gordale,D,uk_trad,trad,36,1,2
+r237,Burning Pillar,gordale,S,uk_trad,trad,132,3,7
+r238,Amber Slab,gordale,VD,uk_trad,trad,17,1,4
+r239,Sleepy Gully,gordale,D,uk_trad,trad,44,1,2
+r240,Lonely Edge,gordale,S,uk_trad,trad,42,1,7
+r241,Golden Buttress,kilnsey-main,MVS 4b,uk_trad,trad,114,3,9.13
+r242,Gentle Face,kilnsey-main,E2 5b,uk_trad,trad,23,1,14.16
+r243,Silent Ramp,kilnsey-main,HVS 5a,uk_trad,trad,16,1,11.15
+r244,Dancing Wall,kilnsey-main,MVS 4b,uk_trad,trad,34,1,9.13
+r245,Iron Edge,kilnsey-main,E2 5b,uk_trad,trad,26,1,14.16
+r246,Dancing Chimney,kilnsey-main,E2 5c,uk_trad,trad,28,1,14.17
+r247,Quiet Ramp,kilnsey-main,E1 5b,uk_trad,trad,25,1,13.16
+r248,Hollow Edge,kilnsey-main,HVS 5b,uk_trad,trad,16,1,11.16
+r249,Lonely Pillar,kilnsey-main,D,uk_trad,trad,129,3,2
+r250,Iron Chimney,ceuse-face,7a,french,sport,19,1,70
+r251,Crooked Groove,ceuse-face,7c,french,sport,28,1,74
+r252,Crooked Pillar,ceuse-face,7a,french,sport,17,1,70
+r253,Wandering Route,ceuse-face,6a+,french,sport,22,1,60.5
+r254,Bitter Slab,ceuse-face,7a,french,sport,18,1,70
+r255,Narrow Edge,ceuse-face,7a,french,sport,19,1,70
+r256,Amber Wall,ceuse-face,7b,french,sport,30,1,72
+r257,Dancing Direct,ceuse-face,6c,french,sport,26,1,64
+r258,Wild Arete,ceuse-face,6c+,french,sport,25,1,64.5
+r259,Crimson Pillar,ceuse-face,5+,french,sport,28,1,50.5
+r260,Shattered Pillar,ceuse-face,7b+,french,sport,30,1,72.5
+r261,Rusty Direct,ceuse-face,6a+,french,sport,26,1,60.5
+r262,Pale Edge,ceuse-berlin,6a,french,sport,16,1,60
+r263,Lonely Crack,ceuse-berlin,7c,french,sport,27,1,74
+r264,Bitter Rib,ceuse-berlin,6a,french,sport,26,1,60
+r265,Slender Crack,ceuse-berlin,6b,french,sport,34,1,62
+r266,Amber Ramp,ceuse-berlin,7a,french,sport,25,1,70
+r267,Golden Ramp,ceuse-berlin,6c,french,sport,16,1,64
+r268,Hollow Pillar,ceuse-berlin,6c,french,sport,17,1,64
+r269,Narrow Pillar,ceuse-berlin,6a+,french,sport,15,1,60.5
+r270,Crimson Corner,ceuse-berlin,6b+,french,sport,17,1,62.5
+r271,Wild Corner,ceuse-berlin,6b+,french,sport,19,1,62.5
+r272,Hollow Chimney,ceuse-berlin,7b+,french,sport,35,1,72.5
+r273,Wandering Roof,ceuse-berlin,6a+,french,sport,33,1,60.5
+r274,Shattered Corner,ceuse-berlin,6c+,french,sport,32,1,64.5
+r275,Sleepy Nose,cuvier,6b,font,boulder,3,1,62
+r276,Hollow Gully,cuvier,7a,font,boulder,3,1,70
+r277,Amber Corner,cuvier,7a,font,boulder,6,1,70
+r278,Dancing Route,cuvier,5,font,boulder,4,1,50
+r279,Silent Route,cuvier,6a,font,boulder,6,1,60
+r280,Iron Crack,cuvier,5,font,boulder,5,1,50
+r281,Wandering Arete,cuvier,5,font,boulder,4,1,50
+r282,Sleepy Groove,cuvier,6a,font,boulder,4,1,60
+r283,Silent Flake,cuvier,6a,font,boulder,5,1,60
+r284,Quiet Arete,cuvier,6c,font,boulder,4,1,64
+r285,Pale Buttress,cuvier,4,font,boulder,4,1,40
+r286,Broken Buttress,cuvier,5+,font,boulder,5,1,50.5
+r287,Rusty Face,apremont,7a,font,boulder,5,1,70
+r288,Bitter Traverse,apremont,4,font,boulder,5,1,40
+r289,Hidden Pillar,apremont,7a,font,boulder,4,1,70
+r290,Hollow Roof,apremont,5,font,boulder,3,1,50
+r291,Quiet Roof,apremont,5+,font,boulder,6,1,50.5
+r292,Lonely Rib,apremont,6b,font,boulder,4,1,62
+r293,Narrow Roof,apremont,5+,font,boulder,4,1,50.5
+r294,Slender Chimney,apremont,6a,font,boulder,3,1,60
+r295,Burning Wall,apremont,5+,font,boulder,5,1,50.5
+r296,Silent Arete,apremont,5,font,boulder,6,1,50
+r297,Sleepy Pillar,apremont,6a,font,boulder,5,1,60
+r298,Shattered Buttress,aiguilles,PD,alpine,alpine,269,11,1
+r299,Crimson Traverse,aiguilles,PD,alpine,alpine,466,8,1
+r300,Iron Gully,aiguilles,PD,alpine,alpine,600,11,1
+r301,Burning Groove,aiguilles,PD,alpine,alpine,323,6,1
+r302,Bitter Chimney,aiguilles,AD,alpine,alpine,325,10,2
+r303,Pale Face,aiguilles,AD,alpine,alpine,534,11,2
+r304,Slender Direct,aiguilles,PD,alpine,alpine,356,12,1
+r305,Narrow Gully,aiguilles,AD,alpine,alpine,518,7,2
+r306,Crooked Slab,aiguilles,PD,alpine,alpine,579,9,1
+r307,Dancing Ramp,aiguilles,TD,alpine,alpine,246,7,4
+r308,Hollow Traverse,siurana-can,5+,french,sport,35,1,50.5
+r309,Crimson Groove,siurana-can,6a+,french,sport,20,1,60.5
+r310,Pale Roof,siurana-can,6b+,french,sport,31,1,62.5
+r311,Crimson Flake,siurana-can,6c,french,sport,25,1,64
+r312,Crooked Flake,siurana-can,6b+,french,sport,22,1,62.5
+r313,Hidden Rib,siurana-can,5+,french,sport,15,1,50.5
+r314,Gentle Flake,siurana-can,7a+,french,sport,33,1,70.5
+r315,Slender Nose,siurana-can,6a,french,sport,35,1,60
+r316,Quiet Wall,siurana-can,6c+,french,sport,23,1,64.5
+r317,Shattered Gully,siurana-can,5+,french,sport,30,1,50.5
+r318,Quiet Route,siurana-can,7b,french,sport,20,1,72
+r319,Broken Corner,siurana-pil,6b+,french,sport,28,1,62.5
+r320,Hidden Face,siurana-pil,6a+,french,sport,18,1,60.5
+r321,Northern Edge,siurana-pil,7a,french,sport,15,1,70
+r322,Northern Rib,siurana-pil,6b+,french,sport,32,1,62.5
+r323,Sleepy Edge,siurana-pil,6a+,french,sport,17,1,60.5
+r324,Gentle Nose,siurana-pil,6b,french,sport,31,1,62
+r325,Crooked Chimney,siurana-pil,6c+,french,sport,21,1,64.5
+r326,Silent Direct,siurana-pil,7a,french,sport,29,1,70
+r327,Shattered Groove,siurana-pil,5+,french,sport,19,1,50.5
+r328,Rusty Slab,margalef-lab,6a+,french,sport,24,1,60.5
+r329,Rusty Wall,margalef-lab,5+,french,sport,34,1,50.5
+r330,Shattered Crack,margalef-lab,5+,french,sport,24,1,50.5
+r331,Narrow Face,margalef-lab,6a+,french,sport,18,1,60.5
+r332,Gentle Roof,margalef-lab,6b+,french,sport,16,1,62.5
+r333,Wandering Chimney,margalef-lab,7c,french,sport,26,1,74
+r334,Broken Pillar,margalef-lab,6c,french,sport,25,1,64
+r335,Shattered Arete,margalef-lab,6a+,french,sport,18,1,60.5
+r336,Lonely Ramp,margalef-lab,7c,french,sport,20,1,74
+r337,Quiet Corner,margalef-lab,6a+,french,sport,29,1,60.5
+r338,Wandering Rib,margalef-lab,6b+,french,sport,29,1,62.5
+r339,Wandering Corner,margalef-lab,7b,french,sport,21,1,72
+r340,Lonely Gully,chulilla-pared,6a+,french,sport,25,1,60.5
+r341,Golden Edge,chulilla-pared,6c,french,sport,24,1,64
+r342,Silent Pillar,chulilla-pared,7b+,french,sport,22,1,72.5
+r343,Amber Flake,chulilla-pared,7b,french,sport,19,1,72
+r344,Rusty Crack,chulilla-pared,6c,french,sport,30,1,64
+r345,Golden Pillar,chulilla-pared,6a+,french,sport,16,1,60.5
+r346,Crimson Route,chulilla-pared,6c+,french,sport,16,1,64.5
+r347,Wandering Edge,chulilla-pared,7a+,french,sport,22,1,70.5
+r348,Lonely Slab,chulilla-pared,6b,french,sport,34,1,62
+r349,Burning Nose,chulilla-pared,6a+,french,sport,15,1,60.5
+r350,Burning Corner,chorro-main,5+,french,sport,18,1,50.5
+r351,Lonely Buttress,chorro-main,6c+,french,sport,15,1,64.5
+r352,Golden Corner,chorro-main,7c,french,sport,27,1,74
+r353,Slender Ramp,chorro-main,6c+,french,sport,32,1,64.5
+r354,Shattered Face,chorro-main,6c+,french,sport,30,1,64.5
+r355,Narrow Traverse,chorro-main,7a+,french,sport,25,1,70.5
+r356,Quiet Chimney,chorro-main,7b+,french,sport,23,1,72.5
+r357,Burning Chimney,chorro-main,5+,french,sport,16,1,50.5
+r358,Gentle Chimney,chorro-main,7a,french,sport,26,1,70
+r359,Velvet Traverse,chorro-main,6c+,french,sport,17,1,64.5
+r360,Rusty Gully,kal-grande,7c,french,sport,26,1,74
+r361,Narrow Nose,kal-grande,6a,french,sport,22,1,60
+r362,Wandering Crack,kal-grande,6a+,french,sport,27,1,60.5
+r363,Silent Wall,kal-grande,5+,french,sport,18,1,50.5
+r364,Broken Chimney,kal-grande,6b+,french,sport,29,1,62.5
+r365,Rusty Flake,kal-grande,6c+,french,sport,21,1,64.5
+r366,Lonely Chimney,kal-grande,6b,french,sport,35,1,62
+r367,Velvet Corner,kal-grande,6a,french,sport,19,1,60
+r368,Silent Nose,kal-grande,6c,french,sport,34,1,64
+r369,Quiet Gully,kal-grande,7b,french,sport,25,1,72
+r370,Amber Pillar,kal-sikati,7b,french,sport,33,1,72
+r371,Rusty Pillar,kal-sikati,6c,french,sport,34,1,64
+r372,Velvet Arete,kal-sikati,6b+,french,sport,18,1,62.5
+r373,Amber Nose,kal-sikati,6b+,french,sport,19,1,62.5
+r374,Shattered Edge,kal-sikati,6c,french,sport,17,1,64
+r375,Gentle Pillar,kal-sikati,7b+,french,sport,26,1,72.5
+r376,Hollow Buttress,kal-sikati,6b+,french,sport,21,1,62.5
+r377,Burning Arete,kal-sikati,6a,french,sport,24,1,60
+r378,Pale Gully,kal-sikati,7a,french,sport,15,1,70
+r379,Hidden Traverse,kal-sikati,6a,french,sport,34,1,60
+r380,Rusty Traverse,kal-sikati,5+,french,sport,27,1,50.5
+r381,Lonely Flake,kal-sikati,6b+,french,sport,25,1,62.5
+r382,Silent Rib,kal-sikati,7c,french,sport,18,1,74
+r383,Northern Roof,dol-tre,6c,french,sport,24,1,64
+r384,Crooked Gully,dol-tre,7b,french,sport,25,1,72
+r385,Pale Rib,dol-tre,6c,french,sport,19,1,64
+r386,Northern Nose,dol-tre,7b+,french,sport,29,1,72.5
+r387,Hidden Flake,dol-tre,6a+,french,sport,28,1,60.5
+r388,Crooked Rib,dol-tre,6a+,french,sport,16,1,60.5
+r389,Gentle Buttress,dol-tre,6a,french,sport,17,1,60
+r390,Velvet Crack,dol-tre,6b,french,sport,23,1,62
+r391,Broken Direct,dol-tre,7b,french,sport,28,1,72
+r392,Golden Roof,dol-tre,6b+,french,sport,27,1,62.5
+r393,Crooked Nose,dol-tre,6a+,french,sport,33,1,60.5
+r394,Dancing Groove,dol-tre,6b+,french,sport,35,1,62.5
+r395,Amber Arete,fin-monte,7c,french,sport,31,1,74
+r396,Shattered Roof,fin-monte,7b,french,sport,29,1,72
+r397,Bitter Crack,fin-monte,6a,french,sport,15,1,60
+r398,Amber Chimney,fin-monte,6a,french,sport,29,1,60
+r399,Bitter Edge,fin-monte,6b,french,sport,29,1,62
+r400,Northern Buttress,fin-monte,6c+,french,sport,34,1,64.5
+r401,Broken Gully,fin-monte,5+,french,sport,29,1,50.5
+r402,Quiet Nose,fin-monte,7b,french,sport,25,1,72
+r403,Pale Corner,fin-monte,5+,french,sport,34,1,50.5
+r404,Sleepy Buttress,fin-monte,7b,french,sport,20,1,72
+r405,Dancing Buttress,fin-monte,7a,french,sport,27,1,70
+r406,Bitter Groove,fin-monte,6a+,french,sport,19,1,60.5
+r407,Velvet Nose,moab-wall,V6,v,boulder,6,1,6
+r408,Velvet Groove,moab-wall,V0,v,boulder,3,1,0
+r409,Pale Groove,moab-wall,V1,v,boulder,5,1,1
+r410,Crimson Arete,moab-wall,V1,v,boulder,4,1,1
+r411,Slender Wall,moab-wall,V1,v,boulder,6,1,1
+r412,Silent Crack,moab-wall,V6,v,boulder,4,1,6
+r413,Northern Face,moab-wall,V5,v,boulder,5,1,5
+r414,Gentle Groove,moab-wall,V3,v,boulder,4,1,3
+r415,Rusty Edge,moab-wall,V5,v,boulder,3,1,5
+r416,Iron Rib,moab-wall,V0,v,boulder,3,1,0
+r417,Narrow Slab,moab-wall,V0,v,boulder,5,1,0
+r418,Gentle Edge,josh-hidden,5.9,yds,trad,160,4,91.5
+r419,Wandering Buttress,josh-hidden,5.10b,yds,trad,37,1,101
+r420,Golden Crack,josh-hidden,5.7,yds,trad,44,1,71.5
+r421,Dancing Slab,josh-hidden,5.11a,yds,trad,180,4,110
+r422,Golden Rib,josh-hidden,5.10a,yds,trad,17,1,100
+r423,Quiet Face,josh-hidden,5.8,yds,trad,25,1,81.5
+r424,Quiet Slab,josh-hidden,5.9,yds,trad,24,1,91.5
+r425,Hidden Buttress,josh-hidden,5.10a,yds,trad,30,1,100
+r426,Pale Chimney,josh-hidden,5.7,yds,trad,111,3,71.5
+r427,Narrow Chimney,josh-hidden,5.6,yds,trad,31,1,61.5
+r428,Crimson Roof,josh-hidden,5.10c,yds,trad,45,1,102
+r429,Burning Gully,mall-sa,7a,french,sport,21,1,70
+r430,Crooked Wall,mall-sa,7b+,french,sport,25,1,72.5
+r431,Hidden Ramp,mall-sa,6a,french,sport,25,1,60
+r432,Hidden Groove,mall-sa,6b,french,sport,26,1,62
+r433,Wild Gully,mall-sa,6a,french,sport,25,1,60
+r434,Crimson Face,mall-sa,7b,french,sport,17,1,72
+r435,Slender Roof,mall-sa,7b,french,sport,21,1,72
+r436,Northern Chimney,mall-sa,6c,french,sport,20,1,64
+r437,Slender Edge,mall-sa,6b,french,sport,33,1,62
+r438,Burning Ramp,mall-sa,7b,french,sport,33,1,72
+r439,Wild Chimney,mall-sa,6b+,french,sport,27,1,62.5
+r440,Wandering Wall,mall-sa,6c,french,sport,35,1,64
+r441,Golden Gully,mall-sa,6b+,french,sport,23,1,62.5
+r442,Pale Nose,mall-sa,5+,french,sport,22,1,50.5

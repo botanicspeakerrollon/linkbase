@@ -40,6 +40,18 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable
     }
 
     [Fact]
+    public async Task Loads_the_demo_climbing_logbook()
+    {
+        var factory = await NewDatabaseAsync();
+
+        var summary = await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/climbing-demo/model.json"), TextWriter.Null);
+
+        Assert.Equal(6, summary.Types);
+        Assert.Equal(2277, summary.Nodes);
+        Assert.Equal(4920, summary.Links);
+    }
+
+    [Fact]
     public async Task Loads_the_example_model_and_explore_sees_it()
     {
         var factory = await NewDatabaseAsync();

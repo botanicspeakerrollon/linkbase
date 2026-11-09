@@ -1,0 +1,177 @@
+id,name,trip_key,start_date,end_date,sort_date,country,abroad,home,notes,approximate,dates_partly_unknown,manual
+t1,Mar 2016 - Great Britain,2016-1,2016-03-07,2016-03-07,2016-03-07,gb,false,true,,false,false,false
+t2,Mar 2016 - Great Britain #2,2016-2,2016-03-11,2016-03-12,2016-03-11,gb,false,true,,false,false,false
+t3,Mar 2016 - Great Britain #3,2016-3,2016-03-13,2016-03-14,2016-03-13,gb,false,true,,false,false,false
+t4,Jun 2016 - Great Britain,2016-4,2016-06-02,2016-06-03,2016-06-02,gb,false,true,,false,false,false
+t5,Jun 2016 - Great Britain #2,2016-5,2016-06-03,2016-06-03,2016-06-03,gb,false,true,,false,false,false
+t6,Jun 2016 - Great Britain #3,2016-6,2016-06-15,2016-06-16,2016-06-15,gb,false,true,,false,false,false
+t7,Jun 2016 - Great Britain #4,2016-7,2016-06-22,2016-06-22,2016-06-22,gb,false,true,,false,false,false
+t8,Jul 2016 - France,2016-8,2016-07-05,2016-07-14,2016-07-05,fr,true,false,,false,false,false
+t9,Jul 2016 - Great Britain,2016-9,2016-07-12,2016-07-12,2016-07-12,gb,false,true,,false,false,false
+t10,Jul 2016 - Great Britain #2,2016-10,2016-07-20,2016-07-20,2016-07-20,gb,false,true,,false,false,false
+t11,Aug 2016 - Great Britain,2016-11,2016-08-14,2016-08-14,2016-08-14,gb,false,true,,false,false,false
+t12,Aug 2016 - Great Britain #2,2016-12,2016-08-25,2016-08-27,2016-08-25,gb,false,true,,false,false,false
+t13,Sep 2016 - Great Britain,2016-13,2016-09-03,2016-09-05,2016-09-03,gb,false,true,,false,false,false
+t14,Sep 2016 - Great Britain #2,2016-14,2016-09-09,2016-09-09,2016-09-09,gb,false,true,,false,false,false
+t15,Oct 2016 - Great Britain,2016-15,2016-10-06,2016-10-07,2016-10-06,gb,false,true,,false,false,false
+t16,Oct 2016 - Great Britain #2,2016-16,2016-10-23,2016-10-26,2016-10-23,gb,false,true,,false,false,false
+t17,Nov 2016 - Spain,2016-17,2016-11-16,2016-11-28,2016-11-16,es,true,false,,false,false,false
+t18,Nov 2016 - Great Britain,2016-18,2016-11-25,2016-11-27,2016-11-25,gb,false,true,,false,false,false
+t19,Mar 2017 - Great Britain,2017-19,2017-03-06,2017-03-09,2017-03-06,gb,false,true,,false,false,false
+t20,Mar 2017 - Great Britain #2,2017-20,2017-03-09,2017-03-09,2017-03-09,gb,false,true,,false,false,false
+t21,Apr 2017 - Great Britain,2017-21,2017-04-13,2017-04-13,2017-04-13,gb,false,true,,false,false,false
+t22,May 2017 - Great Britain,2017-22,2017-05-03,2017-05-03,2017-05-03,gb,false,true,,false,false,false
+t23,May 2017 - Great Britain #2,2017-23,2017-05-27,2017-05-28,2017-05-27,gb,false,true,,false,false,false
+t24,Jun 2017 - Great Britain,2017-24,2017-06-13,2017-06-16,2017-06-13,gb,false,true,,false,false,false
+t25,Jul 2017 - Great Britain,2017-25,2017-07-02,2017-07-02,2017-07-02,gb,false,true,,false,false,false
+t26,Jul 2017 - Great Britain #2,2017-26,2017-07-05,2017-07-05,2017-07-05,gb,false,true,,false,false,false
+t27,Jul 2017 - Great Britain #3,2017-27,2017-07-25,2017-07-26,2017-07-25,gb,false,true,,false,false,false
+t28,Aug 2017 - Great Britain,2017-28,2017-08-07,2017-08-09,2017-08-07,gb,false,true,,false,false,false
+t29,Sep 2017 - Great Britain,2017-29,2017-09-03,2017-09-06,2017-09-03,gb,false,true,,false,false,false
+t30,Sep 2017 - Great Britain #2,2017-30,2017-09-07,2017-09-09,2017-09-07,gb,false,true,,false,false,false
+t31,Oct 2017 - Great Britain,2017-31,2017-10-09,2017-10-12,2017-10-09,gb,false,true,,false,false,false
+t32,Oct 2017 - Greece,2017-32,2017-10-09,2017-10-19,2017-10-09,gr,true,false,,false,false,false
+t33,Nov 2017 - Great Britain,2017-33,2017-11-21,2017-11-23,2017-11-21,gb,false,true,,false,false,false
+t34,Feb 2018 - Spain,2018-34,2018-02-14,2018-02-23,2018-02-14,es,true,false,,false,false,false
+t35,Mar 2018 - Great Britain,2018-35,2018-03-13,2018-03-13,2018-03-13,gb,false,true,,false,false,false
+t36,Apr 2018 - Great Britain,2018-36,2018-04-02,2018-04-03,2018-04-02,gb,false,true,,false,false,false
+t37,May 2018 - Great Britain,2018-37,2018-05-02,2018-05-04,2018-05-02,gb,false,true,,false,false,false
+t38,May 2018 - Great Britain #2,2018-38,2018-05-21,2018-05-21,2018-05-21,gb,false,true,,false,false,false
+t39,Jun 2018 - Great Britain,2018-39,2018-06-07,2018-06-09,2018-06-07,gb,false,true,,false,false,false
+t40,Jun 2018 - Great Britain #2,2018-40,2018-06-08,2018-06-09,2018-06-08,gb,false,true,,false,false,false
+t41,Jun 2018 - France,2018-41,2018-06-09,2018-06-21,2018-06-09,fr,true,false,,false,false,false
+t42,Jun 2018 - Great Britain #3,2018-42,2018-06-12,2018-06-15,2018-06-12,gb,false,true,,false,false,false
+t43,Jun 2018 - Great Britain #4,2018-43,2018-06-19,2018-06-21,2018-06-19,gb,false,true,,false,false,false
+t44,Jun 2018 - Great Britain #5,2018-44,2018-06-21,2018-06-21,2018-06-21,gb,false,true,,false,false,false
+t45,Jun 2018 - Great Britain #6,2018-45,2018-06-25,2018-06-25,2018-06-25,gb,false,true,,false,false,false
+t46,Jul 2018 - Great Britain,2018-46,2018-07-17,2018-07-17,2018-07-17,gb,false,true,,false,false,false
+t47,Jul 2018 - Great Britain #2,2018-47,2018-07-18,2018-07-21,2018-07-18,gb,false,true,,false,false,false
+t48,Jul 2018 - Great Britain #3,2018-48,2018-07-24,2018-07-25,2018-07-24,gb,false,true,,false,false,false
+t49,Aug 2018 - Great Britain,2018-49,2018-08-09,2018-08-11,2018-08-09,gb,false,true,,false,false,false
+t50,Sep 2018 - Great Britain,2018-50,2018-09-09,2018-09-09,2018-09-09,gb,false,true,,false,false,false
+t51,Sep 2018 - Great Britain #2,2018-51,2018-09-10,2018-09-13,2018-09-10,gb,false,true,,false,false,false
+t52,Sep 2018 - Great Britain #3,2018-52,2018-09-11,2018-09-11,2018-09-11,gb,false,true,,false,false,false
+t53,Sep 2018 - Italy,2018-53,2018-09-13,2018-09-25,2018-09-13,it,true,false,,false,false,false
+t54,Sep 2018 - Great Britain #4,2018-54,2018-09-20,2018-09-23,2018-09-20,gb,false,true,,false,false,false
+t55,Oct 2018 - Great Britain,2018-55,2018-10-20,2018-10-22,2018-10-20,gb,false,true,,false,false,false
+t56,Mar 2019 - Great Britain,2019-56,2019-03-01,2019-03-01,2019-03-01,gb,false,true,,false,false,false
+t57,Mar 2019 - Great Britain #2,2019-57,2019-03-03,2019-03-06,2019-03-03,gb,false,true,,false,false,false
+t58,Mar 2019 - Spain,2019-58,2019-03-04,2019-03-12,2019-03-04,es,true,false,,false,false,false
+t59,Apr 2019 - Great Britain,2019-59,2019-04-01,2019-04-01,2019-04-01,gb,false,true,,false,false,false
+t60,Apr 2019 - Great Britain #2,2019-60,2019-04-04,2019-04-05,2019-04-04,gb,false,true,,false,false,false
+t61,Apr 2019 - Great Britain #3,2019-61,2019-04-07,2019-04-10,2019-04-07,gb,false,true,,false,false,false
+t62,May 2019 - Great Britain,2019-62,2019-05-14,2019-05-14,2019-05-14,gb,false,true,,false,false,false
+t63,May 2019 - Great Britain #2,2019-63,2019-05-19,2019-05-21,2019-05-19,gb,false,true,,false,false,false
+t64,Jun 2019 - Great Britain,2019-64,2019-06-03,2019-06-06,2019-06-03,gb,false,true,,false,false,false
+t65,Jun 2019 - Great Britain #2,2019-65,2019-06-05,2019-06-07,2019-06-05,gb,false,true,,false,false,false
+t66,Jun 2019 - Great Britain #3,2019-66,2019-06-17,2019-06-18,2019-06-17,gb,false,true,,false,false,false
+t67,Jul 2019 - Great Britain,2019-67,2019-07-22,2019-07-22,2019-07-22,gb,false,true,,false,false,false
+t68,Aug 2019 - Great Britain,2019-68,2019-08-03,2019-08-05,2019-08-03,gb,false,true,,false,false,false
+t69,Aug 2019 - Great Britain #2,2019-69,2019-08-17,2019-08-17,2019-08-17,gb,false,true,,false,false,false
+t70,Aug 2019 - France,2019-70,2019-08-20,2019-08-27,2019-08-20,fr,true,false,,false,false,false
+t71,Oct 2019 - Great Britain,2019-71,2019-10-04,2019-10-06,2019-10-04,gb,false,true,,false,false,false
+t72,Oct 2019 - Great Britain #2,2019-72,2019-10-05,2019-10-07,2019-10-05,gb,false,true,,false,false,false
+t73,Oct 2019 - United States,2019-73,2019-10-12,2019-10-18,2019-10-12,us,true,false,,false,false,false
+t74,Oct 2019 - Great Britain #3,2019-74,2019-10-15,2019-10-15,2019-10-15,gb,false,true,,false,false,false
+t75,Oct 2019 - Great Britain #4,2019-75,2019-10-18,2019-10-19,2019-10-18,gb,false,true,,false,false,false
+t76,Aug 2020 - Great Britain,2020-76,2020-08-14,2020-08-16,2020-08-14,gb,false,true,,false,false,false
+t77,Sep 2020 - Great Britain,2020-77,2020-09-02,2020-09-04,2020-09-02,gb,false,true,,false,false,false
+t78,Sep 2020 - Great Britain #2,2020-78,2020-09-12,2020-09-12,2020-09-12,gb,false,true,,false,false,false
+t79,Sep 2020 - Great Britain #3,2020-79,2020-09-19,2020-09-19,2020-09-19,gb,false,true,,false,false,false
+t80,Oct 2020 - Great Britain,2020-80,2020-10-01,2020-10-01,2020-10-01,gb,false,true,,false,false,false
+t81,Oct 2020 - Great Britain #2,2020-81,2020-10-02,2020-10-03,2020-10-02,gb,false,true,,false,false,false
+t82,Mar 2021 - Great Britain,2021-82,2021-03-10,2021-03-11,2021-03-10,gb,false,true,,false,false,false
+t83,Mar 2021 - Spain,2021-83,2021-03-15,2021-03-24,2021-03-15,es,true,false,,false,false,false
+t84,Apr 2021 - Great Britain,2021-84,2021-04-27,2021-04-30,2021-04-27,gb,false,true,,false,false,false
+t85,May 2021 - Great Britain,2021-85,2021-05-04,2021-05-06,2021-05-04,gb,false,true,,false,false,false
+t86,May 2021 - Great Britain #2,2021-86,2021-05-06,2021-05-06,2021-05-06,gb,false,true,,false,false,false
+t87,May 2021 - Great Britain #3,2021-87,2021-05-17,2021-05-20,2021-05-17,gb,false,true,,false,false,false
+t88,May 2021 - Great Britain #4,2021-88,2021-05-20,2021-05-23,2021-05-20,gb,false,true,,false,false,false
+t89,May 2021 - Great Britain #5,2021-89,2021-05-24,2021-05-25,2021-05-24,gb,false,true,,false,false,false
+t90,Jul 2021 - Great Britain,2021-90,2021-07-09,2021-07-09,2021-07-09,gb,false,true,,false,false,false
+t91,Jul 2021 - Great Britain #2,2021-91,2021-07-17,2021-07-17,2021-07-17,gb,false,true,,false,false,false
+t92,Aug 2021 - Great Britain,2021-92,2021-08-05,2021-08-06,2021-08-05,gb,false,true,,false,false,false
+t93,Aug 2021 - Great Britain #2,2021-93,2021-08-06,2021-08-06,2021-08-06,gb,false,true,,false,false,false
+t94,Aug 2021 - Great Britain #3,2021-94,2021-08-14,2021-08-17,2021-08-14,gb,false,true,,false,false,false
+t95,Aug 2021 - Great Britain #4,2021-95,2021-08-20,2021-08-21,2021-08-20,gb,false,true,,false,false,false
+t96,Sep 2021 - Great Britain,2021-96,2021-09-05,2021-09-05,2021-09-05,gb,false,true,,false,false,false
+t97,Sep 2021 - Great Britain #2,2021-97,2021-09-22,2021-09-22,2021-09-22,gb,false,true,,false,false,false
+t98,Oct 2021 - Greece,2021-98,2021-10-18,2021-10-28,2021-10-18,gr,true,false,,false,false,false
+t99,Apr 2022 - Great Britain,2022-99,2022-04-11,2022-04-13,2022-04-11,gb,false,true,,false,false,false
+t100,May 2022 - Great Britain,2022-100,2022-05-04,2022-05-06,2022-05-04,gb,false,true,,false,false,false
+t101,May 2022 - Great Britain #2,2022-101,2022-05-08,2022-05-08,2022-05-08,gb,false,true,,false,false,false
+t102,May 2022 - France,2022-102,2022-05-17,2022-05-24,2022-05-17,fr,true,false,,false,false,false
+t103,Jun 2022 - Great Britain,2022-103,2022-06-23,2022-06-25,2022-06-23,gb,false,true,,false,false,false
+t104,Jul 2022 - Great Britain,2022-104,2022-07-09,2022-07-10,2022-07-09,gb,false,true,,false,false,false
+t105,Jul 2022 - Great Britain #2,2022-105,2022-07-15,2022-07-17,2022-07-15,gb,false,true,,false,false,false
+t106,Jul 2022 - Great Britain #3,2022-106,2022-07-23,2022-07-26,2022-07-23,gb,false,true,,false,false,false
+t107,Aug 2022 - Great Britain,2022-107,2022-08-24,2022-08-25,2022-08-24,gb,false,true,,false,false,false
+t108,Sep 2022 - Great Britain,2022-108,2022-09-02,2022-09-03,2022-09-02,gb,false,true,,false,false,false
+t109,Sep 2022 - Great Britain #2,2022-109,2022-09-09,2022-09-10,2022-09-09,gb,false,true,,false,false,false
+t110,Sep 2022 - Great Britain #3,2022-110,2022-09-23,2022-09-23,2022-09-23,gb,false,true,,false,false,false
+t111,Sep 2022 - Great Britain #4,2022-111,2022-09-23,2022-09-26,2022-09-23,gb,false,true,,false,false,false
+t112,Oct 2022 - Great Britain,2022-112,2022-10-04,2022-10-06,2022-10-04,gb,false,true,,false,false,false
+t113,Oct 2022 - Great Britain #2,2022-113,2022-10-22,2022-10-22,2022-10-22,gb,false,true,,false,false,false
+t114,Oct 2022 - Great Britain #3,2022-114,2022-10-26,2022-10-29,2022-10-26,gb,false,true,,false,false,false
+t115,Nov 2022 - Spain,2022-115,2022-11-19,2022-11-27,2022-11-19,es,true,false,,false,false,false
+t116,Mar 2023 - Great Britain,2023-116,2023-03-19,2023-03-21,2023-03-19,gb,false,true,,false,false,false
+t117,May 2023 - Great Britain,2023-117,2023-05-01,2023-05-01,2023-05-01,gb,false,true,,false,false,false
+t118,May 2023 - Great Britain #2,2023-118,2023-05-20,2023-05-22,2023-05-20,gb,false,true,,false,false,false
+t119,Jun 2023 - Great Britain,2023-119,2023-06-11,2023-06-11,2023-06-11,gb,false,true,,false,false,false
+t120,Jun 2023 - Italy,2023-120,2023-06-17,2023-06-27,2023-06-17,it,true,false,,false,false,false
+t121,Jun 2023 - Great Britain #2,2023-121,2023-06-27,2023-06-27,2023-06-27,gb,false,true,,false,false,false
+t122,Jul 2023 - Great Britain,2023-122,2023-07-04,2023-07-05,2023-07-04,gb,false,true,,false,false,false
+t123,Jul 2023 - Great Britain #2,2023-123,2023-07-15,2023-07-18,2023-07-15,gb,false,true,,false,false,false
+t124,Jul 2023 - Great Britain #3,2023-124,2023-07-19,2023-07-19,2023-07-19,gb,false,true,,false,false,false
+t125,Jul 2023 - Great Britain #4,2023-125,2023-07-26,2023-07-29,2023-07-26,gb,false,true,,false,false,false
+t126,Aug 2023 - Great Britain,2023-126,2023-08-15,2023-08-17,2023-08-15,gb,false,true,,false,false,false
+t127,Sep 2023 - Great Britain,2023-127,2023-09-04,2023-09-05,2023-09-04,gb,false,true,,false,false,false
+t128,Sep 2023 - Great Britain #2,2023-128,2023-09-06,2023-09-08,2023-09-06,gb,false,true,,false,false,false
+t129,Sep 2023 - Great Britain #3,2023-129,2023-09-10,2023-09-13,2023-09-10,gb,false,true,,false,false,false
+t130,Sep 2023 - Great Britain #4,2023-130,2023-09-12,2023-09-13,2023-09-12,gb,false,true,,false,false,false
+t131,Sep 2023 - Great Britain #5,2023-131,2023-09-14,2023-09-15,2023-09-14,gb,false,true,,false,false,false
+t132,Sep 2023 - Great Britain #6,2023-132,2023-09-15,2023-09-15,2023-09-15,gb,false,true,,false,false,false
+t133,Sep 2023 - Great Britain #7,2023-133,2023-09-17,2023-09-19,2023-09-17,gb,false,true,,false,false,false
+t134,Sep 2023 - Great Britain #8,2023-134,2023-09-19,2023-09-19,2023-09-19,gb,false,true,,false,false,false
+t135,Oct 2023 - United States,2023-135,2023-10-16,2023-10-21,2023-10-16,us,true,false,,false,false,false
+t136,Nov 2023 - Great Britain,2023-136,2023-11-07,2023-11-09,2023-11-07,gb,false,true,,false,false,false
+t137,Nov 2023 - Great Britain #2,2023-137,2023-11-27,2023-11-29,2023-11-27,gb,false,true,,false,false,false
+t138,Mar 2024 - Spain,2024-138,2024-03-12,2024-03-22,2024-03-12,es,true,false,,false,false,false
+t139,Mar 2024 - Great Britain,2024-139,2024-03-22,2024-03-24,2024-03-22,gb,false,true,,false,false,false
+t140,Mar 2024 - Great Britain #2,2024-140,2024-03-25,2024-03-28,2024-03-25,gb,false,true,,false,false,false
+t141,Apr 2024 - Great Britain,2024-141,2024-04-07,2024-04-09,2024-04-07,gb,false,true,,false,false,false
+t142,May 2024 - Great Britain,2024-142,2024-05-05,2024-05-05,2024-05-05,gb,false,true,,false,false,false
+t143,May 2024 - Great Britain #2,2024-143,2024-05-08,2024-05-10,2024-05-08,gb,false,true,,false,false,false
+t144,May 2024 - Great Britain #3,2024-144,2024-05-11,2024-05-11,2024-05-11,gb,false,true,,false,false,false
+t145,May 2024 - Great Britain #4,2024-145,2024-05-17,2024-05-19,2024-05-17,gb,false,true,,false,false,false
+t146,Jun 2024 - Great Britain,2024-146,2024-06-24,2024-06-26,2024-06-24,gb,false,true,,false,false,false
+t147,Jul 2024 - France,2024-147,2024-07-01,2024-07-13,2024-07-01,fr,true,false,,false,false,false
+t148,Sep 2024 - Great Britain,2024-148,2024-09-04,2024-09-04,2024-09-04,gb,false,true,,false,false,false
+t149,Sep 2024 - Great Britain #2,2024-149,2024-09-07,2024-09-10,2024-09-07,gb,false,true,,false,false,false
+t150,Oct 2024 - Greece,2024-150,2024-10-05,2024-10-15,2024-10-05,gr,true,false,,false,false,false
+t151,Nov 2024 - Great Britain,2024-151,2024-11-08,2024-11-08,2024-11-08,gb,false,true,,false,false,false
+t152,Nov 2024 - Great Britain #2,2024-152,2024-11-16,2024-11-19,2024-11-16,gb,false,true,,false,false,false
+t153,Nov 2024 - Great Britain #3,2024-153,2024-11-24,2024-11-26,2024-11-24,gb,false,true,,false,false,false
+t154,Nov 2024 - Great Britain #4,2024-154,2024-11-24,2024-11-27,2024-11-24,gb,false,true,,false,false,false
+t155,Feb 2025 - Spain,2025-155,2025-02-10,2025-02-19,2025-02-10,es,true,false,,false,false,false
+t156,Mar 2025 - Great Britain,2025-156,2025-03-03,2025-03-03,2025-03-03,gb,false,true,,false,false,false
+t157,Mar 2025 - Great Britain #2,2025-157,2025-03-05,2025-03-08,2025-03-05,gb,false,true,,false,false,false
+t158,Mar 2025 - Great Britain #3,2025-158,2025-03-09,2025-03-11,2025-03-09,gb,false,true,,false,false,false
+t159,Mar 2025 - Great Britain #4,2025-159,2025-03-18,2025-03-20,2025-03-18,gb,false,true,,false,false,false
+t160,Apr 2025 - Great Britain,2025-160,2025-04-06,2025-04-06,2025-04-06,gb,false,true,,false,false,false
+t161,Apr 2025 - Great Britain #2,2025-161,2025-04-23,2025-04-25,2025-04-23,gb,false,true,,false,false,false
+t162,May 2025 - Great Britain,2025-162,2025-05-13,2025-05-14,2025-05-13,gb,false,true,,false,false,false
+t163,May 2025 - Great Britain #2,2025-163,2025-05-23,2025-05-23,2025-05-23,gb,false,true,,false,false,false
+t164,May 2025 - Great Britain #3,2025-164,2025-05-27,2025-05-30,2025-05-27,gb,false,true,,false,false,false
+t165,Jun 2025 - Great Britain,2025-165,2025-06-04,2025-06-04,2025-06-04,gb,false,true,,false,false,false
+t166,Jun 2025 - France,2025-166,2025-06-12,2025-06-21,2025-06-12,fr,true,false,,false,false,false
+t167,Jun 2025 - Great Britain #2,2025-167,2025-06-20,2025-06-20,2025-06-20,gb,false,true,,false,false,false
+t168,Jul 2025 - Great Britain,2025-168,2025-07-01,2025-07-01,2025-07-01,gb,false,true,,false,false,false
+t169,Jul 2025 - Great Britain #2,2025-169,2025-07-18,2025-07-20,2025-07-18,gb,false,true,,false,false,false
+t170,Jul 2025 - Great Britain #3,2025-170,2025-07-22,2025-07-22,2025-07-22,gb,false,true,,false,false,false
+t171,Aug 2025 - Great Britain,2025-171,2025-08-12,2025-08-13,2025-08-12,gb,false,true,,false,false,false
+t172,Sep 2025 - Great Britain,2025-172,2025-09-03,2025-09-04,2025-09-03,gb,false,true,,false,false,false
+t173,Sep 2025 - Great Britain #2,2025-173,2025-09-11,2025-09-11,2025-09-11,gb,false,true,,false,false,false
+t174,Sep 2025 - Great Britain #3,2025-174,2025-09-15,2025-09-15,2025-09-15,gb,false,true,,false,false,false
+t175,Oct 2025 - Great Britain,2025-175,2025-10-15,2025-10-15,2025-10-15,gb,false,true,,false,false,false
+t176,Nov 2025 - Great Britain,2025-176,2025-11-02,2025-11-05,2025-11-02,gb,false,true,,false,false,false

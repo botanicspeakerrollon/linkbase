@@ -8,7 +8,7 @@ the real databases while writing it.
 | Container | Port | Databases | What's in it |
 | --- | --- | --- | --- |
 | `linkbase-db-1` | 127.0.0.1:5432 | `linkbase` | Your real climbing logbook. Backed up by `scripts/backup-db.ps1` |
-| `linkbase-samples` | 127.0.0.1:55433 | `consultancy`, `swiss_rail` | The two sample models. Not backed up: they're rebuilt from their model files |
+| `linkbase-samples` | 127.0.0.1:55433 | `consultancy`, `swiss_rail`, `climbing_demo` | The sample models. Not backed up: they're rebuilt from their model files |
 
 Both only listen on this PC. Each model in the app's switcher is one of these databases (see [models](models.md)).
 

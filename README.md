@@ -169,7 +169,7 @@ src/Linkbase/
 tests/Linkbase.Tests/
 data/samples/   Your export files (git-ignored)
 docs/           Design notes, models, the security roadmap, operations, performance and querying Postgres
-models/         Model files and their CSVs, such as the example consultancy
+models/         Model files and their CSVs, such as the example consultancy and the demo climbing logbook
 scripts/        Local setup, backup, restore and recovery rehearsal
 backups/        Database backups (git-ignored)
 ```

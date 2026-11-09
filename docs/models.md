@@ -12,9 +12,25 @@ There are two kinds:
 
 ## Trying it
 
-Locally, three models are configured in `appsettings.Development.json`: your climbing logbook, the example consultancy, and
-Swiss public transport. The last two live in the `linkbase-samples` container (see [performance](performance.md)). Hover over the
+Locally, five models are configured in `appsettings.Development.json`: your climbing logbook, the example consultancy, Swiss
+public transport, the generic copy of your logbook and the demo climbing logbook. The sample ones live in the `linkbase-samples` container (see [performance](performance.md)). Hover over the
 rail and use the switcher by the model's name.
+
+## The demo climbing logbook
+
+`models/climbing-demo/` is a made-up logbook to try the app with, or to show it, without anyone's real data: 45 areas, 39 crags,
+442 routes, 1,555 ascents over 176 trips (2016 to 2025) and 20 partners, all invented, in the shape of
+`models/climbing/model.json`. Its CSV files are made by `generate.py` with a fixed seed, so running it again gives the same
+files. To load it, make a database and load the model file like any other (see [Adding a model](#adding-a-model)):
+
+```powershell
+docker exec linkbase-samples psql -U linkbase -d postgres -c "CREATE DATABASE climbing_demo"
+dotnet ef database update --project src/Linkbase --connection "Host=127.0.0.1;Port=55433;Database=climbing_demo;Username=linkbase"
+dotnet run --project src/Linkbase --launch-profile http -- model load models/climbing-demo/model.json climbing-demo
+```
+
+Its route grade ranks and trips are written into the files, since hooks don't run when a model file is loaded. Reloading
+replaces everything, edits included.
 
 ## Climbing in the generic store
 

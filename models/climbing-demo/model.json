@@ -1,0 +1,88 @@
+// A made-up climbing logbook, to try the app with data that isn't anyone's. Everyone in it, every route and every date is invented.
+// It has the same types, fields and relationships as models/climbing/model.json, plus CSV files, so it loads into a generic
+// model. Open it with the Climbing domain to get the logbook pages. See models/climbing-demo/generate.py for how the files are made.
+{
+  "name": "Demo climbing logbook",
+  "types": [
+    {
+      "name": "Area", "color": "#0e7490", "icon": "Map",
+      "source": { "file": "areas.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true } ]
+    },
+    {
+      "name": "Crag", "color": "#a16207", "icon": "Terrain",
+      "source": { "file": "crags.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "rock_type" },
+        { "key": "lat", "type": "number" },
+        { "key": "lon", "type": "number" },
+        { "key": "aliases", "type": "list" },
+        { "key": "notes" }
+      ]
+    },
+    {
+      "name": "Route", "color": "#7c3aed", "icon": "Timeline",
+      "source": { "file": "routes.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "grade" },
+        {
+          "key": "grade_system", "type": "choice",
+          "options": [ "uk_trad", "uk_tech", "french", "yds", "font", "v", "ewbank", "uiaa", "australian", "nordic", "alpine", "scrambling", "via_ferrata", "ice", "other" ]
+        },
+        { "key": "discipline", "type": "choice", "options": [ "trad", "sport", "boulder", "winter", "alpine", "other" ] },
+        { "key": "length_m", "type": "number" },
+        { "key": "pitches", "type": "number" },
+        { "key": "grade_rank", "type": "number", "owner": "Climbing" }
+      ]
+    },
+    {
+      "name": "Ascent", "color": "#15803d", "icon": "Flag",
+      "source": { "file": "ascents.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "date", "type": "date", "required": true },
+        { "key": "date_precision", "type": "choice", "options": [ "day", "month", "year" ], "required": true },
+        {
+          "key": "style", "type": "choice", "required": true,
+          "options": [ "lead", "onsight", "flash", "redpoint", "send", "hangdog", "second", "top_rope", "solo", "dnf", "other" ]
+        },
+        { "key": "style_raw" },
+        { "key": "notes" },
+        { "key": "my_rating", "type": "number" },
+        { "key": "source", "type": "choice", "options": [ "manual", "ukc", "mountain_project", "web_import", "csv" ], "required": true }
+      ]
+    },
+    {
+      "name": "Partner", "color": "#c2410c", "icon": "Person",
+      "source": { "file": "partners.csv", "key": "id", "name": "name" }
+    },
+    {
+      "name": "Trip", "color": "#be185d", "icon": "Flight", "owner": "Climbing",
+      "source": { "file": "trips.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "trip_key" },
+        { "key": "start_date", "type": "date" },
+        { "key": "end_date", "type": "date" },
+        { "key": "sort_date", "type": "date" },
+        { "key": "notes" },
+        { "key": "abroad", "type": "boolean" },
+        { "key": "home", "type": "boolean" },
+        { "key": "approximate", "type": "boolean" },
+        { "key": "dates_partly_unknown", "type": "boolean" },
+        { "key": "manual", "type": "boolean" }
+      ]
+    }
+  ],
+  "relationships": [
+    { "from": "Area", "type": "IN", "to": "Area", "source": { "file": "areas.csv", "fromColumn": "id", "toColumn": "parent" } },
+    { "from": "Crag", "type": "IN", "to": "Area", "required": true, "source": { "file": "crags.csv", "fromColumn": "id", "toColumn": "area" } },
+    { "from": "Route", "type": "AT", "to": "Crag", "required": true, "source": { "file": "routes.csv", "fromColumn": "id", "toColumn": "crag" } },
+    { "from": "Ascent", "type": "OF", "to": "Route", "required": true, "source": { "file": "ascents.csv", "fromColumn": "id", "toColumn": "route" } },
+    { "from": "Ascent", "type": "WITH", "to": "Partner", "source": { "file": "ascents.csv", "fromColumn": "id", "toColumn": "partner" } },
+    {
+      "from": "Ascent", "type": "ON_TRIP", "to": "Trip",
+      "source": { "file": "ascent_trips.csv", "fromColumn": "ascent", "toColumn": "trip" },
+      "fields": [ { "key": "inferred", "type": "boolean" } ]
+    },
+    { "from": "Trip", "type": "VISITED", "to": "Area", "source": { "file": "trips.csv", "fromColumn": "id", "toColumn": "country" } }
+  ]
+}
