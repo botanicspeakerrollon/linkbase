@@ -16,6 +16,12 @@ public sealed class SnakeCaseEnumConverter<T>() : ValueConverter<T, string>(
 
     public static string ToStore(T value) => Names[value];
 
+    public static bool TryFromStore(string? stored, out T value)
+    {
+        value = default;
+        return stored is not null && Values.TryGetValue(stored, out value);
+    }
+
     public static T FromStore(string stored) =>
         Values.TryGetValue(stored, out var value)
             ? value

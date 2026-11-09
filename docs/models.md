@@ -130,6 +130,9 @@ that list the module under `Domains`:
   created, updated or deleted, with their values before and after, and links added or removed, once for each end. It's
   for keeping derived records up to date.
 
+Climbing's hook (`ClimbingRecordHook`) is the working example: it sets a route's `grade_rank` before it's saved, names each
+ascent after its route, and rebuilds the `Trip` records, with `GenericTripService`, when an ascent's date or place changes.
+
 Hooks don't run when a model file is loaded. A module writes its derived records with `RecordRepository.ReplaceDerivedAsync`,
 which replaces all of a type's records and their links in one transaction, keeps the relationships' counts, and runs no
 hooks.

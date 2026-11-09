@@ -19,7 +19,7 @@ public sealed class GenericConversionTests(PostgresFixture fixture)
 
     // Two countries, a region, two crags (one with aliases), three routes, four ascents on two trips, one of them inferred,
     // a partner on two ascents, and ids from UKC and Mountain Project.
-    private async Task<(ModelFactory Source, ModelFactory Target)> TypedAsync()
+    internal static async Task<(ModelFactory Source, ModelFactory Target)> TypedAsync(PostgresFixture fixture)
     {
         var source = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         var target = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
@@ -64,7 +64,7 @@ public sealed class GenericConversionTests(PostgresFixture fixture)
     [Fact]
     public async Task Converts_the_typed_tables_and_verifies_them()
     {
-        var (source, target) = await TypedAsync();
+        var (source, target) = await TypedAsync(fixture);
 
         var summary = await new GenericConverter(source, target).ConvertAsync(ModelPath, TextWriter.Null);
 
@@ -81,7 +81,7 @@ public sealed class GenericConversionTests(PostgresFixture fixture)
     [Fact]
     public async Task Keeps_ids_fields_links_and_refs()
     {
-        var (source, target) = await TypedAsync();
+        var (source, target) = await TypedAsync(fixture);
         await new GenericConverter(source, target).ConvertAsync(ModelPath, TextWriter.Null);
 
         await using var typed = source.CreateDbContext();
@@ -130,7 +130,7 @@ public sealed class GenericConversionTests(PostgresFixture fixture)
     [Fact]
     public async Task Converting_again_gives_the_same_store()
     {
-        var (source, target) = await TypedAsync();
+        var (source, target) = await TypedAsync(fixture);
         var converter = new GenericConverter(source, target);
         await converter.ConvertAsync(ModelPath, TextWriter.Null);
         await converter.ConvertAsync(ModelPath, TextWriter.Null);
@@ -143,7 +143,7 @@ public sealed class GenericConversionTests(PostgresFixture fixture)
     [Fact]
     public async Task The_verifier_reports_what_differs()
     {
-        var (source, target) = await TypedAsync();
+        var (source, target) = await TypedAsync(fixture);
         await new GenericConverter(source, target).ConvertAsync(ModelPath, TextWriter.Null);
         await using (var db = target.CreateDbContext())
         {

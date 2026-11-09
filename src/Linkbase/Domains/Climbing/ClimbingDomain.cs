@@ -7,6 +7,7 @@ using Linkbase.Domains.Climbing.Data;
 using Linkbase.Domains.Climbing.Features;
 using Linkbase.Domains.Climbing.Import;
 using Linkbase.Domains.Climbing.Import.Web;
+using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 
 namespace Linkbase.Domains.Climbing;
@@ -58,6 +59,12 @@ public sealed class ClimbingDomain : IDomainModule
     {
         services.AddScoped<AscentImportService>();
         services.AddScoped<TripService>();
+        services.AddScoped<GenericTripService>();
+        services.AddScoped<Linkbase.Core.Records.IRecordHook>(provider => new ClimbingRecordHook(
+            provider.GetRequiredService<IDbContextFactory<LinkbaseDbContext>>(),
+            provider.GetRequiredService<GenericTripService>(),
+            () => RepoPaths.Resolve(RepoPaths.Corrections),
+            provider.GetRequiredService<ILogger<ClimbingRecordHook>>()));
         services.AddScoped<ReconciliationService>();
         services.AddScoped<AreaRepository>();
         services.AddScoped<AscentRepository>();

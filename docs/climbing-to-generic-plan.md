@@ -12,28 +12,31 @@ It replaces the "climbing stays as typed tables" choice in [extensibility-plan.m
 
 | Step | State |
 | --- | --- |
-| 0. Delete Neo4j and Duplicates | Done, on `main` |
-| 1. Generic features G1 to G6 | Done, on `main`. G1 to G3 are choice, list and required fields. G4 and G5 are module hooks, module-owned fields and records (`generic-module-hooks`). G6 is external refs by node id (`g6-external-refs-by-node`) |
-| Later features G7, G8, G9 | Done, on branch `g7-g8-g9-generic-forms-lists-staging`, **not yet in `main`** |
-| 2. Climbing model file and `climbing to-generic` converter | Done: `models/climbing/model.json`, `climbing to-generic`, `climbing verify-generic`. **Not yet run on the real logbook**, because that needs your database. See [models](models.md#climbing-in-the-generic-store) |
-| 3 to 6 | Not started |
+| 0. Delete Neo4j and Duplicates | Done |
+| 1. Generic features G1 to G6 | Done |
+| Later features G7, G8, G9 | Done: forms that create linked records, sorting and filtering, staged imports |
+| 2. Climbing model file and converter | Done: `models/climbing/model.json`, `climbing to-generic` and `climbing verify-generic`. Tested on made-up data; **not yet run on the real logbook**, which needs your database. See [models](models.md#climbing-in-the-generic-store) |
+| 3. Module behaviour on the generic store | Done: `ClimbingRecordHook` keeps `grade_rank`, names ascents after their routes and rebuilds trips; `GenericTripService` rebuilds the `Trip` records. A test checks that its trips match the typed tables' |
+| 4. Port the module pages | Not started |
+| 5. Imports | Not started |
+| 6. Switch | Not started. Needs your go-ahead |
 
-**The branch to merge.** `g7-g8-g9-generic-forms-lists-staging` has `main` merged in and passes its tests, so it can fast-forward
-into `main`. Import staging now runs the module hooks on commit and undo. The `g6` and `generic-module-hooks` worktrees under
-`.claude/worktrees/` are already in `main` and can go.
+**Two gaps in step 3.**
+- The hook only runs for a model that lists `Climbing` under `Domains`, and that also turns on the module's pages, which still
+  read the typed tables. So "Climbing (generic)" is configured without the module for now, and the hook is covered by tests
+  rather than by the running app. It joins the model when step 4 has ported the pages.
+- An ascent's caption was already supplied by the module (`LabelStyles` and `LabelsNamedAfterParent`), not by a check in Core,
+  so there was nothing to remove there.
 
-**What's next.** Step 2, in this order:
-1. Write `models/climbing/model.json` using choice, list and required fields, with the Trip type and `grade_rank` owned by the
-   module.
-2. Write `climbing to-generic`, keeping node keys equal to today's row ids, and copying `external_ref` rows to node ids.
-3. Write the check that compares counts per type, every ascent's fields, links and refs against the typed tables.
-4. Load it into a local second database shown as "Climbing (generic)".
-
-Then step 3 (grade rank, trips, captions as module code) and step 4 (port the pages). Step 6 is the only step that touches the
-real data, and it needs your go-ahead.
-
-**Decisions still open** are at the end of this file. Browse and route descriptions block step 4 and step 2 respectively, so
-answer those first.
+**What's next.**
+1. Answer the open decision on **Browse**. Remove it, or keep the area tree as a module page?
+2. Run `climbing to-generic climbing-generic` against your own logbook and read what `verify-generic` says. That shows whether
+   the real data has anything the made-up data doesn't, such as a value outside a choice field's options.
+3. Step 4, one page at a time, each leaving the app working: Logbook and Add ascent first, since the generic list (G8) and form
+   (G7) can replace them, then Insights, then web import onto generic staging (G9). Add `Climbing` to the generic model's
+   `Domains` as these land.
+4. Step 5, the UKC and Mountain Project parsers writing through the generic import path.
+5. Step 6, the switch.
 
 ## Why
 
@@ -175,7 +178,7 @@ Each step leaves the app working, and the real data isn't touched until step 6.
 ## Decisions to make
 
 - **Browse.** Remove it, or keep the area tree as a module page?
-- **Route descriptions.** Drop the field? No route has one.
+- **Route descriptions.** Dropped from the model file, because no route has one. Say if that's wrong before step 6.
 - **Demo.** A made-up climbing logbook can be generated once step 2 exists, the same way the consultancy sample is. The
   real logbook can't be the demo, because the repo must stay anonymous.
 - **Field-level security.** Still unsolved for the generic store (see [security-roadmap.md](security-roadmap.md)). This
