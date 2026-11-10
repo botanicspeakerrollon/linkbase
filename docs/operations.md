@@ -8,7 +8,7 @@ How to back up, restore and rebuild the database. Everything runs from the repo 
 | --- | --- | --- |
 | Postgres (`linkbase_linkbase-data` Docker volume) | Everything the app shows, including ascents added or edited in the app, saved scenes and staged imports | `backup-db.ps1` |
 | `data/samples/import.csv`, `ticks.csv`, `data/corrections.json` (git-ignored) | The source for a rebuild, and the only copy of the corrections | `backup-db.ps1` copies them |
-| `.env` and user secrets (git-ignored) | Database password, API keys | Nothing. `init-dev.ps1` makes a new database password, and the Anthropic key has to be added again |
+| `.env`, `appsettings.Development.local.json` and user secrets (git-ignored) | Database password, API keys | Nothing. `init-dev.ps1` makes a new database password, and the Anthropic key has to be added again |
 | Git | The code | A remote, once one is set up. There isn't one yet |
 
 Everything is on one PC until a backup is copied off it.
@@ -63,9 +63,9 @@ A rebuild brings back everything in the export files, and nothing else:
 
 | Comes back | Lost |
 | --- | --- |
-| Ascents, routes, crags, areas, partners and refs from the two CSVs | Anything added or edited in the app, including committed web imports |
+| Ascents, routes, crags, areas, partners and refs from the two CSVs | Anything added or edited in the app, including committed text imports |
 | Trips, rebuilt from the ascents and `data/corrections.json` | Saved scenes |
-| | Staged, failed and undone web imports |
+| | Staged, failed and undone text imports |
 
 Row ids can change, so a saved scene from before a rebuild won't line up with the new rows. Prefer a restore when you have
 a backup.
@@ -93,7 +93,7 @@ throwaway container, which skips the prompt and the safety backup.
 
 ## Configuration
 
-Everything is set by environment variable in a container, or by user secrets and `appsettings.Development.json` locally.
+Everything is set by environment variable in a container, or locally by `appsettings.Development.local.json` (git-ignored, for the main database), user secrets and `appsettings.Development.json`.
 A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Linkbase` is `ConnectionStrings__Linkbase`.
 
 | Variable | What it does | Default |
@@ -101,7 +101,7 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `ConnectionStrings__Linkbase` | The main database. A secret | None, so required |
 | `Models__<key>__Name`, `__ConnectionString`, `__Domains__0`, `__Order` | The models in the switcher, as in [models](models.md#configuring-models) | One model on the main database |
 | `ConnectionStrings__<name>` | Each other model's database. A secret if it has a password | None |
-| `Anthropic__ApiKey` | Web import's extraction. A secret | None, so web import can't extract |
+| `Anthropic__ApiKey` | Reading text with AI. A secret | None, so text can't be read |
 | `ASPNETCORE_ENVIRONMENT` | `Development` for plain-text logs and detailed errors | `Production` |
 | `ASPNETCORE_HTTP_PORTS` | The port to listen on | `8080` in the image |
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | Trust `X-Forwarded-Proto` and `-For` from the Route or ingress in front | `true` in the image |
@@ -132,7 +132,7 @@ each one back.
 | Key | What it's for | Needed when | If you lose it |
 | --- | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | The app's connection to Postgres | Always | Run `./scripts/init-dev.ps1`, which rebuilds it from the password in `.env` |
-| `Anthropic:ApiKey` | Web import's extraction | Only for web import | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
+| `Anthropic:ApiKey` | Reading text with AI | Only for reading text | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
 
 `POSTGRES_PASSWORD` in `.env` is the other secret. It sets the password when the database volume is first created.
 
@@ -160,7 +160,7 @@ Things worth knowing:
 - **`.env` and an existing volume:** Postgres only reads the password when the volume is first created. If `.env` is lost
   while the volume is kept, a new password won't match and connections will fail. Restore `.env`, or back up from inside
   the container (`backup-db.ps1` doesn't need the password), then recreate the volume and restore.
-- **Development only:** ASP.NET Core only loads user secrets in the Development environment. Anywhere else, set environment
+- **Development only:** ASP.NET Core only loads user secrets, and the app only loads `appsettings.Development.local.json`, in the Development environment. Anywhere else, set environment
   variables such as `ConnectionStrings__Linkbase` and `Anthropic__ApiKey`.
 - **Keeping them safe:** keep the Anthropic key and `.env` password in a password manager. Don't put them with the backups.
 

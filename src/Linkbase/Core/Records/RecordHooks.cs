@@ -69,6 +69,15 @@ public interface IRecordHook
     // Runs once the changes are saved, with every change to a watched type that one action made, such as all the records a
     // CSV import added. It's for keeping derived records up to date, such as trips.
     Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, CancellationToken cancellationToken);
+
+    // What the module knows about its types that a model reading text can't, such as how a grade is written. It goes into the
+    // extractor's prompt when the model has one of the types it watches. Null if there is nothing to add.
+    string? ExtractionNotes => null;
+
+    // Runs on each record of a watched type read from text, after the generic checks. It removes any value it can tell is wrong
+    // from props, which are the record's values as they'll be stored, and returns a warning for each one. SourceText is
+    // the text the record was read from.
+    IReadOnlyList<string> CheckExtracted(string type, string name, JsonObject props, string sourceText) => [];
 }
 
 // The hooks of the modules the current model uses. With no model given, as in tests, every hook runs.
@@ -81,6 +90,17 @@ public sealed class RecordHooks(IEnumerable<IRecordHook> hooks, CurrentModel? mo
     public bool Watch(string type) => Active.Any(h => h.Types.Contains(type));
 
     public IReadOnlyList<string> Watched => Active.SelectMany(h => h.Types).Distinct().ToList();
+
+    // The notes of the modules whose types the model reads, one paragraph for each.
+    public string? ExtractionNotes(IEnumerable<string> types)
+    {
+        var wanted = types.ToHashSet(StringComparer.Ordinal);
+        var notes = Active.Where(h => h.Types.Any(wanted.Contains)).Select(h => h.ExtractionNotes).OfType<string>().ToList();
+        return notes.Count == 0 ? null : string.Join(Environment.NewLine, notes);
+    }
+
+    public IReadOnlyList<string> CheckExtracted(string type, string name, JsonObject props, string sourceText) =>
+        Active.Where(h => h.Types.Contains(type)).SelectMany(h => h.CheckExtracted(type, name, props, sourceText)).ToList();
 
     public void BeforeSave(RecordType type, string name, JsonObject props)
     {

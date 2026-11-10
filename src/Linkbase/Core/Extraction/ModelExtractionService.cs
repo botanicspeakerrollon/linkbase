@@ -41,7 +41,7 @@ public sealed class ModelExtractionService(
     private async Task<long> ExtractAsync(string text, string? source, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken)
     {
         var types = await records.TypesAsync(cancellationToken);
-        var schema = ExtractionSchema.From(types, await records.RelationshipsAsync(cancellationToken));
+        var schema = ExtractionSchema.From(types, await records.RelationshipsAsync(cancellationToken), _hooks);
 
         var chunks = TextChunker.Split(text);
         var found = new List<ExtractedData>();
@@ -56,7 +56,7 @@ public sealed class ModelExtractionService(
 
         progress?.Report(new ExtractionProgress("Checking the results", chunks.Count, chunks.Count));
         var checkedData = ModelExtractionValidator.Validate(
-            schema, new ExtractedData(found.SelectMany(d => d.Records).ToList(), found.SelectMany(d => d.Links).ToList()), text);
+            schema, new ExtractedData(found.SelectMany(d => d.Records).ToList(), found.SelectMany(d => d.Links).ToList()), text, _hooks);
         var batch = await StageAsync(schema, types, checkedData, source ?? "Pasted text", cancellationToken);
         progress?.Report(new ExtractionProgress("Done", chunks.Count, chunks.Count));
         return batch;
@@ -70,10 +70,12 @@ public sealed class ModelExtractionService(
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        // Records already in the model, matched by key or by name, are left as they are and can still be linked to.
+        // Records already in the model, matched by name, are left as they are and can still be linked to. A similar name
+        // matches when there is only one, and a record that must be linked, such as a route, only matches one linked the same way.
         var (existing, taken) = await ExistingAsync(
             db, data.Records.Select(r => (r.Type, r.Key, r.Name)).Concat(data.Links.SelectMany(l => new[] { (l.FromType, Key(l.FromName), l.FromName), (l.ToType, Key(l.ToName), l.ToName) })),
             cancellationToken);
+        existing = await ExistingRecordMatcher.MatchAsync(db, schema, data, existing, notes, cancellationToken);
 
         // A new record whose key is taken by a different record gets the next free one.
         var rekeyed = new List<StagedRecord>();
@@ -162,8 +164,14 @@ public sealed class ModelExtractionService(
             shown.Add($"And {notes.Count - NotesShown:N0} more things left out.");
         }
 
+        // Where each record was read from, when that is a web page.
+        var refs = !Uri.TryCreate(source, UriKind.Absolute, out var address) || address.Scheme is not ("http" or "https")
+            ? []
+            : kept.Select(r => new StagedRef(Resolve(r.Type, r.Name) ?? r.Id, r.Type, ExternalId(address, r), source)).ToList();
+
         return await staging.StageAsync(
-            new StagingRequest(DataSource.Ai, source, what, ModelChanges.None, alreadyThere, notes.Count, shown), added, links, cancellationToken);
+            new StagingRequest(DataSource.Ai, source, what, ModelChanges.None, alreadyThere, notes.Count, shown) { Refs = refs },
+            added, links, cancellationToken);
     }
 
     // A module's hooks set the fields it keeps, so they're staged with the record.
@@ -180,6 +188,10 @@ public sealed class ModelExtractionService(
     }
 
     private static string Key(string name) => RecordRepository.Slug(name);
+
+    // A page's id for a record: the page, without its fragment, and what the record is called there.
+    private static string ExternalId(Uri page, StagedRecord record) =>
+        $"{page.GetLeftPart(UriPartial.Path).ToLowerInvariant().TrimEnd('/')}{page.Query}|{record.Type}|{ModelExtractionValidator.Normalise(record.Name)}";
 
     // The node id of each (type, normalised name) that's already in the model, and the keys of those types that are taken. A
     // node is the same record when its name matches, whatever its key. One with only the key is a different record.

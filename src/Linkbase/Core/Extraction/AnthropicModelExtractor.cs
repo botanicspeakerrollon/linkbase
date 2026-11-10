@@ -92,6 +92,13 @@ public sealed class AnthropicModelExtractor(IConfiguration configuration, HttpCl
             prompt.AppendLine($"- {relationship.FromType} {relationship.RelType} {relationship.ToType}");
         }
 
+        if (schema.Notes is { Length: > 0 } notes)
+        {
+            prompt.AppendLine();
+            prompt.AppendLine("Notes about this model:");
+            prompt.AppendLine(notes);
+        }
+
         prompt.AppendLine(
             """
 

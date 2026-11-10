@@ -1,19 +1,29 @@
 {
-  "areas": [
-    { "name": "England", "parent": null, "kind": "country" },
-    { "name": "Zzq Valley", "parent": "England", "kind": "region" }
+  "records": [
+    { "type": "Area", "name": "England", "fields": [{ "field": "kind", "value": "country" }] },
+    { "type": "Area", "name": "Zzq Valley", "fields": [{ "field": "kind", "value": "region" }] },
+    {
+      "type": "Crag", "name": "Zzq Sandstone Edge",
+      "fields": [{ "field": "rock_type", "value": "sandstone" }, { "field": "lat", "value": "54.1234" }, { "field": "lon", "value": "-2.5678" }]
+    },
+    { "type": "Crag", "name": "Larkfield", "fields": [] },
+    { "type": "Crag", "name": "Crag The Page Never Mentions", "fields": [] },
+    { "type": "Route", "name": "Quiet Harbour", "fields": [{ "field": "grade", "value": "E1 5b" }, { "field": "grade_system", "value": "uk_trad" }, { "field": "discipline", "value": "trad" }, { "field": "length_m", "value": "25" }] },
+    { "type": "Route", "name": "Paper Boats", "fields": [{ "field": "grade", "value": "VS 4c" }, { "field": "grade_system", "value": "uk_trad" }, { "field": "discipline", "value": "trad" }, { "field": "length_m", "value": "20" }] },
+    { "type": "Route", "name": "Long Way Round", "fields": [{ "field": "grade", "value": "E9 7a" }, { "field": "grade_system", "value": "uk_trad" }] },
+    { "type": "Route", "name": "Route The Page Never Mentions", "fields": [{ "field": "grade", "value": "E2 5c" }] },
+    { "type": "Route", "name": "Slab Theory", "fields": [{ "field": "grade", "value": "7b+" }, { "field": "grade_system", "value": "french" }, { "field": "discipline", "value": "sport" }] },
+    { "type": "Route", "name": "Zzq Overhang", "fields": [{ "field": "grade", "value": "7a" }, { "field": "grade_system", "value": "french" }, { "field": "discipline", "value": "sport" }, { "field": "pitches", "value": "2" }] }
   ],
-  "crags": [
-    { "name": "Zzq Sandstone Edge", "area": "Zzq Valley", "rock_type": "sandstone", "lat": 54.1234, "lon": -2.5678 },
-    { "name": "Larkfield", "area": null, "rock_type": null, "lat": null, "lon": null },
-    { "name": "Crag The Page Never Mentions", "area": null, "rock_type": null, "lat": null, "lon": null }
-  ],
-  "routes": [
-    { "name": "Quiet Harbour", "crag": "Zzq Sandstone Edge", "grade": "E1 5b", "grade_system": "uk_trad", "discipline": "trad", "length_m": 25, "pitches": null, "summary": "A fine line with a tense finish past a flake." },
-    { "name": "Paper Boats", "crag": "Zzq Sandstone Edge", "grade": "VS 4c", "grade_system": "uk_trad", "discipline": "trad", "length_m": 20, "pitches": null, "summary": "takes the obvious crack for 20m" },
-    { "name": "Long Way Round", "crag": "Zzq Sandstone Edge", "grade": "E9 7a", "grade_system": "uk_trad", "discipline": "trad", "length_m": null, "pitches": null, "summary": null },
-    { "name": "Route The Page Never Mentions", "crag": "Zzq Sandstone Edge", "grade": "E2 5c", "grade_system": "uk_trad", "discipline": "trad", "length_m": null, "pitches": null, "summary": null },
-    { "name": "Slab Theory", "crag": "Larkfield", "grade": "7b+", "grade_system": "french", "discipline": "sport", "length_m": null, "pitches": null, "summary": null },
-    { "name": "Zzq Overhang", "crag": "Larkfield", "grade": "7a", "grade_system": "french", "discipline": "sport", "length_m": null, "pitches": 2, "summary": "Steep and sustained on positive holds." }
+  "links": [
+    { "rel_type": "IN", "from_type": "Area", "from_name": "Zzq Valley", "to_type": "Area", "to_name": "England" },
+    { "rel_type": "IN", "from_type": "Crag", "from_name": "Zzq Sandstone Edge", "to_type": "Area", "to_name": "Zzq Valley" },
+    { "rel_type": "IN", "from_type": "Crag", "from_name": "Larkfield", "to_type": "Area", "to_name": "Zzq Valley" },
+    { "rel_type": "AT", "from_type": "Route", "from_name": "Quiet Harbour", "to_type": "Crag", "to_name": "Zzq Sandstone Edge" },
+    { "rel_type": "AT", "from_type": "Route", "from_name": "Paper Boats", "to_type": "Crag", "to_name": "Zzq Sandstone Edge" },
+    { "rel_type": "AT", "from_type": "Route", "from_name": "Long Way Round", "to_type": "Crag", "to_name": "Zzq Sandstone Edge" },
+    { "rel_type": "AT", "from_type": "Route", "from_name": "Route The Page Never Mentions", "to_type": "Crag", "to_name": "Zzq Sandstone Edge" },
+    { "rel_type": "AT", "from_type": "Route", "from_name": "Slab Theory", "to_type": "Crag", "to_name": "Larkfield" },
+    { "rel_type": "AT", "from_type": "Route", "from_name": "Zzq Overhang", "to_type": "Crag", "to_name": "Larkfield" }
   ]
 }

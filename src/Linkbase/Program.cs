@@ -14,6 +14,18 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// The development database's connection string is in a git-ignored file that init-dev.ps1 writes. Environment variables and
+// the command line are added again after it, so they still win, as the recovery rehearsal needs.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile("appsettings.Development.local.json", optional: true);
+    builder.Configuration.AddEnvironmentVariables();
+    if (args.Length > 0)
+    {
+        builder.Configuration.AddCommandLine(args);
+    }
+}
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -57,7 +69,10 @@ builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();
 builder.Services.AddHttpClient<Linkbase.Core.Extraction.PageTextFetcher>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddScoped<Linkbase.Core.Extraction.ModelExtractionService>();
-builder.Services.AddScoped<Linkbase.Core.Extraction.IModelExtractor>(_ => new Linkbase.Core.Extraction.AnthropicModelExtractor(builder.Configuration));
+builder.Services.AddScoped<Linkbase.Core.Extraction.IModelExtractor>(_ =>
+    builder.Configuration["Extraction:Fixture"] is { Length: > 0 } fixture
+        ? new Linkbase.Core.Extraction.FixtureModelExtractor(Linkbase.Core.RepoPaths.Resolve(fixture))
+        : new Linkbase.Core.Extraction.AnthropicModelExtractor(builder.Configuration));
 foreach (var domain in RegisteredDomains.All)
 {
     domain.AddServices(builder.Services, builder.Configuration);

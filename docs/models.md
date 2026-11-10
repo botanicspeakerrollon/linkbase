@@ -157,8 +157,8 @@ hooks.
 }
 ```
 
-- **ConnectionString** names an entry under `ConnectionStrings`. A connection string with a password belongs in user secrets
-  or an environment variable, never in a settings file. See [operations](operations.md#secrets).
+- **ConnectionString** names an entry under `ConnectionStrings`. A connection string with a password belongs in the git-ignored
+  `appsettings.Development.local.json` or an environment variable, never in a committed settings file. See [operations](operations.md#secrets).
 - **Domains** lists the domain modules a model uses, by key. Leave it out for a generic model.
 - **Order** sets the order in the switcher. The first model is the default.
 - **With no `Models` section**, there's one model, using `ConnectionStrings:Linkbase` and every domain. **With one model**, the
@@ -181,7 +181,7 @@ Run them with `dotnet run --project src/Linkbase --launch-profile http -- <comma
 ## Importing a CSV file
 
 **Import** in the rail opens one page for bringing data in: **CSV file** here, **Read text** (below), and any import a domain
-adds, such as climbing's web import. The CSV tab works without writing a model file. Each file is one of two things:
+adds. The CSV tab works without writing a model file. Each file is one of two things:
 
 - **Records of one type**, new or already in the model. Choose the column that identifies each row (the key) and the one that
   names it, then which other columns to keep, each as a field with a type. The types are guessed from the first 1,000 rows. A
@@ -214,8 +214,11 @@ would be added, a page at a time, with a box on each item. Untick any to leave t
 you want), then **Commit** adds the rest, or **Discard** drops the lot. Staging is not CSV-specific: `ImportStagingService`
 (`Core/Staging`) takes any importer's records, links and model changes, and holds them in `staged_item` until they're
 committed. Committing is one transaction, and skips a record or link that has become a duplicate, or whose ends have gone,
-since it was staged. Things already here are never staged, only counted. Climbing's web import keeps its own staging until
-it's moved onto this.
+since it was staged. Things already here are never staged, only counted.
+
+Undoing an import removes what it added, except a record edited since (its `updated_at` differs from `created_at`), one
+something has been linked to since, and one that a record which stays needs through a link its type requires. They're
+listed, the import stays committed, and it can be undone again once they're dealt with.
 
 ## Reading text
 

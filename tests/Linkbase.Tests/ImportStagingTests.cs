@@ -138,7 +138,7 @@ public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, I
         var (_, _, staging) = await ExampleAsync();
 
         await Assert.ThrowsAsync<LinkbaseValidationException>(() =>
-            staging.StageAsync(new StagingRequest(DataSource.WebImport, "x", "x", ModelChanges.None), [], []));
+            staging.StageAsync(new StagingRequest(DataSource.Manual, "x", "x", ModelChanges.None), [], []));
         Assert.Null(await staging.GetAsync(12345));
     }
 

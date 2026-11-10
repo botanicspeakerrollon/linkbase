@@ -35,7 +35,7 @@ public sealed partial class ImportStagingService
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var batches = await db.ImportBatches.AsNoTracking()
-            .Where(b => (b.Source == DataSource.Csv || b.Source == DataSource.Ai) && b.UserId == AppUser.DefaultId)
+            .Where(b => (b.Source == DataSource.Csv || b.Source == DataSource.Ai || b.Source == DataSource.WebImport) && b.UserId == AppUser.DefaultId)
             .OrderByDescending(b => b.Id)
             .Take(count)
             .Select(b => new { b.Id, b.Source, b.RawPayload, b.Status, b.CreatedAt })
@@ -59,7 +59,7 @@ public sealed partial class ImportStagingService
         var records = counts.GetValueOrDefault(StagedKind.Record);
         var links = counts.GetValueOrDefault(StagedKind.Link);
         var notes = (summary["notes"] as JsonArray)?.Select(n => (string?)n ?? "").ToList() ?? [];
-        return new StagedBatch(id, source, (string?)summary["file"] ?? "", (string?)summary["what"] ?? "", status, records.Total, links.Total,
+        return new StagedBatch(id, source, (string?)summary["file"] ?? ExternalRefRepository.SourceName(source), (string?)summary["what"] ?? "records", status, records.Total, links.Total,
             records.Included + links.Included, (int?)summary["alreadyThere"] ?? 0, (int?)summary["skipped"] ?? 0, notes, (int?)summary["added"] ?? 0, at);
     }
 

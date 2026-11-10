@@ -20,9 +20,10 @@ dotnet tool restore
 ```
 
 `init-dev.ps1` creates a random database password in `.env` (git-ignored) and stores the matching
-connection string in [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
+connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored). The Anthropic key still goes in
+[user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
 
-To use web import later, add your Anthropic API key too:
+To read text with AI later, add your Anthropic API key too:
 
 ```powershell
 dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
@@ -103,7 +104,7 @@ To try the whole flow without a key or any API cost, run the app with canned res
 `tests/Linkbase.Tests/Fixtures/web/crag-article.txt`:
 
 ```powershell
-dotnet run --project src/Linkbase -- --WebImport:FixtureExtraction=tests/Linkbase.Tests/Fixtures/web/crag-article.extraction.json
+dotnet run --project src/Linkbase -- --Extraction:Fixture=tests/Linkbase.Tests/Fixtures/web/crag-article.extraction.json
 ```
 
 ## Running in a container
@@ -146,11 +147,11 @@ fcose needs layout-base and cose-base at the versions its own package names.
 
 | Key | Purpose | Where |
 | --- | --- | --- |
-| `ConnectionStrings:Linkbase` | Postgres connection | user secrets or environment variable |
-| `Anthropic:ApiKey` | LLM extraction for web import | user secrets or environment variable |
+| `ConnectionStrings:Linkbase` | Postgres connection | `appsettings.Development.local.json` or environment variable |
+| `Anthropic:ApiKey` | Reading text with AI | user secrets or environment variable |
 | `Anthropic:Model` | Model for extraction | `appsettings.json` |
 | `Extraction:Enabled` | Set to `false` to hide every import that sends text to Anthropic | `appsettings.json` or environment variable |
-| `WebImport:FixtureExtraction` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
+| `Extraction:Fixture` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
 
 Environment variables use a double underscore, for example `ConnectionStrings__Linkbase`. See
 [operations](docs/operations.md#secrets) for how to list secrets, and how to get each one back if it's lost.
@@ -166,8 +167,8 @@ src/Linkbase/
   Domains/      RegisteredDomains, and one folder per domain
     Climbing/
       Data/     Repositories and services
-      Features/ One folder per feature: Ascents (the Logbook page), Home, Insights, WebImport, Admin
-      Import/   Parsers, corrections, trip rules, admin commands, and the web extraction pipeline in Web/
+      Features/ One folder per feature: Ascents (the Logbook page), Home, Insights, Admin
+      Import/   Parsers, corrections, trip rules and admin commands
 tests/Linkbase.Tests/
 data/samples/   Your export files (git-ignored)
 docs/           Index in docs/README.md: models, the security roadmap, operations, performance and querying Postgres

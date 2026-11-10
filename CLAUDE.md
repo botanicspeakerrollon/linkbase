@@ -54,7 +54,7 @@ choice between clever and boring, choose boring. See `README.md` for commands.
 - Backup, restore and rebuild are in `docs/operations.md`. Test recovery with `scripts/rehearse-recovery.ps1`, which only
   reads the real database. Never run `docker compose down -v` or restore into the real database unless asked.
 - A new secret gets a row in the Secrets table in `docs/operations.md`, by name only. Never write a secret's value into a
-  file, and never run plain `dotnet user-secrets list`, which prints values.
+  committed file (`appsettings.Development.local.json` is git-ignored and holds the database one), and never run plain `dotnet user-secrets list`, which prints values.
 - Models: each has its own database, listed under `Models` and switched in the rail. A generic model comes from a model file
   (`models/`) and lives in the generic store (`node`, `node_link` and the definition tables). See `docs/models.md`. Climbing is
   the one domain model. `model migrate` migrates every model, including the real one, so ask before running it.
@@ -75,10 +75,12 @@ choice between clever and boring, choose boring. See `README.md` for commands.
   on the canvas must never move when others are added. `restorePinned` enforces this, because fcose alone doesn't.
   Dragging is the one exception: links act as springs, up to `dragHops` away. How it feels is set by the constants at
   the top of `graph.js`.
-- Web import treats the model's answer as untrusted. `ExtractionValidator` drops any name or grade not in the source
-  text and any summary copied from it. Keep that check, and never store the page's own text in `raw_payload`.
+- Reading text treats the model's answer as untrusted. `ModelExtractionValidator` drops any name or value not in the source
+  text, and a domain's `IRecordHook.CheckExtracted` drops values it can tell are wrong. Keep that check, and never store the
+  page's own text in `raw_payload`. A domain adds to the prompt with `IRecordHook.ExtractionNotes`.
 - The extractor uses `tool_choice` auto with a strict tool, because `claude-sonnet-5-5` and newer reject forced tool
-  choice. Tests use a fake `IClimbingExtractor`; `WebImport:FixtureExtraction` gives the same without an API key.
-- The web import feature is `Features/WebImport`, to keep it apart from the `Import` folder of parsers and commands.
+  choice. Tests use a fake `IModelExtractor`; `Extraction:Fixture` gives the same without an API key.
+- Climbing has no web import of its own: it reads text through `Core/Extraction`, and `ExistingRecordMatcher` decides what is
+  already there. Undo keeps anything edited since, using `updated_at`, so it keeps a record that something now needs.
 - If `dotnet run` is holding the Debug build open, build, test and run with `-c Release` instead, using the
   `linkbase-side-by-side` launch config on port 5174. Never stop a `dotnet run` you didn't start.

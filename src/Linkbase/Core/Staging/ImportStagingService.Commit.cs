@@ -110,6 +110,24 @@ public sealed partial class ImportStagingService
                 ("to", target, NpgsqlDbType.Text));
         }
 
+        // Where the records came from. A source's id belongs to one record, so one that's there already is left.
+        var refs = summary["refs"] is { } refsNode ? refsNode.Deserialize<List<StagedRef>>(Json) ?? [] : [];
+        foreach (var reference in refs)
+        {
+            await ExecuteAsync(connection, transaction,
+                """
+                INSERT INTO external_ref (node_id, node_type, source, external_id, url, import_batch_id)
+                SELECT @node, @type, @source, @external, @url, @batch WHERE EXISTS (SELECT 1 FROM node WHERE id = @node)
+                ON CONFLICT DO NOTHING
+                """,
+                ("node", reference.NodeId, NpgsqlDbType.Text),
+                ("type", reference.Type, NpgsqlDbType.Text),
+                ("source", SnakeCaseEnumConverter<DataSource>.ToStore(batch.Source), NpgsqlDbType.Text),
+                ("external", reference.ExternalId, NpgsqlDbType.Text),
+                ("url", reference.Url, NpgsqlDbType.Text),
+                ("batch", batchId, NpgsqlDbType.Bigint));
+        }
+
         var links = counts.Sum(c => c.Count);
         await ExecuteAsync(connection, transaction, "DELETE FROM staged_item WHERE import_batch_id = @batch", ("batch", batchId, NpgsqlDbType.Bigint));
 
@@ -121,7 +139,7 @@ public sealed partial class ImportStagingService
             ("created", created.ToJsonString(), NpgsqlDbType.Text),
             ("batch", batchId, NpgsqlDbType.Bigint));
         await transaction.CommitAsync(cancellationToken);
-        await _hooks.AfterChangeAsync(await ChangesAsync(db, batchId, removing: false, cancellationToken), cancellationToken);
+        await _hooks.AfterChangeAsync(await ChangesAsync(db, batchId, removing: false, [], cancellationToken), cancellationToken);
         return new StagedCommit(batchId, records, links);
     }
 }

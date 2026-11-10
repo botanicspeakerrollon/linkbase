@@ -338,15 +338,17 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 3), await graph.ConnectionCountsAsync());
         Assert.Equal(3, (await importer.PlanAsync(file, mapping)).AlreadyThere);
 
-        // A record it added can't be taken away while something added since still links to it.
+        // A record it added stays while something added since still links to it.
         var records = new RecordRepository(factory);
         var suppliers = (await importer.RecentAsync(5)).Single(b => b.What == "Supplier records");
-        Assert.Contains("added since", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => importer.UndoAsync(suppliers.Id))).Message);
+        var stayed = await importer.UndoAsync(suppliers.Id);
+        Assert.False(stayed.Complete);
+        Assert.Contains(stayed.Kept, k => k.Contains("linked to since the import", StringComparison.Ordinal));
 
         await importer.UndoAsync(result.BatchId);
         Assert.DoesNotContain(await graph.ConnectionCountsAsync(), c => c.RelType == "SUPPLIES");
         Assert.DoesNotContain(await records.LinkOptionsAsync("Project"), o => o.RelType == "SUPPLIES");
-        await importer.UndoAsync(suppliers.Id);
+        Assert.True((await importer.UndoAsync(suppliers.Id)).Complete);
         Assert.Equal(0, (await records.ListAsync("Supplier", null, 0, 10)).Total);
         Assert.Null(await records.TypeAsync("Supplier"));
     }
