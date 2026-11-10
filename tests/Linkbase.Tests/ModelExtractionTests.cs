@@ -246,7 +246,7 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
             [new ExtractedRecord("Client", "Acme Co", [])], []));
         await using (var db = factory.CreateDbContext())
         {
-            db.Nodes.Add(new Node { Id = "client:acme-co", UserId = AppUser.DefaultId, Type = "Client", Key = "acme-co", Name = "Acme Corp", Props = "{}" });
+            db.Nodes.Add(new Node { Id = "client:acme-co", UserId = AppUser.DefaultId, Type = "Client", Key = "acme-co", Name = "Zebra Holdings", Props = "{}" });
             await db.SaveChangesAsync();
         }
 
@@ -255,7 +255,7 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
 
         await using var check = factory.CreateDbContext();
         var clients = await check.Nodes.Where(n => n.Type == "Client" && n.Key.StartsWith("acme-co")).Select(n => n.Key + "=" + n.Name).OrderBy(x => x).ToListAsync();
-        Assert.Equal(["acme-co-2=Acme Co", "acme-co=Acme Corp"], clients);
+        Assert.Equal(["acme-co-2=Acme Co", "acme-co=Zebra Holdings"], clients);
     }
 
     [Fact]

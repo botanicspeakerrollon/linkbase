@@ -16,7 +16,7 @@
     {
       "name": "linkbase-fixture-extraction",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "-c", "Release", "--project", "src/Linkbase", "--launch-profile", "http", "--", "--urls", "http://localhost:5175", "--WebImport:FixtureExtraction=tests/Linkbase.Tests/Fixtures/web/crag-article.extraction.json"],
+      "runtimeArgs": ["run", "-c", "Release", "--project", "src/Linkbase", "--launch-profile", "http", "--", "--urls", "http://localhost:5175", "--Extraction:Fixture=tests/Linkbase.Tests/Fixtures/web/crag-article.extraction.json"],
       "port": 5175
     }
   ]

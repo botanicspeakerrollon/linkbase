@@ -19,8 +19,8 @@ public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbCon
     private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
 
     // Sources whose batches this service commits and undoes. UKC and Mountain Project batches arrive already committed, from
-    // climbing's importer. Others, such as climbing's web import, have their own.
-    private static readonly DataSource[] GenericSources = [DataSource.Csv, DataSource.Ai, DataSource.Ukc, DataSource.MountainProject];
+    // climbing's importer. So do web imports from before text was read by the generic extractor, which can only be undone.
+    private static readonly DataSource[] GenericSources = [DataSource.Csv, DataSource.Ai, DataSource.Ukc, DataSource.MountainProject, DataSource.WebImport];
 
     public static bool IsGeneric(DataSource source) => GenericSources.Contains(source);
 
@@ -47,6 +47,11 @@ public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbCon
             ["notes"] = new JsonArray(request.Notes.Select(n => (JsonNode?)JsonValue.Create(n)).ToArray()),
             ["model"] = JsonSerializer.SerializeToNode(request.Model, Json),
         };
+        if (request.Refs.Count > 0)
+        {
+            summary["refs"] = JsonSerializer.SerializeToNode(request.Refs, Json);
+        }
+
         long batch;
         await using (var create = new NpgsqlCommand(
             "INSERT INTO import_batch (user_id, source, status, raw_payload, created_at, updated_at) VALUES (@user, @source, 'staged', @summary, now(), now()) RETURNING id",

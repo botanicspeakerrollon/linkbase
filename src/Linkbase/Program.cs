@@ -57,7 +57,10 @@ builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();
 builder.Services.AddHttpClient<Linkbase.Core.Extraction.PageTextFetcher>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddScoped<Linkbase.Core.Extraction.ModelExtractionService>();
-builder.Services.AddScoped<Linkbase.Core.Extraction.IModelExtractor>(_ => new Linkbase.Core.Extraction.AnthropicModelExtractor(builder.Configuration));
+builder.Services.AddScoped<Linkbase.Core.Extraction.IModelExtractor>(_ =>
+    builder.Configuration["Extraction:Fixture"] is { Length: > 0 } fixture
+        ? new Linkbase.Core.Extraction.FixtureModelExtractor(Linkbase.Core.RepoPaths.Resolve(fixture))
+        : new Linkbase.Core.Extraction.AnthropicModelExtractor(builder.Configuration));
 foreach (var domain in RegisteredDomains.All)
 {
     domain.AddServices(builder.Services, builder.Configuration);

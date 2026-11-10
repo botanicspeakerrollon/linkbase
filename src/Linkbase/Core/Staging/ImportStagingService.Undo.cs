@@ -11,9 +11,11 @@ namespace Linkbase.Core.Staging;
 
 public sealed partial class ImportStagingService
 {
-    // Removes everything the import added: its links, then its records, including changes made to them since. Types,
-    // fields and relationships it added stay in the model, unless nothing is left of them.
-    public async Task UndoAsync(long batchId, CancellationToken cancellationToken = default)
+    // Removes what the import added: its links, then its records. A record edited since stays, and so does one that something
+    // else now depends on: a link added since, or a record that stays and requires a link to it. They are reported, and the
+    // import stays committed so it can be undone again once they're dealt with. Types, fields and relationships it added stay
+    // in the model, unless nothing is left of them.
+    public async Task<StagedUndo> UndoAsync(long batchId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var batch = await db.ImportBatches.SingleOrDefaultAsync(b => b.Id == batchId && b.UserId == AppUser.DefaultId && GenericSources.Contains(b.Source), cancellationToken)
@@ -24,11 +26,15 @@ public sealed partial class ImportStagingService
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        var changes = await ChangesAsync(db, batchId, removing: true, cancellationToken);
-        var links = await db.NodeLinks.Where(l => l.ImportBatchId == batchId)
+        var (keep, kept) = await KeptAsync(db, batchId, cancellationToken);
+        var changes = await ChangesAsync(db, batchId, removing: true, keep, cancellationToken);
+
+        var leaving = LeavingLinks(db, batchId, keep);
+        var links = await leaving
             .GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
             .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
             .ToListAsync(cancellationToken);
+
         // A record keeps at least one of each link its type requires, so undoing can't take away its last one. Records this
         // import added go with it, so they don't count.
         foreach (var group in links)
@@ -55,17 +61,17 @@ public sealed partial class ImportStagingService
                 .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links - group.Count), cancellationToken);
         }
 
-        await db.NodeLinks.Where(l => l.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
+        var linksRemoved = await leaving.ExecuteDeleteAsync(cancellationToken);
 
         // The import's own records first, then their links one side at a time, so both lookups use an index. Joining every
         // link to its ends took minutes on the Swiss sample's 45M links.
-        var added = db.Nodes.Where(n => n.ImportBatchId == batchId).Select(n => n.Id);
+        var removed = db.Nodes.Where(n => n.ImportBatchId == batchId && !keep.Contains(n.Id)).Select(n => n.Id);
 
         // Links from a module's derived records are the module's, so they go with the records, and its hooks hear of it.
         if (await db.NodeTypes.AnyAsync(t => t.Owner != null, cancellationToken))
         {
             var derived = db.NodeLinks.Where(l =>
-                (added.Contains(l.SourceId) && l.Target.NodeType.Owner != null) || (added.Contains(l.TargetId) && l.Source.NodeType.Owner != null));
+                (removed.Contains(l.SourceId) && l.Target.NodeType.Owner != null) || (removed.Contains(l.TargetId) && l.Source.NodeType.Owner != null));
             foreach (var group in await derived.GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
                          .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
                          .ToListAsync(cancellationToken))
@@ -78,25 +84,84 @@ public sealed partial class ImportStagingService
             await derived.ExecuteDeleteAsync(cancellationToken);
         }
 
-        var linked = await db.NodeLinks.CountAsync(l => added.Contains(l.SourceId), cancellationToken)
-            + await db.NodeLinks.CountAsync(l => added.Contains(l.TargetId), cancellationToken);
-        if (linked > 0)
+        await ExternalRefRepository.RemoveForNodesAsync(db, removed, cancellationToken);
+
+        // Where records that were already there were read from.
+        await db.ExternalRefs.Where(r => r.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
+        var recordsRemoved = await db.Nodes.Where(n => n.ImportBatchId == batchId && !keep.Contains(n.Id)).ExecuteDeleteAsync(cancellationToken);
+        await RemoveWhatItCreatedAsync(db, batch.RawPayload, cancellationToken);
+        if (kept.Count == 0)
         {
-            throw new LinkbaseValidationException($"Records this import added have {linked:N0} link(s) added since. Remove those first.");
+            batch.Status = ImportStatus.Undone;
+            await db.SaveChangesAsync(cancellationToken);
         }
 
-        await ExternalRefRepository.RemoveForNodesAsync(db, added, cancellationToken);
-        await db.Nodes.Where(n => n.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
-        await RemoveWhatItCreatedAsync(db, batch.RawPayload, cancellationToken);
-        batch.Status = ImportStatus.Undone;
-        await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         await _hooks.AfterChangeAsync(changes, cancellationToken);
+        return new StagedUndo(recordsRemoved, linksRemoved, kept);
+    }
+
+    // The batch's links that go. A link between two records that stay is kept with them, and so is a link a record that stays
+    // requires.
+    private static IQueryable<NodeLink> LeavingLinks(LinkbaseDbContext db, long batchId, IReadOnlyCollection<string> keep) =>
+        db.NodeLinks.Where(l => l.ImportBatchId == batchId
+            && !(keep.Contains(l.SourceId)
+                && (keep.Contains(l.TargetId)
+                    || db.LinkDefinitions.Any(d => d.SourceType == l.Source.Type && d.RelType == l.RelType && d.TargetType == l.Target.Type && d.Required))));
+
+    private const int KeptShown = 20;
+
+    // The records of a batch that stay, and why, for the people undoing it.
+    private static async Task<(List<string> Ids, List<string> Why)> KeptAsync(LinkbaseDbContext db, long batchId, CancellationToken cancellationToken)
+    {
+        var added = db.Nodes.Where(n => n.ImportBatchId == batchId).Select(n => n.Id);
+        var edited = await db.Nodes.Where(n => n.ImportBatchId == batchId && n.UpdatedAt != n.CreatedAt).Select(n => n.Id).ToListAsync(cancellationToken);
+        // A module's derived records and their links go with the records they come from, so they don't count.
+        var linked = (await db.NodeLinks.Where(l => l.ImportBatchId != batchId && added.Contains(l.SourceId) && l.Target.NodeType.Owner == null)
+                .Select(l => l.SourceId).Distinct().ToListAsync(cancellationToken))
+            .Concat(await db.NodeLinks.Where(l => l.ImportBatchId != batchId && added.Contains(l.TargetId) && l.Source.NodeType.Owner == null)
+                .Select(l => l.TargetId).Distinct().ToListAsync(cancellationToken))
+            .Except(edited)
+            .Distinct()
+            .ToList();
+
+        // A record that stays still needs the records its required links point at.
+        var keep = edited.Concat(linked).ToHashSet(StringComparer.Ordinal);
+        while (keep.Count > 0)
+        {
+            var now = keep.ToList();
+            var more = await db.NodeLinks
+                .Where(l => l.ImportBatchId == batchId && now.Contains(l.SourceId) && !now.Contains(l.TargetId) && added.Contains(l.TargetId)
+                    && db.LinkDefinitions.Any(d => d.SourceType == l.Source.Type && d.RelType == l.RelType && d.TargetType == l.Target.Type && d.Required))
+                .Select(l => l.TargetId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            if (more.Count == 0)
+            {
+                break;
+            }
+
+            keep.UnionWith(more);
+        }
+
+        var ids = keep.ToList();
+        var names = await db.Nodes.AsNoTracking().Where(n => ids.Contains(n.Id)).Select(n => new { n.Id, n.Type, n.Name }).ToListAsync(cancellationToken);
+        var editedSet = edited.ToHashSet(StringComparer.Ordinal);
+        var linkedSet = linked.ToHashSet(StringComparer.Ordinal);
+        var why = names.OrderBy(n => n.Type, StringComparer.Ordinal).ThenBy(n => n.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(n => $"{n.Type} '{n.Name}': {(editedSet.Contains(n.Id) ? "edited since the import" : linkedSet.Contains(n.Id) ? "linked to since the import" : "needed by a record that stays")}.")
+            .ToList();
+        if (why.Count > KeptShown)
+        {
+            why = why.Take(KeptShown).Append($"And {why.Count - KeptShown:N0} more.").ToList();
+        }
+
+        return (ids, why);
     }
 
     // What an import added or is about to remove, for the hooks of the types they watch. Nothing is read when no hook
     // watches anything, as for most models.
-    private async Task<List<RecordChange>> ChangesAsync(LinkbaseDbContext db, long batch, bool removing, CancellationToken cancellationToken)
+    private async Task<List<RecordChange>> ChangesAsync(LinkbaseDbContext db, long batch, bool removing, IReadOnlyCollection<string> keep, CancellationToken cancellationToken)
     {
         var watched = _hooks.Watched;
         var changes = new List<RecordChange>();
@@ -107,7 +172,7 @@ public sealed partial class ImportStagingService
 
         var none = new Dictionary<string, string>();
         var nodes = await db.Nodes.AsNoTracking()
-            .Where(n => n.ImportBatchId == batch && watched.Contains(n.Type))
+            .Where(n => n.ImportBatchId == batch && !keep.Contains(n.Id) && watched.Contains(n.Type))
             .Select(n => new { n.Id, n.Type, n.Props })
             .ToListAsync(cancellationToken);
         foreach (var node in nodes)
@@ -118,8 +183,8 @@ public sealed partial class ImportStagingService
                 : new RecordChange(RecordChangeKind.Created, node.Type, node.Id, none, values));
         }
 
-        var links = await db.NodeLinks.AsNoTracking()
-            .Where(l => l.ImportBatchId == batch && (watched.Contains(l.Source.Type) || watched.Contains(l.Target.Type)))
+        var links = await LeavingLinks(db, batch, keep).AsNoTracking()
+            .Where(l => watched.Contains(l.Source.Type) || watched.Contains(l.Target.Type))
             .Select(l => new { l.SourceId, SourceType = l.Source.Type, l.RelType, l.TargetId, TargetType = l.Target.Type })
             .ToListAsync(cancellationToken);
         var kind = removing ? RecordChangeKind.Unlinked : RecordChangeKind.Linked;

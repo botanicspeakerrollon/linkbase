@@ -107,7 +107,7 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
             cancellationToken);
     }
 
-    public Task UndoAsync(long batchId, CancellationToken cancellationToken = default) => _staging.UndoAsync(batchId, cancellationToken);
+    public Task<StagedUndo> UndoAsync(long batchId, CancellationToken cancellationToken = default) => _staging.UndoAsync(batchId, cancellationToken);
 
     public async Task<IReadOnlyList<CsvBatch>> RecentAsync(int count, CancellationToken cancellationToken = default) =>
         (await _staging.RecentAsync(count, cancellationToken))

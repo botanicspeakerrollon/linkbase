@@ -36,7 +36,7 @@ language, the Explore canvas, and AI extraction with human review before anythin
 | 4 | Separate `Core/` from `Domains/Climbing/`, and remove the single-user assumption | Medium | **Split done.** Single-user assumption still to go |
 | 5 | Generic model store, model files, switching between models, generated pages | Large | **Done**, apart from values on links |
 | 6 | Sign-in, roles and field permissions, finished before a pilot uses real data | Large | Not started |
-| 7 | Import: a CSV mapping wizard, then AI extraction driven by the model | Large | **CSV wizard and generic AI extraction done**, on one Import page. Retiring climbing's own web import still to go |
+| 7 | Import: a CSV mapping wizard, then AI extraction driven by the model | Large | **Done.** CSV wizard and AI extraction driven by the model, on one Import page. Climbing reads text through it |
 | 8 | Hosting: per-customer setup, scheduled off-site backups, monitoring, audit log | Medium | Not started |
 | 9 | AI model setup, and plain-English questions that compile to checked search patterns, never raw SQL | Medium | Not started |
 
@@ -74,16 +74,27 @@ Done: a CSV wizard (`Core/CsvImport`) imports records of a new or existing type,
 against its field's type first, and undoes an import. See [models](models.md#importing-a-csv-file). Existing records are
 skipped, not updated, which keeps undo simple; updating them is the obvious next request.
 
-One Import page (`/import`) has a tab for each way in: a domain's own (climbing's hand-built web import), **Read text** for any
+One Import page (`/import`) has a tab for each way in: any a domain adds, then **Read text** for any
 model, and **CSV file**.
 
 **Read text** (`Core/Extraction`) builds the extraction tool's schema from the model's types, fields and relationships, so the
 answer can only name things the model has. `ModelExtractionValidator` then drops any name or value not in the source text,
 any value over 200 characters, and any record missing a required field or required link. Choice and true/false values can only
 be checked against the field. Results go through the generic staging, review and undo (`DataSource.Ai`). Records already there
-are left alone but can be linked to. The text goes to Anthropic: the tab says so, and `Extraction:Enabled=false` hides it, and
-climbing's web import with it.
+are left alone but can be linked to. The text goes to Anthropic: the tab says so, and `Extraction:Enabled=false` hides it.
+A record is keyed by the slug of its name, with a number added when a different record has the key.
 
-Still to do: move climbing onto the generic path where it can go. Its web import is still hand-built for crags, routes
-(grade systems, summaries, area parents), source URLs and undo that keeps edited rows. Keep its prompt, because a model-driven
-prompt can't know that "E2 5c" is a trad grade. A record is keyed by the slug of its name, with a number added when a different record has the key.
+Climbing's own web import is gone, and it reads text the same way. What it had that the generic path lacked:
+
+- **Matching** (`ExistingRecordMatcher`). A similar name ("Alpha Walls" for "Alpha Wall") is the record already there when only
+  one is similar and it doesn't differ by a number alone. A record whose type requires a link, such as a route, only matches one
+  with that link to the record the text puts it at. Names that could be several records are added as new, with a note. There is
+  no review step for choosing, so a duplicate is the worst case.
+- **Source addresses.** A web address becomes an `external_ref` on each record read from it, including those already there. Undo
+  removes it.
+- **Undo that keeps edited rows**, in `ImportStagingService`, for every import. See [models](models.md).
+- **Domain rules.** `IRecordHook.ExtractionNotes` adds to the prompt, such as how a grade system is written, and `CheckExtracted`
+  drops values it can tell are wrong, such as an impossible length or coordinates not in the text. Climbing's hook does both.
+
+Dropped on the way: summaries (the model has no field for them), and placing a new crag's area during review. A crag whose area
+the text doesn't give is dropped, because its area is required. Batches the old import committed can still be undone.

@@ -30,6 +30,10 @@ public sealed record StagedRecord(string Type, string Key, string Name, string P
 // A link an import would add, between two nodes by id.
 public sealed record StagedLink(string SourceType, string RelType, string SourceId, string TargetType, string TargetId);
 
+// Where a record was read from: the id it has at that source and the source's address, kept as an external ref when the
+// import is committed. NodeId is a record that is staged or already there.
+public sealed record StagedRef(string NodeId, string Type, string ExternalId, string Url);
+
 // Who is importing and what, never the file's contents. AlreadyThere and Skipped only count what was left out, so a review
 // can say so.
 public sealed record StagingRequest(DataSource Source, string File, string What, ModelChanges Model, int AlreadyThere, int Skipped, IReadOnlyList<string> Notes)
@@ -38,6 +42,8 @@ public sealed record StagingRequest(DataSource Source, string File, string What,
         : this(source, file, what, model, 0, 0, [])
     {
     }
+
+    public IReadOnlyList<StagedRef> Refs { get; init; } = [];
 }
 
 public sealed record StagedBatch(
@@ -54,4 +60,11 @@ public sealed record StagedPage(int Total, IReadOnlyList<StagedRow> Rows);
 public sealed record StagedCommit(long BatchId, int Records, int Links)
 {
     public int Added => Records + Links;
+}
+
+// What undoing removed. Kept says what stayed and why: a record edited since the import, or one that something else now
+// depends on. The import can be undone again once those are dealt with.
+public sealed record StagedUndo(int Records, int Links, IReadOnlyList<string> Kept)
+{
+    public bool Complete => Kept.Count == 0;
 }

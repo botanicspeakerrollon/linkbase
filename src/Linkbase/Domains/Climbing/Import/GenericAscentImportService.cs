@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Linkbase.Core.Records;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Microsoft.EntityFrameworkCore;

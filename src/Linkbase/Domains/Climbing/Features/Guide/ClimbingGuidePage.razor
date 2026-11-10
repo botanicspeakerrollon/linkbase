@@ -77,21 +77,20 @@
 
         <GuideSection Id="web" Title="Adding crags and routes from the web" Icon="@Icons.Material.Outlined.CloudDownload">
             <p>
-                The <em>Web page or text</em> tab of the Import page turns an article or a list into crags and routes, with you in control. It needs an Anthropic API key
-                (see the README); Claude only reads the text and suggests facts. The page's other tabs, <em>Read text</em> and <em>CSV file</em>, work for any model and are described in the general guide.
+                The <em>Read text</em> tab of the Import page turns an article or a list into crags and routes, with you in control. It needs an Anthropic API key
+                (see the README); Claude only reads the text and suggests facts. It works for any model and is described in the general guide.
             </p>
             <ol class="guide-list">
                 <li><strong>Give it the text.</strong> Paste it, which is the most reliable way and the right one for sites that block fetching or forbid scraping. Or fetch a page by address, if the site allows it.</li>
-                <li><strong>Review.</strong> Each crag and route found is listed. Match a crag to one you already have, choose its area or make a new one, correct names and grades, and untick what you do not want. Nothing is in the logbook yet.</li>
-                <li><strong>Add.</strong> Only the ticked rows are written. Rows you matched to existing records are not changed.</li>
-                <li><strong>Undo.</strong> Recent imports are listed on the Import page, and an import can be undone later.</li>
+                <li><strong>Review.</strong> Each crag, route and link found is listed. Untick what you do not want. Nothing is in the logbook yet. A crag or route that looks like one you already have is treated as that one, and the notes say so. A crag is only kept if the text says which area it is in.</li>
+                <li><strong>Add.</strong> Only the ticked rows are written. Records that were already there are not changed.</li>
+                <li><strong>Undo.</strong> Recent imports are listed on the Import page, and an import can be undone later. Anything you have edited or logged ascents on since stays, and is listed.</li>
             </ol>
             <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
-                Only facts and a brief summary are kept: names, grades, lengths, locations and the source address. The page's own text is never stored.
+                Only facts are kept: names, grades, lengths, locations and the source address. The page's own text is never stored.
             </MudAlert>
             <p>
-                The answer is treated as untrusted. Any name or grade that is not in the text you gave is dropped, as is any summary copied from it,
-                and the review page says what was removed.
+                The answer is treated as untrusted. Any name or grade that is not in the text you gave is dropped, and the review page says what was removed.
             </p>
         </GuideSection>
 

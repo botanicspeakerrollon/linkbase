@@ -7,7 +7,6 @@ using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
 using Linkbase.Domains.Climbing.Import;
-using Linkbase.Domains.Climbing.Import.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Playwright;
@@ -289,43 +288,6 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await OpenExploreAsync();
         await SeesOptionAsync(FieldNamed("Relationships"), "AT");
         await SeesOptionAsync(FieldNamed("Property"), "discipline");
-    }
-
-    [Fact]
-    public async Task Review_offers_each_match_and_grade_choice()
-    {
-        var s = await SeedAsync();
-        var twin = await SeedAsync();
-        await using (var db = _store.CreateDbContext())
-        {
-            var twinId = $"crag:{twin.CragId}";
-            db.Nodes.Where(n => n.Id == twinId).ExecuteUpdate(u => u.SetProperty(n => n.Name, s.Crag).SetProperty(n => n.UpdatedAt, DateTimeOffset.UtcNow));
-        }
-
-        var factory = _store;
-        var page = new ExtractedPage(
-            [],
-            [new ExtractedCrag(s.Crag, null, null, null, null)],
-            [new ExtractedRoute(s.Route, s.Crag, null, null, null, null, null, null)]);
-        var service = new WebImportService(new PageTextFetcher(new HttpClient()), new FixedExtractor(page), new WebImportRepository(factory));
-        var batch = await service.ExtractFromTextAsync($"{s.Crag} {s.Route}", null, null, CancellationToken.None);
-
-        await _page.GotoAsync($"{_url}/import/{batch}", new() { WaitUntil = WaitUntilState.NetworkIdle });
-        await SeesOptionAsync(FieldNamed("Use"), "Choose…");
-        await FieldNamed("Use").Locator(".mud-input-slot").First.ClickAsync();
-        // The crag that has the route, because its twin's place in the list isn't fixed.
-        await _page.Locator(".mud-popover-open .mud-list-item", new() { HasText = s.Country }).ClickAsync();
-
-        await _page.Locator("td .mud-select").First.WaitForAsync();
-
-        var cells = _page.Locator("td .mud-select");
-        await SeesOptionAsync(cells.Nth(0), "UK trad");
-        await SeesOptionAsync(cells.Nth(1), "Trad");
-        await _page.Locator("td").Filter(new() { HasText = "Existing" }).Locator(".mud-input-slot").First.ClickAsync();
-        await _page.Locator(".mud-popover-open .mud-list-item").First.WaitForAsync();
-        var options = await _page.Locator(".mud-popover-open .mud-list-item").AllInnerTextsAsync();
-        Assert.Contains(options, o => o.Contains("Create new", StringComparison.Ordinal));
-        Assert.Contains(options, o => o.Contains(s.Route, StringComparison.Ordinal));
     }
 
     private sealed record NodeBox(string NodeId, double X1, double Y1, double X2, double Y2);
@@ -687,42 +649,6 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await _page.WaitForURLAsync($"{_url}/explore");
 
         Assert.Empty(_consoleErrors);
-    }
-
-    [Fact]
-    public async Task A_new_country_can_be_created_from_the_review_page()
-    {
-        var (crag, country) = ($"Crag {Guid.NewGuid():N}", $"Country {Guid.NewGuid():N}");
-        var page = new ExtractedPage([], [new ExtractedCrag(crag, null, null, null, null)], []);
-        var service = new WebImportService(new PageTextFetcher(new HttpClient()), new FixedExtractor(page), new WebImportRepository(_store));
-        var batch = await service.ExtractFromTextAsync(crag, null, null, CancellationToken.None);
-
-        await _page.GotoAsync($"{_url}/import/{batch}", new() { WaitUntil = WaitUntilState.NetworkIdle });
-        var newArea = FieldNamed("Or a new area named").Locator("input").First;
-        await newArea.FillAsync(country);
-        await newArea.BlurAsync();
-
-        await Button("Add to logbook").ClickAsync();
-        await _page.GetByText("or mark it as a country").WaitForAsync();
-
-        await _page.GetByLabel("It's a country").CheckAsync();
-        await Button("Add to logbook").ClickAsync();
-        await _page.WaitForURLAsync("**/import");
-
-        await using var db = _store.CreateDbContext();
-        var saved = await db.NodeLinks.AsNoTracking()
-            .Where(l => l.RelType == "IN" && l.Source.Type == "Crag" && l.Source.Name == crag)
-            .Select(l => new { l.Target.Name, l.Target.Props })
-            .SingleAsync();
-        Assert.Equal(country, saved.Name);
-        Assert.Equal("country", (string?)System.Text.Json.Nodes.JsonNode.Parse(saved.Props)!["kind"]);
-        Assert.Empty(_consoleErrors);
-    }
-
-    private sealed class FixedExtractor(ExtractedPage page) : IClimbingExtractor
-    {
-        public Task<ExtractedPage> ExtractAsync(string text, IReadOnlyList<string> knownCrags, CancellationToken cancellationToken) =>
-            Task.FromResult(page);
     }
 
     [Fact]

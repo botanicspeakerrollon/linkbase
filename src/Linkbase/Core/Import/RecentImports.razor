@@ -58,7 +58,7 @@
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
             $"Undo importing {batch.File}?",
-            $"This removes the {Count(batch.Added)} {batch.What} it added, including any changes made to them since. Types and fields it added stay.",
+            $"This removes the {Count(batch.Added)} {batch.What} it added. Anything edited or linked to since stays, and is listed. Types and fields it added stay.",
             yesText: "Undo", cancelText: "Cancel");
         if (confirmed != true)
         {
@@ -67,8 +67,19 @@
 
         try
         {
-            await Importer.UndoAsync(batch.Id);
-            Snackbar.Add("Import undone.", Severity.Success);
+            var undone = await Importer.UndoAsync(batch.Id);
+            if (undone.Complete)
+            {
+                Snackbar.Add("Import undone.", Severity.Success);
+            }
+            else
+            {
+                await Dialogs.ShowMessageBoxAsync(
+                    $"Undone, except {undone.Kept.Count.ToString("N0", CultureInfo.InvariantCulture)} left in place",
+                    string.Join(" ", undone.Kept) + " Undo again once they are dealt with.",
+                    yesText: "OK");
+            }
+
             await RefreshAsync();
         }
         catch (LinkbaseValidationException ex)

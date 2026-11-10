@@ -10,8 +10,11 @@ public sealed record ExtractionType(string Name, IReadOnlyList<ExtractionField> 
 
 public sealed record ExtractionSchema(IReadOnlyList<ExtractionType> Types, IReadOnlyList<RelationshipDefinition> Relationships)
 {
+    // What a module adds to the prompt about its types, such as how its grades are written.
+    public string? Notes { get; init; }
+
     // Records a module derives can't be imported, and a field a module keeps is filled in by that module.
-    public static ExtractionSchema From(IEnumerable<RecordType> types, IEnumerable<RelationshipDefinition> relationships)
+    public static ExtractionSchema From(IEnumerable<RecordType> types, IEnumerable<RelationshipDefinition> relationships, RecordHooks? hooks = null)
     {
         var usable = types.Where(t => t.Owner is null).ToList();
         var names = usable.Select(t => t.Name).ToHashSet(StringComparer.Ordinal);
@@ -20,7 +23,10 @@ public sealed record ExtractionSchema(IReadOnlyList<ExtractionType> Types, IRead
                 t.Name,
                 t.Editable.Select(f => new ExtractionField(f.Key, f.Type, f.Options, f.Required)).ToList(),
                 t.RequiredLinks)).ToList(),
-            relationships.Where(r => names.Contains(r.FromType) && names.Contains(r.ToType)).ToList());
+            relationships.Where(r => names.Contains(r.FromType) && names.Contains(r.ToType)).ToList())
+        {
+            Notes = hooks?.ExtractionNotes(names),
+        };
     }
 
     public ExtractionType? Type(string name) => Types.FirstOrDefault(t => t.Name == name);

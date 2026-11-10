@@ -33,7 +33,7 @@ public static class ModelExtractionValidator
         return builder.ToString();
     }
 
-    public static Result Validate(ExtractionSchema schema, ExtractedData data, string sourceText)
+    public static Result Validate(ExtractionSchema schema, ExtractedData data, string sourceText, RecordHooks? hooks = null)
     {
         var source = Normalise(sourceText);
         var warnings = new List<string>();
@@ -71,6 +71,11 @@ public static class ModelExtractionValidator
                 {
                     warnings.Add($"Removed {name}'s {field.Key} '{Shorten(value.Value)}': it isn't in the text or doesn't fit the field.");
                 }
+            }
+
+            if (hooks is not null)
+            {
+                warnings.AddRange(hooks.CheckExtracted(type.Name, name, props, sourceText));
             }
 
             if (type.Fields.FirstOrDefault(f => f.Required && !props.ContainsKey(f.Key)) is { } missing)

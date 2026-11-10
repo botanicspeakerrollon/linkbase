@@ -5,7 +5,6 @@ using Linkbase.Data;
 using Microsoft.Extensions.Configuration;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
-using Linkbase.Domains.Climbing.Import.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +31,6 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<GraphRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
         Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
-        Services.AddSingleton<WebImportRepository>();
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
         Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
         Services.AddSingleton<CurrentModel>();
@@ -199,7 +197,6 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             Services.AddSingleton<GraphRepository>();
             Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
             Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
-            Services.AddSingleton<WebImportRepository>();
             Services.AddSingleton<InsightsRepository>();
         }
 
@@ -243,12 +240,6 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         var ascentId = await ClimbingStore.AddAsync(store, "Ascent", route, props, "OF", routeId);
         await ClimbingStore.LinkAsync(store, ascentId, "WITH", partnerId);
         return new Seeded(KeyOf(ascentId), KeyOf(routeId), KeyOf(cragId), KeyOf(area), route, crag, country, partner);
-    }
-
-    protected sealed class StubExtractor(Func<string, CancellationToken, Task<ExtractedPage>> answer) : IClimbingExtractor
-    {
-        public Task<ExtractedPage> ExtractAsync(string text, IReadOnlyList<string> knownCrags, CancellationToken cancellationToken) =>
-            answer(text, cancellationToken);
     }
 
     protected sealed class StubHandler(Func<HttpResponseMessage> respond) : HttpMessageHandler
