@@ -54,7 +54,7 @@ choice between clever and boring, choose boring. See `README.md` for commands.
 - Backup, restore and rebuild are in `docs/operations.md`. Test recovery with `scripts/rehearse-recovery.ps1`, which only
   reads the real database. Never run `docker compose down -v` or restore into the real database unless asked.
 - A new secret gets a row in the Secrets table in `docs/operations.md`, by name only. Never write a secret's value into a
-  file, and never run plain `dotnet user-secrets list`, which prints values.
+  committed file (`appsettings.Development.local.json` is git-ignored and holds the database one), and never run plain `dotnet user-secrets list`, which prints values.
 - Models: each has its own database, listed under `Models` and switched in the rail. A generic model comes from a model file
   (`models/`) and lives in the generic store (`node`, `node_link` and the definition tables). See `docs/models.md`. Climbing is
   the one domain model. `model migrate` migrates every model, including the real one, so ask before running it.

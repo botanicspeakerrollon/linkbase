@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# The development database's connection string, which holds its password
+src/Linkbase/appsettings.Development.local.json
+
 # User-specific files
 *.rsuser
 *.suo

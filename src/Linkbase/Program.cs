@@ -14,6 +14,18 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// The development database's connection string is in a git-ignored file that init-dev.ps1 writes. Environment variables and
+// the command line are added again after it, so they still win, as the recovery rehearsal needs.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile("appsettings.Development.local.json", optional: true);
+    builder.Configuration.AddEnvironmentVariables();
+    if (args.Length > 0)
+    {
+        builder.Configuration.AddCommandLine(args);
+    }
+}
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

@@ -20,7 +20,8 @@ dotnet tool restore
 ```
 
 `init-dev.ps1` creates a random database password in `.env` (git-ignored) and stores the matching
-connection string in [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
+connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored). The Anthropic key still goes in
+[user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
 
 To use web import later, add your Anthropic API key too:
 
@@ -146,7 +147,7 @@ fcose needs layout-base and cose-base at the versions its own package names.
 
 | Key | Purpose | Where |
 | --- | --- | --- |
-| `ConnectionStrings:Linkbase` | Postgres connection | user secrets or environment variable |
+| `ConnectionStrings:Linkbase` | Postgres connection | `appsettings.Development.local.json` or environment variable |
 | `Anthropic:ApiKey` | LLM extraction for web import | user secrets or environment variable |
 | `Anthropic:Model` | Model for extraction | `appsettings.json` |
 | `Extraction:Enabled` | Set to `false` to hide every import that sends text to Anthropic | `appsettings.json` or environment variable |

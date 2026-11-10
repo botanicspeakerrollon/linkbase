@@ -8,7 +8,7 @@ How to back up, restore and rebuild the database. Everything runs from the repo 
 | --- | --- | --- |
 | Postgres (`linkbase_linkbase-data` Docker volume) | Everything the app shows, including ascents added or edited in the app, saved scenes and staged imports | `backup-db.ps1` |
 | `data/samples/import.csv`, `ticks.csv`, `data/corrections.json` (git-ignored) | The source for a rebuild, and the only copy of the corrections | `backup-db.ps1` copies them |
-| `.env` and user secrets (git-ignored) | Database password, API keys | Nothing. `init-dev.ps1` makes a new database password, and the Anthropic key has to be added again |
+| `.env`, `appsettings.Development.local.json` and user secrets (git-ignored) | Database password, API keys | Nothing. `init-dev.ps1` makes a new database password, and the Anthropic key has to be added again |
 | Git | The code | A remote, once one is set up. There isn't one yet |
 
 Everything is on one PC until a backup is copied off it.
@@ -93,7 +93,7 @@ throwaway container, which skips the prompt and the safety backup.
 
 ## Configuration
 
-Everything is set by environment variable in a container, or by user secrets and `appsettings.Development.json` locally.
+Everything is set by environment variable in a container, or locally by `appsettings.Development.local.json` (git-ignored, for the main database), user secrets and `appsettings.Development.json`.
 A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Linkbase` is `ConnectionStrings__Linkbase`.
 
 | Variable | What it does | Default |
@@ -160,7 +160,7 @@ Things worth knowing:
 - **`.env` and an existing volume:** Postgres only reads the password when the volume is first created. If `.env` is lost
   while the volume is kept, a new password won't match and connections will fail. Restore `.env`, or back up from inside
   the container (`backup-db.ps1` doesn't need the password), then recreate the volume and restore.
-- **Development only:** ASP.NET Core only loads user secrets in the Development environment. Anywhere else, set environment
+- **Development only:** ASP.NET Core only loads user secrets, and the app only loads `appsettings.Development.local.json`, in the Development environment. Anywhere else, set environment
   variables such as `ConnectionStrings__Linkbase` and `Anthropic__ApiKey`.
 - **Keeping them safe:** keep the Anthropic key and `.env` password in a password manager. Don't put them with the backups.
 

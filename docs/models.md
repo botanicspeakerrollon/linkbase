@@ -156,8 +156,8 @@ hooks.
 }
 ```
 
-- **ConnectionString** names an entry under `ConnectionStrings`. A connection string with a password belongs in user secrets
-  or an environment variable, never in a settings file. See [operations](operations.md#secrets).
+- **ConnectionString** names an entry under `ConnectionStrings`. A connection string with a password belongs in the git-ignored
+  `appsettings.Development.local.json` or an environment variable, never in a committed settings file. See [operations](operations.md#secrets).
 - **Domains** lists the domain modules a model uses, by key. Leave it out for a generic model.
 - **Order** sets the order in the switcher. The first model is the default.
 - **With no `Models` section**, there's one model, using `ConnectionStrings:Linkbase` and every domain. **With one model**, the
