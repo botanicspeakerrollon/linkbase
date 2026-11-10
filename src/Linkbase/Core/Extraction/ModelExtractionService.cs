@@ -118,30 +118,34 @@ public sealed class ModelExtractionService(
         }
 
         // A type that requires links is only kept with them, because staging doesn't add them afterwards.
-        var kept = new List<StagedRecord>();
-        foreach (var record in rekeyed)
+        // Dropping a record also drops the links to it, which can leave a record that depended on it without its own, so
+        // this repeats until nothing more goes. Otherwise a route would stay, unlinked, after its crag was dropped.
+        var kept = rekeyed.ToList();
+        for (var changed = true; changed;)
         {
-            if (existing.ContainsKey((record.Type, ModelExtractionValidator.Normalise(record.Name))))
+            changed = false;
+            foreach (var record in kept.ToList())
             {
-                kept.Add(record);
-                continue;
-            }
+                if (existing.ContainsKey((record.Type, ModelExtractionValidator.Normalise(record.Name))))
+                {
+                    continue;
+                }
 
-            var missing = schema.Type(record.Type)!.RequiredLinks.FirstOrDefault(
-                req => !links.Any(l => l.SourceId == record.Id && l.RelType == req.RelType && l.TargetType == req.OtherType));
-            if (missing is null)
-            {
-                kept.Add(record);
-            }
-            else
-            {
+                var missing = schema.Type(record.Type)!.RequiredLinks.FirstOrDefault(
+                    req => !links.Any(l => l.SourceId == record.Id && l.RelType == req.RelType && l.TargetType == req.OtherType));
+                if (missing is null)
+                {
+                    continue;
+                }
+
                 notes.Add($"Dropped {record.Type} '{record.Name}': the text doesn't link it with {missing.RelType} to a {missing.OtherType}.");
+                kept.Remove(record);
+                links = links.Where(l => l.SourceId != record.Id && l.TargetId != record.Id).ToList();
+                changed = true;
             }
         }
 
-        var keptIds = kept.Select(r => r.Id).ToHashSet(StringComparer.Ordinal);
-        var droppedIds = rekeyed.Select(r => r.Id).Where(id => !keptIds.Contains(id)).ToHashSet(StringComparer.Ordinal);
-        links = links.Where(l => !droppedIds.Contains(l.SourceId) && !droppedIds.Contains(l.TargetId)).Distinct().ToList();
+        links = links.Distinct().ToList();
 
         var added = kept.Where(r => !existing.ContainsKey((r.Type, ModelExtractionValidator.Normalise(r.Name)))).ToList();
         var alreadyThere = kept.Count - added.Count;
