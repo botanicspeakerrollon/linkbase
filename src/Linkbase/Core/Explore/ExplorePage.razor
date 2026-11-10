@@ -128,9 +128,32 @@
                 <MudButton Href="@link" Variant="Variant.Text" Size="Size.Small" FullWidth="true" EndIcon="@Icons.Material.Filled.OpenInNew">Open and edit</MudButton>
             }
         }
+        else if (_selectedEdge is { } edge)
+        {
+            <MudChip T="string" Size="Size.Small" Class="ma-0 mb-1">Link</MudChip>
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@edge.RelType</MudText>
+            <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
+                <tbody>
+                    <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">From</td><td><MudLink OnClick="@(() => SelectEndAsync(edge.SourceId))">@EndName(edge.SourceId)</MudLink></td></tr>
+                    <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">To</td><td><MudLink OnClick="@(() => SelectEndAsync(edge.TargetId))">@EndName(edge.TargetId)</MudLink></td></tr>
+                    @if (_showingModel && _modelLinks.TryGetValue(ModelKey(edge), out var modelLink))
+                    {
+                        <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">Links</td><td>@modelLink.Links.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</td></tr>
+                        <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">Attributes</td><td>@(modelLink.Attributes.Count == 0 ? "none" : string.Join(", ", modelLink.Attributes))</td></tr>
+                    }
+                    @if (edge.Values is { } values)
+                    {
+                        @foreach (var value in values)
+                        {
+                            <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">@GraphStyle.PropertyTitle(value.Key)</td><td>@value.Value</td></tr>
+                        }
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
         else
         {
-            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Click a node for its details. Right-click it to expand or remove, or double-click to expand everything linked to it, up to @ExpansionLimit at a time.</MudText>
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Click a node for its details, or a link for its values. Right-click it to expand or remove, or double-click to expand everything linked to it, up to @ExpansionLimit at a time.</MudText>
         }
 
         <div class="explore-section-title">On the canvas</div>
@@ -141,6 +164,8 @@
                 <MudChip T="string" Size="Size.Small" Style="@ChipStyle(label)" Class="ma-0">@label@(onCanvas > 0 ? $" {onCanvas}" : "")</MudChip>
             }
         </div>
+        <MudSwitch T="bool" Value="_linkValues" ValueChanged="ToggleLinkValuesAsync" Label="@(_showingModel ? "Show attribute names on links" : "Show values on links")"
+                   Color="Color.Primary" Size="Size.Small" Class="mt-1" />
         <MudStack Row="true" Spacing="1" Class="mt-2">
             <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Fit (f)">Fit</MudButton>
             <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Clear (c)">Clear</MudButton>

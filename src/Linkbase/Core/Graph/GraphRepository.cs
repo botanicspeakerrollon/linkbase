@@ -236,6 +236,18 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .ToListAsync(cancellationToken);
     }
 
+    // The names of the values each kind of link can carry, such as role, for the kinds that have any.
+    public async Task<IReadOnlyDictionary<(string From, string Rel, string To), IReadOnlyList<string>>> LinkAttributeNamesAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.LinkAttributes.AsNoTracking()
+            .OrderBy(a => a.Id)
+            .Select(a => new { a.LinkDefinition.SourceType, a.LinkDefinition.RelType, a.LinkDefinition.TargetType, a.Key })
+            .ToListAsync(cancellationToken);
+        return rows.GroupBy(r => (r.SourceType, r.RelType, r.TargetType))
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(r => r.Key).ToList());
+    }
+
     // Everything matching what's been typed, as label, property and value. Long free text is left out,
     // because a whole note makes a poor suggestion.
     public async Task<IReadOnlyList<PropertyMatch>> MatchPropertiesAsync(string? label, string text, CancellationToken cancellationToken = default)

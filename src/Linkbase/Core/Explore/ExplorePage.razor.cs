@@ -42,8 +42,26 @@ public partial class ExplorePage
     private readonly HashSet<string> _expanded = [];
     private readonly Dictionary<string, int> _remaining = [];
     private IReadOnlyList<GraphEdge> _edges = [];
-    private GraphNode? _selected;
+    private GraphNode? _selectedNode;
+    private GraphEdge? _selectedEdge;
     private bool _showingModel;
+
+    // Whether links are drawn with their values (or, in the model, their attribute names) as well as their type.
+    private bool _linkValues = true;
+
+    // What the model view knows about each kind of link, for the panel and the labels.
+    private Dictionary<(string From, string Rel, string To), (long Links, IReadOnlyList<string> Attributes)> _modelLinks = [];
+
+    // Selecting a node deselects the link and the other way round, so the panel shows one thing.
+    private GraphNode? _selected
+    {
+        get => _selectedNode;
+        set
+        {
+            _selectedNode = value;
+            _selectedEdge = null;
+        }
+    }
 
     private IReadOnlyCollection<string> _relTypes = [];
     private readonly List<PatternFilter> _propertyFilters = [];
@@ -150,6 +168,10 @@ public partial class ExplorePage
             ]);
         }
 
+        var attributes = await Graph.LinkAttributeNamesAsync();
+        _modelLinks = schema.Connections.ToDictionary(
+            c => (c.SourceLabel, c.RelType, c.TargetLabel),
+            c => (LinksOf(c), attributes.GetValueOrDefault((c.SourceLabel, c.RelType, c.TargetLabel)) ?? []));
         _edges = schema.Connections
             .Select(c => new GraphEdge(GraphNode.ModelPrefix + c.SourceLabel, GraphNode.ModelPrefix + c.TargetLabel, c.RelType, $"{c.RelType} ({GraphStyle.Compact(LinksOf(c))})"))
             .ToList();
@@ -166,6 +188,7 @@ public partial class ExplorePage
         _expanded.Clear();
         _remaining.Clear();
         _edges = [];
+        _modelLinks = [];
         _selected = null;
         _menu = null;
         _showingModel = false;

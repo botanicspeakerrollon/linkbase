@@ -252,6 +252,22 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     }
 
     [Fact]
+    public async Task Clicking_a_link_shows_its_ends_in_the_panel_and_a_node_click_replaces_it()
+    {
+        var s = await SeedAsync();
+        var cut = Render(s);
+        Press(cut, "Expand");
+        Sees(cut, "Route 1");
+
+        var edge = cut.Instance.FirstEdgeKeyForTest();
+        await cut.InvokeAsync(() => cut.Instance.OnEdgeClicked(edge));
+        cut.WaitForAssertion(() => Assert.Contains("From", cut.Find(".explore-panel").TextContent));
+
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
+    }
+
+    [Fact]
     public async Task Expanding_adds_neighbours_then_says_when_nothing_is_new()
     {
         var s = await SeedAsync();

@@ -96,6 +96,7 @@ export async function create(element, dotNetRef, labelStyles) {
                 selector: 'edge',
                 style: {
                     width: 1.5,
+                    'overlay-padding': 6,
                     'line-color': '#4a525e',
                     'curve-style': 'bezier',
                     'target-arrow-shape': 'triangle',
@@ -110,12 +111,20 @@ export async function create(element, dotNetRef, labelStyles) {
                     'min-zoomed-font-size': 8,
                 },
             },
+            {
+                selector: 'edge:selected',
+                style: { width: 3, 'line-color': '#ffffff', 'target-arrow-color': '#ffffff', color: '#ffffff' },
+            },
         ],
     });
 
     // A click selects, and a right-click opens the menu. A double-click expands, as a shortcut.
     element.addEventListener('contextmenu', event => event.preventDefault());
     cy.on('tap', 'node', event => dotNetRef.invokeMethodAsync('OnNodeClicked', event.target.id()));
+    cy.on('tap', 'edge', event => {
+        select(event.target.id());
+        dotNetRef.invokeMethodAsync('OnEdgeClicked', event.target.id());
+    });
     cy.on('dbltap', 'node', event => dotNetRef.invokeMethodAsync('OnNodeDoubleClicked', event.target.id()));
     cy.on('cxttap', 'node', event => {
         // Keeps the menu on screen when the node is near the canvas's edge.
@@ -311,8 +320,11 @@ export function update(nodes, edges, anchorId) {
         .filter(n => cy.getElementById(n.id).empty())
         .map(n => cy.add({ group: 'nodes', data: { id: n.id, label: n.label, kind: n.kind, caption: n.caption } }));
     for (const edge of edges) {
-        if (cy.getElementById(edge.id).empty()) {
+        const existing = cy.getElementById(edge.id);
+        if (existing.empty()) {
             cy.add({ group: 'edges', data: { id: edge.id, source: edge.source, target: edge.target, relType: edge.relType } });
+        } else {
+            existing.data('relType', edge.relType);
         }
     }
 
@@ -369,7 +381,7 @@ export function select(nodeId) {
         return;
     }
 
-    cy.nodes(':selected').unselect();
+    cy.elements(':selected').unselect();
     if (nodeId) {
         cy.getElementById(nodeId).select();
     }

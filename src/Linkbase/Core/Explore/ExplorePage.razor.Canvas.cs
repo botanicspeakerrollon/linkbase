@@ -141,9 +141,54 @@ public partial class ExplorePage
         var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, kind = n.Property("kind"), caption = GraphStyle.Caption(n) }).ToArray();
         var edges = _edges
             .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId))
-            .Select(e => (object)new { id = e.Key, source = e.SourceId, target = e.TargetId, relType = e.Label })
+            .Select(e => (object)new { id = e.Key, source = e.SourceId, target = e.TargetId, relType = EdgeCaption(e) })
             .ToArray();
         return (nodes, edges);
+    }
+
+    private (string From, string Rel, string To) ModelKey(GraphEdge edge) =>
+        (edge.SourceId[GraphNode.ModelPrefix.Length..], edge.RelType, edge.TargetId[GraphNode.ModelPrefix.Length..]);
+
+    // The attribute names a kind of link carries, in the model view.
+    private IReadOnlyList<string> ModelAttributes(GraphEdge edge) =>
+        _showingModel && _modelLinks.TryGetValue(ModelKey(edge), out var link) ? link.Attributes : [];
+
+    // What is drawn on a link. The values are optional, because they can crowd a busy graph.
+    private string EdgeCaption(GraphEdge edge)
+    {
+        if (_showingModel)
+        {
+            var names = ModelAttributes(edge);
+            return _linkValues && names.Count > 0 ? $"{edge.Label} · {string.Join(", ", names)}" : edge.Label;
+        }
+
+        return _linkValues ? edge.Label : edge.Caption ?? edge.RelType;
+    }
+
+    private async Task ToggleLinkValuesAsync(bool show)
+    {
+        _linkValues = show;
+        await DrawAsync(null);
+    }
+
+    public string FirstEdgeKeyForTest() => _edges.First().Key;
+
+    private string EndName(string nodeId) => _nodes.TryGetValue(nodeId, out var node) ? node.Name : nodeId;
+
+    private async Task SelectEndAsync(string nodeId)
+    {
+        _selected = _nodes.GetValueOrDefault(nodeId);
+        await SelectOnCanvasAsync(nodeId);
+    }
+
+    [JSInvokable]
+    public Task OnEdgeClicked(string edgeKey)
+    {
+        _menu = null;
+        var edge = _edges.FirstOrDefault(e => e.Key == edgeKey);
+        _selected = null;
+        _selectedEdge = edge;
+        return InvokeAsync(StateHasChanged);
     }
 
     private async Task SelectOnCanvasAsync(string? nodeId)
