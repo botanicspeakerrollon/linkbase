@@ -99,9 +99,21 @@ else if (_record is not null && _type is not null)
                     <div class="d-flex align-center" style="gap: 8px">
                         <MudLink Href="@GraphStyle.RecordLink(link.OtherType, link.OtherKey)">@link.OtherName</MudLink>
                         <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">@link.OtherType · @link.OtherKey</MudText>
+                        @{ var attributes = AttributesOf(group, link); }
+                        @foreach (var attribute in attributes.Where(a => link.Values.ContainsKey(a.Key)))
+                        {
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">
+                                @RecordRepository.Title(attribute.Key): @RecordListPage.Shown(attribute, link.Values[attribute.Key])
+                            </MudChip>
+                        }
                         @if (_type.Owner is null && !_derived.Contains(link.OtherType))
                         {
-                            <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small" Class="ml-auto"
+                            @if (attributes.Count > 0)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="ml-auto"
+                                               aria-label="@($"Edit the link to {link.OtherName}")" OnClick="@(() => EditLinkAsync(link, attributes))" />
+                            }
+                            <MudIconButton Icon="@Icons.Material.Filled.LinkOff" Size="Size.Small" Class="@(attributes.Count > 0 ? "" : "ml-auto")"
                                            aria-label="@($"Remove the link to {link.OtherName}")" OnClick="@(() => UnlinkAsync(link))" />
                         }
                     </div>
@@ -148,10 +160,45 @@ else if (_record is not null && _type is not null)
         }
 
         _style = GraphStyle.For(Type, _type!.Color, _type.Icon);
-        _links = await Records.LinksAsync(_record.Id);
         _refs = await Refs.RefsAsync(_record.Id);
         _options = await Records.LinkOptionsAsync(Type);
         _crumbs = [new BreadcrumbItem(Type, GraphStyle.RecordListLink(Type))];
+        await LoadLinksAsync();
+    }
+
+    // The links, and what each kind of link can carry, such as a role.
+    private async Task LoadLinksAsync()
+    {
+        _links = await Records.LinksAsync(_record!.Id);
+        _attributes = [];
+        foreach (var group in _links)
+        {
+            foreach (var otherType in group.Links.Select(l => l.OtherType).Distinct().Where(t => !_attributes.ContainsKey((group.RelType, group.Outgoing, t))))
+            {
+                _attributes[(group.RelType, group.Outgoing, otherType)] = group.Outgoing
+                    ? await Records.LinkAttributesAsync(Type, group.RelType, otherType)
+                    : await Records.LinkAttributesAsync(otherType, group.RelType, Type);
+            }
+        }
+    }
+
+    private Dictionary<(string RelType, bool Outgoing, string OtherType), IReadOnlyList<RecordField>> _attributes = [];
+
+    private IReadOnlyList<RecordField> AttributesOf(RecordLinkGroup group, RecordLink link) =>
+        _attributes.GetValueOrDefault((group.RelType, group.Outgoing, link.OtherType)) ?? [];
+
+    private async Task EditLinkAsync(RecordLink link, IReadOnlyList<RecordField> attributes)
+    {
+        var parameters = new DialogParameters<LinkValuesDialog>
+        {
+            { d => d.LinkId, link.Id }, { d => d.Attributes, attributes }, { d => d.Current, link.Values },
+        };
+        var dialog = await Dialogs.ShowAsync<LinkValuesDialog>($"Edit the link to {link.OtherName}", parameters);
+        if (await dialog.Result is { Canceled: false })
+        {
+            Snackbar.Add("Saved.", Severity.Success);
+            await LoadLinksAsync();
+        }
     }
 
     private async Task EditAsync()
@@ -192,7 +239,7 @@ else if (_record is not null && _type is not null)
         if (await dialog.Result is { Canceled: false })
         {
             Snackbar.Add("Linked.", Severity.Success);
-            _links = await Records.LinksAsync(_record!.Id);
+            await LoadLinksAsync();
         }
     }
 
@@ -202,7 +249,7 @@ else if (_record is not null && _type is not null)
         {
             await Records.RemoveLinkAsync(link.Id);
             Snackbar.Add($"Removed the link to {link.OtherName}.", Severity.Success);
-            _links = await Records.LinksAsync(_record!.Id);
+            await LoadLinksAsync();
         }
         catch (LinkbaseValidationException ex)
         {

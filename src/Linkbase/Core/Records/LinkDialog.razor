@@ -5,7 +5,7 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form">
-            <MudSelect T="LinkOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationship" @bind-Value="_option"
+            <MudSelect T="LinkOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationship" Value="_option" ValueChanged="ChooseAsync"
                        ToStringFunc="Describe" Required="true" RequiredError="Choose a relationship">
                 @foreach (var option in Options)
                 {
@@ -24,6 +24,7 @@
                 </MudAutocomplete>
                 <MudButton OnClick="CreateAsync" Variant="Variant.Text" Class="mt-2" StartIcon="@Icons.Material.Filled.Add">New @_option.OtherType</MudButton>
                 </MudStack>
+                <FieldInputs Fields="_attributes" Values="_values" />
             }
         </MudForm>
         @if (_error is not null)
@@ -49,7 +50,28 @@
     private RecordOption? _other;
     private string? _error;
 
-    protected override void OnInitialized() => _option = Options.Count == 1 ? Options[0] : null;
+    // What the chosen relationship's links carry, such as a role, and what's been typed for it.
+    private IReadOnlyList<RecordField> _attributes = [];
+    private Dictionary<string, string?> _values = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Options.Count == 1)
+        {
+            await ChooseAsync(Options[0]);
+        }
+    }
+
+    private async Task ChooseAsync(LinkOption? option)
+    {
+        _option = option;
+        _attributes = option is null
+            ? []
+            : option.Outgoing
+                ? await Records.LinkAttributesAsync(Record.Type, option.RelType, option.OtherType)
+                : await Records.LinkAttributesAsync(option.OtherType, option.RelType, Record.Type);
+        _values = _attributes.ToDictionary(a => a.Key, _ => (string?)null);
+    }
 
     private string Describe(LinkOption? option) => option is null
         ? ""
@@ -87,11 +109,11 @@
         {
             if (_option.Outgoing)
             {
-                await Records.AddLinkAsync(Record.Id, _option.RelType, _other.Id);
+                await Records.AddLinkAsync(Record.Id, _option.RelType, _other.Id, _values);
             }
             else
             {
-                await Records.AddLinkAsync(_other.Id, _option.RelType, Record.Id);
+                await Records.AddLinkAsync(_other.Id, _option.RelType, Record.Id, _values);
             }
 
             Instance.Close(DialogResult.Ok(true));

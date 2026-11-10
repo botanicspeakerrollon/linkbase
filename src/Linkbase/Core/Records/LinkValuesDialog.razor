@@ -1,0 +1,51 @@
+@inject RecordRepository Records
+
+@* Edits the values one link carries, such as a person's role on a project. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <FieldInputs Fields="Attributes" Values="_values" />
+        </MudForm>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter] public long LinkId { get; set; }
+    [Parameter] public IReadOnlyList<RecordField> Attributes { get; set; } = [];
+    [Parameter] public IReadOnlyDictionary<string, string> Current { get; set; } = new Dictionary<string, string>();
+
+    private MudForm? _form;
+    private Dictionary<string, string?> _values = [];
+    private string? _error;
+
+    protected override void OnInitialized() =>
+        _values = Attributes.ToDictionary(a => a.Key, a => Current.TryGetValue(a.Key, out var value) ? value : null);
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        try
+        {
+            await Records.UpdateLinkAsync(LinkId, _values);
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}

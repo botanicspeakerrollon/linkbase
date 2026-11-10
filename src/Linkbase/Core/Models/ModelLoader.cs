@@ -47,7 +47,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
 
         // The refs go with the nodes. Refs to climbing rows stay.
         await RunAsync("DELETE FROM external_ref WHERE node_id IS NOT NULL");
-        await RunAsync("TRUNCATE node_link, node, link_definition, field_definition, node_type");
+        await RunAsync("TRUNCATE node_link, node, link_attribute, link_definition, field_definition, node_type");
         foreach (var index in indexes)
         {
             await RunAsync($"DROP INDEX {IndexName(index)}");
@@ -88,6 +88,25 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                 ("rel", relationship.Type, NpgsqlDbType.Text),
                 ("to", relationship.To, NpgsqlDbType.Text),
                 ("required", relationship.Required, NpgsqlDbType.Boolean));
+
+            // The same relationship can come from more than one file. The first to name an attribute defines it.
+            foreach (var field in relationship.Fields)
+            {
+                await RunAsync(
+                    """
+                    INSERT INTO link_attribute (link_definition_id, key, type, options, required)
+                    SELECT id, @key, @fieldType, @options, @required FROM link_definition
+                    WHERE source_type = @from AND rel_type = @rel AND target_type = @to
+                    ON CONFLICT (link_definition_id, key) DO NOTHING
+                    """,
+                    ("from", relationship.From, NpgsqlDbType.Text),
+                    ("rel", relationship.Type, NpgsqlDbType.Text),
+                    ("to", relationship.To, NpgsqlDbType.Text),
+                    ("key", field.Key, NpgsqlDbType.Text),
+                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
+                    ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text),
+                    ("required", field.Required, NpgsqlDbType.Boolean));
+            }
         }
 
         long nodes = 0;

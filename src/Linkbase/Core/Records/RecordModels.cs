@@ -84,7 +84,11 @@ public sealed record NewLinkedRecord(string RelType, string Type, string? Key, R
 // A link from a new record to one already here.
 public sealed record NewLink(string RelType, string TargetId);
 
-public sealed record RecordLink(long Id, string OtherId, string OtherType, string OtherKey, string OtherName);
+// Values are the link's attributes, shown as text like a record's, such as a person's role on a project.
+public sealed record RecordLink(long Id, string OtherId, string OtherType, string OtherKey, string OtherName)
+{
+    public IReadOnlyDictionary<string, string> Values { get; init; } = new Dictionary<string, string>();
+}
 
 // The links of one kind on one side of a record, such as every Service that CALLS_AT this Stop. Only the first few come
 // back, with the total.

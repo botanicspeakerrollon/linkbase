@@ -204,8 +204,11 @@ public sealed partial class RecordRepository
         await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
     }
 
-    // Links only go where the model has a relationship, either way round, and never to a module's derived records.
-    public async Task AddLinkAsync(string sourceId, string relType, string targetId, CancellationToken cancellationToken = default)
+    // Links only go where the model has a relationship, either way round, and never to a module's derived records. Values are
+    // the link's attributes as a form sends them. The same two records can be linked the same way again only when an
+    // attribute's value differs, so a relationship without attributes allows one link between two records.
+    public async Task AddLinkAsync(
+        string sourceId, string relType, string targetId, IReadOnlyDictionary<string, string?>? values = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var ends = await db.Nodes.AsNoTracking()
@@ -224,17 +227,63 @@ public sealed partial class RecordRepository
             throw new LinkbaseValidationException($"The model has no {source.Type} {relType} {target.Type} relationship.");
         }
 
-        if (await db.NodeLinks.AnyAsync(l => l.SourceId == sourceId && l.RelType == relType && l.TargetId == targetId, cancellationToken))
-        {
-            throw new LinkbaseValidationException("Those two are already linked that way.");
-        }
+        var attributes = await AttributesAsync(db, source.Type, relType, target.Type, cancellationToken);
+        var props = Props(attributes, values ?? new Dictionary<string, string?>());
+        await EnsureNotRepeatAsync(db, sourceId, relType, targetId, props, 0, attributes.Count > 0, cancellationToken);
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        db.NodeLinks.Add(new NodeLink { SourceId = sourceId, RelType = relType, TargetId = targetId });
+        db.NodeLinks.Add(new NodeLink { SourceId = sourceId, RelType = relType, TargetId = targetId, Props = props });
         await db.SaveChangesAsync(cancellationToken);
         await CountAsync(db, source.Type, relType, target.Type, 1, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId), cancellationToken);
+    }
+
+    // Changes a link's attribute values in place. A required attribute can't be emptied, and the link can't become a repeat
+    // of another between the same two records.
+    public async Task UpdateLinkAsync(long linkId, IReadOnlyDictionary<string, string?> values, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var link = await db.NodeLinks.SingleOrDefaultAsync(l => l.Id == linkId, cancellationToken)
+            ?? throw new LinkbaseValidationException("This link no longer exists.");
+        var ends = await db.Nodes.AsNoTracking()
+            .Where(n => n.Id == link.SourceId || n.Id == link.TargetId)
+            .Select(n => new { n.Id, n.Type, n.NodeType.Owner })
+            .ToListAsync(cancellationToken);
+        if (ends.FirstOrDefault(e => e.Owner is not null) is { } derived)
+        {
+            throw Derived(derived.Type, derived.Owner!);
+        }
+
+        var sourceType = ends.First(e => e.Id == link.SourceId).Type;
+        var targetType = ends.First(e => e.Id == link.TargetId).Type;
+        var attributes = await AttributesAsync(db, sourceType, link.RelType, targetType, cancellationToken);
+        if (attributes.Count == 0)
+        {
+            throw new LinkbaseValidationException($"A {link.RelType} link has no values to edit.");
+        }
+
+        var props = Props(attributes, values, link.Props);
+        await EnsureNotRepeatAsync(db, link.SourceId, link.RelType, link.TargetId, props, linkId, true, cancellationToken);
+        link.Props = props;
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    // A link is a repeat of another between the same two records when every attribute value is the same.
+    private static async Task EnsureNotRepeatAsync(
+        LinkbaseDbContext db, string sourceId, string relType, string targetId, string props, long exceptLinkId, bool hasAttributes, CancellationToken cancellationToken)
+    {
+        var others = await db.NodeLinks.AsNoTracking()
+            .Where(l => l.SourceId == sourceId && l.RelType == relType && l.TargetId == targetId && l.Id != exceptLinkId)
+            .Select(l => l.Props)
+            .ToListAsync(cancellationToken);
+        var mine = JsonNode.Parse(props);
+        if (others.Any(other => JsonNode.DeepEquals(JsonNode.Parse(other), mine)))
+        {
+            throw new LinkbaseValidationException(hasAttributes
+                ? "Those two are already linked that way with the same values. To link them again, change at least one value."
+                : "Those two are already linked that way.");
+        }
     }
 
     public async Task RemoveLinkAsync(long linkId, CancellationToken cancellationToken = default)

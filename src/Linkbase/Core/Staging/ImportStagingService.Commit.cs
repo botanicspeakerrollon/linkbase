@@ -80,7 +80,7 @@ public sealed partial class ImportStagingService
                 WHERE s.import_batch_id = @batch AND s.kind = 'link' AND s.included
                   AND EXISTS (SELECT 1 FROM node n WHERE n.id = s.source_id)
                   AND EXISTS (SELECT 1 FROM node n WHERE n.id = s.target_id)
-                  AND NOT EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = s.rel_type AND l.target_id = s.target_id)
+                  AND NOT EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = s.rel_type AND l.target_id = s.target_id AND l.props = '{}'::jsonb)
             ),
             added AS (
                 INSERT INTO node_link (source_id, rel_type, target_id, import_batch_id)

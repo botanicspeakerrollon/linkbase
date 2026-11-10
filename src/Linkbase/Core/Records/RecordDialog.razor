@@ -15,49 +15,7 @@
                               HelperText="What identifies it, and can't change later. Made from the name if left empty." />
             }
 
-            @foreach (var field in Type.Editable)
-            {
-                var key = field.Key;
-                var label = RecordRepository.Title(key);
-                var required = field.Required;
-                var requiredError = $"{label} is required";
-                @switch (field.Type)
-                {
-                    case FieldType.Date:
-                        <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Date="@DateOf(key)" DateChanged="@(d => SetDate(key, d))"
-                                       Clearable="true" DateFormat="yyyy-MM-dd" />
-                        break;
-                    case FieldType.Boolean:
-                        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(_values.GetValueOrDefault(key) ?? "")"
-                                   ValueChanged="@(v => _values[key] = v)" ToStringFunc="@YesNo">
-                            <MudSelectItem Value="@("")" />
-                            <MudSelectItem Value="@("true")" />
-                            <MudSelectItem Value="@("false")" />
-                        </MudSelect>
-                        break;
-                    case FieldType.Choice:
-                        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(_values.GetValueOrDefault(key) ?? "")"
-                                   ValueChanged="@(v => _values[key] = v)" ToStringFunc="@(v => v ?? "")" Clearable="true">
-                            @foreach (var option in field.Options)
-                            {
-                                <MudSelectItem Value="@option">@option</MudSelectItem>
-                            }
-                        </MudSelect>
-                        break;
-                    case FieldType.List:
-                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@_values.GetValueOrDefault(key)"
-                                      ValueChanged="@(v => _values[key] = v)" Lines="2" AutoGrow="true" HelperText="One per line" />
-                        break;
-                    case FieldType.Number:
-                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@_values.GetValueOrDefault(key)"
-                                      ValueChanged="@(v => _values[key] = v)" InputMode="@(InputMode.@decimal)" />
-                        break;
-                    default:
-                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@_values.GetValueOrDefault(key)"
-                                      ValueChanged="@(v => _values[key] = v)" />
-                        break;
-                }
-            }
+            <FieldInputs Fields="Type.Editable" Values="_values" />
 
             @if (Record is null)
             {
@@ -128,13 +86,6 @@
         _name = Record?.Name;
         _values = Type.Editable.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
     }
-
-    private DateTime? DateOf(string key) =>
-        DateTime.TryParseExact(_values.GetValueOrDefault(key), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
-
-    private void SetDate(string key, DateTime? date) => _values[key] = date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-    private static string YesNo(string? value) => value switch { "true" => "Yes", "false" => "No", _ => "" };
 
     private async Task<IEnumerable<RecordOption>> SearchAsync(RequiredLink link, string text, CancellationToken cancellationToken) =>
         await Records.FindAsync(link.OtherType, text, Suggestions, cancellationToken);
