@@ -35,6 +35,6 @@ routes and crags are shareable, or some crags' locations are hidden.
 - `graph_nodes` and `graph_edges` are views over raw columns. Once a policy exists, they need to accept
   the viewer or be filtered in the repository, or they become a way around it.
 - `import_batch.raw_payload` holds the source data as JSON, which may include private fields. Treat it as
-  owner-only. For web imports it holds only the extracted facts, not the page's text.
-- Web import sends pasted or fetched text to the Anthropic API. Your own notes and partners are never sent.
+  owner-only. For text read by AI it holds only the extracted facts, not the page's text.
+- Reading text sends pasted or fetched text to the Anthropic API. Your own notes and partners are never sent.
 - `external_ref` has no `user_id`. It should inherit visibility from the row it points to.

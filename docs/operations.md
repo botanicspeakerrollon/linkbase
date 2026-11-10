@@ -63,9 +63,9 @@ A rebuild brings back everything in the export files, and nothing else:
 
 | Comes back | Lost |
 | --- | --- |
-| Ascents, routes, crags, areas, partners and refs from the two CSVs | Anything added or edited in the app, including committed web imports |
+| Ascents, routes, crags, areas, partners and refs from the two CSVs | Anything added or edited in the app, including committed text imports |
 | Trips, rebuilt from the ascents and `data/corrections.json` | Saved scenes |
-| | Staged, failed and undone web imports |
+| | Staged, failed and undone text imports |
 
 Row ids can change, so a saved scene from before a rebuild won't line up with the new rows. Prefer a restore when you have
 a backup.
@@ -101,7 +101,7 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `ConnectionStrings__Linkbase` | The main database. A secret | None, so required |
 | `Models__<key>__Name`, `__ConnectionString`, `__Domains__0`, `__Order` | The models in the switcher, as in [models](models.md#configuring-models) | One model on the main database |
 | `ConnectionStrings__<name>` | Each other model's database. A secret if it has a password | None |
-| `Anthropic__ApiKey` | Web import's extraction. A secret | None, so web import can't extract |
+| `Anthropic__ApiKey` | Reading text with AI. A secret | None, so text can't be read |
 | `ASPNETCORE_ENVIRONMENT` | `Development` for plain-text logs and detailed errors | `Production` |
 | `ASPNETCORE_HTTP_PORTS` | The port to listen on | `8080` in the image |
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | Trust `X-Forwarded-Proto` and `-For` from the Route or ingress in front | `true` in the image |
@@ -132,7 +132,7 @@ each one back.
 | Key | What it's for | Needed when | If you lose it |
 | --- | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | The app's connection to Postgres | Always | Run `./scripts/init-dev.ps1`, which rebuilds it from the password in `.env` |
-| `Anthropic:ApiKey` | Web import's extraction | Only for web import | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
+| `Anthropic:ApiKey` | Reading text with AI | Only for reading text | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
 
 `POSTGRES_PASSWORD` in `.env` is the other secret. It sets the password when the database volume is first created.
 

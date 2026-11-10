@@ -23,7 +23,7 @@ dotnet tool restore
 connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored). The Anthropic key still goes in
 [user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
 
-To use web import later, add your Anthropic API key too:
+To read text with AI later, add your Anthropic API key too:
 
 ```powershell
 dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
@@ -148,7 +148,7 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | Key | Purpose | Where |
 | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | Postgres connection | `appsettings.Development.local.json` or environment variable |
-| `Anthropic:ApiKey` | LLM extraction for web import | user secrets or environment variable |
+| `Anthropic:ApiKey` | Reading text with AI | user secrets or environment variable |
 | `Anthropic:Model` | Model for extraction | `appsettings.json` |
 | `Extraction:Enabled` | Set to `false` to hide every import that sends text to Anthropic | `appsettings.json` or environment variable |
 | `Extraction:Fixture` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
