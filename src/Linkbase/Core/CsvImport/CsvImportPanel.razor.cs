@@ -42,6 +42,11 @@ public partial class CsvImportPanel
     private int _fromColumn;
     private int _toColumn;
     private string? _relType;
+
+    // What each relationship's links can carry, and the column chosen for each such value. A value with no choice here takes
+    // the column named like it, if there is one.
+    private Dictionary<(string From, string Rel, string To), IReadOnlyList<RecordField>> _linkAttributes = [];
+    private readonly Dictionary<string, int> _attributeColumns = [];
     private CsvImportPlan? _plan;
     private (int Added, string? Type)? _done;
 
@@ -59,6 +64,16 @@ public partial class CsvImportPanel
         // A module's derived records can't be imported, so their types aren't offered.
         _types = (await Records.TypesAsync()).Where(t => t.Owner is null).ToList();
         _relationships = await Records.RelationshipsAsync();
+        _linkAttributes = [];
+        foreach (var relationship in _relationships)
+        {
+            var attributes = await Records.LinkAttributesAsync(relationship.FromType, relationship.RelType, relationship.ToType);
+            if (attributes.Count > 0)
+            {
+                _linkAttributes[(relationship.FromType, relationship.RelType, relationship.ToType)] = attributes;
+            }
+        }
+
         if (_recentList is not null)
         {
             await _recentList.RefreshAsync();
@@ -137,6 +152,7 @@ public partial class CsvImportPanel
             await using var stream = upload.OpenReadStream(CsvImportService.MaxBytes);
             var path = await CsvImportService.SaveAsync(stream);
             _file = CsvImportService.Read(path, upload.Name);
+            _attributeColumns.Clear();
             // A column naming another type holds its keys, for linking afterwards, so it isn't a field.
             var typeNames = _types.Select(t => t.Name).ToList();
             _fields = _file.Columns.ToDictionary(c => c.Index, c => new FieldChoice
@@ -190,6 +206,21 @@ public partial class CsvImportPanel
         change();
         _plan = null;
     }
+
+    // The values the chosen relationship's links can carry, such as a role.
+    private IReadOnlyList<RecordField> Attributes() =>
+        _fromType is null || _toType is null || _relType is null ? [] : _linkAttributes.GetValueOrDefault((_fromType, _relType, _toType)) ?? [];
+
+    private static string Plain(string text) => new(text.Where(char.IsAsciiLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+
+    private int AttributeColumn(RecordField attribute) =>
+        _attributeColumns.TryGetValue(attribute.Key, out var chosen)
+            ? chosen
+            : _file?.Columns.FirstOrDefault(c => Plain(c.Header) == Plain(attribute.Key))?.Index ?? -1;
+
+    private void SetAttributeColumn(string key, int column) => Changed(() => _attributeColumns[key] = column);
+
+    private string AttributeHeader(int column) => column < 0 ? "(none)" : Header(column);
 
     private void SetKind(bool links) => Changed(() => _links = links);
 
@@ -281,7 +312,9 @@ public partial class CsvImportPanel
     private CsvLinkMapping LinkMapping() =>
         _fromType is null || _toType is null
             ? throw new LinkbaseValidationException("Choose the types at both ends.")
-            : new(_fromType, _fromColumn, _relType ?? "", _toType, _toColumn);
+            : new(_fromType, _fromColumn, _relType ?? "", _toType, _toColumn,
+                Attributes().Select(a => (Attribute: a, Column: AttributeColumn(a))).Where(a => a.Column >= 0)
+                    .Select(a => new CsvFieldMapping(a.Column, a.Attribute.Key, a.Attribute.Type)).ToList());
 
     // suppliers.csv suggests Supplier.
     private static string TypeFromFile(string fileName)

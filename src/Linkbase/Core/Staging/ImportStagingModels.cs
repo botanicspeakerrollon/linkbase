@@ -27,8 +27,9 @@ public sealed record StagedRecord(string Type, string Key, string Name, string P
     public string Id => $"{Type.ToLowerInvariant()}:{Key}";
 }
 
-// A link an import would add, between two nodes by id.
-public sealed record StagedLink(string SourceType, string RelType, string SourceId, string TargetType, string TargetId);
+// A link an import would add, between two nodes by id. Props are the link's attribute values as JSON, such as a role. The
+// same two nodes can be linked again when the values differ.
+public sealed record StagedLink(string SourceType, string RelType, string SourceId, string TargetType, string TargetId, string Props = "{}");
 
 // Where a record was read from: the id it has at that source and the source's address, kept as an external ref when the
 // import is committed. NodeId is a record that is staged or already there.

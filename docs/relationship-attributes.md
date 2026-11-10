@@ -15,18 +15,17 @@ First used on the example consultancy's `Person WORKS_ON Project`, which has `ro
   required attribute can't be left empty.
 - **Repeats.** The same (source, relationship, target) can be linked again when an attribute's value differs. Identical
   values are a duplicate, so a relationship with no attributes still allows one link between two records. `node_link` has no
-  unique index, so this is enforced in `RecordRepository` (`EnsureNotRepeatAsync`), and staged imports only count a link as
-  already there when it has no values.
+  unique index, so this is enforced in `RecordRepository` (`EnsureNotRepeatAsync`), and staged imports compare values too.
+- **Everywhere links are made or shown.** The new record's form, the CSV import and Read text take values and check them.
+  Explore draws them and exports them. A module gets `LinkUpdated` when they're edited. A link with no values from an
+  import counts as already there when the two are linked that way, so a file without values doesn't repeat links that
+  have some.
 - **Record page.** Each link shows its values as chips, with an edit button, and the Add link dialog has a box for each.
   `FieldInputs` is the shared set of boxes, used by the record form too.
 
 ## Not built
 
-- **Import and undo.** The CSV import and Read text make links without values. A staged link has no props of its own yet:
-  `staged_item.props` would carry them. Commit and undo would then need the same repeat rule.
-- **New record form.** A link made along with a new record can't be given values, so a required attribute doesn't block it.
-- **Hooks.** There's no "link changed" event, so a module doesn't hear of an edit to a link's values.
-- **Explore.** `graph.js` still only draws; showing a link's values in the tooltip or inspector is left.
+- **Defining attributes outside the model file.** An import or Read text can fill a relationship's values, not add one.
 - **Filtering** on an attribute in `GraphPattern` (`e{i}.props->>'role'`). Don't index attribute values up front: at Swiss rail
   scale (tens of millions of links) that is a real cost.
 - **Derived relationships.** Links to or from a module's derived types are the module's, so people can't edit their values.

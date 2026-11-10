@@ -185,7 +185,7 @@ public sealed partial class CsvImportService
         return (rows, problems, notes, empty + repeats, choices);
     }
 
-    private static async Task<(List<(string Source, string Target)> Pairs, List<string> Problems, List<string> Notes, int Skipped)> ReadLinksAsync(
+    private static async Task<(List<(string Source, string Target, string Props)> Pairs, List<string> Problems, List<string> Notes, int Skipped)> ReadLinksAsync(
         LinkbaseDbContext db, CsvFile file, CsvLinkMapping mapping, CancellationToken cancellationToken)
     {
         var problems = new List<string>();
@@ -207,14 +207,28 @@ public sealed partial class CsvImportService
             }
         }
 
-        var pairs = new List<(string, string)>();
+        var pairs = new List<(string Source, string Target, string Props)>();
         var notes = new List<string>();
+
+        // The relationship's attributes, which the model has already: a file can fill them but not define them.
+        var attributes = await RecordRepository.AttributesAsync(db, mapping.FromType, mapping.RelType, mapping.ToType, cancellationToken);
+        var mapped = mapping.Attributes ?? [];
+        foreach (var column in mapped.Where(m => attributes.All(a => a.Key != m.Key)))
+        {
+            problems.Add($"{mapping.FromType} {mapping.RelType} {mapping.ToType} has no value called {column.Key}. Links carry only the values the model defines for them.");
+        }
+
+        foreach (var required in attributes.Where(a => a.Required && mapped.All(m => m.Key != a.Key)))
+        {
+            problems.Add($"{RecordRepository.Title(required.Key)} is required on every {mapping.FromType} {mapping.RelType} {mapping.ToType} link, so it needs a column.");
+        }
+
         if (problems.Count > 0)
         {
             return (pairs, problems, notes, 0);
         }
 
-        var rows = new List<(int Line, string From, string To)>();
+        var rows = new List<(int Line, string From, string To, Dictionary<string, string?> Values)>();
         using (var reader = Open(file.Path))
         {
             reader.Read();
@@ -223,16 +237,22 @@ public sealed partial class CsvImportService
             while (reader.Read())
             {
                 line++;
-                rows.Add((line, reader.GetField(mapping.FromColumn)?.Trim() ?? "", reader.GetField(mapping.ToColumn)?.Trim() ?? ""));
+                // A list's values are split by | in a file, and one per line when checked.
+                var values = mapped.ToDictionary(
+                    m => m.Key,
+                    m => (string?)(attributes.First(a => a.Key == m.Key).Type == FieldType.List
+                        ? reader.GetField(m.Column)?.Replace('|', '\n')
+                        : reader.GetField(m.Column)));
+                rows.Add((line, reader.GetField(mapping.FromColumn)?.Trim() ?? "", reader.GetField(mapping.ToColumn)?.Trim() ?? "", values));
             }
         }
 
         var fromKeys = await ExistingKeysAsync(db, mapping.FromType, rows.Select(r => r.From).Where(k => k.Length > 0).Distinct().ToList(), cancellationToken);
         var toKeys = await ExistingKeysAsync(db, mapping.ToType, rows.Select(r => r.To).Where(k => k.Length > 0).Distinct().ToList(), cancellationToken);
-        var seen = new HashSet<(string, string)>();
+        var seen = new HashSet<(string, string, string)>();
         var (empty, missing, repeats) = (0, 0, 0);
         var missingShown = new List<string>();
-        foreach (var (line, from, to) in rows)
+        foreach (var (line, from, to, values) in rows)
         {
             if (from.Length == 0 || to.Length == 0)
             {
@@ -245,13 +265,31 @@ public sealed partial class CsvImportService
                     missingShown.Add(!fromKeys.Contains(from) ? $"row {line} has no {mapping.FromType} {from}" : $"row {line} has no {mapping.ToType} {to}");
                 }
             }
-            else if (!seen.Add((from, to)))
-            {
-                repeats++;
-            }
             else
             {
-                pairs.Add(($"{mapping.FromType.ToLowerInvariant()}:{from}", $"{mapping.ToType.ToLowerInvariant()}:{to}"));
+                string props;
+                try
+                {
+                    props = RecordRepository.Props(attributes, values);
+                }
+                catch (LinkbaseValidationException ex)
+                {
+                    if (problems.Count < ProblemsShown)
+                    {
+                        problems.Add($"Row {line}: {ex.Message}");
+                    }
+
+                    continue;
+                }
+
+                if (!seen.Add((from, to, props)))
+                {
+                    repeats++;
+                }
+                else
+                {
+                    pairs.Add(($"{mapping.FromType.ToLowerInvariant()}:{from}", $"{mapping.ToType.ToLowerInvariant()}:{to}", props));
+                }
             }
         }
 
@@ -267,7 +305,7 @@ public sealed partial class CsvImportService
 
         if (repeats > 0)
         {
-            notes.Add($"{repeats:N0} row(s) repeat a link already in the file.");
+            notes.Add($"{repeats:N0} row(s) repeat a link already in the file{(attributes.Count > 0 ? " with the same values" : "")}.");
         }
 
         return (pairs, problems, notes, empty + missing + repeats);
@@ -287,7 +325,10 @@ public sealed partial class CsvImportService
         return found;
     }
 
-    private static async Task<HashSet<(string Source, string Target)>> ExistingLinksAsync(LinkbaseDbContext db, string relType, List<(string Source, string Target)> pairs, CancellationToken cancellationToken)
+    // The links the model already has between the same two records with the same values. A row with no values is there when
+    // the two are linked that way at all.
+    private static async Task<HashSet<(string Source, string Target, string Props)>> ExistingLinksAsync(
+        LinkbaseDbContext db, string relType, List<(string Source, string Target, string Props)> pairs, CancellationToken cancellationToken)
     {
         // In a transaction only so the staging table lasts until the lookup, and goes when it's rolled back.
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
@@ -295,15 +336,15 @@ public sealed partial class CsvImportService
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         await StageLinksAsync(connection, pairs, cancellationToken);
         await using var command = new NpgsqlCommand(
-            "SELECT s.source_id, s.target_id FROM staging_link s WHERE EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id)",
+            "SELECT s.idx FROM staging_link s WHERE EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id AND (s.props = '{}'::jsonb OR l.props = s.props))",
             connection, transaction);
         command.Parameters.Add(new NpgsqlParameter("rel", NpgsqlDbType.Text) { Value = relType });
-        var found = new HashSet<(string, string)>();
+        var found = new HashSet<(string, string, string)>();
         await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
         {
             while (await reader.ReadAsync(cancellationToken))
             {
-                found.Add((reader.GetString(0), reader.GetString(1)));
+                found.Add(pairs[reader.GetInt32(0)]);
             }
         }
 
@@ -311,19 +352,21 @@ public sealed partial class CsvImportService
         return found;
     }
 
-    private static async Task StageLinksAsync(NpgsqlConnection connection, List<(string Source, string Target)> pairs, CancellationToken cancellationToken)
+    private static async Task StageLinksAsync(NpgsqlConnection connection, List<(string Source, string Target, string Props)> pairs, CancellationToken cancellationToken)
     {
-        await using (var create = new NpgsqlCommand("CREATE TEMP TABLE staging_link (source_id text, target_id text) ON COMMIT DROP", connection))
+        await using (var create = new NpgsqlCommand("CREATE TEMP TABLE staging_link (idx int, source_id text, target_id text, props jsonb) ON COMMIT DROP", connection))
         {
             await create.ExecuteNonQueryAsync(cancellationToken);
         }
 
-        await using var import = await connection.BeginBinaryImportAsync("COPY staging_link (source_id, target_id) FROM STDIN (FORMAT BINARY)", cancellationToken);
-        foreach (var (source, target) in pairs)
+        await using var import = await connection.BeginBinaryImportAsync("COPY staging_link (idx, source_id, target_id, props) FROM STDIN (FORMAT BINARY)", cancellationToken);
+        for (var i = 0; i < pairs.Count; i++)
         {
             await import.StartRowAsync(cancellationToken);
-            await import.WriteAsync(source, NpgsqlDbType.Text, cancellationToken);
-            await import.WriteAsync(target, NpgsqlDbType.Text, cancellationToken);
+            await import.WriteAsync(i, NpgsqlDbType.Integer, cancellationToken);
+            await import.WriteAsync(pairs[i].Source, NpgsqlDbType.Text, cancellationToken);
+            await import.WriteAsync(pairs[i].Target, NpgsqlDbType.Text, cancellationToken);
+            await import.WriteAsync(pairs[i].Props, NpgsqlDbType.Jsonb, cancellationToken);
         }
 
         await import.CompleteAsync(cancellationToken);

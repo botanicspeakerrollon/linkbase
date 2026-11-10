@@ -103,7 +103,7 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
         return await _staging.StageAsync(
             new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.FromType} {mapping.RelType} {mapping.ToType} links", model, existing.Count, skipped, notes),
             [],
-            pairs.Where(p => !existing.Contains(p)).Select(p => new StagedLink(mapping.FromType, mapping.RelType, p.Source, mapping.ToType, p.Target)),
+            pairs.Where(p => !existing.Contains(p)).Select(p => new StagedLink(mapping.FromType, mapping.RelType, p.Source, mapping.ToType, p.Target, p.Props)),
             cancellationToken);
     }
 

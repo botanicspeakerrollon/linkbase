@@ -247,8 +247,17 @@ has `role` and `days_a_week`). They're kept in `node_link.props`, and their defi
   Dev Raman being on the portal as an Engineer and again as a Reviewer. A relationship without attributes still allows one
   link between two records. Editing a link into a copy of another is refused the same way.
 - **The record page** shows each link's values as chips beside it, an edit button when the relationship has attributes, and
-  asks for the values in the Add link dialog. A required attribute can't be left empty there.
-- **Explore** doesn't show them yet.
+  asks for the values in the Add link dialog. A required attribute can't be left empty there. So can the links a new
+  record's form makes, such as a required one to a Project.
+- **Explore** draws a link's values on it (`WORKS_ON · Lead · 3`), lists them in the links table, and puts them in the CSV
+  and JSON exports. Repeats are separate links on the canvas.
+- **The CSV import** of links has a box for each of the relationship's values, which takes the column named like it by
+  default. A file can fill the model's values but not define new ones. Rows that repeat a pair with the same values are
+  one link, different values are two, and a row with no values counts as already there when the two are linked that way.
+- **Read text** is told each relationship's values, and a value the text doesn't contain is dropped like any other. A
+  link missing a required value is dropped.
+- **Modules** hear `LinkUpdated` when a link's values are edited, with the values before and after. `Linked` carries the
+  values it was made with, and `Unlinked` those it had.
 
 ## Lists and records
 
@@ -288,7 +297,6 @@ model's data in the app, the app is where it lives, so don't load into that mode
 - Values are stored as JSON, so the rule about keeping sensitive fields in typed columns doesn't hold for generic models yet.
   See [security](security-roadmap.md).
 - Climbing's rule that an ascent's name is its route's applies to any type called `Ascent`.
-- Link attributes can't be given when a link is made along with a new record's form, only afterwards, so an attribute
-  marked `required` doesn't block that. The CSV import and Read text don't take them either. See
+- Link attributes are defined in the model file, not by an import or by reading text. See
   [relationship attributes](relationship-attributes.md).
 - A name longer than about 2,000 characters can't be stored, because names are indexed for the list's order.

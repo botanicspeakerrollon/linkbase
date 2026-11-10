@@ -41,7 +41,15 @@ public sealed class ModelExtractionService(
     private async Task<long> ExtractAsync(string text, string? source, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken)
     {
         var types = await records.TypesAsync(cancellationToken);
-        var schema = ExtractionSchema.From(types, await records.RelationshipsAsync(cancellationToken), _hooks);
+        var relationships = await records.RelationshipsAsync(cancellationToken);
+        var linkAttributes = new Dictionary<(string, string, string), IReadOnlyList<RecordField>>();
+        foreach (var relationship in relationships)
+        {
+            linkAttributes[(relationship.FromType, relationship.RelType, relationship.ToType)] =
+                await records.LinkAttributesAsync(relationship.FromType, relationship.RelType, relationship.ToType, cancellationToken);
+        }
+
+        var schema = ExtractionSchema.From(types, relationships, _hooks, linkAttributes);
 
         var chunks = TextChunker.Split(text);
         var found = new List<ExtractedData>();
@@ -113,7 +121,7 @@ public sealed class ModelExtractionService(
             }
             else
             {
-                links.Add(new StagedLink(link.FromType, link.RelType, from, link.ToType, to));
+                links.Add(new StagedLink(link.FromType, link.RelType, from, link.ToType, to, link.Props));
             }
         }
 
