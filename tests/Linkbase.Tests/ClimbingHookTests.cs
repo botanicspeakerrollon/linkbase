@@ -63,6 +63,23 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable, IC
     }
 
     [Fact]
+    public async Task Rebuilding_trips_copes_with_an_area_filed_under_two_parents()
+    {
+        var target = await MadeUpLogbook.CreateAsync(fixture);
+        var downs = await IdOfAsync(target, "Area", "The Downs");
+        var gaule = await IdOfAsync(target, "Area", "Gaule");
+        await using (var db = target.CreateDbContext())
+        {
+            db.NodeLinks.Add(new NodeLink { SourceId = downs, RelType = "IN", TargetId = gaule });
+            await db.SaveChangesAsync();
+        }
+
+        var summary = await new GenericTripService(target).RebuildAsync([]);
+
+        Assert.True(summary.Trips > 0);
+    }
+
+    [Fact]
     public async Task A_route_gets_its_grade_rank_when_saved()
     {
         var target = await MadeUpLogbook.CreateAsync(fixture);

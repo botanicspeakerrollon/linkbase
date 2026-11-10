@@ -19,23 +19,27 @@ public sealed class GenericTripService(IDbContextFactory<LinkbaseDbContext> cont
         var records = new RecordRepository(contextFactory);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var areaParents = await db.NodeLinks.AsNoTracking()
+        var areaParents = FirstTargets(await db.NodeLinks.AsNoTracking()
             .Where(l => l.RelType == "IN" && l.Source.Type == "Area")
-            .Select(l => new { l.SourceId, l.TargetId })
-            .ToDictionaryAsync(l => l.SourceId, l => l.TargetId, cancellationToken);
+            .OrderBy(l => l.SourceId).ThenBy(l => l.TargetId)
+            .Select(l => new LinkEnds(l.SourceId, l.TargetId))
+            .ToListAsync(cancellationToken));
         var areaNames = await db.Nodes.AsNoTracking().Where(n => n.Type == "Area").ToDictionaryAsync(n => n.Id, n => n.Name, cancellationToken);
-        var cragAreas = await db.NodeLinks.AsNoTracking()
+        var cragAreas = FirstTargets(await db.NodeLinks.AsNoTracking()
             .Where(l => l.RelType == "IN" && l.Source.Type == "Crag")
-            .Select(l => new { l.SourceId, l.TargetId })
-            .ToDictionaryAsync(l => l.SourceId, l => l.TargetId, cancellationToken);
-        var routeCrags = await db.NodeLinks.AsNoTracking()
+            .OrderBy(l => l.SourceId).ThenBy(l => l.TargetId)
+            .Select(l => new LinkEnds(l.SourceId, l.TargetId))
+            .ToListAsync(cancellationToken));
+        var routeCrags = FirstTargets(await db.NodeLinks.AsNoTracking()
             .Where(l => l.RelType == "AT" && l.Source.Type == "Route")
-            .Select(l => new { l.SourceId, l.TargetId })
-            .ToDictionaryAsync(l => l.SourceId, l => l.TargetId, cancellationToken);
-        var ascentRoutes = await db.NodeLinks.AsNoTracking()
+            .OrderBy(l => l.SourceId).ThenBy(l => l.TargetId)
+            .Select(l => new LinkEnds(l.SourceId, l.TargetId))
+            .ToListAsync(cancellationToken));
+        var ascentRoutes = FirstTargets(await db.NodeLinks.AsNoTracking()
             .Where(l => l.RelType == "OF" && l.Source.Type == "Ascent")
-            .Select(l => new { l.SourceId, l.TargetId })
-            .ToDictionaryAsync(l => l.SourceId, l => l.TargetId, cancellationToken);
+            .OrderBy(l => l.SourceId).ThenBy(l => l.TargetId)
+            .Select(l => new LinkEnds(l.SourceId, l.TargetId))
+            .ToListAsync(cancellationToken));
         var dated = await db.Nodes.AsNoTracking().Where(n => n.Type == "Ascent").OrderBy(n => n.Id).Select(n => new { n.Id, n.Props }).ToListAsync(cancellationToken);
 
         string CountryOf(string areaId)
@@ -128,6 +132,21 @@ public sealed class GenericTripService(IDbContextFactory<LinkbaseDbContext> cont
 
         await records.ReplaceDerivedAsync("Climbing", "Trip", derived, links, cancellationToken);
         return new TripRebuildSummary(plan.Count, plan.Sum(p => p.AscentIds.Count), plan.Sum(p => p.InferredAscentIds.Count));
+    }
+
+    private sealed record LinkEnds(string SourceId, string TargetId);
+
+    // An item can have more than one link of a kind, for example an area filed under two parents. The lowest target wins, so
+    // rebuilds agree with each other.
+    private static Dictionary<string, string> FirstTargets(IEnumerable<LinkEnds> links)
+    {
+        var map = new Dictionary<string, string>();
+        foreach (var link in links)
+        {
+            map.TryAdd(link.SourceId, link.TargetId);
+        }
+
+        return map;
     }
 
     private static string? Date(DateOnly? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
