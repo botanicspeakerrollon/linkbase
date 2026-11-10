@@ -21,8 +21,27 @@ public sealed record GraphNode(string Id, string Label, string Name, IReadOnlyLi
     public const string ModelPrefix = "model:";
 }
 
-// Caption, if given, is drawn on the link in place of its type.
-public sealed record GraphEdge(string SourceId, string TargetId, string RelType, string? Caption = null);
+// Caption, if given, is drawn on the link in place of its type. Values are the link's attributes, such as a role, or null
+// for a link with none. The same two records can be linked the same way again when the values differ.
+public sealed record GraphEdge(string SourceId, string TargetId, string RelType, string? Caption = null, IReadOnlyDictionary<string, string>? Values = null)
+{
+    // Tells links apart on the canvas: the ends and kind, and the values when it has any.
+    public string Key => Values is null
+        ? $"{SourceId}|{RelType}|{TargetId}"
+        : $"{SourceId}|{RelType}|{TargetId}|{string.Join('|', Values.OrderBy(v => v.Key, StringComparer.Ordinal).Select(v => $"{v.Key}={v.Value}"))}";
+
+    // What the canvas draws on it: the caption, or the type followed by its values, such as WORKS_ON · Engineer · 5.
+    public string Label => Caption ?? (Values is null ? RelType : $"{RelType} · {string.Join(" · ", Values.Values)}");
+
+    // Every value with its name, such as "role: Engineer, days_a_week: 5". Empty for a link with none.
+    public string ValuesText => Values is null ? "" : string.Join(", ", Values.Select(v => $"{v.Key}: {v.Value}"));
+
+    public bool Equals(GraphEdge? other) =>
+        other is not null && SourceId == other.SourceId && TargetId == other.TargetId && RelType == other.RelType && Caption == other.Caption
+        && ValuesText == other.ValuesText;
+
+    public override int GetHashCode() => HashCode.Combine(SourceId, TargetId, RelType, Caption, ValuesText);
+}
 
 // How many links there are of one kind between two types, such as 25 Person WORKS_ON Project.
 public sealed record ConnectionCount(string SourceLabel, string RelType, string TargetLabel, long Links);
@@ -337,11 +356,17 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .ToListAsync(cancellationToken);
         var edges = await db.GraphEdges.AsNoTracking()
             .Where(e => nodeIds.Contains(e.SourceId) && nodeIds.Contains(e.TargetId))
-            .Select(e => new GraphEdge(e.SourceId, e.TargetId, e.RelType))
+            .Select(e => new { e.SourceId, e.TargetId, e.RelType, e.Props })
             .ToListAsync(cancellationToken);
 
-        return new Subgraph(nodes.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props)).ToList(), edges);
+        return new Subgraph(
+            nodes.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props)).ToList(),
+            edges.Select(e => new GraphEdge(e.SourceId, e.TargetId, e.RelType) { Values = EdgeValues(e.Props) }).ToList());
     }
+
+    // A link's attributes as text, or null when it has none.
+    private static IReadOnlyDictionary<string, string>? EdgeValues(string props) =>
+        props.Length <= 2 ? null : Records.RecordRepository.Values(props) is { Count: > 0 } values ? values : null;
 
     public async Task<IReadOnlyList<string>> SceneNamesAsync(CancellationToken cancellationToken = default)
     {

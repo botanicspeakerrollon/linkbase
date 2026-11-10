@@ -50,9 +50,9 @@ public class ExploreExportTests
     {
         var lines = Lines(ExploreExport.LinksCsv([Ada, Bo, Office], Edges));
 
-        Assert.Equal("source_id,source_type,source_name,relationship,target_id,target_type,target_name", lines[0]);
+        Assert.Equal("source_id,source_type,source_name,relationship,target_id,target_type,target_name,values", lines[0]);
         Assert.Equal(3, lines.Length);
-        Assert.Equal("person:1,Person,Ada Quill,WORKS_AT,place:9,Office,North Yard", lines[1]);
+        Assert.Equal("person:1,Person,Ada Quill,WORKS_AT,place:9,Office,North Yard,", lines[1]);
         Assert.DoesNotContain(lines, l => l.Contains("KNOWS", StringComparison.Ordinal));
     }
 
@@ -71,6 +71,29 @@ public class ExploreExportTests
         Assert.Equal("person:1", link.GetProperty("source").GetString());
         Assert.Equal("WORKS_AT", link.GetProperty("relationship").GetString());
         Assert.Equal("place:9", link.GetProperty("target").GetString());
+    }
+
+    [Fact]
+    public void Links_with_different_values_are_separate_and_carry_them()
+    {
+        IReadOnlyList<GraphEdge> edges =
+        [
+            new("person:1", "place:9", "WORKS_AT") { Values = new Dictionary<string, string> { ["role"] = "Lead" } },
+            new("person:1", "place:9", "WORKS_AT") { Values = new Dictionary<string, string> { ["role"] = "Cover" } },
+            new("person:1", "place:9", "WORKS_AT") { Values = new Dictionary<string, string> { ["role"] = "Cover" } },
+        ];
+
+        var lines = Lines(ExploreExport.LinksCsv([Ada, Office], edges));
+        Assert.Equal(3, lines.Length);
+        Assert.EndsWith(",role: Lead", lines[1], StringComparison.Ordinal);
+        Assert.EndsWith(",role: Cover", lines[2], StringComparison.Ordinal);
+
+        using var json = JsonDocument.Parse(ExploreExport.AsJson([Ada, Office], edges));
+        var links = json.RootElement.GetProperty("links").EnumerateArray().ToList();
+        Assert.Equal(2, links.Count);
+        Assert.Equal("Lead", links[0].GetProperty("values").GetProperty("role").GetString());
+        Assert.Equal("WORKS_AT · Lead", edges[0].Label);
+        Assert.NotEqual(edges[0].Key, edges[1].Key);
     }
 
     [Fact]

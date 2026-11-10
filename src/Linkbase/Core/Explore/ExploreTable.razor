@@ -63,11 +63,13 @@
                 <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.Source.Name)">From</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.RelType)">Relationship</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel T="LinkRow" SortBy="@(l => l.Target.Name)">To</MudTableSortLabel></MudTh>
+                <MudTh>Values</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="From"><MudLink OnClick="@(() => OnSelect.InvokeAsync(context.Source))">@context.Source.Name</MudLink> <span class="explore-table-type">@context.Source.Label</span></MudTd>
                 <MudTd DataLabel="Relationship">@context.RelType</MudTd>
                 <MudTd DataLabel="To"><MudLink OnClick="@(() => OnSelect.InvokeAsync(context.Target))">@context.Target.Name</MudLink> <span class="explore-table-type">@context.Target.Label</span></MudTd>
+                <MudTd DataLabel="Values">@context.Values</MudTd>
             </RowTemplate>
         </MudTable>
         }
@@ -88,7 +90,7 @@
 
     private sealed record Group(string Label, List<GraphNode> Rows, int Total);
 
-    private sealed record LinkRow(GraphNode Source, string RelType, GraphNode Target);
+    private sealed record LinkRow(GraphNode Source, string RelType, GraphNode Target, string Values);
 
     private string? _filter;
 
@@ -134,8 +136,8 @@
         var byId = Nodes.ToDictionary(n => n.Id);
         return Edges
             .Where(e => byId.ContainsKey(e.SourceId) && byId.ContainsKey(e.TargetId))
-            .DistinctBy(e => (e.SourceId, e.RelType, e.TargetId))
-            .Select(e => new LinkRow(byId[e.SourceId], e.RelType, byId[e.TargetId]))
+            .DistinctBy(e => e.Key)
+            .Select(e => new LinkRow(byId[e.SourceId], e.RelType, byId[e.TargetId], e.ValuesText))
             .Where(l => Matches(l.Source) || Matches(l.Target) || (_filter is { } f && l.RelType.Contains(f.Trim(), StringComparison.OrdinalIgnoreCase)));
     }
 

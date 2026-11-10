@@ -53,7 +53,7 @@ public static class ExploreExport
         using var text = new StringWriter(CultureInfo.InvariantCulture);
         using (var csv = new CsvWriter(text, Csv))
         {
-            foreach (var header in new[] { "source_id", "source_type", "source_name", "relationship", "target_id", "target_type", "target_name" })
+            foreach (var header in new[] { "source_id", "source_type", "source_name", "relationship", "target_id", "target_type", "target_name", "values" })
             {
                 csv.WriteField(header);
             }
@@ -62,7 +62,7 @@ public static class ExploreExport
             foreach (var edge in Shown(byId, edges))
             {
                 var (source, target) = (byId[edge.SourceId], byId[edge.TargetId]);
-                foreach (var field in new[] { source.Id, source.Label, source.Name, edge.RelType, target.Id, target.Label, target.Name })
+                foreach (var field in new[] { source.Id, source.Label, source.Name, edge.RelType, target.Id, target.Label, target.Name, edge.ValuesText })
                 {
                     csv.WriteField(field);
                 }
@@ -87,7 +87,7 @@ public static class ExploreExport
                 name = n.Name,
                 properties = n.Properties.ToDictionary(p => p.Key, p => p.Value),
             }),
-            links = Shown(byId, edges).Select(e => new { source = e.SourceId, relationship = e.RelType, target = e.TargetId }),
+            links = Shown(byId, edges).Select(e => new { source = e.SourceId, relationship = e.RelType, target = e.TargetId, values = e.Values }),
         };
         return JsonSerializer.Serialize(document, Json);
     }
@@ -101,5 +101,5 @@ public static class ExploreExport
     // Links whose ends are both shown, once each.
     private static IEnumerable<GraphEdge> Shown(Dictionary<string, GraphNode> byId, IReadOnlyList<GraphEdge> edges) =>
         edges.Where(e => byId.ContainsKey(e.SourceId) && byId.ContainsKey(e.TargetId))
-            .DistinctBy(e => (e.SourceId, e.RelType, e.TargetId));
+            .DistinctBy(e => e.Key);
 }

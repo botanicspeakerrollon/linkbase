@@ -141,7 +141,7 @@ public partial class ExplorePage
         var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, kind = n.Property("kind"), caption = GraphStyle.Caption(n) }).ToArray();
         var edges = _edges
             .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId))
-            .Select(e => (object)new { id = $"{e.SourceId}|{e.RelType}|{e.TargetId}", source = e.SourceId, target = e.TargetId, relType = e.Caption ?? e.RelType })
+            .Select(e => (object)new { id = e.Key, source = e.SourceId, target = e.TargetId, relType = e.Label })
             .ToArray();
         return (nodes, edges);
     }
