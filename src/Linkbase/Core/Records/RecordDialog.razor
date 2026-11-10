@@ -44,6 +44,10 @@
                             <MudButton OnClick="@(() => CreateAsync(needed))" Variant="Variant.Text" Class="mt-2" StartIcon="@Icons.Material.Filled.Add">New @needed.OtherType</MudButton>
                         </MudStack>
                     }
+                    @if (_attributes.TryGetValue(needed, out var attributes) && attributes.Count > 0)
+                    {
+                        <FieldInputs Fields="attributes" Values="_linkValues[needed]" />
+                    }
                 }
             }
         </MudForm>
@@ -81,10 +85,23 @@
     private readonly Dictionary<RequiredLink, PendingRecord> _creates = [];
     private const int Suggestions = 20;
 
-    protected override void OnInitialized()
+    // What each required link can carry, such as a role, and what's been typed for it.
+    private readonly Dictionary<RequiredLink, IReadOnlyList<RecordField>> _attributes = [];
+    private readonly Dictionary<RequiredLink, Dictionary<string, string?>> _linkValues = [];
+
+    protected override async Task OnInitializedAsync()
     {
         _name = Record?.Name;
         _values = Type.Editable.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
+        if (Record is null)
+        {
+            foreach (var link in Type.RequiredLinks)
+            {
+                var attributes = await Records.LinkAttributesAsync(Type.Name, link.RelType, link.OtherType);
+                _attributes[link] = attributes;
+                _linkValues[link] = attributes.ToDictionary(a => a.Key, _ => (string?)null);
+            }
+        }
     }
 
     private async Task<IEnumerable<RecordOption>> SearchAsync(RequiredLink link, string text, CancellationToken cancellationToken) =>
@@ -120,8 +137,8 @@
         {
             var input = new RecordInput(_name!, _values)
             {
-                Links = _links.Where(l => l.Value is not null).Select(l => new NewLink(l.Key.RelType, l.Value!.Id)).ToList(),
-                Creates = _creates.Select(c => new NewLinkedRecord(c.Key.RelType, c.Key.OtherType, c.Value.Key, c.Value.Input)).ToList(),
+                Links = _links.Where(l => l.Value is not null).Select(l => new NewLink(l.Key.RelType, l.Value!.Id, _linkValues[l.Key])).ToList(),
+                Creates = _creates.Select(c => new NewLinkedRecord(c.Key.RelType, c.Key.OtherType, c.Value.Key, c.Value.Input, _linkValues[c.Key])).ToList(),
             };
             if (Collect)
             {

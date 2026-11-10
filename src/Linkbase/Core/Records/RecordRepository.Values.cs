@@ -38,7 +38,7 @@ public sealed partial class RecordRepository
         Props(includeKept ? type.Fields : type.Editable, input.Values, existing);
 
     // The same checks for any set of fields, such as a relationship's attributes.
-    private static string Props(IEnumerable<RecordField> fields, IReadOnlyDictionary<string, string?> values, string? existing = null)
+    internal static string Props(IEnumerable<RecordField> fields, IReadOnlyDictionary<string, string?> values, string? existing = null)
     {
         var props = (existing is null ? null : JsonNode.Parse(existing) as JsonObject) ?? [];
         foreach (var field in fields)

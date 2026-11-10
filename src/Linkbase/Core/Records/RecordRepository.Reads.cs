@@ -202,7 +202,7 @@ public sealed partial class RecordRepository
         return await AttributesAsync(db, sourceType, relType, targetType, cancellationToken);
     }
 
-    private static async Task<List<RecordField>> AttributesAsync(
+    internal static async Task<List<RecordField>> AttributesAsync(
         LinkbaseDbContext db, string sourceType, string relType, string targetType, CancellationToken cancellationToken)
     {
         var attributes = await db.LinkAttributes.AsNoTracking()

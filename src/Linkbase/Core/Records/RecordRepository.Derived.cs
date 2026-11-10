@@ -98,10 +98,12 @@ public sealed partial class RecordRepository
 
     private static readonly IReadOnlyDictionary<string, string> NoValues = new Dictionary<string, string>();
 
-    private static List<RecordChange> LinkChanges(RecordChangeKind kind, string sourceType, string sourceId, string relType, string targetType, string targetId) =>
+    private static List<RecordChange> LinkChanges(
+        RecordChangeKind kind, string sourceType, string sourceId, string relType, string targetType, string targetId,
+        IReadOnlyDictionary<string, string>? before = null, IReadOnlyDictionary<string, string>? after = null) =>
     [
-        new(kind, sourceType, sourceId, NoValues, NoValues, relType, targetId),
-        new(kind, targetType, targetId, NoValues, NoValues, relType, sourceId),
+        new(kind, sourceType, sourceId, before ?? NoValues, after ?? NoValues, relType, targetId),
+        new(kind, targetType, targetId, before ?? NoValues, after ?? NoValues, relType, sourceId),
     ];
 
     private static void RefuseDerived(RecordType type)

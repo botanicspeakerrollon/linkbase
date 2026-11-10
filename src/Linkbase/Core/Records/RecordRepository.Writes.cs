@@ -38,7 +38,7 @@ public sealed partial class RecordRepository
         foreach (var create in input.Creates)
         {
             var targetKey = await CreateInAsync(db, create.Type, create.Key, create.Input, changes, cancellationToken);
-            requested.Add(new NewLink(create.RelType, $"{create.Type.ToLowerInvariant()}:{targetKey}"));
+            requested.Add(new NewLink(create.RelType, $"{create.Type.ToLowerInvariant()}:{targetKey}", create.Values));
         }
 
         var links = await NewLinksAsync(db, definition, requested, cancellationToken);
@@ -65,7 +65,7 @@ public sealed partial class RecordRepository
             Name = name,
             Props = props,
         });
-        db.NodeLinks.AddRange(links.Select(l => new NodeLink { SourceId = id, RelType = l.RelType, TargetId = l.TargetId }));
+        db.NodeLinks.AddRange(links.Select(l => new NodeLink { SourceId = id, RelType = l.RelType, TargetId = l.TargetId, Props = l.Props }));
         await db.SaveChangesAsync(cancellationToken);
         foreach (var group in links.GroupBy(l => (l.RelType, l.TargetType)))
         {
@@ -73,12 +73,12 @@ public sealed partial class RecordRepository
         }
 
         changes.Add(new RecordChange(RecordChangeKind.Created, type, id, NoValues, Values(props)));
-        changes.AddRange(links.SelectMany(l => LinkChanges(RecordChangeKind.Linked, type, id, l.RelType, l.TargetType, l.TargetId)));
+        changes.AddRange(links.SelectMany(l => LinkChanges(RecordChangeKind.Linked, type, id, l.RelType, l.TargetType, l.TargetId, after: Values(l.Props))));
         return key;
     }
 
     // A new record's links, checked: each goes where the model has a relationship, and every required one is there.
-    private static async Task<List<(string RelType, string TargetId, string TargetType)>> NewLinksAsync(
+    private static async Task<List<(string RelType, string TargetId, string TargetType, string Props)>> NewLinksAsync(
         LinkbaseDbContext db, RecordType type, IReadOnlyList<NewLink> requested, CancellationToken cancellationToken)
     {
         var ids = requested.Select(l => l.TargetId).Distinct().ToList();
@@ -97,8 +97,10 @@ public sealed partial class RecordRepository
             .Select(d => new { d.RelType, d.TargetType })
             .ToListAsync(cancellationToken);
 
-        var links = new List<(string RelType, string TargetId, string TargetType)>();
-        foreach (var link in requested.Distinct())
+        // Each link's values are checked against its relationship's attributes, so a required one blocks the save. The same
+        // two records can be linked twice only with different values.
+        var links = new List<(string RelType, string TargetId, string TargetType, string Props)>();
+        foreach (var link in requested)
         {
             var targetType = targetTypes.GetValueOrDefault(link.TargetId)
                 ?? throw new LinkbaseValidationException("The record to link to no longer exists.");
@@ -107,7 +109,14 @@ public sealed partial class RecordRepository
                 throw new LinkbaseValidationException($"The model has no {type.Name} {link.RelType} {targetType} relationship.");
             }
 
-            links.Add((link.RelType, link.TargetId, targetType));
+            var attributes = await AttributesAsync(db, type.Name, link.RelType, targetType, cancellationToken);
+            var props = Props(attributes, link.Values ?? new Dictionary<string, string?>());
+            if (links.Any(l => l.RelType == link.RelType && l.TargetId == link.TargetId && JsonNode.DeepEquals(JsonNode.Parse(l.Props), JsonNode.Parse(props))))
+            {
+                continue;
+            }
+
+            links.Add((link.RelType, link.TargetId, targetType, props));
         }
 
         foreach (var needed in type.RequiredLinks.Where(r => !links.Any(l => l.RelType == r.RelType && l.TargetType == r.OtherType)))
@@ -236,7 +245,7 @@ public sealed partial class RecordRepository
         await db.SaveChangesAsync(cancellationToken);
         await CountAsync(db, source.Type, relType, target.Type, 1, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId), cancellationToken);
+        await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), cancellationToken);
     }
 
     // Changes a link's attribute values in place. A required attribute can't be emptied, and the link can't become a repeat
@@ -263,10 +272,16 @@ public sealed partial class RecordRepository
             throw new LinkbaseValidationException($"A {link.RelType} link has no values to edit.");
         }
 
+        var before = Values(link.Props);
         var props = Props(attributes, values, link.Props);
         await EnsureNotRepeatAsync(db, link.SourceId, link.RelType, link.TargetId, props, linkId, true, cancellationToken);
         link.Props = props;
         await db.SaveChangesAsync(cancellationToken);
+        if (!before.SequenceEqual(Values(props)))
+        {
+            await _hooks.AfterChangeAsync(
+                LinkChanges(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, link.RelType, targetType, link.TargetId, before, Values(props)), cancellationToken);
+        }
     }
 
     // A link is a repeat of another between the same two records when every attribute value is the same.
@@ -301,6 +316,7 @@ public sealed partial class RecordRepository
                 l.TargetId,
                 TargetType = l.Target.Type,
                 TargetOwner = l.Target.NodeType.Owner,
+                l.Props,
             })
             .SingleOrDefaultAsync(cancellationToken);
         if (link is null)
@@ -328,7 +344,7 @@ public sealed partial class RecordRepository
         if (removed > 0)
         {
             await _hooks.AfterChangeAsync(
-                LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId), cancellationToken);
+                LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId, before: Values(link.Props)), cancellationToken);
         }
     }
 }
