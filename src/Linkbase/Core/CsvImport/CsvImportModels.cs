@@ -29,7 +29,9 @@ public sealed record CsvFieldMapping(int Column, string Key, FieldType Type);
 public sealed record CsvRecordMapping(string Type, int KeyColumn, int? NameColumn, IReadOnlyList<CsvFieldMapping> Fields);
 
 // Each row links the record of one type whose key is in one column to the record of another whose key is in another.
-public sealed record CsvLinkMapping(string FromType, int FromColumn, string RelType, string ToType, int ToColumn);
+// Attributes are columns holding the link's own values, such as a role: each Key is one of the relationship's attributes,
+// which the model already has. The same two records can be linked again in the file when the values differ.
+public sealed record CsvLinkMapping(string FromType, int FromColumn, string RelType, string ToType, int ToColumn, IReadOnlyList<CsvFieldMapping>? Attributes = null);
 
 // What an import would do. Problems stop it; rows that are skipped don't.
 public sealed record CsvImportPlan(int Rows, int ToAdd, int AlreadyThere, int Skipped, IReadOnlyList<string> Problems, IReadOnlyList<string> Notes)

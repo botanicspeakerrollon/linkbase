@@ -15,49 +15,7 @@
                               HelperText="What identifies it, and can't change later. Made from the name if left empty." />
             }
 
-            @foreach (var field in Type.Editable)
-            {
-                var key = field.Key;
-                var label = RecordRepository.Title(key);
-                var required = field.Required;
-                var requiredError = $"{label} is required";
-                @switch (field.Type)
-                {
-                    case FieldType.Date:
-                        <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Date="@DateOf(key)" DateChanged="@(d => SetDate(key, d))"
-                                       Clearable="true" DateFormat="yyyy-MM-dd" />
-                        break;
-                    case FieldType.Boolean:
-                        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(_values.GetValueOrDefault(key) ?? "")"
-                                   ValueChanged="@(v => _values[key] = v)" ToStringFunc="@YesNo">
-                            <MudSelectItem Value="@("")" />
-                            <MudSelectItem Value="@("true")" />
-                            <MudSelectItem Value="@("false")" />
-                        </MudSelect>
-                        break;
-                    case FieldType.Choice:
-                        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(_values.GetValueOrDefault(key) ?? "")"
-                                   ValueChanged="@(v => _values[key] = v)" ToStringFunc="@(v => v ?? "")" Clearable="true">
-                            @foreach (var option in field.Options)
-                            {
-                                <MudSelectItem Value="@option">@option</MudSelectItem>
-                            }
-                        </MudSelect>
-                        break;
-                    case FieldType.List:
-                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@_values.GetValueOrDefault(key)"
-                                      ValueChanged="@(v => _values[key] = v)" Lines="2" AutoGrow="true" HelperText="One per line" />
-                        break;
-                    case FieldType.Number:
-                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@_values.GetValueOrDefault(key)"
-                                      ValueChanged="@(v => _values[key] = v)" InputMode="@(InputMode.@decimal)" />
-                        break;
-                    default:
-                        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@_values.GetValueOrDefault(key)"
-                                      ValueChanged="@(v => _values[key] = v)" />
-                        break;
-                }
-            }
+            <FieldInputs Fields="Type.Editable" Values="_values" />
 
             @if (Record is null)
             {
@@ -85,6 +43,10 @@
                             </MudAutocomplete>
                             <MudButton OnClick="@(() => CreateAsync(needed))" Variant="Variant.Text" Class="mt-2" StartIcon="@Icons.Material.Filled.Add">New @needed.OtherType</MudButton>
                         </MudStack>
+                    }
+                    @if (_attributes.TryGetValue(needed, out var attributes) && attributes.Count > 0)
+                    {
+                        <FieldInputs Fields="attributes" Values="_linkValues[needed]" />
                     }
                 }
             }
@@ -123,18 +85,24 @@
     private readonly Dictionary<RequiredLink, PendingRecord> _creates = [];
     private const int Suggestions = 20;
 
-    protected override void OnInitialized()
+    // What each required link can carry, such as a role, and what's been typed for it.
+    private readonly Dictionary<RequiredLink, IReadOnlyList<RecordField>> _attributes = [];
+    private readonly Dictionary<RequiredLink, Dictionary<string, string?>> _linkValues = [];
+
+    protected override async Task OnInitializedAsync()
     {
         _name = Record?.Name;
         _values = Type.Editable.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
+        if (Record is null)
+        {
+            foreach (var link in Type.RequiredLinks)
+            {
+                var attributes = await Records.LinkAttributesAsync(Type.Name, link.RelType, link.OtherType);
+                _attributes[link] = attributes;
+                _linkValues[link] = attributes.ToDictionary(a => a.Key, _ => (string?)null);
+            }
+        }
     }
-
-    private DateTime? DateOf(string key) =>
-        DateTime.TryParseExact(_values.GetValueOrDefault(key), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
-
-    private void SetDate(string key, DateTime? date) => _values[key] = date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-    private static string YesNo(string? value) => value switch { "true" => "Yes", "false" => "No", _ => "" };
 
     private async Task<IEnumerable<RecordOption>> SearchAsync(RequiredLink link, string text, CancellationToken cancellationToken) =>
         await Records.FindAsync(link.OtherType, text, Suggestions, cancellationToken);
@@ -169,8 +137,8 @@
         {
             var input = new RecordInput(_name!, _values)
             {
-                Links = _links.Where(l => l.Value is not null).Select(l => new NewLink(l.Key.RelType, l.Value!.Id)).ToList(),
-                Creates = _creates.Select(c => new NewLinkedRecord(c.Key.RelType, c.Key.OtherType, c.Value.Key, c.Value.Input)).ToList(),
+                Links = _links.Where(l => l.Value is not null).Select(l => new NewLink(l.Key.RelType, l.Value!.Id, _linkValues[l.Key])).ToList(),
+                Creates = _creates.Select(c => new NewLinkedRecord(c.Key.RelType, c.Key.OtherType, c.Value.Key, c.Value.Input, _linkValues[c.Key])).ToList(),
             };
             if (Collect)
             {

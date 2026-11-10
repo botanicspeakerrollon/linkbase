@@ -34,12 +34,16 @@ public sealed partial class RecordRepository
 
     // Values are checked against their field's type and stored typed, as the loader does. Values for keys the type doesn't
     // define are kept as they were, and so are those of fields a module keeps, unless it's the module writing them.
-    private static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false)
+    private static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false) =>
+        Props(includeKept ? type.Fields : type.Editable, input.Values, existing);
+
+    // The same checks for any set of fields, such as a relationship's attributes.
+    internal static string Props(IEnumerable<RecordField> fields, IReadOnlyDictionary<string, string?> values, string? existing = null)
     {
         var props = (existing is null ? null : JsonNode.Parse(existing) as JsonObject) ?? [];
-        foreach (var field in includeKept ? type.Fields : type.Editable)
+        foreach (var field in fields)
         {
-            var text = input.Values.GetValueOrDefault(field.Key)?.Trim();
+            var text = values.GetValueOrDefault(field.Key)?.Trim();
             if (field.Type == FieldType.List && FieldValues.SplitList(text ?? "", '\n', '\r').Count == 0)
             {
                 text = null;

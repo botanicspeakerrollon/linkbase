@@ -90,7 +90,7 @@ public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbCon
                 await import.WriteAsync(link.SourceType, NpgsqlDbType.Text, cancellationToken);
                 await import.WriteNullAsync(cancellationToken);
                 await import.WriteNullAsync(cancellationToken);
-                await import.WriteNullAsync(cancellationToken);
+                await import.WriteAsync(link.Props, NpgsqlDbType.Jsonb, cancellationToken);
                 await import.WriteAsync(link.RelType, NpgsqlDbType.Text, cancellationToken);
                 await import.WriteAsync(link.SourceId, NpgsqlDbType.Text, cancellationToken);
                 await import.WriteAsync(link.TargetId, NpgsqlDbType.Text, cancellationToken);

@@ -185,13 +185,15 @@ public sealed partial class ImportStagingService
 
         var links = await LeavingLinks(db, batch, keep).AsNoTracking()
             .Where(l => watched.Contains(l.Source.Type) || watched.Contains(l.Target.Type))
-            .Select(l => new { l.SourceId, SourceType = l.Source.Type, l.RelType, l.TargetId, TargetType = l.Target.Type })
+            .Select(l => new { l.SourceId, SourceType = l.Source.Type, l.RelType, l.TargetId, TargetType = l.Target.Type, l.Props })
             .ToListAsync(cancellationToken);
         var kind = removing ? RecordChangeKind.Unlinked : RecordChangeKind.Linked;
         foreach (var link in links)
         {
-            changes.Add(new RecordChange(kind, link.SourceType, link.SourceId, none, none, link.RelType, link.TargetId));
-            changes.Add(new RecordChange(kind, link.TargetType, link.TargetId, none, none, link.RelType, link.SourceId));
+            var values = RecordRepository.Values(link.Props);
+            var (before, after) = removing ? (values, none) : (none, values);
+            changes.Add(new RecordChange(kind, link.SourceType, link.SourceId, before, after, link.RelType, link.TargetId));
+            changes.Add(new RecordChange(kind, link.TargetType, link.TargetId, before, after, link.RelType, link.SourceId));
         }
 
         return changes;

@@ -101,7 +101,7 @@ public static class ModelExtractionValidator
         }
 
         var links = new List<ExtractedLink>();
-        var seen = new HashSet<(string, string, string, string, string)>();
+        var seen = new HashSet<(string, string, string, string, string, string)>();
         foreach (var link in data.Links)
         {
             if (!schema.Relationships.Any(r => r.RelType == link.RelType && r.FromType == link.FromType && r.ToType == link.ToType))
@@ -112,9 +112,38 @@ public static class ModelExtractionValidator
             {
                 warnings.Add($"Dropped the link {link.FromName} {link.RelType} {link.ToName}: a name in it isn't in the text.");
             }
-            else if (seen.Add((link.RelType, link.FromType, Normalise(link.FromName), link.ToType, Normalise(link.ToName))))
+            else
             {
-                links.Add(link with { FromName = link.FromName.Trim(), ToName = link.ToName.Trim() });
+                // The link's own values are checked like a record's fields. The same two records can be linked again only
+                // with different values.
+                var attributes = schema.LinkAttributes
+                    .FirstOrDefault(a => a.FromType == link.FromType && a.RelType == link.RelType && a.ToType == link.ToType)?.Fields ?? [];
+                var props = new JsonObject();
+                foreach (var value in link.Fields ?? [])
+                {
+                    var field = attributes.FirstOrDefault(f => f.Key == value.Field);
+                    if (field is null)
+                    {
+                        warnings.Add($"Ignored the {value.Field} of {link.FromName} {link.RelType} {link.ToName}: {link.RelType} has no such value.");
+                    }
+                    else if (!props.ContainsKey(field.Key) && Check(field, value.Value, InSource, sourceText) is { } typed)
+                    {
+                        props[field.Key] = typed;
+                    }
+                    else if (!props.ContainsKey(field.Key))
+                    {
+                        warnings.Add($"Removed the {field.Key} '{Shorten(value.Value)}' of {link.FromName} {link.RelType} {link.ToName}: it isn't in the text or doesn't fit.");
+                    }
+                }
+
+                if (attributes.FirstOrDefault(f => f.Required && !props.ContainsKey(f.Key)) is { } absent)
+                {
+                    warnings.Add($"Dropped the link {link.FromName} {link.RelType} {link.ToName}: {absent.Key} is required and the text doesn't give it.");
+                }
+                else if (seen.Add((link.RelType, link.FromType, Normalise(link.FromName), link.ToType, Normalise(link.ToName), props.ToJsonString())))
+                {
+                    links.Add(link with { FromName = link.FromName.Trim(), ToName = link.ToName.Trim(), Fields = null, Props = props.ToJsonString() });
+                }
             }
         }
 

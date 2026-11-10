@@ -13,7 +13,8 @@ public sealed partial class ImportStagingService
 {
     // Adds what's still included, in one transaction. The model's new types, fields and relationships come first. A record
     // whose key is already there, or a link whose ends have gone or that already exists, is skipped, because things may have
-    // changed since it was staged. The staged items go once they're in.
+    // changed since it was staged. A link with no values counts as there when the two are linked that way at all, so an import
+    // that has no values to give doesn't repeat links that have some. The staged items go once they're in.
     public async Task<StagedCommit> CommitAsync(long batchId, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -76,19 +77,19 @@ public sealed partial class ImportStagingService
         await using (var command = new NpgsqlCommand(
             """
             WITH eligible AS (
-                SELECT s.type, s.rel_type, s.source_id, s.target_id, s.target_type FROM staged_item s
+                SELECT s.type, s.rel_type, s.source_id, s.target_id, s.target_type, coalesce(s.props, '{}'::jsonb) AS props FROM staged_item s
                 WHERE s.import_batch_id = @batch AND s.kind = 'link' AND s.included
                   AND EXISTS (SELECT 1 FROM node n WHERE n.id = s.source_id)
                   AND EXISTS (SELECT 1 FROM node n WHERE n.id = s.target_id)
-                  AND NOT EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = s.rel_type AND l.target_id = s.target_id)
+                  AND NOT EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = s.rel_type AND l.target_id = s.target_id AND (coalesce(s.props, '{}'::jsonb) = '{}'::jsonb OR l.props = s.props))
             ),
             added AS (
-                INSERT INTO node_link (source_id, rel_type, target_id, import_batch_id)
-                SELECT DISTINCT source_id, rel_type, target_id, @batch FROM eligible
-                RETURNING source_id, rel_type, target_id
+                INSERT INTO node_link (source_id, rel_type, target_id, props, import_batch_id)
+                SELECT DISTINCT source_id, rel_type, target_id, props, @batch FROM eligible
+                RETURNING source_id, rel_type, target_id, props
             )
             SELECT e.type, e.rel_type, e.target_type, count(*)::int
-            FROM added a JOIN eligible e ON e.source_id = a.source_id AND e.rel_type = a.rel_type AND e.target_id = a.target_id
+            FROM added a JOIN eligible e ON e.source_id = a.source_id AND e.rel_type = a.rel_type AND e.target_id = a.target_id AND e.props = a.props
             GROUP BY e.type, e.rel_type, e.target_type
             """, connection, transaction) { CommandTimeout = 0 })
         {

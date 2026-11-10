@@ -96,6 +96,7 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `types[].owner`, `types[].fields[].owner` | Optional. The domain module that writes these records or keeps this value, by its key, such as `Climbing`. See [owned by a module](#owned-by-a-module) |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
 | `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files. Leave it out for a relationship that starts with no links |
+| `relationships[].fields` | The values a link of this kind carries, written like a type's `fields`, such as a person's `role` on a project. See [link attributes](#link-attributes). Not `owner` |
 | `required` | On a field, `true` means every record needs a value. On a relationship, it means every record of the `from` type needs at least one of its links, such as each ascent's route |
 
 In Explore, a filter on a list matches when any of its values does, so `skills = postgres` finds everyone with Postgres
@@ -235,6 +236,29 @@ including changes made to them since, and a type or relationship it added once n
 something added since links to one of its records, or if it would leave a record without a link its type requires. Files
 can be up to 100 MB, with commas or semicolons. The batch records the file's name and what it added, never its contents.
 
+## Link attributes
+
+A relationship can carry values that belong to a link rather than to either record, such as how many days a week a person
+works on a project. The model file lists them under the relationship's `fields`, with the same types, `options` and
+`required` as a type's, and the loader reads them from extra columns of the relationship's CSV file (`models/consultancy/assignments.csv`
+has `role` and `days_a_week`). They're kept in `node_link.props`, and their definitions in `link_attribute`.
+
+- **Repeats.** The same two records can be linked the same way again only when an attribute's value differs, such as
+  Dev Raman being on the portal as an Engineer and again as a Reviewer. A relationship without attributes still allows one
+  link between two records. Editing a link into a copy of another is refused the same way.
+- **The record page** shows each link's values as chips beside it, an edit button when the relationship has attributes, and
+  asks for the values in the Add link dialog. A required attribute can't be left empty there. So can the links a new
+  record's form makes, such as a required one to a Project.
+- **Explore** draws a link's values on it (`WORKS_ON · Lead · 3`), lists them in the links table, and puts them in the CSV
+  and JSON exports. Repeats are separate links on the canvas.
+- **The CSV import** of links has a box for each of the relationship's values, which takes the column named like it by
+  default. A file can fill the model's values but not define new ones. Rows that repeat a pair with the same values are
+  one link, different values are two, and a row with no values counts as already there when the two are linked that way.
+- **Read text** is told each relationship's values, and a value the text doesn't contain is dropped like any other. A
+  link missing a required value is dropped.
+- **Modules** hear `LinkUpdated` when a link's values are edited, with the values before and after. `Linked` carries the
+  values it was made with, and `Unlinked` those it had.
+
 ## Lists and records
 
 Each type in a model file gets a place in the rail, and pages generated from its definition, with nothing to write:
@@ -273,6 +297,6 @@ model's data in the app, the app is where it lives, so don't load into that mode
 - Values are stored as JSON, so the rule about keeping sensitive fields in typed columns doesn't hold for generic models yet.
   See [security](security-roadmap.md).
 - Climbing's rule that an ascent's name is its route's applies to any type called `Ascent`.
-- Links have no values of their own in the app yet: the ones a model file gives them show in Explore, and new links have
-  none.
+- Link attributes are defined in the model file, not by an import or by reading text. See
+  [relationship attributes](relationship-attributes.md).
 - A name longer than about 2,000 characters can't be stored, because names are indexed for the list's order.

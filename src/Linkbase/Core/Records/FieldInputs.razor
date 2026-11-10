@@ -1,0 +1,59 @@
+@using System.Globalization
+
+@* A box for each field, checked on save against its type. Writes what's typed into Values, keyed by the field. Used for a
+   record's fields and for a relationship's attributes. *@
+@foreach (var field in Fields)
+{
+    var key = field.Key;
+    var label = RecordRepository.Title(key);
+    var required = field.Required;
+    var requiredError = $"{label} is required";
+    @switch (field.Type)
+    {
+        case FieldType.Date:
+            <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Date="@DateOf(key)" DateChanged="@(d => SetDate(key, d))"
+                           Clearable="true" DateFormat="yyyy-MM-dd" />
+            break;
+        case FieldType.Boolean:
+            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(Values.GetValueOrDefault(key) ?? "")"
+                       ValueChanged="@(v => Values[key] = v)" ToStringFunc="@YesNo">
+                <MudSelectItem Value="@("")" />
+                <MudSelectItem Value="@("true")" />
+                <MudSelectItem Value="@("false")" />
+            </MudSelect>
+            break;
+        case FieldType.Choice:
+            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(Values.GetValueOrDefault(key) ?? "")"
+                       ValueChanged="@(v => Values[key] = v)" ToStringFunc="@(v => v ?? "")" Clearable="true">
+                @foreach (var option in field.Options)
+                {
+                    <MudSelectItem Value="@option">@option</MudSelectItem>
+                }
+            </MudSelect>
+            break;
+        case FieldType.List:
+            <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
+                          ValueChanged="@(v => Values[key] = v)" Lines="2" AutoGrow="true" HelperText="One per line" />
+            break;
+        case FieldType.Number:
+            <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
+                          ValueChanged="@(v => Values[key] = v)" InputMode="@(InputMode.@decimal)" />
+            break;
+        default:
+            <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
+                          ValueChanged="@(v => Values[key] = v)" />
+            break;
+    }
+}
+
+@code {
+    [Parameter] public IEnumerable<RecordField> Fields { get; set; } = [];
+    [Parameter] public Dictionary<string, string?> Values { get; set; } = [];
+
+    private DateTime? DateOf(string key) =>
+        DateTime.TryParseExact(Values.GetValueOrDefault(key), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
+
+    private void SetDate(string key, DateTime? date) => Values[key] = date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static string YesNo(string? value) => value switch { "true" => "Yes", "false" => "No", _ => "" };
+}

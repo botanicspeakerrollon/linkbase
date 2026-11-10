@@ -186,6 +186,22 @@
                         }
                     </MudSelect>
                 </MudItem>
+                @* The values a link of this kind carries, such as a role, each from a column. *@
+                @foreach (var attribute in Attributes())
+                {
+                    var key = attribute.Key;
+                    <MudItem xs="12" md="3">
+                        <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@RecordRepository.Title(key)" Value="AttributeColumn(attribute)"
+                                   ValueChanged="@(c => SetAttributeColumn(key, c))" ToStringFunc="AttributeHeader"
+                                   HelperText="@(attribute.Required ? "Needed on every link" : "Optional, the link's own value")">
+                            <MudSelectItem Value="-1">(none)</MudSelectItem>
+                            @foreach (var column in _file.Columns)
+                            {
+                                <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
             </MudGrid>
         }
 

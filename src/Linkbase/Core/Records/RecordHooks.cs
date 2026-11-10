@@ -3,11 +3,12 @@ using Linkbase.Core.Models;
 
 namespace Linkbase.Core.Records;
 
-public enum RecordChangeKind { Created, Updated, Deleted, Linked, Unlinked }
+public enum RecordChangeKind { Created, Updated, Deleted, Linked, Unlinked, LinkUpdated }
 
 // Something that happened to a record. Values are as RecordDetail shows them, empty where there were none: Before for an
 // update or a delete, After for a create or an update. A link's change names the relationship and the record at the other
-// end, and comes once for each end.
+// end, and comes once for each end. A link's Before and After are its attribute values, such as a role: After when it's
+// linked, Before when it's unlinked, and both when only its values were edited (LinkUpdated).
 public sealed record RecordChange(
     RecordChangeKind Kind,
     string Type,

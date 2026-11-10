@@ -60,6 +60,22 @@ public class LinkDefinition
     // How many links of this kind there are, kept by the loader and RecordRepository, because counting tens of millions
     // of links each time the home page opens takes too long.
     public long Links { get; set; }
+
+    // The values a link of this kind can carry, such as a person's role on a project. See docs/relationship-attributes.md.
+    public List<LinkAttribute> Attributes { get; set; } = [];
+}
+
+// A value that belongs to a link rather than to either record. Same shape as a FieldDefinition; the values are kept in
+// node_link.props.
+public class LinkAttribute
+{
+    public long Id { get; set; }
+    public long LinkDefinitionId { get; set; }
+    public LinkDefinition LinkDefinition { get; set; } = null!;
+    public required string Key { get; set; }
+    public FieldType Type { get; set; }
+    public List<string>? Options { get; set; }
+    public bool Required { get; set; }
 }
 
 public class Node : ITimestamped

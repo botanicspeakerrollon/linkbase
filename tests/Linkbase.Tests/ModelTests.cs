@@ -23,7 +23,7 @@ public class ModelTests
         using var db = CreateContext();
         var tables = db.Model.GetEntityTypes().Where(e => e.GetViewName() is null).Select(e => e.GetTableName()!).Order().ToArray();
         Assert.Equal(
-            ["app_user", "data_protection_key", "external_ref", "field_definition", "graph_scene", "import_batch", "link_definition", "node", "node_link", "node_type", "staged_item"],
+            ["app_user", "data_protection_key", "external_ref", "field_definition", "graph_scene", "import_batch", "link_attribute", "link_definition", "node", "node_link", "node_type", "staged_item"],
             tables);
     }
 

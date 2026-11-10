@@ -60,7 +60,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
 
         Assert.Equal(4, summary.Types);
         Assert.Equal(20, summary.Nodes);
-        Assert.Equal(25, summary.Links);
+        Assert.Equal(26, summary.Links);
         Assert.Contains("Person: 8 from people.csv", output.ToString());
 
         var graph = new GraphRepository(factory);
@@ -96,7 +96,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
 
         // The loader counts each kind of link as it goes, most first.
         Assert.Equal(
-            [new ConnectionCount("Person", "WORKS_ON", "Project", 12), new ConnectionCount("Person", "MEMBER_OF", "Team", 8), new ConnectionCount("Project", "FOR", "Client", 5)],
+            [new ConnectionCount("Person", "WORKS_ON", "Project", 13), new ConnectionCount("Person", "MEMBER_OF", "Team", 8), new ConnectionCount("Project", "FOR", "Client", 5)],
             await graph.ConnectionCountsAsync());
     }
 
@@ -234,7 +234,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
 
         Assert.Equal(0, await commands.RunAsync(["model", "load", Example, "second"]));
         Assert.Contains("Loading into Model second", output.ToString());
-        Assert.Contains("Loaded 4 types, 20 nodes and 25 links", output.ToString());
+        Assert.Contains("Loaded 4 types, 20 nodes and 26 links", output.ToString());
         await using (var db = new Factory(second).CreateDbContext())
         {
             Assert.Equal(20, await db.Nodes.CountAsync());

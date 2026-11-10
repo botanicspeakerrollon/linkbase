@@ -316,6 +316,49 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("import_batch");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.LinkAttribute", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.Property<long>("LinkDefinitionId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("link_definition_id");
+
+                    b.PrimitiveCollection<List<string>>("Options")
+                        .HasColumnType("text[]")
+                        .HasColumnName("options");
+
+                    b.Property<bool>("Required")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("required");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_link_attribute");
+
+                    b.HasIndex("LinkDefinitionId", "Key")
+                        .IsUnique()
+                        .HasDatabaseName("ix_link_attribute_link_definition_id_key");
+
+                    b.ToTable("link_attribute");
+                });
+
             modelBuilder.Entity("Linkbase.Data.LinkDefinition", b =>
                 {
                     b.Property<long>("Id")
@@ -660,6 +703,18 @@ namespace Linkbase.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.LinkAttribute", b =>
+                {
+                    b.HasOne("Linkbase.Data.LinkDefinition", "LinkDefinition")
+                        .WithMany("Attributes")
+                        .HasForeignKey("LinkDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_link_attribute_link_definition_link_definition_id");
+
+                    b.Navigation("LinkDefinition");
+                });
+
             modelBuilder.Entity("Linkbase.Data.LinkDefinition", b =>
                 {
                     b.HasOne("Linkbase.Data.NodeType", "Source")
@@ -749,6 +804,11 @@ namespace Linkbase.Data.Migrations
                         .HasConstraintName("fk_staged_item_import_batch_import_batch_id");
 
                     b.Navigation("ImportBatch");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.LinkDefinition", b =>
+                {
+                    b.Navigation("Attributes");
                 });
 
             modelBuilder.Entity("Linkbase.Data.NodeType", b =>

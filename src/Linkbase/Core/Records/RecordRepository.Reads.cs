@@ -174,9 +174,10 @@ public sealed partial class RecordRepository
                 .Where(l => l.SourceId == id && l.RelType == group.RelType)
                 .OrderBy(l => l.Target.Name).ThenBy(l => l.Id)
                 .Take(LinksShown)
-                .Select(l => new RecordLink(l.Id, l.TargetId, l.Target.Type, l.Target.Key, l.Target.Name))
+                .Select(l => new { l.Id, l.TargetId, l.Target.Type, l.Target.Key, l.Target.Name, l.Props })
                 .ToListAsync(cancellationToken);
-            groups.Add(new RecordLinkGroup(group.RelType, true, group.Total, links));
+            groups.Add(new RecordLinkGroup(group.RelType, true, group.Total,
+                links.Select(l => new RecordLink(l.Id, l.TargetId, l.Type, l.Key, l.Name) { Values = Values(l.Props) }).ToList()));
         }
 
         foreach (var group in incoming.OrderBy(g => g.RelType))
@@ -185,12 +186,31 @@ public sealed partial class RecordRepository
                 .Where(l => l.TargetId == id && l.RelType == group.RelType)
                 .OrderBy(l => l.Source.Name).ThenBy(l => l.Id)
                 .Take(LinksShown)
-                .Select(l => new RecordLink(l.Id, l.SourceId, l.Source.Type, l.Source.Key, l.Source.Name))
+                .Select(l => new { l.Id, l.SourceId, l.Source.Type, l.Source.Key, l.Source.Name, l.Props })
                 .ToListAsync(cancellationToken);
-            groups.Add(new RecordLinkGroup(group.RelType, false, group.Total, links));
+            groups.Add(new RecordLinkGroup(group.RelType, false, group.Total,
+                links.Select(l => new RecordLink(l.Id, l.SourceId, l.Type, l.Key, l.Name) { Values = Values(l.Props) }).ToList()));
         }
 
         return groups;
+    }
+
+    // The values a link of this kind can carry, in the order the model gives them.
+    public async Task<IReadOnlyList<RecordField>> LinkAttributesAsync(string sourceType, string relType, string targetType, CancellationToken cancellationToken = default)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await AttributesAsync(db, sourceType, relType, targetType, cancellationToken);
+    }
+
+    internal static async Task<List<RecordField>> AttributesAsync(
+        LinkbaseDbContext db, string sourceType, string relType, string targetType, CancellationToken cancellationToken)
+    {
+        var attributes = await db.LinkAttributes.AsNoTracking()
+            .Where(a => a.LinkDefinition.SourceType == sourceType && a.LinkDefinition.RelType == relType && a.LinkDefinition.TargetType == targetType)
+            .OrderBy(a => a.Id)
+            .Select(a => new { a.Key, a.Type, a.Options, a.Required })
+            .ToListAsync(cancellationToken);
+        return attributes.Select(a => new RecordField(a.Key, a.Type, a.Options ?? []) { Required = a.Required }).ToList();
     }
 
     // The kinds of link a record of this type can have, either way round. Links to a module's derived records are its own,

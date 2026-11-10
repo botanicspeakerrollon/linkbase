@@ -98,7 +98,14 @@ public sealed partial class ImportStagingService
         string End(string? id) => id is null ? "" : names.GetValueOrDefault(id, id);
         return new StagedPage(total, items.Select(i => i.Kind == StagedKind.Record
             ? new StagedRow(i.Id, i.Kind, i.Type, i.Name ?? i.Key ?? "", Detail(i.Key, i.Props), i.Included)
-            : new StagedRow(i.Id, i.Kind, i.Type, $"{End(i.SourceId)} {i.RelType} {End(i.TargetId)}", $"{i.Type} {i.RelType} {i.TargetType}", i.Included) { TargetType = i.TargetType }).ToList());
+            : new StagedRow(i.Id, i.Kind, i.Type, $"{End(i.SourceId)} {i.RelType} {End(i.TargetId)}", LinkDetail(i.Type, i.RelType, i.TargetType, i.Props), i.Included) { TargetType = i.TargetType }).ToList());
+    }
+
+    // The kinds of record it links, then the link's values, such as "Person WORKS_ON Project · role: Lead".
+    private static string LinkDetail(string sourceType, string? relType, string? targetType, string? props)
+    {
+        var values = JsonNode.Parse(props ?? "{}") as JsonObject ?? [];
+        return string.Join(" · ", new[] { $"{sourceType} {relType} {targetType}" }.Concat(values.Select(v => $"{v.Key}: {Shown(v.Value)}")));
     }
 
     // The key, then each value, such as "s1 · city: Bern · rating: 4".

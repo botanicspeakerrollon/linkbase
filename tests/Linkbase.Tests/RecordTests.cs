@@ -118,8 +118,9 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
 
         var links = await records.LinksAsync(dev.Id);
         var worksOn = links.Single(g => g.RelType == "WORKS_ON" && g.Outgoing);
-        Assert.Equal(["Patient portal", "Stock forecasting"], worksOn.Links.Select(l => l.OtherName));
-        Assert.Equal(("Project", 2), (worksOn.Links[0].OtherType, worksOn.Total));
+        // Dev is on the portal twice, in different roles, so two links go to it.
+        Assert.Equal(["Patient portal", "Patient portal", "Stock forecasting"], worksOn.Links.Select(l => l.OtherName));
+        Assert.Equal(("Project", 3), (worksOn.Links[0].OtherType, worksOn.Total));
 
         var portal = await records.LinksAsync(worksOn.Links[0].OtherId);
         Assert.Contains(portal, g => g.RelType == "WORKS_ON" && !g.Outgoing && g.Links.Any(l => l.OtherName == "Dev Raman"));
@@ -319,7 +320,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var graph = new GraphRepository(factory);
         long WorksOn(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WORKS_ON").Links;
         await records.AddLinkAsync(id, "WORKS_ON", project.Id);
-        Assert.Equal(13, WorksOn(await graph.ConnectionCountsAsync()));
+        Assert.Equal(14, WorksOn(await graph.ConnectionCountsAsync()));
         Assert.Contains("already linked", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.AddLinkAsync(id, "WORKS_ON", project.Id))).Message);
         Assert.Contains("no Project WORKS_ON Person", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.AddLinkAsync(project.Id, "WORKS_ON", id))).Message);
         Assert.Contains("no longer exists", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.AddLinkAsync(id, "WORKS_ON", "project:nope"))).Message);
@@ -328,9 +329,64 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var link = (await records.LinksAsync(id)).Single().Links.Single();
         await records.RemoveLinkAsync(link.Id);
         await records.RemoveLinkAsync(link.Id);
-        Assert.Equal(12, WorksOn(await graph.ConnectionCountsAsync()));
+        Assert.Equal(13, WorksOn(await graph.ConnectionCountsAsync()));
         await records.DeleteAsync(id);
         Assert.Null(await records.GetAsync("Person", key));
+    }
+
+    [Fact]
+    public async Task A_relationships_attributes_are_loaded_with_their_links()
+    {
+        var (_, records) = await ExampleAsync();
+
+        var attributes = await records.LinkAttributesAsync("Person", "WORKS_ON", "Project");
+        Assert.Equal([new RecordField("role", FieldType.Text), new RecordField("days_a_week", FieldType.Number)], attributes);
+        Assert.Empty(await records.LinkAttributesAsync("Person", "MEMBER_OF", "Team"));
+
+        var links = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "WORKS_ON").Links;
+        Assert.Contains(links, l => l.OtherId == "project:pr3" && l.Values["role"] == "Engineer" && l.Values["days_a_week"] == "5");
+    }
+
+    [Fact]
+    public async Task The_same_two_records_can_be_linked_again_when_an_attribute_differs()
+    {
+        var (_, records) = await ExampleAsync();
+        Dictionary<string, string?> Values(string role, string days) => new() { ["role"] = role, ["days_a_week"] = days };
+
+        // The model file already has p4 on pr4 as an Engineer for a day, and as a Reviewer for a day.
+        await records.AddLinkAsync("person:p4", "WORKS_ON", "project:pr4", Values("Tech lead", "1"));
+        var message = (await Assert.ThrowsAsync<LinkbaseValidationException>(
+            () => records.AddLinkAsync("person:p4", "WORKS_ON", "project:pr4", Values("Tech lead", "1")))).Message;
+        Assert.Contains("same values", message);
+        Assert.Contains("already linked", (await Assert.ThrowsAsync<LinkbaseValidationException>(
+            () => records.AddLinkAsync("person:p4", "WORKS_ON", "project:pr4", Values("Reviewer", "1.0")))).Message);
+
+        var links = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "WORKS_ON").Links.Where(l => l.OtherId == "project:pr4").ToList();
+        Assert.Equal(3, links.Count);
+
+        // A relationship without attributes still allows one link between two records.
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.AddLinkAsync("person:p4", "MEMBER_OF", "team:t2"));
+    }
+
+    [Fact]
+    public async Task A_links_values_can_be_edited_in_place_but_not_into_a_repeat()
+    {
+        var (_, records) = await ExampleAsync();
+        var links = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "WORKS_ON").Links.Where(l => l.OtherId == "project:pr4").ToList();
+        var engineer = links.Single(l => l.Values["role"] == "Engineer");
+
+        await records.UpdateLinkAsync(engineer.Id, new Dictionary<string, string?> { ["role"] = "Engineer", ["days_a_week"] = "3" });
+        var edited = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.Id == engineer.Id);
+        Assert.Equal("3", edited.Values["days_a_week"]);
+
+        Assert.Contains("same values", (await Assert.ThrowsAsync<LinkbaseValidationException>(
+            () => records.UpdateLinkAsync(engineer.Id, new Dictionary<string, string?> { ["role"] = "Reviewer", ["days_a_week"] = "1" }))).Message);
+        Assert.Contains("must be a number", (await Assert.ThrowsAsync<LinkbaseValidationException>(
+            () => records.UpdateLinkAsync(engineer.Id, new Dictionary<string, string?> { ["role"] = "Engineer", ["days_a_week"] = "lots" }))).Message);
+
+        var member = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "MEMBER_OF").Links.Single();
+        Assert.Contains("no values to edit", (await Assert.ThrowsAsync<LinkbaseValidationException>(
+            () => records.UpdateLinkAsync(member.Id, new Dictionary<string, string?>()))).Message);
     }
 
     [Fact]
@@ -464,6 +520,19 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
         Told("Saved.");
         Sees(cut, "Lead backend engineer");
         Assert.Equal("Lead backend engineer", (await Records.GetAsync("Person", "p4"))!.Values["title"]);
+    }
+
+    [Fact]
+    public async Task A_record_shows_each_links_attributes_and_repeats_are_separate_links()
+    {
+        await UseExampleAsync();
+        var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Person").Add(x => x.Key, "p4"));
+
+        // Dev is on the portal twice, as an Engineer and as a Reviewer.
+        Sees(cut, "Role: Engineer");
+        Sees(cut, "Role: Reviewer");
+        Sees(cut, "Days a week: 5");
+        Assert.Equal(3, cut.FindAll("[aria-label^='Edit the link to']").Count);
     }
 
     [Fact]

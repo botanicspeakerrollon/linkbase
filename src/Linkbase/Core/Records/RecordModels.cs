@@ -79,12 +79,17 @@ public sealed record RecordInput(string Name, IReadOnlyDictionary<string, string
 public sealed record PendingRecord(string Type, string? Key, RecordInput Input);
 
 // A record to create and link the new record to: Key is made from the name when empty, as for any new record.
-public sealed record NewLinkedRecord(string RelType, string Type, string? Key, RecordInput Input);
+public sealed record NewLinkedRecord(string RelType, string Type, string? Key, RecordInput Input, IReadOnlyDictionary<string, string?>? Values = null);
 
 // A link from a new record to one already here.
-public sealed record NewLink(string RelType, string TargetId);
+// Values are the link's attributes as a form sends them, if its relationship has any.
+public sealed record NewLink(string RelType, string TargetId, IReadOnlyDictionary<string, string?>? Values = null);
 
-public sealed record RecordLink(long Id, string OtherId, string OtherType, string OtherKey, string OtherName);
+// Values are the link's attributes, shown as text like a record's, such as a person's role on a project.
+public sealed record RecordLink(long Id, string OtherId, string OtherType, string OtherKey, string OtherName)
+{
+    public IReadOnlyDictionary<string, string> Values { get; init; } = new Dictionary<string, string>();
+}
 
 // The links of one kind on one side of a record, such as every Service that CALLS_AT this Stop. Only the first few come
 // back, with the total.
