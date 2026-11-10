@@ -2,6 +2,9 @@
 @page "/import-csv/review/{BatchId:long}"
 @using System.Globalization
 @inject ImportStagingService Staging
+@inject RecordRepository Records
+@using Linkbase.Core.Explore
+@using Linkbase.Core.Records
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -69,6 +72,18 @@ else if (_batch is not null)
                                  Disabled="@(_batch.Status != ImportStatus.Staged)" aria-label="@($"Import {context.Item.Title}")" />
                 </CellTemplate>
             </TemplateColumn>
+            <TemplateColumn T="StagedRow" Title="Type" Sortable="false">
+                <CellTemplate>
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.NoWrap">
+                        <MudChip T="string" Size="Size.Small" Icon="@StyleOf(context.Item.Type).Icon" Style="@ChipStyle(context.Item.Type)" Class="ma-0">@context.Item.Type</MudChip>
+                        @if (context.Item.TargetType is { } target)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+                            <MudChip T="string" Size="Size.Small" Icon="@StyleOf(target).Icon" Style="@ChipStyle(target)" Class="ma-0">@target</MudChip>
+                        }
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
             <PropertyColumn Property="x => x.Title" Title="Item" Sortable="false" />
             <PropertyColumn Property="x => x.Detail" Title="Details" Sortable="false" />
         </Columns>
@@ -87,6 +102,7 @@ else if (_batch is not null)
     private MudDataGrid<StagedRow>? _grid;
     private StagedBatch? _batch;
     private StagedKind? _kind;
+    private Dictionary<string, RecordType> _types = [];
     private bool _missing;
     private bool _busy;
 
@@ -94,7 +110,14 @@ else if (_batch is not null)
     {
         _batch = await Staging.GetAsync(BatchId);
         _missing = _batch is null;
+        _types = (await Records.TypesAsync()).ToDictionary(t => t.Name, t => t, StringComparer.Ordinal);
     }
+
+    // The type's icon and colour, as everywhere else in the app.
+    private LabelStyle StyleOf(string type) =>
+        _types.TryGetValue(type, out var found) ? GraphStyle.For(type, found.Color, found.Icon) : GraphStyle.For(type, null, null);
+
+    private string ChipStyle(string type) => $"background-color: {StyleOf(type).Color}; color: #ffffff";
 
     private static string Count(int count) => count.ToString("N0", CultureInfo.InvariantCulture);
 

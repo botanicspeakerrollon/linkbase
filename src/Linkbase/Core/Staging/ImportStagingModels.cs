@@ -53,7 +53,11 @@ public sealed record StagedBatch(
     public int Items => Records + Links;
 }
 
-public sealed record StagedRow(long Id, StagedKind Kind, string Type, string Title, string Detail, bool Included);
+// For a link, Type is its source's type and TargetType its target's.
+public sealed record StagedRow(long Id, StagedKind Kind, string Type, string Title, string Detail, bool Included)
+{
+    public string? TargetType { get; init; }
+}
 
 public sealed record StagedPage(int Total, IReadOnlyList<StagedRow> Rows);
 

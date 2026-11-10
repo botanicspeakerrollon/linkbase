@@ -98,7 +98,7 @@ public sealed partial class ImportStagingService
         string End(string? id) => id is null ? "" : names.GetValueOrDefault(id, id);
         return new StagedPage(total, items.Select(i => i.Kind == StagedKind.Record
             ? new StagedRow(i.Id, i.Kind, i.Type, i.Name ?? i.Key ?? "", Detail(i.Key, i.Props), i.Included)
-            : new StagedRow(i.Id, i.Kind, i.Type, $"{End(i.SourceId)} {i.RelType} {End(i.TargetId)}", $"{i.Type} {i.RelType} {i.TargetType}", i.Included)).ToList());
+            : new StagedRow(i.Id, i.Kind, i.Type, $"{End(i.SourceId)} {i.RelType} {End(i.TargetId)}", $"{i.Type} {i.RelType} {i.TargetType}", i.Included) { TargetType = i.TargetType }).ToList());
     }
 
     // The key, then each value, such as "s1 · city: Bern · rating: 4".
