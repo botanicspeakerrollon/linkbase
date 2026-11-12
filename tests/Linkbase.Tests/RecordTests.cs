@@ -27,7 +27,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     private async Task<(ModelFactory Factory, RecordRepository Records)> ExampleAsync()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Example, TextWriter.Null);
         return (factory, new RecordRepository(factory));
     }
 
@@ -232,7 +232,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     public async Task A_new_record_brings_the_links_its_type_requires_and_keeps_one()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         var records = new RecordRepository(factory);
         var graph = new GraphRepository(factory);
         long WrittenBy(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WRITTEN_BY").Links;
@@ -424,7 +424,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var refs = new ExternalRefRepository(factory);
         await refs.AddAsync("person:p1", DataSource.Ukc, "1");
 
-        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Example, TextWriter.Null);
 
         Assert.Empty(await refs.RefsAsync("person:p1"));
         await using var check = factory.CreateDbContext();
@@ -457,7 +457,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     private async Task UseExampleAsync()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
     }
 
@@ -567,6 +567,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
         {
             var before = cut.FindAll("button[aria-label^='Remove the link to']").Count;
             ClickFresh(cut, () => cut.Find("button[aria-label^='Remove the link to']"));
+            Press(Dialogs, "Remove");
             cut.WaitForAssertion(() => Assert.True(cut.FindAll("button[aria-label^='Remove the link to']").Count < before));
         }
 
@@ -600,7 +601,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     public async Task A_new_record_chooses_the_links_its_type_requires()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Book"));
 
@@ -624,7 +625,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     public async Task A_new_record_of_a_hierarchy_type_can_choose_its_parent()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/climbing-demo/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/climbing-demo/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Area"));
 
@@ -638,7 +639,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     public async Task A_new_record_can_create_the_record_its_link_requires()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Book"));
 
@@ -667,7 +668,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     public async Task Linked_records_are_created_with_the_record_or_not_at_all()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         var records = new RecordRepository(factory);
         var none = new Dictionary<string, string?>();
 

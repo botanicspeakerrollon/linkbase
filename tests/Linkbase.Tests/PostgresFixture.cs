@@ -76,6 +76,18 @@ internal sealed class PostgresServer
     {
         await using var db = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
         await db.Database.MigrateAsync();
+        await WithoutRequiredReasonsAsync(connectionString);
+    }
+
+    // The app asks for a reason with every change unless the model says otherwise, and most tests aren't about that. They get
+    // a database where history is recorded but no reason is needed. HistoryTests turn it on.
+    internal static async Task WithoutRequiredReasonsAsync(string connectionString)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(
+            "INSERT INTO model_setting (id, record_history, require_reason) VALUES (1, true, false) ON CONFLICT (id) DO UPDATE SET require_reason = false", connection);
+        await command.ExecuteNonQueryAsync();
     }
 
     // A separate, migrated database, with whatever the SQL puts in the generic store: a model the app has never heard of.
@@ -104,6 +116,7 @@ internal sealed class PostgresServer
         {
             await MigrateAsync(connectionString);
             await new ModelLoader(new ModelFactory(connectionString)).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+            await WithoutRequiredReasonsAsync(connectionString);
         });
         return await CreateDatabaseAsync($"model_{Guid.NewGuid():N}", template) + ";Pooling=false";
     }
@@ -125,6 +138,7 @@ internal sealed class PostgresServer
 
         await using var db = CreateContext();
         await db.Database.MigrateAsync();
+        await WithoutRequiredReasonsAsync(_connectionString);
     }
 
     public async Task StopAsync()

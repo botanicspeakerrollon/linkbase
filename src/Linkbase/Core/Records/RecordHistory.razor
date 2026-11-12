@@ -1,0 +1,115 @@
+@using System.Globalization
+@inject HistoryRepository History
+
+@* One record's audit trail, newest first: what changed, when, and why. Only shown where the model keeps a history. *@
+@if (_entries.Count > 0)
+{
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">History</MudText>
+    <MudList T="string" Dense="true" Class="record-history">
+        @foreach (var entry in _entries)
+        {
+            <MudListItem T="string">
+                <div>
+                    <div class="d-flex align-center" style="gap: 8px">
+                        <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">@entry.When.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)</MudText>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@KindName(entry.Kind)</MudChip>
+                        @if (!string.IsNullOrWhiteSpace(entry.Note))
+                        {
+                            <span class="history-note">@entry.Note</span>
+                        }
+                        @if (entry.SourceUrl is { } source && Uri.TryCreate(source, UriKind.Absolute, out var url) && url.Scheme is "http" or "https")
+                        {
+                            <MudLink Href="@source" Target="_blank" rel="noopener noreferrer">Source</MudLink>
+                        }
+                    </div>
+                    @foreach (var change in entry.Changes)
+                    {
+                        <div class="history-change">@Describe(change)</div>
+                    }
+                </div>
+            </MudListItem>
+        }
+    </MudList>
+    @if (_more)
+    {
+        <MudButton OnClick="MoreAsync" Variant="Variant.Text" Size="Size.Small">Show older</MudButton>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public string RecordId { get; set; } = "";
+
+    // Changes after this component first showed, such as an edit, are picked up by loading again.
+    [Parameter] public int Version { get; set; }
+
+    private List<HistoryEntry> _entries = [];
+    private bool _more;
+    private string? _loaded;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var key = $"{RecordId}/{Version}";
+        if (_loaded == key)
+        {
+            return;
+        }
+
+        _loaded = key;
+        var page = await History.ForRecordAsync(RecordId);
+        _entries = page.ToList();
+        _more = page.Count >= HistoryRepository.PageSize;
+    }
+
+    private async Task MoreAsync()
+    {
+        var page = await History.ForRecordAsync(RecordId, _entries.Where(e => e.ChangeSetId != 0).Select(e => e.When).Min());
+        _entries.AddRange(page);
+        _more = page.Count >= HistoryRepository.PageSize;
+    }
+
+    private static string KindName(JustificationKind kind) => kind switch
+    {
+        JustificationKind.Import => "Import",
+        JustificationKind.Derived => "Derived",
+        JustificationKind.Correction => "Correction",
+        _ => "Edit",
+    };
+
+    private string Describe(HistoryChange change)
+    {
+        var mine = change.EntityId == RecordId;
+        switch (change.Kind)
+        {
+            case ChangeEntityKind.Node:
+                return change.Op switch
+                {
+                    ChangeOp.Create => "Created.",
+                    ChangeOp.Delete => "Deleted.",
+                    _ => $"{RecordRepository.Title(change.FieldKey ?? "name")}: {Show(change.OldValue)} → {Show(change.NewValue)}",
+                };
+            case ChangeEntityKind.Link:
+                var link = mine ? $"{change.RelType} → {change.OtherName}" : $"{change.OtherName} {change.RelType} →";
+                return change.Op switch
+                {
+                    ChangeOp.Create => $"Linked: {link}",
+                    ChangeOp.Delete => $"Unlinked: {link}",
+                    _ => $"{link}, {RecordRepository.Title(change.FieldKey ?? "")}: {Show(change.OldValue)} → {Show(change.NewValue)}",
+                };
+            case ChangeEntityKind.ExternalRef:
+                return $"Removed the {change.FieldKey} id {change.OldValue}.";
+            default:
+                return "";
+        }
+    }
+
+    private static string Show(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return "(empty)";
+        }
+
+        var line = value.Replace('\n', ',').Trim();
+        return line.Length > 80 ? line[..80] + "…" : line;
+    }
+}

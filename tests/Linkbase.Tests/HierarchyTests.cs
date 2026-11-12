@@ -100,7 +100,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         var path = Write(Model(), areas, extra.Length == 0 ? "id,parent\n" : extra);
 
-        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => new ModelLoader(factory).LoadAsync(path, TextWriter.Null));
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => TestModels.LoadAsync(factory, path, TextWriter.Null));
 
         Assert.Contains("The Area hierarchy isn't followed", ex.Message);
         Assert.Contains(expected, ex.Message);
@@ -112,7 +112,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         var path = Write(Model(), "id,name,kind,parent\na,A,top,\nb,B,mid,a\nc,C,low,b\nd,D,low,c\n");
 
-        await new ModelLoader(factory).LoadAsync(path, TextWriter.Null);
+        await TestModels.LoadAsync(factory, path, TextWriter.Null);
 
         var area = (await new RecordRepository(factory).TypeAsync("Area"))!;
         Assert.Equal("kind", area.Hierarchy!.FieldKey);
@@ -125,7 +125,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     public async Task The_demo_logbook_loads_with_its_hierarchy()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Demo, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
 
         var area = (await new RecordRepository(factory).TypeAsync("Area"))!;
 
@@ -137,7 +137,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     private async Task<RecordRepository> DemoAsync()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Demo, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
         return new RecordRepository(factory);
     }
 
@@ -236,7 +236,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     public async Task Committing_an_import_follows_the_hierarchy()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Demo, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
         var records = new RecordRepository(factory);
         var staging = new ImportStagingService(factory);
 

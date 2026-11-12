@@ -28,6 +28,7 @@ A kind of thing in the model (Crag, Route, Ascent...).
 | `owner` | text | nullable; the domain module that owns it |
 | `hierarchy_field` | text | nullable; set when the type's records form a tree: the choice field saying which level a record is on |
 | `hierarchy_rel` | text | nullable; the relationship from a record to its parent |
+| `name_template` | text | nullable; makes a record's name from its fields, such as `{name_first} {name_last}` |
 
 ### `hierarchy_level`
 One level of a type's hierarchy, such as `region`. See [hierarchies](models.md#hierarchies).
@@ -54,8 +55,12 @@ A property a node type has. Values live in `node.props`.
 | `options` | text[] | nullable; the allowed values for a choice field |
 | `required` | boolean | default false |
 | `owner` | text | nullable |
+| `description` | text | nullable; shown to people beside the field |
+| `group_name` | text | nullable; fields with the same group are shown together under it |
+| `multiple` | boolean | default false; the field holds several values of its type, as a JSON array |
 
 Unique: (`node_type_name`, `key`).
+
 
 ### `link_definition`
 A relationship the model allows: source type, relationship, target type.
@@ -67,7 +72,9 @@ A relationship the model allows: source type, relationship, target type.
 | `rel_type` | text | |
 | `target_type` | text | FK to `node_type.name` |
 | `required` | boolean | default false |
-| `links` | bigint | default 0; count of `node_link` rows for this relationship, kept by the code that adds or removes links |
+| `max_links` | integer | nullable; the most links of this kind one source record may have |
+| `links` | bigint
+ | default 0; count of `node_link` rows for this relationship, kept by the code that adds or removes links |
 
 Unique: (`source_type`, `rel_type`, `target_type`).
 
@@ -172,13 +179,66 @@ ASP.NET Core data protection keys.
 | `friendly_name` | text | nullable |
 | `xml` | text | nullable |
 
+### `model_setting`
+The model's history settings, from its model file. At most one row (`id = 1`); none means both are on.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | integer | PK, always 1 |
+| `record_history` | boolean | default `true`. Whether changes are logged |
+| `require_reason` | boolean | default `true`. Whether a person has to give a reason |
+
+### `justification`
+The why of a change set. `note` is a brief paraphrase, never text copied from a source.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity |
+| `kind` | text | `manual`, `import`, `derived` or `correction` |
+| `note` | text | nullable |
+| `source_url` | text | nullable |
+| `import_batch_id` | bigint | nullable, FK to `import_batch.id` |
+| `user_id` | bigint | FK to `app_user.id` |
+| `created_at` | timestamptz | default `now()` |
+
+### `change_set`
+One intent saved together: one edit, one import commit, one rebuild by a module.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity |
+| `justification_id` | bigint | FK to `justification.id` |
+| `cause_change_set_id` | bigint | nullable, FK to `change_set.id`. The change that made a module rebuild its records |
+| `created_at` | timestamptz | default `now()` |
+
+### `change`
+One thing that changed. An update has a row for each field or link attribute that changed (`field_key`, with `old_value`
+and `new_value` as text). A create or delete of a record has one row whose value is JSON (`{"name": ..., "values": {...}}`),
+and a link's is its values as JSON. `entity_id` and `related_id` have no foreign keys: a model reload replaces the records,
+and the history of what was there stays.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity |
+| `change_set_id` | bigint | FK to `change_set.id` |
+| `entity_kind` | text | `node`, `link`, `external_ref`, `definition` or `import_batch` |
+| `entity_id` | text | the record's id; for a link its source; for an `import_batch` the batch id; for a `definition` such as `type:Supplier` |
+| `op` | text | `create`, `update` or `delete` |
+| `field_key` | text | nullable. `name` or a field's key; for an `external_ref` its source |
+| `rel_type` | text | nullable. A link's relationship |
+| `related_id` | text | nullable. A link's target |
+| `old_value`, `new_value` | text | nullable |
+
+Indexes: (`entity_kind`, `entity_id`, `id`), (`related_id`, `id`), `change_set_id`. Created by `AddAuditHistory`.
+
 ## Relationships
 
 ```
 app_user ──< node, import_batch, graph_scene
 node_type ──< node, field_definition, link_definition (as source and as target)
 node ──< node_link (as source and as target)
-import_batch ──< node, node_link, external_ref, staged_item
+import_batch ──< node, node_link, external_ref, staged_item, justification
+justification ──< change_set ──< change
 ```
 
 ## Indexes (besides primary keys)
@@ -227,4 +287,5 @@ The `climbing_*` views belong to the climbing domain, but they are created in ev
 
 ## Migration history
 
-`__EFMigrationsHistory` holds one row, `20261109111942_InitialCreate`.
+`__EFMigrationsHistory` has `20261109111942_InitialCreate`, then the later migrations in `src/Linkbase/Data/Migrations`, the
+newest being `AddAuditHistory`.

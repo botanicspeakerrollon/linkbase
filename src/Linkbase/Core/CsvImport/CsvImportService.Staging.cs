@@ -46,6 +46,9 @@ public sealed partial class CsvImportService
         var notes = new List<string>();
         var choices = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         var required = new HashSet<string>(StringComparer.Ordinal);
+
+        // Fields that hold several values of a type other than text: the file splits them by |, and each is checked on its own.
+        var many = new Dictionary<string, FieldType>(StringComparer.Ordinal);
         await using (var db = await contextFactory.CreateDbContextAsync(cancellationToken))
         {
             if (await db.NodeTypes.AsNoTracking().Where(t => t.Name == mapping.Type).Select(t => t.Owner).SingleOrDefaultAsync(cancellationToken) is { } owner)
@@ -54,7 +57,11 @@ public sealed partial class CsvImportService
             }
 
             var defined = await db.FieldDefinitions.AsNoTracking().Where(f => f.NodeTypeName == mapping.Type)
-                .Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner }).ToListAsync(cancellationToken);
+                .Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner, f.Multiple }).ToListAsync(cancellationToken);
+            foreach (var field in defined.Where(d => d.Multiple && d.Type != FieldType.List))
+            {
+                many[field.Key] = field.Type;
+            }
 
             // A kept field's module fills it in, so it needs no column.
             foreach (var field in defined.Where(d => d.Required && d.Owner is null))
@@ -140,7 +147,8 @@ public sealed partial class CsvImportService
                 {
                     // A list of nothing, such as "|", is no value, like an empty cell.
                     var text = reader.GetField(field.Column)?.Trim() ?? "";
-                    if (text.Length == 0 || (field.Type == FieldType.List && FieldValues.SplitList(text, FieldValues.ListSeparator).Count == 0))
+                    var several = many.TryGetValue(field.Key, out var elementType);
+                    if (text.Length == 0 || ((several || field.Type == FieldType.List) && FieldValues.SplitList(text, FieldValues.ListSeparator).Count == 0))
                     {
                         if (required.Contains(field.Key) && ++bad <= ProblemsShown)
                         {
@@ -151,7 +159,23 @@ public sealed partial class CsvImportService
                     }
 
                     var options = choices.GetValueOrDefault(field.Key) ?? [];
-                    if (Typed(text, field.Type, options) is { } value)
+                    if (several)
+                    {
+                        var items = FieldValues.SplitList(text, FieldValues.ListSeparator);
+                        var typed = items.Select(item => Typed(item, elementType, options)).ToList();
+                        if (typed.All(t => t is not null))
+                        {
+                            props[field.Key] = new JsonArray(typed.ToArray());
+                        }
+                        else if (++bad <= ProblemsShown)
+                        {
+                            var wrong = items[typed.FindIndex(t => t is null)];
+                            problems.Add(elementType == FieldType.Choice
+                                ? $"Row {line}: {field.Key} has \"{wrong}\", which isn't one of {FieldValues.Listed(options)}."
+                                : $"Row {line}: {field.Key} has \"{wrong}\", which isn't {Labelled(elementType)}.");
+                        }
+                    }
+                    else if (Typed(text, field.Type, options) is { } value)
                     {
                         props[field.Key] = value;
                     }
@@ -240,7 +264,7 @@ public sealed partial class CsvImportService
                 // A list's values are split by | in a file, and one per line when checked.
                 var values = mapped.ToDictionary(
                     m => m.Key,
-                    m => (string?)(attributes.First(a => a.Key == m.Key).Type == FieldType.List
+                    m => (string?)(attributes.First(a => a.Key == m.Key).IsMany
                         ? reader.GetField(m.Column)?.Replace('|', '\n')
                         : reader.GetField(m.Column)));
                 rows.Add((line, reader.GetField(mapping.FromColumn)?.Trim() ?? "", reader.GetField(mapping.ToColumn)?.Trim() ?? "", values));

@@ -23,7 +23,8 @@ public sealed partial class RecordRepository
                 t.Owner,
                 t.HierarchyField,
                 t.HierarchyRel,
-                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner }).ToList(),
+                t.NameTemplate,
+                Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner, f.Description, f.GroupName, f.Multiple }).ToList(),
                 Levels = t.HierarchyLevels.OrderBy(l => l.Id).Select(l => new { l.Kind, l.IsRoot, l.Under }).ToList(),
             })
             .ToListAsync(cancellationToken);
@@ -32,9 +33,22 @@ public sealed partial class RecordRepository
             .OrderBy(l => l.RelType).ThenBy(l => l.TargetType)
             .Select(l => new { l.SourceType, l.RelType, l.TargetType })
             .ToListAsync(cancellationToken);
+        var limits = await db.LinkDefinitions.AsNoTracking()
+            .Where(l => l.MaxLinks != null)
+            .OrderBy(l => l.RelType).ThenBy(l => l.TargetType)
+            .Select(l => new { l.SourceType, l.RelType, l.TargetType, Max = l.MaxLinks!.Value })
+            .ToListAsync(cancellationToken);
         return types.Select(t => new RecordType(t.Name, t.Color, t.Icon,
-            t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? [], f.Owner) { Required = f.Required }).ToList(), t.Owner)
+            t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? [], f.Owner)
+            {
+                Required = f.Required,
+                Description = f.Description,
+                Group = f.GroupName,
+                Multiple = f.Multiple,
+            }).ToList(), t.Owner)
         {
+            NameTemplate = t.NameTemplate,
+            LinkLimits = limits.Where(l => l.SourceType == t.Name).Select(l => new LinkLimit(l.RelType, l.TargetType, l.Max)).ToList(),
             RequiredLinks = required.Where(l => l.SourceType == t.Name).Select(l => new RequiredLink(l.RelType, l.TargetType)).ToList(),
             Hierarchy = t.HierarchyField is null || t.HierarchyRel is null
                 ? null
@@ -111,6 +125,24 @@ public sealed partial class RecordRepository
         {
             case (FieldType.Text or FieldType.List, FilterOp.Contains):
                 return $"{column} ILIKE {add($"%{EscapeLike(value)}%", NpgsqlDbType.Text)}";
+            case (FieldType.Choice, FilterOp.Is) when field.Multiple:
+                var chosen = FieldValues.MatchChoice(value, field.Options)
+                    ?? throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}.");
+                return $"props -> {add(field.Key, NpgsqlDbType.Text)} ? {add(chosen, NpgsqlDbType.Text)}";
+            case (FieldType.Number, FilterOp.Is or FilterOp.AtLeast or FilterOp.AtMost) when field.Multiple:
+                if (!decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var each))
+                {
+                    throw new LinkbaseValidationException($"{Title(field.Key)} must be a number, such as 12.5.");
+                }
+
+                return $"EXISTS (SELECT 1 FROM jsonb_array_elements_text(CASE WHEN jsonb_typeof(props -> {add(field.Key, NpgsqlDbType.Text)}) = 'array' THEN props -> {add(field.Key, NpgsqlDbType.Text)} ELSE jsonb_build_array(props -> {add(field.Key, NpgsqlDbType.Text)}) END) e WHERE e::numeric {Compare(filter.Op)} {add(each, NpgsqlDbType.Numeric)})";
+            case (FieldType.Date, FilterOp.Is or FilterOp.AtLeast or FilterOp.AtMost) when field.Multiple:
+                if (!DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+                {
+                    throw new LinkbaseValidationException($"{Title(field.Key)} must be a date, such as 2026-11-06.");
+                }
+
+                return $"EXISTS (SELECT 1 FROM jsonb_array_elements_text(CASE WHEN jsonb_typeof(props -> {add(field.Key, NpgsqlDbType.Text)}) = 'array' THEN props -> {add(field.Key, NpgsqlDbType.Text)} ELSE jsonb_build_array(props -> {add(field.Key, NpgsqlDbType.Text)}) END) e WHERE e {Compare(filter.Op)} {add(day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NpgsqlDbType.Text)})";
             case (FieldType.Choice, FilterOp.Is):
                 return $"{column} = {add(FieldValues.MatchChoice(value, field.Options) ?? throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."), NpgsqlDbType.Text)}";
             case (FieldType.Boolean, FilterOp.Is):
@@ -149,7 +181,7 @@ public sealed partial class RecordRepository
             default:
                 var field = FieldFor(type, sort.Field);
                 var column = $"props ->> {add(field.Key, NpgsqlDbType.Text)}";
-                var expression = field.Type == FieldType.Number ? $"({column})::numeric" : field.Type is FieldType.Text or FieldType.Choice or FieldType.List ? $"lower({column})" : column;
+                var expression = field.IsMany ? $"lower({column})" : field.Type == FieldType.Number ? $"({column})::numeric" : field.Type is FieldType.Text or FieldType.Choice or FieldType.List ? $"lower({column})" : column;
                 return $"{expression} {direction} NULLS LAST, name, key";
         }
     }
@@ -214,9 +246,9 @@ public sealed partial class RecordRepository
         var attributes = await db.LinkAttributes.AsNoTracking()
             .Where(a => a.LinkDefinition.SourceType == sourceType && a.LinkDefinition.RelType == relType && a.LinkDefinition.TargetType == targetType)
             .OrderBy(a => a.Id)
-            .Select(a => new { a.Key, a.Type, a.Options, a.Required })
+            .Select(a => new { a.Key, a.Type, a.Options, a.Required, a.Description, a.Multiple })
             .ToListAsync(cancellationToken);
-        return attributes.Select(a => new RecordField(a.Key, a.Type, a.Options ?? []) { Required = a.Required }).ToList();
+        return attributes.Select(a => new RecordField(a.Key, a.Type, a.Options ?? []) { Required = a.Required, Description = a.Description, Multiple = a.Multiple }).ToList();
     }
 
     // The kinds of link a record of this type can have, either way round. Links to a module's derived records are its own,

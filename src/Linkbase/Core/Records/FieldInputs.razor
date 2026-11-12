@@ -2,21 +2,48 @@
 
 @* A box for each field, checked on save against its type. Writes what's typed into Values, keyed by the field. Used for a
    record's fields and for a relationship's attributes. *@
-@foreach (var field in Fields)
+@foreach (var section in FieldSection.Of(Fields))
+{
+    @if (section.Group is not null)
+    {
+        <MudText Typo="Typo.subtitle2" Class="mt-2">@section.Group</MudText>
+    }
+
+    @foreach (var field in section.Fields)
 {
     var key = field.Key;
     var label = RecordRepository.Title(key);
     var required = field.Required;
     var requiredError = $"{label} is required";
+    var help = Help(field);
+    @if (field.Multiple && field.Type == FieldType.Choice)
+    {
+        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" MultiSelection="true"
+                   SelectedValues="@ChosenOf(key)" SelectedValuesChanged="@(v => Values[key] = string.Join('\n', v))" HelperText="@help" Clearable="true">
+            @foreach (var option in field.Options)
+            {
+                <MudSelectItem Value="@option">@option</MudSelectItem>
+            }
+        </MudSelect>
+        continue;
+    }
+
+    @if (field.IsMany)
+    {
+        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
+                      ValueChanged="@(v => Values[key] = v)" Lines="2" Sizing="InputSizing.Auto" HelperText="@help" />
+        continue;
+    }
+
     @switch (field.Type)
     {
         case FieldType.Date:
             <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Date="@DateOf(key)" DateChanged="@(d => SetDate(key, d))"
-                           Clearable="true" DateFormat="yyyy-MM-dd" />
+                           Clearable="true" DateFormat="yyyy-MM-dd" HelperText="@help" />
             break;
         case FieldType.Boolean:
             <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(Values.GetValueOrDefault(key) ?? "")"
-                       ValueChanged="@(v => Values[key] = v)" ToStringFunc="@YesNo">
+                       ValueChanged="@(v => Values[key] = v)" ToStringFunc="@YesNo" HelperText="@help">
                 <MudSelectItem Value="@("")" />
                 <MudSelectItem Value="@("true")" />
                 <MudSelectItem Value="@("false")" />
@@ -24,7 +51,7 @@
             break;
         case FieldType.Choice:
             <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@(Values.GetValueOrDefault(key) ?? "")"
-                       ValueChanged="@(v => Values[key] = v)" ToStringFunc="@(v => v ?? "")" Clearable="true">
+                       ValueChanged="@(v => Values[key] = v)" ToStringFunc="@(v => v ?? "")" Clearable="true" HelperText="@help">
                 @foreach (var option in field.Options)
                 {
                     <MudSelectItem Value="@option">@option</MudSelectItem>
@@ -33,17 +60,18 @@
             break;
         case FieldType.List:
             <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
-                          ValueChanged="@(v => Values[key] = v)" Lines="2" AutoGrow="true" HelperText="One per line" />
+                          ValueChanged="@(v => Values[key] = v)" Lines="2" Sizing="InputSizing.Auto" HelperText="@help" />
             break;
         case FieldType.Number:
             <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
-                          ValueChanged="@(v => Values[key] = v)" InputMode="@(InputMode.@decimal)" />
+                          ValueChanged="@(v => Values[key] = v)" InputMode="@(InputMode.@decimal)" HelperText="@help" />
             break;
         default:
             <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@label" Required="@required" RequiredError="@requiredError" Value="@Values.GetValueOrDefault(key)"
-                          ValueChanged="@(v => Values[key] = v)" />
+                          ValueChanged="@(v => Values[key] = v)" HelperText="@help" />
             break;
     }
+}
 }
 
 @code {
@@ -54,6 +82,19 @@
         DateTime.TryParseExact(Values.GetValueOrDefault(key), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
 
     private void SetDate(string key, DateTime? date) => Values[key] = date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // The description, and for several values how to enter them.
+    private static string? Help(RecordField field)
+    {
+        var how = !field.IsMany ? null
+            : field.ElementType == FieldType.Date ? "One date per line, as yyyy-mm-dd."
+            : field.Type == FieldType.Choice ? null
+            : "One per line.";
+        return string.Join(' ', new[] { field.Description, how }.Where(t => !string.IsNullOrEmpty(t))) is { Length: > 0 } text ? text : null;
+    }
+
+    private IReadOnlyCollection<string> ChosenOf(string key) =>
+        (Values.GetValueOrDefault(key) ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     private static string YesNo(string? value) => value switch { "true" => "Yes", "false" => "No", _ => "" };
 }

@@ -20,7 +20,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
     private async Task<(ModelFactory Factory, CsvImportService Importer)> ExampleAsync()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         return (factory, new CsvImportService(factory));
     }
 
@@ -274,7 +274,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
     public async Task A_type_that_requires_links_cant_take_an_import_of_records_and_undo_keeps_one()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         var importer = new CsvImportService(factory);
         var records = new RecordRepository(factory);
 
@@ -420,7 +420,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
     public async Task Uploads_maps_checks_imports_and_undoes()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
         var cut = RenderPage<CsvImportPanel>();
@@ -451,7 +451,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
     public async Task Reviews_a_staged_import_leaves_an_item_out_and_commits_the_rest()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
         Services.AddSingleton<ImportStagingService>();
@@ -482,7 +482,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
     public async Task More_of_an_existing_type_is_recognised_from_what_is_in_it()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
         var cut = RenderPage<CsvImportPanel>();
@@ -505,7 +505,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
     public async Task A_links_file_is_recognised_and_its_relationship_filled_in()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<CsvImportService>();
         var cut = RenderPage<CsvImportPanel>();

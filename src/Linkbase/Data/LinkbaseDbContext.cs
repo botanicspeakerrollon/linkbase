@@ -22,6 +22,10 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<Node> Nodes => Set<Node>();
     public DbSet<NodeLink> NodeLinks => Set<NodeLink>();
     public DbSet<StagedItem> StagedItems => Set<StagedItem>();
+    public DbSet<ModelSetting> ModelSettings => Set<ModelSetting>();
+    public DbSet<Justification> Justifications => Set<Justification>();
+    public DbSet<ChangeSet> ChangeSets => Set<ChangeSet>();
+    public DbSet<Change> Changes => Set<Change>();
     public DbSet<GraphNodeRow> GraphNodes => Set<GraphNodeRow>();
     public DbSet<GraphEdgeRow> GraphEdges => Set<GraphEdgeRow>();
 
@@ -48,6 +52,9 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         configurationBuilder.Properties<DatePrecision>().HaveConversion<SnakeCaseEnumConverter<DatePrecision>>();
         configurationBuilder.Properties<StagedKind>().HaveConversion<SnakeCaseEnumConverter<StagedKind>>();
         configurationBuilder.Properties<FieldType>().HaveConversion<SnakeCaseEnumConverter<FieldType>>();
+        configurationBuilder.Properties<JustificationKind>().HaveConversion<SnakeCaseEnumConverter<JustificationKind>>();
+        configurationBuilder.Properties<ChangeEntityKind>().HaveConversion<SnakeCaseEnumConverter<ChangeEntityKind>>();
+        configurationBuilder.Properties<ChangeOp>().HaveConversion<SnakeCaseEnumConverter<ChangeOp>>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -91,6 +98,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             field.HasOne(f => f.NodeType).WithMany(t => t.Fields).HasForeignKey(f => f.NodeTypeName);
             field.HasIndex(f => new { f.NodeTypeName, f.Key }).IsUnique();
             field.Property(f => f.Required).HasDefaultValue(false);
+            field.Property(f => f.Multiple).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<LinkDefinition>(link =>
@@ -107,6 +115,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             attribute.HasOne(a => a.LinkDefinition).WithMany(l => l.Attributes).HasForeignKey(a => a.LinkDefinitionId);
             attribute.HasIndex(a => new { a.LinkDefinitionId, a.Key }).IsUnique();
             attribute.Property(a => a.Required).HasDefaultValue(false);
+            attribute.Property(a => a.Multiple).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Node>(node =>
@@ -136,6 +145,38 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
 
             // Reviewing lists a batch's items a page at a time, and committing reads them in order.
             item.HasIndex(i => new { i.ImportBatchId, i.Kind, i.Id });
+        });
+
+        modelBuilder.Entity<ModelSetting>(setting =>
+        {
+            setting.Property(s => s.Id).ValueGeneratedNever();
+            setting.Property(s => s.RecordHistory).HasDefaultValue(true);
+            setting.Property(s => s.RequireReason).HasDefaultValue(true);
+            setting.ToTable(t => t.HasCheckConstraint("ck_model_setting_one_row", "id = 1"));
+        });
+
+        modelBuilder.Entity<Justification>(justification =>
+        {
+            justification.Property(j => j.CreatedAt).HasDefaultValueSql("now()");
+            justification.HasOne(j => j.ImportBatch).WithMany().HasForeignKey(j => j.ImportBatchId);
+            justification.HasOne(j => j.User).WithMany().HasForeignKey(j => j.UserId);
+        });
+
+        modelBuilder.Entity<ChangeSet>(set =>
+        {
+            set.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
+            set.HasOne(s => s.Justification).WithMany().HasForeignKey(s => s.JustificationId);
+            set.HasOne(s => s.Cause).WithMany().HasForeignKey(s => s.CauseChangeSetId);
+        });
+
+        modelBuilder.Entity<Change>(change =>
+        {
+            change.HasOne(c => c.ChangeSet).WithMany().HasForeignKey(c => c.ChangeSetId);
+
+            // A record's history is the changes to it and the links on it, newest first.
+            change.HasIndex(c => new { c.EntityKind, c.EntityId, c.Id });
+            change.HasIndex(c => new { c.RelatedId, c.Id });
+            change.HasIndex(c => c.ChangeSetId);
         });
 
         modelBuilder.Entity<GraphNodeRow>(node =>

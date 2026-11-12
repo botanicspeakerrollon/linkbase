@@ -44,6 +44,104 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("app_user");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.Change", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ChangeSetId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("change_set_id");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityKind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("entity_kind");
+
+                    b.Property<string>("FieldKey")
+                        .HasColumnType("text")
+                        .HasColumnName("field_key");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("text")
+                        .HasColumnName("new_value");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("text")
+                        .HasColumnName("old_value");
+
+                    b.Property<string>("Op")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("op");
+
+                    b.Property<string>("RelType")
+                        .HasColumnType("text")
+                        .HasColumnName("rel_type");
+
+                    b.Property<string>("RelatedId")
+                        .HasColumnType("text")
+                        .HasColumnName("related_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_change");
+
+                    b.HasIndex("ChangeSetId")
+                        .HasDatabaseName("ix_change_change_set_id");
+
+                    b.HasIndex("RelatedId", "Id")
+                        .HasDatabaseName("ix_change_related_id_id");
+
+                    b.HasIndex("EntityKind", "EntityId", "Id")
+                        .HasDatabaseName("ix_change_entity_kind_entity_id_id");
+
+                    b.ToTable("change");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.ChangeSet", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("CauseChangeSetId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("cause_change_set_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<long>("JustificationId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("justification_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_change_set");
+
+                    b.HasIndex("CauseChangeSetId")
+                        .HasDatabaseName("ix_change_set_cause_change_set_id");
+
+                    b.HasIndex("JustificationId")
+                        .HasDatabaseName("ix_change_set_justification_id");
+
+                    b.ToTable("change_set");
+                });
+
             modelBuilder.Entity("Linkbase.Data.ExternalRef", b =>
                 {
                     b.Property<long>("Id")
@@ -122,10 +220,24 @@ namespace Linkbase.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("GroupName")
+                        .HasColumnType("text")
+                        .HasColumnName("group_name");
+
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("key");
+
+                    b.Property<bool>("Multiple")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("multiple");
 
                     b.Property<string>("NodeTypeName")
                         .IsRequired()
@@ -356,6 +468,54 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("import_batch");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.Justification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<long?>("ImportBatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("import_batch_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("source_url");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_justification");
+
+                    b.HasIndex("ImportBatchId")
+                        .HasDatabaseName("ix_justification_import_batch_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_justification_user_id");
+
+                    b.ToTable("justification");
+                });
+
             modelBuilder.Entity("Linkbase.Data.LinkAttribute", b =>
                 {
                     b.Property<long>("Id")
@@ -365,6 +525,10 @@ namespace Linkbase.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("text")
@@ -373,6 +537,12 @@ namespace Linkbase.Data.Migrations
                     b.Property<long>("LinkDefinitionId")
                         .HasColumnType("bigint")
                         .HasColumnName("link_definition_id");
+
+                    b.Property<bool>("Multiple")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("multiple");
 
                     b.PrimitiveCollection<List<string>>("Options")
                         .HasColumnType("text[]")
@@ -414,6 +584,10 @@ namespace Linkbase.Data.Migrations
                         .HasDefaultValue(0L)
                         .HasColumnName("links");
 
+                    b.Property<int?>("MaxLinks")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_links");
+
                     b.Property<string>("RelType")
                         .IsRequired()
                         .HasColumnType("text")
@@ -446,6 +620,33 @@ namespace Linkbase.Data.Migrations
                         .HasDatabaseName("ix_link_definition_source_type_rel_type_target_type");
 
                     b.ToTable("link_definition");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.ModelSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("RecordHistory")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("record_history");
+
+                    b.Property<bool>("RequireReason")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("require_reason");
+
+                    b.HasKey("Id")
+                        .HasName("pk_model_setting");
+
+                    b.ToTable("model_setting", t =>
+                        {
+                            t.HasCheckConstraint("ck_model_setting_one_row", "id = 1");
+                        });
                 });
 
             modelBuilder.Entity("Linkbase.Data.Node", b =>
@@ -603,6 +804,10 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("icon");
 
+                    b.Property<string>("NameTemplate")
+                        .HasColumnType("text")
+                        .HasColumnName("name_template");
+
                     b.Property<string>("Owner")
                         .HasColumnType("text")
                         .HasColumnName("owner");
@@ -704,6 +909,38 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("data_protection_key");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.Change", b =>
+                {
+                    b.HasOne("Linkbase.Data.ChangeSet", "ChangeSet")
+                        .WithMany()
+                        .HasForeignKey("ChangeSetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_change_change_set_change_set_id");
+
+                    b.Navigation("ChangeSet");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.ChangeSet", b =>
+                {
+                    b.HasOne("Linkbase.Data.ChangeSet", "Cause")
+                        .WithMany()
+                        .HasForeignKey("CauseChangeSetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_change_set_change_set_cause_change_set_id");
+
+                    b.HasOne("Linkbase.Data.Justification", "Justification")
+                        .WithMany()
+                        .HasForeignKey("JustificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_change_set_justification_justification_id");
+
+                    b.Navigation("Cause");
+
+                    b.Navigation("Justification");
+                });
+
             modelBuilder.Entity("Linkbase.Data.ExternalRef", b =>
                 {
                     b.HasOne("Linkbase.Data.ImportBatch", "ImportBatch")
@@ -759,6 +996,26 @@ namespace Linkbase.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_import_batch_app_user_user_id");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.Justification", b =>
+                {
+                    b.HasOne("Linkbase.Data.ImportBatch", "ImportBatch")
+                        .WithMany()
+                        .HasForeignKey("ImportBatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_justification_import_batch_import_batch_id");
+
+                    b.HasOne("Linkbase.Data.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_justification_app_user_user_id");
+
+                    b.Navigation("ImportBatch");
 
                     b.Navigation("User");
                 });

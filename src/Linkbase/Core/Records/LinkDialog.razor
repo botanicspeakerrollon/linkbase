@@ -25,6 +25,7 @@
                 <MudButton OnClick="CreateAsync" Variant="Variant.Text" Class="mt-2" StartIcon="@Icons.Material.Filled.Add">New @_option.OtherType</MudButton>
                 </MudStack>
                 <FieldInputs Fields="_attributes" Values="_values" />
+                <ReasonInput Draft="_reason" Settings="_history" OnSubmit="SaveAsync" />
             }
         </MudForm>
         @if (_error is not null)
@@ -45,10 +46,15 @@
     [Parameter] public RecordDetail Record { get; set; } = null!;
     [Parameter] public IReadOnlyList<LinkOption> Options { get; set; } = [];
 
+    // The model's history settings, passed by the page that opens the dialog. Looked up here if they aren't given.
+    [Parameter] public HistorySettings? History { get; set; }
+
     private MudForm? _form;
     private LinkOption? _option;
     private RecordOption? _other;
     private string? _error;
+    private readonly ReasonDraft _reason = new();
+    private HistorySettings _history = HistorySettings.Default;
 
     // What the chosen relationship's links carry, such as a role, and what's been typed for it.
     private IReadOnlyList<RecordField> _attributes = [];
@@ -56,9 +62,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _history = History ?? HistorySettings.Default;
         if (Options.Count == 1)
         {
             await ChooseAsync(Options[0]);
+        }
+
+        if (History is null)
+        {
+            _history = await Records.HistorySettingsAsync();
         }
     }
 
@@ -89,7 +101,7 @@
             return;
         }
 
-        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, type } };
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, type }, { d => d.History, _history } };
         var dialog = await Dialogs.ShowAsync<RecordDialog>($"New {type.Name}", parameters);
         if (await dialog.Result is { Canceled: false, Data: string key })
         {
@@ -109,11 +121,11 @@
         {
             if (_option.Outgoing)
             {
-                await Records.AddLinkAsync(Record.Id, _option.RelType, _other.Id, _values);
+                await Records.AddLinkAsync(Record.Id, _option.RelType, _other.Id, _values, _reason.ToReason());
             }
             else
             {
-                await Records.AddLinkAsync(_other.Id, _option.RelType, Record.Id, _values);
+                await Records.AddLinkAsync(_other.Id, _option.RelType, Record.Id, _values, _reason.ToReason());
             }
 
             Instance.Close(DialogResult.Ok(true));

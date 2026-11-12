@@ -20,21 +20,67 @@ public sealed record RecordField(string Key, FieldType Type, IReadOnlyList<strin
     // A record can't be saved without a value for it.
     public bool Required { get; init; }
 
+    // Shown beside the field, as a hint.
+    public string? Description { get; init; }
+
+    // Fields of a type with the same group are shown together under its heading.
+    public string? Group { get; init; }
+
+    // The field holds several values, each of the type's kind (text for a List), kept as a JSON array.
+    public bool Multiple { get; init; }
+
+    public bool IsMany => Multiple || Type == FieldType.List;
+
+    // The type of one value: a list's are text.
+    public FieldType ElementType => Type == FieldType.List ? FieldType.Text : Type;
+
     // Records compare lists by reference, so compare the options by value.
     public bool Equals(RecordField? other) =>
         other is not null && Key == other.Key && Type == other.Type && Required == other.Required && Options.SequenceEqual(other.Options)
-        && Owner == other.Owner;
+        && Owner == other.Owner && Description == other.Description && Group == other.Group && Multiple == other.Multiple;
 
-    public override int GetHashCode() => HashCode.Combine(Key, Type, Required, Options.Count, Owner);
+    public override int GetHashCode() => HashCode.Combine(Key, Type, Required, Options.Count, Owner, Group, Multiple);
+}
+
+// Fields shown together under a heading, or the ungrouped ones with none. A group sits where its first field is.
+public sealed record FieldSection(string? Group, IReadOnlyList<RecordField> Fields)
+{
+    public static List<FieldSection> Of(IEnumerable<RecordField> fields)
+    {
+        var all = fields.ToList();
+        var sections = new List<FieldSection>();
+        foreach (var field in all)
+        {
+            if (field.Group is null)
+            {
+                sections.Add(new FieldSection(null, [field]));
+            }
+            else if (!sections.Any(s => s.Group == field.Group))
+            {
+                sections.Add(new FieldSection(field.Group, all.Where(f => f.Group == field.Group).ToList()));
+            }
+        }
+
+        return sections;
+    }
 }
 
 // A kind of link every record of a type needs at least one of, such as an ascent's OF link to a Route.
 public sealed record RequiredLink(string RelType, string OtherType);
 
+// A relationship's limit on how many of its links one record may have, such as 1 for an area's parent.
+public sealed record LinkLimit(string RelType, string OtherType, int Max);
+
 // Owner is the domain module that derives the type's records, such as Climbing for trips. Only it writes them.
 public sealed record RecordType(string Name, string? Color, string? Icon, IReadOnlyList<RecordField> Fields, string? Owner = null)
 {
+    // How a record's name is made from its fields, such as "{name_first} {name_last}", so people don't type one.
+    public string? NameTemplate { get; init; }
+
     public IReadOnlyList<RequiredLink> RequiredLinks { get; init; } = [];
+
+    // The relationships going out of the type that have a max.
+    public IReadOnlyList<LinkLimit> LinkLimits { get; init; } = [];
 
     // Set when the type's records form a tree, such as areas in regions in countries.
     public HierarchyRules? Hierarchy { get; init; }

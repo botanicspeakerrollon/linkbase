@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Linkbase.Core.History;
 using Linkbase.Core.Models;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +68,29 @@ public sealed partial class RecordRepository
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        // What the rebuild changes, for the audit trail: records that came, went or differ. The links are the module's own
+        // and follow from the records, so they aren't listed.
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var logged = new List<PendingChange>();
+        if (settings.Record)
+        {
+            var existing = await db.Nodes.AsNoTracking().Where(n => n.Type == type).Select(n => new { n.Id, n.Name, n.Props }).ToDictionaryAsync(n => n.Id, cancellationToken);
+            foreach (var node in nodes)
+            {
+                if (existing.Remove(node.Id, out var was))
+                {
+                    logged.AddRange(ChangeRecorder.NodeUpdated(node.Id, was.Name, Values(was.Props), node.Name, Values(node.Props)));
+                }
+                else
+                {
+                    logged.Add(ChangeRecorder.NodeCreated(node.Id, node.Name, Values(node.Props)));
+                }
+            }
+
+            logged.AddRange(existing.Values.Select(gone => ChangeRecorder.NodeDeleted(gone.Id, gone.Name, Values(gone.Props))));
+        }
+
         var old = db.NodeLinks.Where(l => l.Source.Type == type || l.Target.Type == type);
         foreach (var group in await old.GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
                      .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Count = g.Count() })
@@ -90,6 +114,12 @@ public sealed partial class RecordRepository
         foreach (var group in links.Distinct().GroupBy(l => (From: types[l.SourceId], l.RelType, To: types[l.TargetId])))
         {
             await CountAsync(db, group.Key.From, group.Key.RelType, group.Key.To, group.Count(), cancellationToken);
+        }
+
+        if (settings.Record)
+        {
+            await ChangeRecorder.WriteAsync(db, JustificationKind.Derived, new ChangeReason($"{domain} rebuilt its {type} records"), logged,
+                causeChangeSetId: ChangeRecorder.Cause, cancellationToken: cancellationToken);
         }
 
         await transaction.CommitAsync(cancellationToken);

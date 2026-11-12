@@ -1,3 +1,4 @@
+@using Linkbase.Core.Models
 @using System.Globalization
 @inject RecordRepository Records
 @inject IDialogService Dialogs
@@ -8,7 +9,15 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form">
-            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_name" Label="Name" Required="true" RequiredError="A record needs a name" />
+            @if (Type.NameTemplate is null)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_name" Label="Name" Required="true" RequiredError="A record needs a name" />
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" Class="mb-2 d-block">Its name is made from @string.Join(", ", NameTemplates.Tokens(Type.NameTemplate).Distinct().Select(RecordRepository.Title)).</MudText>
+            }
+
             @if (Record is null)
             {
                 <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_key" Label="Key"
@@ -50,6 +59,12 @@
                     }
                 }
             }
+
+            @* A record made for another dialog to link to is saved, with its reason, by that dialog. *@
+            @if (!Collect)
+            {
+                <ReasonInput Draft="_reason" Settings="_history" OnSubmit="SaveAsync" />
+            }
         </MudForm>
         @if (_error is not null)
         {
@@ -72,11 +87,17 @@
     // Hand back the record to create instead of saving it, for a dialog that is creating a record for another to link to.
     [Parameter] public bool Collect { get; set; }
 
+    // The model's history settings. The page that opens the dialog passes them, so the dialog has nothing to wait for; it looks
+    // them up itself if they aren't given.
+    [Parameter] public HistorySettings? History { get; set; }
+
     private MudForm? _form;
     private string? _name;
     private string? _key;
     private Dictionary<string, string?> _values = [];
     private string? _error;
+    private readonly ReasonDraft _reason = new();
+    private HistorySettings _history = HistorySettings.Default;
 
     // The record chosen for each link the type requires.
     private readonly Dictionary<RequiredLink, RecordOption?> _links = [];
@@ -89,10 +110,20 @@
     private readonly Dictionary<RequiredLink, IReadOnlyList<RecordField>> _attributes = [];
     private readonly Dictionary<RequiredLink, Dictionary<string, string?>> _linkValues = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _name = Record?.Name;
         _values = Type.Editable.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
+        _history = History ?? HistorySettings.Default;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Collect && History is null)
+        {
+            _history = await Records.HistorySettingsAsync();
+        }
+
         if (Record is null)
         {
             foreach (var link in Links)
@@ -142,7 +173,7 @@
 
         try
         {
-            var input = new RecordInput(_name!, _values)
+            var input = new RecordInput(Type.NameTemplate is { } template ? NameTemplates.Render(template, _values) ?? "" : _name!, _values)
             {
                 Links = _links.Where(l => l.Value is not null).Select(l => new NewLink(l.Key.RelType, l.Value!.Id, _linkValues[l.Key])).ToList(),
                 Creates = _creates.Select(c => new NewLinkedRecord(c.Key.RelType, c.Key.OtherType, c.Value.Key, c.Value.Input, _linkValues[c.Key])).ToList(),
@@ -153,10 +184,10 @@
                 return;
             }
 
-            var key = Record is null ? await Records.CreateAsync(Type.Name, _key, input) : Record.Key;
+            var key = Record is null ? await Records.CreateAsync(Type.Name, _key, input, _reason.ToReason()) : Record.Key;
             if (Record is not null)
             {
-                await Records.UpdateAsync(Record.Id, input);
+                await Records.UpdateAsync(Record.Id, input, _reason.ToReason());
             }
 
             Instance.Close(DialogResult.Ok(key));

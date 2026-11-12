@@ -27,6 +27,9 @@ public class NodeType
     public string? HierarchyField { get; set; }
     public string? HierarchyRel { get; set; }
 
+    // How the record's name is made from its fields, such as "{name_first} {name_last}". Null when people type the name.
+    public string? NameTemplate { get; set; }
+
     public List<FieldDefinition> Fields { get; set; } = [];
     public List<HierarchyLevel> HierarchyLevels { get; set; } = [];
 }
@@ -65,6 +68,15 @@ public class FieldDefinition
     // The domain module that keeps this field's value, such as Climbing for a route's grade rank. People can't edit it.
     // Null for a field people fill in.
     public string? Owner { get; set; }
+
+    // Shown to people beside the field, as a hint on the form and the record page.
+    public string? Description { get; set; }
+
+    // Fields with the same group are shown together under its heading, such as Name for a first and last name. Display only.
+    public string? GroupName { get; set; }
+
+    // The field holds several values of its Type, stored as a JSON array. A List always does.
+    public bool Multiple { get; set; }
 }
 
 // A relationship that may exist between two types, such as Service CALLS_AT Stop.
@@ -79,6 +91,9 @@ public class LinkDefinition
 
     // Every record of the source type needs at least one link of this kind, such as an ascent's route.
     public bool Required { get; set; }
+
+    // The most links of this kind one record of the source type may have, such as 1 for an area's parent. Null for no limit.
+    public int? MaxLinks { get; set; }
 
     // How many links of this kind there are, kept by the loader and RecordRepository, because counting tens of millions
     // of links each time the home page opens takes too long.
@@ -99,6 +114,8 @@ public class LinkAttribute
     public FieldType Type { get; set; }
     public List<string>? Options { get; set; }
     public bool Required { get; set; }
+    public string? Description { get; set; }
+    public bool Multiple { get; set; }
 }
 
 public class Node : ITimestamped

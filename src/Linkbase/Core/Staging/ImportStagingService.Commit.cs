@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Linkbase.Core.History;
 using Linkbase.Core.Models;
 using Linkbase.Core.Records;
 using Linkbase.Data;
@@ -38,14 +39,18 @@ public sealed partial class ImportStagingService
             }
         }
 
+        var newFields = new List<string>();
         foreach (var field in model.Fields)
         {
-            await ExecuteAsync(connection, transaction,
+            if (await ExecuteAsync(connection, transaction,
                 "INSERT INTO field_definition (node_type_name, key, type, options) VALUES (@type, @key, @fieldType, @options) ON CONFLICT (node_type_name, key) DO NOTHING",
                 ("type", field.Type, NpgsqlDbType.Text),
                 ("key", field.Key, NpgsqlDbType.Text),
                 ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.FieldType), NpgsqlDbType.Text),
-                ("options", field.Options.Count > 0 ? field.Options.ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text));
+                ("options", field.Options.Count > 0 ? field.Options.ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text)) > 0)
+            {
+                newFields.Add($"{field.Type}.{field.Key}");
+            }
         }
 
         var newRelationships = new JsonArray();
@@ -134,6 +139,25 @@ public sealed partial class ImportStagingService
         }
 
         var links = counts.Sum(c => c.Count);
+
+        // The batch stands for everything it added, so the trail has one entry for it rather than a row for each record and
+        // link. The record's own history starts from the batch (see HistoryRepository). New types, fields and relationships
+        // are listed, because they change the model.
+        long? changeSet = null;
+        if ((await ChangeRecorder.SettingsAsync(connection, transaction, cancellationToken)).Record)
+        {
+            var logged = new List<PendingChange>
+            {
+                new(ChangeEntityKind.ImportBatch, batchId.ToString(), ChangeOp.Create, NewValue: JsonSerializer.Serialize(new { records, links })),
+            };
+            logged.AddRange(newTypes.Select(t => new PendingChange(ChangeEntityKind.Definition, $"type:{t}", ChangeOp.Create)));
+            logged.AddRange(newFields.Select(f => new PendingChange(ChangeEntityKind.Definition, $"field:{f}", ChangeOp.Create)));
+            logged.AddRange(newRelationships.OfType<JsonObject>().Select(r => new PendingChange(
+                ChangeEntityKind.Definition, $"relationship:{(string?)r["from"]} {(string?)r["rel"]} {(string?)r["to"]}", ChangeOp.Create)));
+            changeSet = await ChangeRecorder.WriteAsync(connection, transaction, JustificationKind.Import, $"Import #{batchId} committed", batch.SourceUrl, logged,
+                importBatchId: batchId, cancellationToken: cancellationToken);
+        }
+
         await ExecuteAsync(connection, transaction, "DELETE FROM staged_item WHERE import_batch_id = @batch", ("batch", batchId, NpgsqlDbType.Bigint));
 
         created["types"] = newTypes;
@@ -144,7 +168,11 @@ public sealed partial class ImportStagingService
             ("created", created.ToJsonString(), NpgsqlDbType.Text),
             ("batch", batchId, NpgsqlDbType.Bigint));
         await transaction.CommitAsync(cancellationToken);
-        await _hooks.AfterChangeAsync(await ChangesAsync(db, batchId, removing: false, [], cancellationToken), cancellationToken);
+        using (ChangeRecorder.Causing(changeSet))
+        {
+            await _hooks.AfterChangeAsync(await ChangesAsync(db, batchId, removing: false, [], cancellationToken), cancellationToken);
+        }
+
         return new StagedCommit(batchId, records, links);
     }
 }

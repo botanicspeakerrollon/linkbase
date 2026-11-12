@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Linkbase.Core.History;
 using Linkbase.Core.Models;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
@@ -13,23 +14,33 @@ public sealed partial class RecordRepository
     // The key is made from the name when none is given, and can't change afterwards, because the record's id is made from it.
     // The record, the records it creates and all their links are saved together, so a record never exists without the links
     // its type requires.
-    public async Task<string> CreateAsync(string type, string? key, RecordInput input, CancellationToken cancellationToken = default)
+    // The reason is kept in the audit trail, and is needed unless the model says otherwise.
+    public async Task<string> CreateAsync(string type, string? key, RecordInput input, ChangeReason? reason = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var kept = ChangeRecorder.Check(settings, reason);
         var changes = new List<RecordChange>();
-        var created = await CreateInAsync(db, type, key, input, changes, cancellationToken);
+        var logged = new List<PendingChange>();
+        var created = await CreateInAsync(db, type, key, input, changes, logged, cancellationToken);
+        var changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
         await transaction.CommitAsync(cancellationToken);
-        await _hooks.AfterChangeAsync(changes, cancellationToken);
+        using (ChangeRecorder.Causing(changeSet))
+        {
+            await _hooks.AfterChangeAsync(changes, cancellationToken);
+        }
+
         return created;
     }
 
     private async Task<string> CreateInAsync(
-        LinkbaseDbContext db, string type, string? key, RecordInput input, List<RecordChange> changes, CancellationToken cancellationToken)
+        LinkbaseDbContext db, string type, string? key, RecordInput input, List<RecordChange> changes, List<PendingChange> logged,
+        CancellationToken cancellationToken)
     {
         var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
         RefuseDerived(definition);
-        var name = Name(input);
+        var name = Name(definition, input);
         var props = Props(definition, input);
         props = Hooked(definition, name, props);
 
@@ -37,7 +48,7 @@ public sealed partial class RecordRepository
         var requested = input.Links.ToList();
         foreach (var create in input.Creates)
         {
-            var targetKey = await CreateInAsync(db, create.Type, create.Key, create.Input, changes, cancellationToken);
+            var targetKey = await CreateInAsync(db, create.Type, create.Key, create.Input, changes, logged, cancellationToken);
             requested.Add(new NewLink(create.RelType, $"{create.Type.ToLowerInvariant()}:{targetKey}", create.Values));
         }
 
@@ -73,6 +84,8 @@ public sealed partial class RecordRepository
             await CountAsync(db, type, group.Key.RelType, group.Key.TargetType, group.Count(), cancellationToken);
         }
 
+        logged.Add(ChangeRecorder.NodeCreated(id, name, Values(props)));
+        logged.AddRange(links.Select(l => ChangeRecorder.LinkCreated(id, l.RelType, l.TargetId, Values(l.Props))));
         changes.Add(new RecordChange(RecordChangeKind.Created, type, id, NoValues, Values(props)));
         changes.AddRange(links.SelectMany(l => LinkChanges(RecordChangeKind.Linked, type, id, l.RelType, l.TargetType, l.TargetId, after: Values(l.Props))));
         return key;
@@ -120,6 +133,11 @@ public sealed partial class RecordRepository
             links.Add((link.RelType, link.TargetId, targetType, props));
         }
 
+        foreach (var limit in type.LinkLimits.Where(m => links.Count(l => l.RelType == m.RelType && l.TargetType == m.OtherType) > m.Max))
+        {
+            throw new LinkbaseValidationException($"A {type.Name} can have at most {limit.Max} {type.Name} {limit.RelType} {limit.OtherType} link(s).");
+        }
+
         foreach (var needed in type.RequiredLinks.Where(r => !links.Any(l => l.RelType == r.RelType && l.TargetType == r.OtherType)))
         {
             throw new LinkbaseValidationException($"Each {type.Name} needs at least one {type.Name} {needed.RelType} {needed.OtherType} link.");
@@ -128,9 +146,12 @@ public sealed partial class RecordRepository
         return links;
     }
 
-    public async Task UpdateAsync(string id, RecordInput input, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(string id, RecordInput input, ChangeReason? reason = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var kept = ChangeRecorder.Check(settings, reason);
         var node = await db.Nodes.SingleOrDefaultAsync(n => n.Id == id && n.UserId == AppUser.DefaultId, cancellationToken)
             ?? throw new LinkbaseValidationException("This record no longer exists.");
         var definition = await TypeAsync(node.Type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {node.Type}.");
@@ -138,22 +159,33 @@ public sealed partial class RecordRepository
 
         var before = Values(node.Props);
         var oldProps = node.Props;
-        node.Name = Name(input);
+        var oldName = node.Name;
+        node.Name = Name(definition, input);
         node.Props = Hooked(definition, node.Name, Props(definition, input, node.Props));
         await CheckKindChangeAsync(db, definition, id, oldProps, node.Props, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
-        await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, Values(node.Props))], cancellationToken);
+        var after = Values(node.Props);
+        var changeSet = settings.Record
+            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, ChangeRecorder.NodeUpdated(id, oldName, before, node.Name, after).ToList(), cancellationToken: cancellationToken)
+            : null;
+        await transaction.CommitAsync(cancellationToken);
+        using (ChangeRecorder.Causing(changeSet))
+        {
+            await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, after)], cancellationToken);
+        }
     }
 
     // Like everything else, a record that still has links can't be deleted. Remove its links first. The links its type
     // requires can't be removed on their own, so they go with it. So do links to a module's derived records, which are the
     // module's, and its hooks hear of the delete to derive them again.
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string id, ChangeReason? reason = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var kept = ChangeRecorder.Check(settings, reason);
         var node = await db.Nodes.AsNoTracking()
             .Where(n => n.Id == id && n.UserId == AppUser.DefaultId)
-            .Select(n => new { n.Type, n.Props, n.NodeType.Owner })
+            .Select(n => new { n.Type, n.Name, n.Props, n.NodeType.Owner })
             .SingleOrDefaultAsync(cancellationToken);
         if (node is null)
         {
@@ -186,10 +218,21 @@ public sealed partial class RecordRepository
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        long? changeSet = null;
+        var logged = new List<PendingChange> { ChangeRecorder.NodeDeleted(id, node.Name, Values(node.Props)) };
         try
         {
             foreach (var (relType, targetType, _) in own)
             {
+                if (settings.Record)
+                {
+                    var going = await db.NodeLinks.AsNoTracking()
+                        .Where(l => l.SourceId == id && l.RelType == relType && l.Target.Type == targetType)
+                        .Select(l => new { l.TargetId, l.Props })
+                        .ToListAsync(cancellationToken);
+                    logged.AddRange(going.Select(l => ChangeRecorder.LinkDeleted(id, relType, l.TargetId, Values(l.Props))));
+                }
+
                 var removed = await db.NodeLinks.Where(l => l.SourceId == id && l.RelType == relType && l.Target.Type == targetType).ExecuteDeleteAsync(cancellationToken);
                 await CountAsync(db, type, relType, targetType, -removed, cancellationToken);
             }
@@ -204,8 +247,16 @@ public sealed partial class RecordRepository
             }
 
             await derived.ExecuteDeleteAsync(cancellationToken);
+            if (settings.Record)
+            {
+                var refs = await db.ExternalRefs.AsNoTracking().Where(r => r.NodeId == id).Select(r => new { r.Source, r.ExternalId }).ToListAsync(cancellationToken);
+                logged.AddRange(refs.Select(r => new PendingChange(
+                    ChangeEntityKind.ExternalRef, id, ChangeOp.Delete, SnakeCaseEnumConverter<DataSource>.ToStore(r.Source), OldValue: r.ExternalId)));
+            }
+
             await ExternalRefRepository.RemoveForNodesAsync(db, db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).Select(n => n.Id), cancellationToken);
             await db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
+            changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
             await transaction.CommitAsync(cancellationToken);
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.ForeignKeyViolation)
@@ -213,16 +264,22 @@ public sealed partial class RecordRepository
             throw new LinkbaseValidationException("This record was linked to something else while deleting it. Remove its links first.");
         }
 
-        await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
+        using (ChangeRecorder.Causing(changeSet))
+        {
+            await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
+        }
     }
 
     // Links only go where the model has a relationship, either way round, and never to a module's derived records. Values are
     // the link's attributes as a form sends them. The same two records can be linked the same way again only when an
     // attribute's value differs, so a relationship without attributes allows one link between two records.
     public async Task AddLinkAsync(
-        string sourceId, string relType, string targetId, IReadOnlyDictionary<string, string?>? values = null, CancellationToken cancellationToken = default)
+        string sourceId, string relType, string targetId, IReadOnlyDictionary<string, string?>? values = null, ChangeReason? reason = null,
+        CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var kept = ChangeRecorder.Check(settings, reason);
         var ends = await db.Nodes.AsNoTracking()
             .Where(n => (n.Id == sourceId || n.Id == targetId) && n.UserId == AppUser.DefaultId)
             .Select(n => new { n.Id, n.Type, n.NodeType.Owner })
@@ -239,6 +296,7 @@ public sealed partial class RecordRepository
             throw new LinkbaseValidationException($"The model has no {source.Type} {relType} {target.Type} relationship.");
         }
 
+        await CheckLinkLimitAsync(db, sourceId, source.Type, relType, target.Type, cancellationToken);
         await CheckAddedParentAsync(db, sourceId, source.Type, relType, targetId, target.Type, cancellationToken);
         var attributes = await AttributesAsync(db, source.Type, relType, target.Type, cancellationToken);
         var props = Props(attributes, values ?? new Dictionary<string, string?>());
@@ -248,15 +306,40 @@ public sealed partial class RecordRepository
         db.NodeLinks.Add(new NodeLink { SourceId = sourceId, RelType = relType, TargetId = targetId, Props = props });
         await db.SaveChangesAsync(cancellationToken);
         await CountAsync(db, source.Type, relType, target.Type, 1, cancellationToken);
+        var changeSet = settings.Record
+            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, [ChangeRecorder.LinkCreated(sourceId, relType, targetId, Values(props))], cancellationToken: cancellationToken)
+            : null;
         await transaction.CommitAsync(cancellationToken);
-        await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), cancellationToken);
+        using (ChangeRecorder.Causing(changeSet))
+        {
+            await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), cancellationToken);
+        }
+    }
+
+    // A relationship with a max stops at it: the record has to lose a link before it can have another.
+    private static async Task CheckLinkLimitAsync(
+        LinkbaseDbContext db, string sourceId, string sourceType, string relType, string targetType, CancellationToken cancellationToken)
+    {
+        var max = await db.LinkDefinitions.AsNoTracking()
+            .Where(d => d.SourceType == sourceType && d.RelType == relType && d.TargetType == targetType)
+            .Select(d => d.MaxLinks)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (max is { } limit
+            && await db.NodeLinks.CountAsync(l => l.SourceId == sourceId && l.RelType == relType && l.Target.Type == targetType, cancellationToken) >= limit)
+        {
+            throw new LinkbaseValidationException(
+                $"A {sourceType} can have at most {limit} {sourceType} {relType} {targetType} link(s), and this one has {(limit == 1 ? "it" : "them")} already. Remove one first.");
+        }
     }
 
     // Changes a link's attribute values in place. A required attribute can't be emptied, and the link can't become a repeat
     // of another between the same two records.
-    public async Task UpdateLinkAsync(long linkId, IReadOnlyDictionary<string, string?> values, CancellationToken cancellationToken = default)
+    public async Task UpdateLinkAsync(long linkId, IReadOnlyDictionary<string, string?> values, ChangeReason? reason = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var kept = ChangeRecorder.Check(settings, reason);
         var link = await db.NodeLinks.SingleOrDefaultAsync(l => l.Id == linkId, cancellationToken)
             ?? throw new LinkbaseValidationException("This link no longer exists.");
         var ends = await db.Nodes.AsNoTracking()
@@ -281,10 +364,18 @@ public sealed partial class RecordRepository
         await EnsureNotRepeatAsync(db, link.SourceId, link.RelType, link.TargetId, props, linkId, true, cancellationToken);
         link.Props = props;
         await db.SaveChangesAsync(cancellationToken);
-        if (!before.SequenceEqual(Values(props)))
+        var after = Values(props);
+        var changeSet = settings.Record
+            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, ChangeRecorder.LinkUpdated(link.SourceId, link.RelType, link.TargetId, before, after).ToList(), cancellationToken: cancellationToken)
+            : null;
+        await transaction.CommitAsync(cancellationToken);
+        if (!before.SequenceEqual(after))
         {
-            await _hooks.AfterChangeAsync(
-                LinkChanges(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, link.RelType, targetType, link.TargetId, before, Values(props)), cancellationToken);
+            using (ChangeRecorder.Causing(changeSet))
+            {
+                await _hooks.AfterChangeAsync(
+                    LinkChanges(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, link.RelType, targetType, link.TargetId, before, after), cancellationToken);
+            }
         }
     }
 
@@ -305,9 +396,11 @@ public sealed partial class RecordRepository
         }
     }
 
-    public async Task RemoveLinkAsync(long linkId, CancellationToken cancellationToken = default)
+    public async Task RemoveLinkAsync(long linkId, ChangeReason? reason = null, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
+        var kept = ChangeRecorder.Check(settings, reason);
         var link = await db.NodeLinks.AsNoTracking()
             .Where(l => l.Id == linkId)
             .Select(l => new
@@ -344,11 +437,17 @@ public sealed partial class RecordRepository
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var removed = await db.NodeLinks.Where(l => l.Id == linkId).ExecuteDeleteAsync(cancellationToken);
         await CountAsync(db, link.SourceType, link.RelType, link.TargetType, -removed, cancellationToken);
+        var changeSet = settings.Record && removed > 0
+            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, [ChangeRecorder.LinkDeleted(link.SourceId, link.RelType, link.TargetId, Values(link.Props))], cancellationToken: cancellationToken)
+            : null;
         await transaction.CommitAsync(cancellationToken);
         if (removed > 0)
         {
-            await _hooks.AfterChangeAsync(
-                LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId, before: Values(link.Props)), cancellationToken);
+            using (ChangeRecorder.Causing(changeSet))
+            {
+                await _hooks.AfterChangeAsync(
+                    LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId, before: Values(link.Props)), cancellationToken);
+            }
         }
     }
 }

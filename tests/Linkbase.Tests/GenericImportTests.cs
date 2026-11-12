@@ -82,7 +82,7 @@ public sealed class GenericImportTests : IDisposable, IClassFixture<PostgresFixt
     public async Task A_batch_can_be_undone_like_a_csv_import()
     {
         var generic = new ModelFactory(await _fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new Linkbase.Core.Models.ModelLoader(generic).LoadAsync(InRoot("models/climbing/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(generic, InRoot("models/climbing/model.json"), TextWriter.Null);
         var importer = new GenericAscentImportService(generic);
         using var reader = new StreamReader(InRoot("data/samples/import.csv"));
         var summary = await importer.ImportAsync(DataSource.Ukc, null, UkcParser.Parse(reader).ToList());

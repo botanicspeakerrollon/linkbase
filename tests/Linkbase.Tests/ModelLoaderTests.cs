@@ -43,7 +43,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     {
         var factory = await NewDatabaseAsync();
 
-        var summary = await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/climbing-demo/model.json"), TextWriter.Null);
+        var summary = await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/climbing-demo/model.json"), TextWriter.Null);
 
         Assert.Equal(6, summary.Types);
         Assert.Equal(2277, summary.Nodes);
@@ -56,7 +56,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         var factory = await NewDatabaseAsync();
         var output = new StringWriter();
 
-        var summary = await new ModelLoader(factory).LoadAsync(Example, output);
+        var summary = await TestModels.LoadAsync(factory, Example, output);
 
         Assert.Equal(4, summary.Types);
         Assert.Equal(20, summary.Nodes);
@@ -104,12 +104,12 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     public async Task Loading_again_replaces_the_model_and_keeps_ids()
     {
         var factory = await NewDatabaseAsync();
-        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Example, TextWriter.Null);
         var path = WriteModel(
             """{ "name": "Small", "types": [{ "name": "Team", "source": { "file": "teams.csv", "key": "id", "name": "name" } }] }""",
             ("teams.csv", "id,name\nt1,Design\nt9,New team\n"));
 
-        var summary = await new ModelLoader(factory).LoadAsync(path, TextWriter.Null);
+        var summary = await TestModels.LoadAsync(factory, path, TextWriter.Null);
 
         Assert.Equal(2, summary.Nodes);
         await using var db = factory.CreateDbContext();
@@ -134,7 +134,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
             ("things.csv", "id\n1\n1\n\n2\n"),
             ("next.csv", "a,b\n1,2\n2,99\n"));
 
-        var summary = await new ModelLoader(factory).LoadAsync(path, TextWriter.Null);
+        var summary = await TestModels.LoadAsync(factory, path, TextWriter.Null);
 
         Assert.Equal(2, summary.Nodes);
         Assert.Equal(1, summary.Links);
@@ -160,10 +160,10 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     public async Task Explains_what_is_wrong_and_changes_nothing(string json, string message)
     {
         var factory = await NewDatabaseAsync();
-        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Example, TextWriter.Null);
         var path = WriteModel(json, ("a.csv", "id,word\n1,hello\n"));
 
-        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => new ModelLoader(factory).LoadAsync(path, TextWriter.Null));
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => TestModels.LoadAsync(factory, path, TextWriter.Null));
 
         Assert.Contains(message, ex.Message);
         await using var db = factory.CreateDbContext();
@@ -175,7 +175,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     {
         var factory = await NewDatabaseAsync();
 
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
 
         var book = (await new RecordRepository(factory).TypeAsync("Book"))!;
         Assert.Equal([new RecordField("isbn", FieldType.Text) { Required = true }], book.Fields);
@@ -189,9 +189,9 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     public async Task A_required_value_or_link_thats_missing_stops_the_load(string books, string message)
     {
         var factory = await NewDatabaseAsync();
-        await new ModelLoader(factory).LoadAsync(Example, TextWriter.Null);
+        await TestModels.LoadAsync(factory, Example, TextWriter.Null);
 
-        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => new ModelLoader(factory).LoadAsync(Library.Write(books), TextWriter.Null));
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => TestModels.LoadAsync(factory, Library.Write(books), TextWriter.Null));
 
         Assert.Equal(message, ex.Message);
         await using var db = factory.CreateDbContext();

@@ -17,6 +17,13 @@ public sealed partial class ModelFile
     public IReadOnlyList<ModelType> Types { get; init; } = [];
     public IReadOnlyList<ModelRelationship> Relationships { get; init; } = [];
 
+    // Whether the model keeps an audit trail, and whether every change needs a reason. Both are on if left out. See
+    // docs/audit-history-plan.md.
+    public ModelHistory? History { get; init; }
+
+    [JsonIgnore] public bool RecordHistory => History?.Record ?? true;
+    [JsonIgnore] public bool RequireReason => RecordHistory && (History?.RequireReason ?? true);
+
     // The folder the CSV files were found in, once read.
     [JsonIgnore] public string DataFolder { get; private set; } = "";
 
@@ -69,6 +76,11 @@ public sealed partial class ModelFile
             problems.Add("The model needs at least one type.");
         }
 
+        if (History is { Record: false, RequireReason: true })
+        {
+            problems.Add("History can't both be off and require a reason. Leave requireReason out, or set it to false.");
+        }
+
         foreach (var type in Types)
         {
             if (!TypeName().IsMatch(type.Name ?? ""))
@@ -77,6 +89,7 @@ public sealed partial class ModelFile
             }
 
             ValidateFields($"Type '{type.Name}'", type.Fields, problems);
+            ValidateTemplate(type, problems);
             ValidateOwner($"Type '{type.Name}'", type.Owner, problems);
             foreach (var field in type.Fields)
             {
@@ -107,6 +120,16 @@ public sealed partial class ModelFile
             foreach (var field in relationship.Fields.Where(f => f.Owner is not null))
             {
                 problems.Add($"{what}'s field '{field.Key}' has an owner, which only a type's fields can have.");
+            }
+
+            foreach (var field in relationship.Fields.Where(f => f.Group is not null))
+            {
+                problems.Add($"{what}'s field '{field.Key}' has a group, which only a type's fields can have.");
+            }
+
+            if (relationship.Max is < 1)
+            {
+                problems.Add($"{what} has a max of {relationship.Max}, which needs to be 1 or more.");
             }
 
             // People can't link to a module's derived records, so they couldn't add a record that needs such a link.
@@ -221,6 +244,43 @@ public sealed partial class ModelFile
         }
     }
 
+    private const int MaxDescription = 300;
+    private const int MaxGroup = 40;
+
+    // A name template is text with {field} in it, each naming a text-like field of the type that has one value.
+    private static void ValidateTemplate(ModelType type, List<string> problems)
+    {
+        if (type.Template is not { } template)
+        {
+            return;
+        }
+
+        var what = $"Type '{type.Name}''s name template";
+        var tokens = NameTemplates.Tokens(template);
+        if (tokens.Count == 0)
+        {
+            problems.Add($"{what} has no {{field}} in it. Use something like \"{{first}} {{last}}\".");
+        }
+
+        foreach (var token in tokens.Distinct())
+        {
+            var field = type.Fields.FirstOrDefault(f => f.Key == token);
+            if (field is null)
+            {
+                problems.Add($"{what} uses {{{token}}}, which isn't a field of the type.");
+            }
+            else if (field.IsMany || field.Owner is not null)
+            {
+                problems.Add($"{what} uses {{{token}}}, which needs to be a field with one value that people fill in.");
+            }
+        }
+
+        if (!NameTemplates.IsBalanced(template))
+        {
+            problems.Add($"{what} has a stray brace. Write each field as {{key}}.");
+        }
+    }
+
     // An owner is one of this app's domain modules, by its key, such as Climbing.
     private static void ValidateOwner(string what, string? owner, List<string> problems)
     {
@@ -237,6 +297,21 @@ public sealed partial class ModelFile
             if (!FieldKey().IsMatch(field.Key ?? "") || field.Key == "name")
             {
                 problems.Add($"{owner} has a field '{field.Key}', which needs to be lower case letters, digits and underscores, and not 'name'.");
+            }
+
+            if (field.Description is { } description && (description.Length > MaxDescription || description.Any(char.IsControl)))
+            {
+                problems.Add($"{owner}'s field '{field.Key}' has a description with control characters or over {MaxDescription} characters.");
+            }
+
+            if (field.Group is { } group && (group.Trim().Length is 0 or > MaxGroup || group.Any(char.IsControl)))
+            {
+                problems.Add($"{owner}'s field '{field.Key}' has a group of 1 to {MaxGroup} characters of text.");
+            }
+
+            if (field.Multiple && field.Type == FieldType.Boolean)
+            {
+                problems.Add($"{owner}'s field '{field.Key}' is a boolean, which can't have several values.");
             }
 
             var options = field.Options ?? [];
@@ -296,6 +371,13 @@ public sealed class ModelType
 
     // Leave it out for a type whose records aren't a tree.
     public ModelHierarchy? Hierarchy { get; init; }
+
+    // Makes each record's name from its fields, such as "{name_first} {name_last}". A field with no value drops out, and so
+    // does the space around it. People then don't type a name. The source's `name` can say the same, if it has braces.
+    public string? NameTemplate { get; init; }
+
+    [JsonIgnore]
+    public string? Template => NameTemplate ?? (Source?.Name is { } name && name.Contains('{', StringComparison.Ordinal) ? name : null);
 }
 
 // How a type's records form a tree, such as areas in regions in countries. See docs/models.md.
@@ -352,6 +434,21 @@ public sealed class ModelField
 
     // The domain module that keeps this field's value, such as Climbing. Only a type's fields can have one.
     public string? Owner { get; init; }
+
+    // Shown to people beside the field. Keep it short.
+    public string? Description { get; init; }
+
+    // Fields with the same group are shown together under its heading. Display only; they stay separate fields. A type's
+    // fields only.
+    public string? Group { get; init; }
+
+    // Several values of the type, such as a list of dates. A list is the same as this on a text field.
+    public bool Multiple { get; init; }
+
+    [JsonIgnore] public bool IsMany => Multiple || Type == FieldType.List;
+
+    // The type of one of the values: a list's are text.
+    [JsonIgnore] public FieldType ElementType => Type == FieldType.List ? FieldType.Text : Type;
 }
 
 public sealed class ModelRelationship
@@ -365,6 +462,9 @@ public sealed class ModelRelationship
 
     // Every record of the From type needs at least one of these links, such as an ascent's route.
     public bool Required { get; init; }
+
+    // The most links of this kind one record of the From type may have, such as 1 for a person's team. No limit if left out.
+    public int? Max { get; init; }
 }
 
 public sealed class ModelRelationshipSource
@@ -374,4 +474,12 @@ public sealed class ModelRelationshipSource
     // The columns holding the keys of the two ends.
     public required string FromColumn { get; init; }
     public required string ToColumn { get; init; }
+}
+
+// The model file's history settings: record is whether changes are logged, requireReason whether a change can't be saved
+// without a reason. Turning record off makes requireReason mean nothing.
+public sealed class ModelHistory
+{
+    public bool? Record { get; init; }
+    public bool? RequireReason { get; init; }
 }

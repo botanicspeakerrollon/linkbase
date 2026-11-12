@@ -185,7 +185,7 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
     private async Task<(ModelFactory Factory, ModelExtractionService Service, ImportStagingService Staging)> ExampleAsync(Func<ExtractionSchema, string, ExtractedData> answer)
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         var staging = new ImportStagingService(factory);
         var service = new ModelExtractionService(new RecordRepository(factory), new FakeExtractor(answer), new PageTextFetcher(new HttpClient()), factory, staging);
         return (factory, service, staging);

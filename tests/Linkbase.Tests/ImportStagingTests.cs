@@ -16,7 +16,7 @@ public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, I
     private async Task<(ModelFactory Factory, CsvImportService Importer, ImportStagingService Staging)> ExampleAsync()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         return (factory, new CsvImportService(factory), new ImportStagingService(factory));
     }
 

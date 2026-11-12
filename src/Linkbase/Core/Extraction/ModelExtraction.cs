@@ -30,7 +30,7 @@ public sealed record ExtractionSchema(IReadOnlyList<ExtractionType> Types, IRead
         return new ExtractionSchema(
             usable.Select(t => new ExtractionType(
                 t.Name,
-                t.Editable.Select(f => new ExtractionField(f.Key, f.Type, f.Options, f.Required)).ToList(),
+                t.Editable.Where(Readable).Select(f => new ExtractionField(f.Key, f.Type, f.Options, f.Required)).ToList(),
                 t.RequiredLinks)).ToList(),
             relationships.Where(r => names.Contains(r.FromType) && names.Contains(r.ToType)).ToList())
         {
@@ -38,10 +38,13 @@ public sealed record ExtractionSchema(IReadOnlyList<ExtractionType> Types, IRead
             LinkAttributes = (linkAttributes ?? new Dictionary<(string, string, string), IReadOnlyList<RecordField>>())
                 .Where(a => a.Value.Count > 0 && names.Contains(a.Key.From) && names.Contains(a.Key.To))
                 .Select(a => new ExtractionLinkAttributes(a.Key.From, a.Key.Rel, a.Key.To,
-                    a.Value.Select(f => new ExtractionField(f.Key, f.Type, f.Options, f.Required)).ToList()))
+                    a.Value.Where(Readable).Select(f => new ExtractionField(f.Key, f.Type, f.Options, f.Required)).ToList()))
                 .ToList(),
         };
     }
+
+    // Reading text leaves out fields that hold several numbers, dates or choices: it can fill in a text list, but not these.
+    private static bool Readable(RecordField field) => !(field.Multiple && field.Type != FieldType.List);
 
     public ExtractionType? Type(string name) => Types.FirstOrDefault(t => t.Name == name);
 }

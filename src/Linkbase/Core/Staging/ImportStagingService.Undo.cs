@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Linkbase.Core.History;
 using Linkbase.Core.Models;
 using Linkbase.Core.Records;
 using Linkbase.Data;
@@ -96,8 +97,21 @@ public sealed partial class ImportStagingService
             await db.SaveChangesAsync(cancellationToken);
         }
 
+        long? changeSet = null;
+        if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
+        {
+            changeSet = await ChangeRecorder.WriteAsync(db, JustificationKind.Import, new ChangeReason($"Import #{batchId} undone", batch.SourceUrl),
+                [new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(), ChangeOp.Delete,
+                    OldValue: JsonSerializer.Serialize(new { records = recordsRemoved, links = linksRemoved, kept = kept.Count }))],
+                importBatchId: batchId, cancellationToken: cancellationToken);
+        }
+
         await transaction.CommitAsync(cancellationToken);
-        await _hooks.AfterChangeAsync(changes, cancellationToken);
+        using (ChangeRecorder.Causing(changeSet))
+        {
+            await _hooks.AfterChangeAsync(changes, cancellationToken);
+        }
+
         return new StagedUndo(recordsRemoved, linksRemoved, kept);
     }
 

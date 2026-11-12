@@ -5,6 +5,7 @@
     <DialogContent>
         <MudForm @ref="_form">
             <FieldInputs Fields="Attributes" Values="_values" />
+            <ReasonInput Draft="_reason" Settings="_history" OnSubmit="SaveAsync" />
         </MudForm>
         @if (_error is not null)
         {
@@ -23,12 +24,20 @@
     [Parameter] public IReadOnlyList<RecordField> Attributes { get; set; } = [];
     [Parameter] public IReadOnlyDictionary<string, string> Current { get; set; } = new Dictionary<string, string>();
 
+    // The model's history settings, passed by the page that opens the dialog. Looked up here if they aren't given.
+    [Parameter] public HistorySettings? History { get; set; }
+
     private MudForm? _form;
     private Dictionary<string, string?> _values = [];
     private string? _error;
+    private readonly ReasonDraft _reason = new();
+    private HistorySettings _history = HistorySettings.Default;
 
-    protected override void OnInitialized() =>
+    protected override async Task OnInitializedAsync()
+    {
         _values = Attributes.ToDictionary(a => a.Key, a => Current.TryGetValue(a.Key, out var value) ? value : null);
+        _history = History ?? await Records.HistorySettingsAsync();
+    }
 
     private async Task SaveAsync()
     {
@@ -40,7 +49,7 @@
 
         try
         {
-            await Records.UpdateLinkAsync(LinkId, _values);
+            await Records.UpdateLinkAsync(LinkId, _values, _reason.ToReason());
             Instance.Close(DialogResult.Ok(true));
         }
         catch (LinkbaseValidationException ex)

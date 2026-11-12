@@ -30,6 +30,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<InsightsRepository>();
         Services.AddSingleton<GraphRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+        Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
         Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
         Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
@@ -196,6 +197,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(_climbing);
             Services.AddSingleton<GraphRepository>();
             Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+            Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
             Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
             Services.AddSingleton<InsightsRepository>();
         }

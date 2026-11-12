@@ -1,0 +1,32 @@
+@* Asks for the reason before something is deleted or removed, in place of a plain confirmation. Hands back the ReasonDraft. *@
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-3">@Message</MudText>
+        <MudForm @ref="_form">
+            <ReasonInput Draft="_draft" Settings="Settings" AutoFocus="true" OnSubmit="ConfirmAsync" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="ConfirmAsync" Color="Color.Error" Variant="Variant.Filled">@ConfirmText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string ConfirmText { get; set; } = "Delete";
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private readonly ReasonDraft _draft = new();
+
+    private async Task ConfirmAsync()
+    {
+        await _form!.ValidateAsync();
+        if (_form.IsValid)
+        {
+            Instance.Close(DialogResult.Ok(_draft));
+        }
+    }
+}

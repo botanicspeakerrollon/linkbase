@@ -37,10 +37,23 @@ else if (_record is not null && _type is not null)
     <MudSimpleTable Dense="true" Elevation="1" Class="mb-6 record-values">
         <tbody>
             <tr><th scope="row">Key</th><td>@_record.Key</td></tr>
-            @foreach (var field in _type.Fields)
+            @foreach (var section in FieldSection.Of(_type.Fields))
             {
+                @if (section.Group is not null)
+                {
+                    <tr><th scope="colgroup" colspan="2" class="record-group">@section.Group</th></tr>
+                }
+
+                @foreach (var field in section.Fields)
+                {
                 <tr>
-                    <th scope="row">@RecordRepository.Title(field.Key)</th>
+                    <th scope="row">
+                        @RecordRepository.Title(field.Key)
+                        @if (field.Description is not null)
+                        {
+                            <MudText Typo="Typo.caption" Class="d-block" Style="color: var(--mud-palette-text-secondary); font-weight: normal">@field.Description</MudText>
+                        }
+                    </th>
                     <td>
                         @RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key))
                         @if (field.Owner is not null && _type.Owner is null)
@@ -49,6 +62,7 @@ else if (_record is not null && _type is not null)
                         }
                     </td>
                 </tr>
+                }
             }
             @foreach (var (key, value) in _record.Values.Where(v => _type.Fields.All(f => f.Key != v.Key)).OrderBy(v => v.Key))
             {
@@ -127,6 +141,8 @@ else if (_record is not null && _type is not null)
             </MudText>
         }
     }
+
+    <RecordHistory RecordId="@_record.Id" Version="_version" />
 }
 
 @code {
@@ -141,6 +157,7 @@ else if (_record is not null && _type is not null)
     private IReadOnlyList<LinkOption> _options = [];
     private List<BreadcrumbItem> _crumbs = [];
     private bool _missing;
+    private int _version;
 
     // Types a module derives. Links to them are its own, so they can't be removed here.
     private HashSet<string> _derived = [];
@@ -169,6 +186,7 @@ else if (_record is not null && _type is not null)
     // The links, and what each kind of link can carry, such as a role.
     private async Task LoadLinksAsync()
     {
+        _version++;
         _links = await Records.LinksAsync(_record!.Id);
         _attributes = [];
         foreach (var group in _links)
@@ -192,6 +210,7 @@ else if (_record is not null && _type is not null)
         var parameters = new DialogParameters<LinkValuesDialog>
         {
             { d => d.LinkId, link.Id }, { d => d.Attributes, attributes }, { d => d.Current, link.Values },
+            { d => d.History, await Records.HistorySettingsAsync() },
         };
         var dialog = await Dialogs.ShowAsync<LinkValuesDialog>($"Edit the link to {link.OtherName}", parameters);
         if (await dialog.Result is { Canceled: false })
@@ -203,7 +222,7 @@ else if (_record is not null && _type is not null)
 
     private async Task EditAsync()
     {
-        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.Record, _record } };
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.Record, _record }, { d => d.History, await Records.HistorySettingsAsync() } };
         var dialog = await Dialogs.ShowAsync<RecordDialog>($"Edit {_record!.Name}", parameters);
         if (await dialog.Result is { Canceled: false })
         {
@@ -212,17 +231,31 @@ else if (_record is not null && _type is not null)
         }
     }
 
+    // Where the model keeps a history, the confirmation also asks why. Confirmed is false if it was cancelled.
+    private async Task<(bool Confirmed, ChangeReason? Reason)> ConfirmAsync(string title, string message, string confirmText)
+    {
+        var settings = await Records.HistorySettingsAsync();
+        if (!settings.Record)
+        {
+            return (await Dialogs.ShowMessageBoxAsync(title, message, yesText: confirmText, cancelText: "Cancel") == true, null);
+        }
+
+        var parameters = new DialogParameters<ReasonDialog> { { d => d.Message, message }, { d => d.ConfirmText, confirmText }, { d => d.Settings, settings } };
+        var dialog = await Dialogs.ShowAsync<ReasonDialog>(title, parameters);
+        return await dialog.Result is { Canceled: false, Data: ReasonDraft draft } ? (true, draft.ToReason()) : (false, null);
+    }
+
     private async Task DeleteAsync()
     {
-        var confirmed = await Dialogs.ShowMessageBoxAsync($"Delete {_record!.Name}?", "This can't be undone.", yesText: "Delete", cancelText: "Cancel");
-        if (confirmed != true)
+        var (confirmed, reason) = await ConfirmAsync($"Delete {_record!.Name}?", "This can't be undone.", "Delete");
+        if (!confirmed)
         {
             return;
         }
 
         try
         {
-            await Records.DeleteAsync(_record.Id);
+            await Records.DeleteAsync(_record.Id, reason);
             Snackbar.Add($"{_record.Name} deleted.", Severity.Success);
             Navigation.NavigateTo(GraphStyle.RecordListLink(Type));
         }
@@ -234,7 +267,7 @@ else if (_record is not null && _type is not null)
 
     private async Task LinkAsync()
     {
-        var parameters = new DialogParameters<LinkDialog> { { d => d.Record, _record }, { d => d.Options, _options } };
+        var parameters = new DialogParameters<LinkDialog> { { d => d.Record, _record }, { d => d.Options, _options }, { d => d.History, await Records.HistorySettingsAsync() } };
         var dialog = await Dialogs.ShowAsync<LinkDialog>("Add link", parameters);
         if (await dialog.Result is { Canceled: false })
         {
@@ -245,9 +278,21 @@ else if (_record is not null && _type is not null)
 
     private async Task UnlinkAsync(RecordLink link)
     {
+        ChangeReason? reason = null;
+        if ((await Records.HistorySettingsAsync()).Record)
+        {
+            var (confirmed, given) = await ConfirmAsync($"Remove the link to {link.OtherName}?", "The link goes. The history keeps a note of it.", "Remove");
+            if (!confirmed)
+            {
+                return;
+            }
+
+            reason = given;
+        }
+
         try
         {
-            await Records.RemoveLinkAsync(link.Id);
+            await Records.RemoveLinkAsync(link.Id, reason);
             Snackbar.Add($"Removed the link to {link.OtherName}.", Severity.Success);
             await LoadLinksAsync();
         }

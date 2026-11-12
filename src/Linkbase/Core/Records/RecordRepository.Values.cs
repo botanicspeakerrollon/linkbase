@@ -32,6 +32,13 @@ public sealed partial class RecordRepository
     private static string Name(RecordInput input) =>
         string.IsNullOrWhiteSpace(input.Name) ? throw new LinkbaseValidationException("A record needs a name.") : input.Name.Trim();
 
+    // A type with a name template makes the name from the fields, whatever the form sent as the name.
+    private static string Name(RecordType type, RecordInput input) =>
+        type.NameTemplate is null
+            ? Name(input)
+            : NameTemplates.Render(type.NameTemplate, input.Values)
+                ?? throw new LinkbaseValidationException($"A {type.Name} needs a value for at least one of {string.Join(", ", NameTemplates.Tokens(type.NameTemplate).Distinct().Select(Title))}, to make its name.");
+
     // Values are checked against their field's type and stored typed, as the loader does. Values for keys the type doesn't
     // define are kept as they were, and so are those of fields a module keeps, unless it's the module writing them.
     private static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false) =>
@@ -44,7 +51,7 @@ public sealed partial class RecordRepository
         foreach (var field in fields)
         {
             var text = values.GetValueOrDefault(field.Key)?.Trim();
-            if (field.Type == FieldType.List && FieldValues.SplitList(text ?? "", '\n', '\r').Count == 0)
+            if (field.IsMany && FieldValues.SplitList(text ?? "", '\n', '\r').Count == 0)
             {
                 text = null;
             }
@@ -60,27 +67,31 @@ public sealed partial class RecordRepository
                 continue;
             }
 
-            props[field.Key] = field.Type switch
-            {
-                FieldType.Number => decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
-                    ? JsonValue.Create(number)
-                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be a number, such as 12.5."),
-                FieldType.Date => DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
-                    ? JsonValue.Create(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
-                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be a date, such as 2026-11-06."),
-                FieldType.Boolean => bool.TryParse(text, out var flag)
-                    ? JsonValue.Create(flag)
-                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be true or false."),
-                FieldType.Choice => FieldValues.MatchChoice(text, field.Options) is { } option
-                    ? JsonValue.Create(option)
-                    : throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."),
-                FieldType.List => new JsonArray(FieldValues.SplitList(text, '\n', '\r').Select(v => (JsonNode?)JsonValue.Create(v)).ToArray()),
-                _ => JsonValue.Create(text),
-            };
+            props[field.Key] = field.IsMany
+                ? new JsonArray(FieldValues.SplitList(text, '\n', '\r').Select(v => Single(field, v)).ToArray())
+                : Single(field, text);
         }
 
         return props.ToJsonString();
     }
+
+    // One value as its field's type (a several-valued field's type is its values').
+    private static JsonNode? Single(RecordField field, string text) => field.ElementType switch
+    {
+        FieldType.Number => decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
+            ? JsonValue.Create(number)
+            : throw new LinkbaseValidationException($"{Title(field.Key)} must be a number, such as 12.5."),
+        FieldType.Date => DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? JsonValue.Create(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+            : throw new LinkbaseValidationException($"{Title(field.Key)} must be a date, such as 2026-11-06."),
+        FieldType.Boolean => bool.TryParse(text, out var flag)
+            ? JsonValue.Create(flag)
+            : throw new LinkbaseValidationException($"{Title(field.Key)} must be true or false."),
+        FieldType.Choice => FieldValues.MatchChoice(text, field.Options) is { } option
+            ? JsonValue.Create(option)
+            : throw new LinkbaseValidationException($"{Title(field.Key)} must be one of {FieldValues.Listed(field.Options)}."),
+        _ => JsonValue.Create(text),
+    };
 
     internal static Dictionary<string, string> Values(string props)
     {

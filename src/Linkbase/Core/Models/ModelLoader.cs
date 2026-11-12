@@ -1,5 +1,6 @@
 using System.Globalization;
 using CsvHelper;
+using Linkbase.Core.History;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -57,14 +58,15 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         {
             var type = model.Types[i];
             await RunAsync(
-                "INSERT INTO node_type (name, color, icon, sort_order, owner, hierarchy_field, hierarchy_rel) VALUES (@name, @color, @icon, @order, @owner, @hierarchyField, @hierarchyRel)",
+                "INSERT INTO node_type (name, color, icon, sort_order, owner, hierarchy_field, hierarchy_rel, name_template) VALUES (@name, @color, @icon, @order, @owner, @hierarchyField, @hierarchyRel, @template)",
                 ("name", type.Name, NpgsqlDbType.Text),
                 ("color", (object?)type.Color ?? DBNull.Value, NpgsqlDbType.Text),
                 ("icon", (object?)type.Icon ?? DBNull.Value, NpgsqlDbType.Text),
                 ("order", i, NpgsqlDbType.Integer),
                 ("owner", (object?)type.Owner ?? DBNull.Value, NpgsqlDbType.Text),
                 ("hierarchyField", (object?)type.Hierarchy?.By ?? DBNull.Value, NpgsqlDbType.Text),
-                ("hierarchyRel", (object?)type.Hierarchy?.Via ?? DBNull.Value, NpgsqlDbType.Text));
+                ("hierarchyRel", (object?)type.Hierarchy?.Via ?? DBNull.Value, NpgsqlDbType.Text),
+                ("template", (object?)type.Template ?? DBNull.Value, NpgsqlDbType.Text));
             foreach (var level in type.Hierarchy?.Levels ?? [])
             {
                 await RunAsync(
@@ -77,13 +79,16 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             foreach (var field in type.Fields)
             {
                 await RunAsync(
-                    "INSERT INTO field_definition (node_type_name, key, type, options, required, owner) VALUES (@type, @key, @fieldType, @options, @required, @owner)",
+                    "INSERT INTO field_definition (node_type_name, key, type, options, required, owner, description, group_name, multiple) VALUES (@type, @key, @fieldType, @options, @required, @owner, @description, @group, @multiple)",
                     ("type", type.Name, NpgsqlDbType.Text),
                     ("key", field.Key, NpgsqlDbType.Text),
-                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
+                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(StoredType(field)), NpgsqlDbType.Text),
                     ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text),
                     ("required", field.Required, NpgsqlDbType.Boolean),
-                    ("owner", (object?)field.Owner ?? DBNull.Value, NpgsqlDbType.Text));
+                    ("owner", (object?)field.Owner ?? DBNull.Value, NpgsqlDbType.Text),
+                    ("description", (object?)Clean(field.Description) ?? DBNull.Value, NpgsqlDbType.Text),
+                    ("group", (object?)Clean(field.Group) ?? DBNull.Value, NpgsqlDbType.Text),
+                    ("multiple", field.Multiple, NpgsqlDbType.Boolean));
             }
         }
 
@@ -92,21 +97,23 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             // The same relationship can come from more than one file. It's required if any of them says so.
             await RunAsync(
                 """
-                INSERT INTO link_definition (source_type, rel_type, target_type, required) VALUES (@from, @rel, @to, @required)
-                ON CONFLICT (source_type, rel_type, target_type) DO UPDATE SET required = link_definition.required OR excluded.required
+                INSERT INTO link_definition (source_type, rel_type, target_type, required, max_links) VALUES (@from, @rel, @to, @required, @max)
+                ON CONFLICT (source_type, rel_type, target_type) DO UPDATE SET required = link_definition.required OR excluded.required,
+                    max_links = least(link_definition.max_links, excluded.max_links)
                 """,
                 ("from", relationship.From, NpgsqlDbType.Text),
                 ("rel", relationship.Type, NpgsqlDbType.Text),
                 ("to", relationship.To, NpgsqlDbType.Text),
-                ("required", relationship.Required, NpgsqlDbType.Boolean));
+                ("required", relationship.Required, NpgsqlDbType.Boolean),
+                ("max", (object?)relationship.Max ?? DBNull.Value, NpgsqlDbType.Integer));
 
             // The same relationship can come from more than one file. The first to name an attribute defines it.
             foreach (var field in relationship.Fields)
             {
                 await RunAsync(
                     """
-                    INSERT INTO link_attribute (link_definition_id, key, type, options, required)
-                    SELECT id, @key, @fieldType, @options, @required FROM link_definition
+                    INSERT INTO link_attribute (link_definition_id, key, type, options, required, description, multiple)
+                    SELECT id, @key, @fieldType, @options, @required, @description, @multiple FROM link_definition
                     WHERE source_type = @from AND rel_type = @rel AND target_type = @to
                     ON CONFLICT (link_definition_id, key) DO NOTHING
                     """,
@@ -114,9 +121,11 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                     ("rel", relationship.Type, NpgsqlDbType.Text),
                     ("to", relationship.To, NpgsqlDbType.Text),
                     ("key", field.Key, NpgsqlDbType.Text),
-                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(field.Type), NpgsqlDbType.Text),
+                    ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(StoredType(field)), NpgsqlDbType.Text),
                     ("options", field.Options is { Count: > 0 } options ? options.Select(o => o.Trim()).ToArray() : (object)DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text),
-                    ("required", field.Required, NpgsqlDbType.Boolean));
+                    ("required", field.Required, NpgsqlDbType.Boolean),
+                    ("description", (object?)Clean(field.Description) ?? DBNull.Value, NpgsqlDbType.Text),
+                    ("multiple", field.Multiple, NpgsqlDbType.Boolean));
             }
         }
 
@@ -131,7 +140,8 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
 
             var columns = await StageAsync(connection, model, typeSource.File, cancellationToken);
             var key = Column(columns, typeSource.File, typeSource.Key);
-            var name = typeSource.Name is null ? key : Column(columns, typeSource.File, typeSource.Name);
+            var name = type.Template is { } template ? TemplateSql(template, type.Fields, columns, typeSource.File)
+                : typeSource.Name is null ? key : Column(columns, typeSource.File, typeSource.Name);
             await CheckChoicesAsync(connection, transaction, type.Fields, columns, typeSource.File, cancellationToken);
             await CheckRequiredAsync(connection, transaction, type.Fields, columns, typeSource.File, $"nullif({key}, '') IS NOT NULL", cancellationToken);
             var count = await Guard($"{type.Name} from {typeSource.File}", () => RunAsync(
@@ -199,7 +209,28 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             await CheckRequiredLinksAsync(connection, transaction, relationship, cancellationToken);
         }
 
+        foreach (var relationship in model.Relationships.Where(r => r.Max is not null))
+        {
+            await CheckMaxLinksAsync(connection, transaction, relationship, cancellationToken);
+        }
+
         await HierarchyChecks.CheckAsync(connection, transaction, batchId: null, requireParent: true, cancellationToken);
+
+        // The model file's history settings. A reload keeps the history already written, because the changes have no foreign
+        // key to the records they describe. It adds one entry for the load itself.
+        await RunAsync(
+            """
+            INSERT INTO model_setting (id, record_history, require_reason) VALUES (1, @record, @reason)
+            ON CONFLICT (id) DO UPDATE SET record_history = excluded.record_history, require_reason = excluded.require_reason
+            """,
+            ("record", model.RecordHistory, NpgsqlDbType.Boolean),
+            ("reason", model.RequireReason, NpgsqlDbType.Boolean));
+        if (model.RecordHistory)
+        {
+            var summary = System.Text.Json.JsonSerializer.Serialize(new { types = model.Types.Count, records = nodes, links });
+            await ChangeRecorder.WriteAsync(connection, transaction, JustificationKind.Import, $"Loaded the {model.Name} model from {Path.GetFileName(path)}", null,
+                [new PendingChange(ChangeEntityKind.Definition, $"model:{model.Name}", ChangeOp.Update, NewValue: summary)], cancellationToken: cancellationToken);
+        }
 
         await transaction.CommitAsync(cancellationToken);
         return new ModelLoadSummary(model.Types.Count, nodes, links, DateTime.UtcNow - started);
@@ -268,14 +299,16 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         var pairs = fields.Select(field =>
         {
             var value = $"nullif({Column(header, file, field.Column ?? field.Key)}, '')";
-            var typed = field.Type switch
-            {
-                FieldType.Number => $"{value}::numeric",
-                FieldType.Date => $"{value}::date",
-                FieldType.Boolean => $"{value}::boolean",
-                FieldType.List => $"(SELECT jsonb_agg(btrim(v) ORDER BY i) FROM unnest(string_to_array({value}, '{FieldValues.ListSeparator}')) WITH ORDINALITY u(v, i) WHERE btrim(v) <> '')",
-                _ => value,
-            };
+            // Several values are split on the separator and each stored in its own type.
+            var typed = field.IsMany
+                ? $"(SELECT jsonb_agg({field.ElementType switch { FieldType.Number => "btrim(v)::numeric", FieldType.Date => "btrim(v)::date", _ => "btrim(v)" }} ORDER BY i) FROM unnest(string_to_array({value}, '{FieldValues.ListSeparator}')) WITH ORDINALITY u(v, i) WHERE btrim(v) <> '')"
+                : field.Type switch
+                {
+                    FieldType.Number => $"{value}::numeric",
+                    FieldType.Date => $"{value}::date",
+                    FieldType.Boolean => $"{value}::boolean",
+                    _ => value,
+                };
             return $"'{field.Key}', {typed}";
         });
         return $"jsonb_strip_nulls(jsonb_build_object({string.Join(", ", pairs)}))";
@@ -290,7 +323,9 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         {
             var column = Column(header, file, field.Column ?? field.Key);
             await using var command = new NpgsqlCommand(
-                $"SELECT DISTINCT {column} FROM staging WHERE nullif({column}, '') IS NOT NULL AND NOT ({column} = ANY(@options)) ORDER BY 1 LIMIT 5",
+                field.IsMany
+                    ? $"SELECT DISTINCT btrim(v) FROM staging, unnest(string_to_array({column}, '{FieldValues.ListSeparator}')) v WHERE btrim(v) <> '' AND NOT (btrim(v) = ANY(@options)) ORDER BY 1 LIMIT 5"
+                    : $"SELECT DISTINCT {column} FROM staging WHERE nullif({column}, '') IS NOT NULL AND NOT ({column} = ANY(@options)) ORDER BY 1 LIMIT 5",
                 connection, transaction);
             command.Parameters.Add(new NpgsqlParameter("options", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = (field.Options ?? []).Select(o => o.Trim()).ToArray() });
             var wrong = new List<string>();
@@ -319,7 +354,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         foreach (var field in fields.Where(f => f.Required))
         {
             var column = Column(header, file, field.Column ?? field.Key);
-            var empty = field.Type == FieldType.List
+            var empty = field.IsMany
                 ? $"NOT EXISTS (SELECT 1 FROM unnest(string_to_array({column}, '{FieldValues.ListSeparator}')) v WHERE btrim(v) <> '')"
                 : $"nullif({column}, '') IS NULL";
             await using var command = new NpgsqlCommand(
@@ -376,6 +411,76 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             throw new LinkbaseValidationException(
                 $"Each {relationship.From} needs at least one {relationship.From} {relationship.Type} {relationship.To} link, but {total:N0} have none, such as {string.Join(", ", keys)}.");
         }
+    }
+
+    // A record with more of a relationship's links than its max stops the load, and says which.
+    private static async Task CheckMaxLinksAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, ModelRelationship relationship, CancellationToken cancellationToken)
+    {
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT count(*) OVER (), s.key
+            FROM (
+                SELECT n.key
+                FROM node n JOIN node_link l ON l.source_id = n.id AND l.rel_type = @rel JOIN node t ON t.id = l.target_id AND t.type = @to
+                WHERE n.type = @from
+                GROUP BY n.key
+                HAVING count(*) > @max
+            ) s
+            ORDER BY s.key
+            LIMIT 5
+            """, connection, transaction);
+        command.Parameters.Add(new NpgsqlParameter("from", NpgsqlDbType.Text) { Value = relationship.From });
+        command.Parameters.Add(new NpgsqlParameter("rel", NpgsqlDbType.Text) { Value = relationship.Type });
+        command.Parameters.Add(new NpgsqlParameter("to", NpgsqlDbType.Text) { Value = relationship.To });
+        command.Parameters.Add(new NpgsqlParameter("max", NpgsqlDbType.Integer) { Value = relationship.Max!.Value });
+        var keys = new List<string>();
+        long total = 0;
+        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        {
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                total = reader.GetInt64(0);
+                keys.Add(reader.GetString(1));
+            }
+        }
+
+        if (total > 0)
+        {
+            throw new LinkbaseValidationException(
+                $"Each {relationship.From} can have at most {relationship.Max} {relationship.From} {relationship.Type} {relationship.To} link(s), but {total:N0} have more, such as {string.Join(", ", keys)}.");
+        }
+    }
+
+    // A text list is stored as the List type, as it always was; any other several-valued field keeps its own type and is
+    // marked multiple.
+    internal static FieldType StoredType(ModelField field) => field.Multiple && field.Type == FieldType.Text ? FieldType.List : field.Type;
+
+    private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+
+    // The name column's SQL: the template's text with each {field} replaced by that field's column, spaces collapsed.
+    private static string TemplateSql(string template, IReadOnlyList<ModelField> fields, List<string> header, string file)
+    {
+        var parts = new List<string>();
+        var last = 0;
+        foreach (var token in NameTemplates.Matches(template))
+        {
+            if (token.Index > last)
+            {
+                parts.Add($"'{template[last..token.Index].Replace("'", "''")}'");
+            }
+
+            var field = fields.First(f => f.Key == token.Key);
+            parts.Add($"coalesce({Column(header, file, field.Column ?? field.Key)}, '')");
+            last = token.Index + token.Length;
+        }
+
+        if (last < template.Length)
+        {
+            parts.Add($"'{template[last..].Replace("'", "''")}'");
+        }
+
+        return $"nullif(btrim(regexp_replace(concat({string.Join(", ", parts)}), '\\s+', ' ', 'g')), '')";
     }
 
     // A value that doesn't fit its field's type stops the load, and says where.

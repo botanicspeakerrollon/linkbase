@@ -1,0 +1,23 @@
+@* The boxes for why a change is being made, kept in the audit trail. Nothing is shown where the model doesn't record
+   history. Put it inside the form, so the form's Save checks it. Enter in the reason box saves, so the form can be done
+   from the keyboard. *@
+@if (Settings.Record)
+{
+    <MudTextField T="string" @bind-Value="Draft.Note" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Reason"
+                  Required="@Settings.RequireReason" RequiredError="Say why you're making this change" MaxLength="@ChangeRecorder.NoteLimit"
+                  AutoFocus="@AutoFocus" OnKeyDown="PressedAsync"
+                  HelperText="@(Settings.RequireReason ? "Kept in the history. A line in your own words." : "Kept in the history if you give one.")" />
+    <MudTextField T="string" @bind-Value="Draft.SourceUrl" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Source (optional)"
+                  HelperText="A web address where this can be checked." OnKeyDown="PressedAsync" />
+}
+
+@code {
+    [Parameter, EditorRequired] public ReasonDraft Draft { get; set; } = null!;
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+    [Parameter] public bool AutoFocus { get; set; }
+
+    // Called when Enter is pressed in either box.
+    [Parameter] public EventCallback OnSubmit { get; set; }
+
+    private Task PressedAsync(KeyboardEventArgs e) => e.Key == "Enter" ? OnSubmit.InvokeAsync() : Task.CompletedTask;
+}
