@@ -160,6 +160,9 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
     private static void Enter<T>(IRenderedComponent<T> cut, string label, string text)
         where T : IComponent
     {
+        // A dialog still loading can re-render after the field is found, and the typed text goes with the old one.
+        Field(cut, label);
+        Settle(cut);
         try
         {
             Field(cut, label).QuerySelector("input, textarea")!.Input(text);

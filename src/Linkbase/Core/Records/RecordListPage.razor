@@ -79,6 +79,7 @@ else if (_type is not null)
     protected override async Task OnParametersSetAsync()
     {
         _type = await Records.TypeAsync(Type);
+        _history = await Records.HistorySettingsAsync();
         _missing = _type is null;
         _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
         _search = null;
@@ -125,10 +126,12 @@ else if (_type is not null)
         await _grid.ReloadServerData();
     }
 
+    // Loaded with the page, so opening the dialog has nothing to wait for.
+    private HistorySettings _history = HistorySettings.Default;
+
     private async Task AddAsync()
     {
-        var history = await Records.HistorySettingsAsync();
-        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.History, history } };
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.History, _history } };
         var dialog = await Dialogs.ShowAsync<RecordDialog>($"Add {Type}", parameters);
         if (await dialog.Result is { Canceled: false, Data: string key })
         {

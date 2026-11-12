@@ -159,6 +159,9 @@ else if (_record is not null && _type is not null)
     private bool _missing;
     private int _version;
 
+    // Loaded with the page, so opening a dialog has nothing to wait for.
+    private HistorySettings _history = HistorySettings.Default;
+
     // Types a module derives. Links to them are its own, so they can't be removed here.
     private HashSet<string> _derived = [];
 
@@ -169,6 +172,7 @@ else if (_record is not null && _type is not null)
         var types = await Records.TypesAsync();
         _derived = types.Where(t => t.Owner is not null).Select(t => t.Name).ToHashSet();
         _type = types.FirstOrDefault(t => t.Name == Type);
+        _history = await Records.HistorySettingsAsync();
         _record = _type is null ? null : await Records.GetAsync(Type, Key);
         _missing = _record is null;
         if (_record is null)
@@ -210,7 +214,7 @@ else if (_record is not null && _type is not null)
         var parameters = new DialogParameters<LinkValuesDialog>
         {
             { d => d.LinkId, link.Id }, { d => d.Attributes, attributes }, { d => d.Current, link.Values },
-            { d => d.History, await Records.HistorySettingsAsync() },
+            { d => d.History, _history },
         };
         var dialog = await Dialogs.ShowAsync<LinkValuesDialog>($"Edit the link to {link.OtherName}", parameters);
         if (await dialog.Result is { Canceled: false })
@@ -222,7 +226,7 @@ else if (_record is not null && _type is not null)
 
     private async Task EditAsync()
     {
-        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.Record, _record }, { d => d.History, await Records.HistorySettingsAsync() } };
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, _type }, { d => d.Record, _record }, { d => d.History, _history } };
         var dialog = await Dialogs.ShowAsync<RecordDialog>($"Edit {_record!.Name}", parameters);
         if (await dialog.Result is { Canceled: false })
         {
@@ -234,7 +238,7 @@ else if (_record is not null && _type is not null)
     // Where the model keeps a history, the confirmation also asks why. Confirmed is false if it was cancelled.
     private async Task<(bool Confirmed, ChangeReason? Reason)> ConfirmAsync(string title, string message, string confirmText)
     {
-        var settings = await Records.HistorySettingsAsync();
+        var settings = _history;
         if (!settings.Record)
         {
             return (await Dialogs.ShowMessageBoxAsync(title, message, yesText: confirmText, cancelText: "Cancel") == true, null);
@@ -267,7 +271,7 @@ else if (_record is not null && _type is not null)
 
     private async Task LinkAsync()
     {
-        var parameters = new DialogParameters<LinkDialog> { { d => d.Record, _record }, { d => d.Options, _options }, { d => d.History, await Records.HistorySettingsAsync() } };
+        var parameters = new DialogParameters<LinkDialog> { { d => d.Record, _record }, { d => d.Options, _options }, { d => d.History, _history } };
         var dialog = await Dialogs.ShowAsync<LinkDialog>("Add link", parameters);
         if (await dialog.Result is { Canceled: false })
         {
@@ -279,7 +283,7 @@ else if (_record is not null && _type is not null)
     private async Task UnlinkAsync(RecordLink link)
     {
         ChangeReason? reason = null;
-        if ((await Records.HistorySettingsAsync()).Record)
+        if (_history.Record)
         {
             var (confirmed, given) = await ConfirmAsync($"Remove the link to {link.OtherName}?", "The link goes. The history keeps a note of it.", "Remove");
             if (!confirmed)
