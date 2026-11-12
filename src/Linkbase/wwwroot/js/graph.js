@@ -293,6 +293,40 @@ function fitAll() {
     }
 }
 
+// Keeps the zoom the user chose. Only when the given elements don't fit on screen does it zoom out, and then just
+// far enough to show them. If they fit, it pans the least it can to bring them into view.
+function keepInView(elements) {
+    const padding = 40;
+    const box = elements.boundingBox({ includeLabels: true, includeOverlays: false });
+    const available = { w: cy.width() - 2 * padding, h: cy.height() - 2 * padding };
+    const needed = Math.min(available.w / box.w, available.h / box.h);
+    if (needed < cy.zoom()) {
+        cy.zoom(needed);
+    }
+
+    const zoom = cy.zoom();
+    const pan = cy.pan();
+    const left = box.x1 * zoom + pan.x;
+    const right = box.x2 * zoom + pan.x;
+    const top = box.y1 * zoom + pan.y;
+    const bottom = box.y2 * zoom + pan.y;
+    let dx = 0;
+    let dy = 0;
+    if (left < padding) {
+        dx = padding - left;
+    } else if (right > cy.width() - padding) {
+        dx = cy.width() - padding - right;
+    }
+
+    if (top < padding) {
+        dy = padding - top;
+    } else if (bottom > cy.height() - padding) {
+        dy = cy.height() - padding - bottom;
+    }
+
+    cy.pan({ x: pan.x + dx, y: pan.y + dy });
+}
+
 function placeAround(anchor, nodes) {
     const centre = anchor
         ? anchor.position()
@@ -353,7 +387,12 @@ export function update(nodes, edges, anchorId) {
     layout.one('layoutstop', () => {
         restorePinned(pinned);
         separateNew(added);
-        fitAll();
+        if (pinned.length === 0) {
+            fitAll();
+        } else {
+            const addedNodes = cy.collection(added);
+            keepInView(anchor && anchor.nonempty() ? addedNodes.union(anchor) : addedNodes);
+        }
     });
     layout.run();
 }
