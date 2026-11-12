@@ -73,6 +73,7 @@ Every database has the same tables, because there's one schema. A model only fil
 | Table | Holds |
 | --- | --- |
 | `node_type` | The model's types, such as `Stop` or `Person`, with a colour and icon |
+| `hierarchy_level` | The levels of a type whose records form a tree, such as `country`, `region` and `area`, and which each may be in |
 | `field_definition` | Each type's fields, and whether each is `text`, `number`, `date` or `boolean` |
 | `link_definition` | The relationships allowed, such as `Service CALLS_AT Stop`, with how many links there are in `links` |
 | `node` | The records. `id` is the type in lower case, a colon and the key, such as `stop:8503000`. Field values are JSON in `props` |

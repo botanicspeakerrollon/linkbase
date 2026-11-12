@@ -117,9 +117,107 @@ public sealed partial class ModelFile
             }
         }
 
+        foreach (var type in Types.Where(t => t.Hierarchy is not null))
+        {
+            ValidateHierarchy(type, problems);
+        }
+
         if (problems.Count > 0)
         {
             throw new LinkbaseValidationException(string.Join(Environment.NewLine, problems));
+        }
+    }
+
+    // The levels have to cover the `by` field's options exactly, with somewhere for the tree to start, and the parent
+    // relationship has to be one the type has with itself, which can't be required because the top level has none.
+    private void ValidateHierarchy(ModelType type, List<string> problems)
+    {
+        var hierarchy = type.Hierarchy!;
+        var what = $"Type '{type.Name}''s hierarchy";
+        var by = type.Fields.FirstOrDefault(f => f.Key == hierarchy.By);
+        if (by is null || by.Type != FieldType.Choice)
+        {
+            problems.Add($"{what} is by '{hierarchy.By}', which needs to be a choice field of the type.");
+        }
+        else if (!by.Required)
+        {
+            problems.Add($"{what} is by '{hierarchy.By}', which needs to be required, so every record has a level.");
+        }
+
+        var via = Relationships.FirstOrDefault(r => r.From == type.Name && r.To == type.Name && r.Type == hierarchy.Via);
+        if (via is null)
+        {
+            problems.Add($"{what} goes via '{hierarchy.Via}', but the model has no relationship {type.Name} {hierarchy.Via} {type.Name}.");
+        }
+        else if (via.Required)
+        {
+            problems.Add($"{what} goes via {type.Name} {hierarchy.Via} {type.Name}, which can't be required, because the top level has no parent.");
+        }
+
+        if (hierarchy.Levels.Count == 0)
+        {
+            problems.Add($"{what} needs levels.");
+            return;
+        }
+
+        var kinds = hierarchy.Levels.Select(l => l.Kind).ToList();
+        foreach (var repeated in kinds.GroupBy(k => k).Where(g => g.Count() > 1))
+        {
+            problems.Add($"{what} has the level '{repeated.Key}' more than once.");
+        }
+
+        if (by?.Type == FieldType.Choice)
+        {
+            var options = (by.Options ?? []).Select(o => o.Trim()).ToList();
+            foreach (var kind in kinds.Where(k => !options.Contains(k)))
+            {
+                problems.Add($"{what} has the level '{kind}', which isn't an option of '{hierarchy.By}'.");
+            }
+
+            foreach (var option in options.Where(o => !kinds.Contains(o)))
+            {
+                problems.Add($"{what} has no level for '{hierarchy.By}' option '{option}'.");
+            }
+        }
+
+        if (!hierarchy.Levels.Any(l => l.Root))
+        {
+            problems.Add($"{what} needs a level with \"root\": true, or nothing could be at the top.");
+        }
+
+        foreach (var level in hierarchy.Levels)
+        {
+            var under = level.Under ?? [];
+            if (level.Root && under.Count > 0)
+            {
+                problems.Add($"{what}'s level '{level.Kind}' is a root, so it can't be under anything.");
+            }
+            else if (!level.Root && under.Count == 0)
+            {
+                problems.Add($"{what}'s level '{level.Kind}' needs \"under\": the levels it may be in, or \"root\": true.");
+            }
+
+            foreach (var other in under.Where(u => !kinds.Contains(u)))
+            {
+                problems.Add($"{what}'s level '{level.Kind}' is under '{other}', which isn't a level.");
+            }
+        }
+
+        // A tree needs a way down from the top: every level has to be reachable from a root.
+        var reached = hierarchy.Levels.Where(l => l.Root).Select(l => l.Kind).ToHashSet();
+        for (var grew = true; grew;)
+        {
+            grew = false;
+            foreach (var level in hierarchy.Levels.Where(l => !reached.Contains(l.Kind) && (l.Under ?? []).Any(reached.Contains)))
+            {
+                reached.Add(level.Kind);
+                grew = true;
+            }
+        }
+
+        foreach (var level in hierarchy.Levels.Where(l => !reached.Contains(l.Kind)))
+        {
+            problems.Add($"{what}'s level '{level.Kind}' can't be reached from a root, so no record could be at it.");
         }
     }
 
@@ -195,6 +293,36 @@ public sealed class ModelType
 
     // The domain module that derives this type's records, such as Climbing for trips. Only it writes them.
     public string? Owner { get; init; }
+
+    // Leave it out for a type whose records aren't a tree.
+    public ModelHierarchy? Hierarchy { get; init; }
+}
+
+// How a type's records form a tree, such as areas in regions in countries. See docs/models.md.
+public sealed class ModelHierarchy
+{
+    // The choice field saying which level a record is on.
+    public required string By { get; init; }
+
+    // The relationship from a record to its parent, from the type to itself.
+    public required string Via { get; init; }
+
+    public IReadOnlyList<ModelHierarchyLevel> Levels { get; init; } = [];
+
+    public HierarchyRules ToRules(string typeName) =>
+        new(typeName, By, Via, Levels.Select(l => new HierarchyLevelRule(l.Kind, l.Root, l.Under ?? [])).ToList());
+}
+
+public sealed class ModelHierarchyLevel
+{
+    // One of the options of the `by` field.
+    public required string Kind { get; init; }
+
+    // A record at this level has no parent.
+    public bool Root { get; init; }
+
+    // The levels a record at this level may be in, by kind. Not for a root.
+    public IReadOnlyList<string>? Under { get; init; }
 }
 
 public sealed class ModelTypeSource

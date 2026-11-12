@@ -21,7 +21,10 @@ public sealed partial class RecordRepository
                 t.Color,
                 t.Icon,
                 t.Owner,
+                t.HierarchyField,
+                t.HierarchyRel,
                 Fields = t.Fields.OrderBy(f => f.Id).Select(f => new { f.Key, f.Type, f.Options, f.Required, f.Owner }).ToList(),
+                Levels = t.HierarchyLevels.OrderBy(l => l.Id).Select(l => new { l.Kind, l.IsRoot, l.Under }).ToList(),
             })
             .ToListAsync(cancellationToken);
         var required = await db.LinkDefinitions.AsNoTracking()
@@ -33,6 +36,9 @@ public sealed partial class RecordRepository
             t.Fields.Select(f => new RecordField(f.Key, f.Type, f.Options ?? [], f.Owner) { Required = f.Required }).ToList(), t.Owner)
         {
             RequiredLinks = required.Where(l => l.SourceType == t.Name).Select(l => new RequiredLink(l.RelType, l.TargetType)).ToList(),
+            Hierarchy = t.HierarchyField is null || t.HierarchyRel is null
+                ? null
+                : new HierarchyRules(t.Name, t.HierarchyField, t.HierarchyRel, t.Levels.Select(l => new HierarchyLevelRule(l.Kind, l.IsRoot, l.Under)).ToList()),
         }).ToList();
     }
 

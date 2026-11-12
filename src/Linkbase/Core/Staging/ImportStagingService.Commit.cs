@@ -101,6 +101,10 @@ public sealed partial class ImportStagingService
             }
         }
 
+        // A link that would break a type's hierarchy stops the commit, which rolls back, and the batch stays staged. A record
+        // arriving without its parent is fine, since an import of records adds no links.
+        await HierarchyChecks.CheckAsync(connection, transaction, batchId, requireParent: false, cancellationToken);
+
         foreach (var (source, rel, target, count) in counts)
         {
             await ExecuteAsync(connection, transaction,

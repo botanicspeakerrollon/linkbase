@@ -26,6 +26,21 @@ A kind of thing in the model (Crag, Route, Ascent...).
 | `icon` | text | nullable |
 | `sort_order` | integer | |
 | `owner` | text | nullable; the domain module that owns it |
+| `hierarchy_field` | text | nullable; set when the type's records form a tree: the choice field saying which level a record is on |
+| `hierarchy_rel` | text | nullable; the relationship from a record to its parent |
+
+### `hierarchy_level`
+One level of a type's hierarchy, such as `region`. See [hierarchies](models.md#hierarchies).
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity; the order the model file gave |
+| `node_type_name` | text | FK to `node_type.name` |
+| `kind` | text | one of the options of the type's `hierarchy_field` |
+| `is_root` | boolean | default false; records at this level have no parent |
+| `under` | text[] | the kinds a record at this level may be in; empty for a root |
+
+Unique: (`node_type_name`, `kind`).
 
 ### `field_definition`
 A property a node type has. Values live in `node.props`.

@@ -36,6 +36,9 @@ public sealed record RecordType(string Name, string? Color, string? Icon, IReadO
 {
     public IReadOnlyList<RequiredLink> RequiredLinks { get; init; } = [];
 
+    // Set when the type's records form a tree, such as areas in regions in countries.
+    public HierarchyRules? Hierarchy { get; init; }
+
     // The fields people fill in, as the edit form shows them.
     public IEnumerable<RecordField> Editable => Fields.Where(f => f.Owner is null);
 }

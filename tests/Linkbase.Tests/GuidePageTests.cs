@@ -39,6 +39,15 @@ public class GuidePageTests(PostgresFixture fixture) : UiTestBase(fixture), ICla
     }
 
     [Fact]
+    public void The_general_guide_explains_hierarchies()
+    {
+        var text = Text(RenderPage<UserGuide>());
+
+        Assert.Contains("Some types are arranged in levels", text);
+        Assert.Contains("form a hierarchy", text);
+    }
+
+    [Fact]
     public void The_general_guide_points_to_the_climbing_guide_when_the_model_has_the_climbing_domain()
     {
         var cut = RenderPage<UserGuide>();

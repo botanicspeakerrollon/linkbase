@@ -19,7 +19,7 @@
 
             @if (Record is null)
             {
-                @foreach (var link in Type.RequiredLinks)
+                @foreach (var link in Links)
                 {
                     var needed = link;
                     @if (_creates.TryGetValue(needed, out var pending))
@@ -32,11 +32,11 @@
                     else
                     {
                         <MudStack Row="true" AlignItems="AlignItems.Start">
-                            <MudAutocomplete T="RecordOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@needed.OtherType"
-                                             HelperText="@($"{Type.Name} {needed.RelType} {needed.OtherType}")"
+                            <MudAutocomplete T="RecordOption" Variant="Variant.Outlined" Margin="Margin.Dense" Label="@(IsParent(needed) ? "Parent" : needed.OtherType)"
+                                             HelperText="@(IsParent(needed) ? $"The {Type.Name} it is {needed.RelType}. Needed below the top level, and left empty at the top." : $"{Type.Name} {needed.RelType} {needed.OtherType}")"
                                              Value="@_links.GetValueOrDefault(needed)" ValueChanged="@(o => _links[needed] = o)"
                                              SearchFunc="@((text, token) => SearchAsync(needed, text, token))" ToStringFunc="@(o => o?.Name)"
-                                             DebounceInterval="200" ResetValueOnEmptyText="true" Required="true" RequiredError="@($"Choose its {needed.OtherType}")">
+                                             DebounceInterval="200" ResetValueOnEmptyText="true" Required="@(!IsParent(needed))" RequiredError="@($"Choose its {needed.OtherType}")">
                                 <ItemTemplate Context="option">
                                     @option.Name <MudText Typo="Typo.caption" Inline="true">@option.Key</MudText>
                                 </ItemTemplate>
@@ -95,7 +95,7 @@
         _values = Type.Editable.ToDictionary(f => f.Key, f => Record?.Values.GetValueOrDefault(f.Key));
         if (Record is null)
         {
-            foreach (var link in Type.RequiredLinks)
+            foreach (var link in Links)
             {
                 var attributes = await Records.LinkAttributesAsync(Type.Name, link.RelType, link.OtherType);
                 _attributes[link] = attributes;
@@ -103,6 +103,13 @@
             }
         }
     }
+
+    // The links a new record asks for: the ones its type requires, and its parent if the type is a hierarchy. The parent is
+    // optional here, since whether one is needed depends on the level chosen, which the repository checks.
+    private IEnumerable<RequiredLink> Links =>
+        Type.Hierarchy is { } hierarchy ? Type.RequiredLinks.Append(new RequiredLink(hierarchy.RelType, Type.Name)) : Type.RequiredLinks;
+
+    private bool IsParent(RequiredLink link) => Type.Hierarchy is { } hierarchy && link == new RequiredLink(hierarchy.RelType, Type.Name);
 
     private async Task<IEnumerable<RecordOption>> SearchAsync(RequiredLink link, string text, CancellationToken cancellationToken) =>
         await Records.FindAsync(link.OtherType, text, Suggestions, cancellationToken);

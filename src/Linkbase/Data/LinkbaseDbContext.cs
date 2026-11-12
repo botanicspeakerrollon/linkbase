@@ -18,6 +18,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
     public DbSet<LinkDefinition> LinkDefinitions => Set<LinkDefinition>();
     public DbSet<LinkAttribute> LinkAttributes => Set<LinkAttribute>();
+    public DbSet<HierarchyLevel> HierarchyLevels => Set<HierarchyLevel>();
     public DbSet<Node> Nodes => Set<Node>();
     public DbSet<NodeLink> NodeLinks => Set<NodeLink>();
     public DbSet<StagedItem> StagedItems => Set<StagedItem>();
@@ -77,6 +78,13 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         });
 
         modelBuilder.Entity<NodeType>(type => type.HasKey(t => t.Name));
+
+        modelBuilder.Entity<HierarchyLevel>(level =>
+        {
+            level.HasOne(l => l.NodeType).WithMany(t => t.HierarchyLevels).HasForeignKey(l => l.NodeTypeName);
+            level.HasIndex(l => new { l.NodeTypeName, l.Kind }).IsUnique();
+            level.Property(l => l.IsRoot).HasDefaultValue(false);
+        });
 
         modelBuilder.Entity<FieldDefinition>(field =>
         {

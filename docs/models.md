@@ -94,6 +94,7 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `types[].source` | The CSV file, the column identifying a row (`key`), and the column to show as its name (`name`, the key if left out). Leave it out for a type that starts empty, such as one a domain module fills |
 | `fields[]` | `key` in lower case, digits and underscores. `type` is `text` (the default), `number`, `date`, `boolean`, `choice` or `list`. A choice lists its values in `options` (up to 50), and a value that isn't one of them, spelled exactly, stops the load. A list is several text values in one cell, split by `|`, such as `Figma|User research`. `column` is the CSV column, the key if left out |
 | `types[].owner`, `types[].fields[].owner` | Optional. The domain module that writes these records or keeps this value, by its key, such as `Climbing`. See [owned by a module](#owned-by-a-module) |
+| `types[].hierarchy` | Optional. Makes the type's records a tree, with rules about what may be in what. See [hierarchies](#hierarchies) |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
 | `relationships[].source` | The CSV file, and the columns holding the keys of the two ends. They can be the types' own files. Leave it out for a relationship that starts with no links |
 | `relationships[].fields` | The values a link of this kind carries, written like a type's `fields`, such as a person's `role` on a project. See [link attributes](#link-attributes). Not `owner` |
@@ -144,6 +145,56 @@ ascent after its route, and rebuilds the `Trip` records, with `GenericTripServic
 Hooks don't run when a model file is loaded. A module writes its derived records with `RecordRepository.ReplaceDerivedAsync`,
 which replaces all of a type's records and their links in one transaction, keeps the relationships' counts, and runs no
 hooks.
+
+## Hierarchies
+
+Records of one type can form a tree, with rules about which level may sit in which. The demo climbing logbook's `Area` is the
+working example (`models/climbing-demo/model.json`): countries at the top, regions in countries, and areas in regions or in
+other areas.
+
+```json
+{
+  "name": "Area",
+  "fields": [ { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true } ],
+  "hierarchy": {
+    "by": "kind",
+    "via": "IN",
+    "levels": [
+      { "kind": "country", "root": true },
+      { "kind": "region", "under": [ "country" ] },
+      { "kind": "area", "under": [ "region", "area" ] }
+    ]
+  }
+}
+```
+
+| Setting | Means |
+| --- | --- |
+| `by` | The field saying which level a record is on. It must be a required `choice` field of the type |
+| `via` | The relationship from a record to its parent. It must be one the model has from the type to itself, and can't be `required`, because the top has no parent |
+| `levels[].kind` | One of the `by` field's options. Every option needs a level |
+| `root` | A record at this level has no parent. At least one level must be a root |
+| `under` | The levels a record at this level may be in. A level that isn't a root needs some, and every level has to be reachable from a root. A level may list itself, which is how areas nest to any depth |
+
+The rules, wherever a record or a link is made:
+
+- A record at a root level has no parent, and any other record is in at most one record of a level its own lists.
+- The tree can't go round in a circle, and a record can't be in itself.
+- **Loading** a model file checks all of it, including that every record below the top has a parent, and says which records
+  break which rule.
+- **The new record form** has a Parent box for the type. It's optional there, because the level chosen decides whether one
+  is needed. The save is refused if a record below the top has none, or if the parent's level doesn't suit.
+- **Add link** checks the same, and says to remove the existing link first if the record is in something already. That is
+  also how to move a record: remove the link, then add the new one. Removing a parent is allowed, since a move needs it.
+- **Editing a record's level** is refused if it wouldn't suit the record it's in, or the records in it.
+- **Importing** (a CSV file, or reading text) checks each link it adds when you commit, and a link that breaks a rule stops
+  the whole commit, which changes nothing, and says which records. The batch stays in review so those links can be
+  unticked. An import of records alone isn't checked for parents, because it adds no links; add them afterwards.
+  Something already wrong in the model doesn't stop an import that doesn't touch it.
+
+Not covered: climbing's UKC and Mountain Project importers write their areas themselves and aren't checked. They build
+country, region, then area, which the demo's levels allow. The real climbing model (`models/climbing/model.json`) has no
+hierarchy defined yet. Hierarchies are set in the model file only, never by an import.
 
 ## Configuring models
 
@@ -298,5 +349,5 @@ model's data in the app, the app is where it lives, so don't load into that mode
   See [security](security-roadmap.md).
 - Climbing's rule that an ascent's name is its route's applies to any type called `Ascent`.
 - Link attributes are defined in the model file, not by an import or by reading text. See
-  [relationship attributes](relationship-attributes.md).
+  [relationship attributes](history/relationship-attributes.md).
 - A name longer than about 2,000 characters can't be stored, because names are indexed for the list's order.

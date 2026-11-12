@@ -42,6 +42,7 @@ public sealed partial class RecordRepository
         }
 
         var links = await NewLinksAsync(db, definition, requested, cancellationToken);
+        await CheckNewHierarchyAsync(db, definition, props, links.Select(l => (l.RelType, l.TargetId, l.TargetType)).ToList(), cancellationToken);
         if (string.IsNullOrWhiteSpace(key))
         {
             key = await FreeKeyAsync(db, type, Slug(name), cancellationToken);
@@ -136,8 +137,10 @@ public sealed partial class RecordRepository
         RefuseDerived(definition);
 
         var before = Values(node.Props);
+        var oldProps = node.Props;
         node.Name = Name(input);
         node.Props = Hooked(definition, node.Name, Props(definition, input, node.Props));
+        await CheckKindChangeAsync(db, definition, id, oldProps, node.Props, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, Values(node.Props))], cancellationToken);
     }
@@ -236,6 +239,7 @@ public sealed partial class RecordRepository
             throw new LinkbaseValidationException($"The model has no {source.Type} {relType} {target.Type} relationship.");
         }
 
+        await CheckAddedParentAsync(db, sourceId, source.Type, relType, targetId, target.Type, cancellationToken);
         var attributes = await AttributesAsync(db, source.Type, relType, target.Type, cancellationToken);
         var props = Props(attributes, values ?? new Dictionary<string, string?>());
         await EnsureNotRepeatAsync(db, sourceId, relType, targetId, props, 0, attributes.Count > 0, cancellationToken);

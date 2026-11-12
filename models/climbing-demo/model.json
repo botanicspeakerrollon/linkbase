@@ -1,13 +1,24 @@
 // A made-up climbing logbook, to try the app with data that isn't anyone's. Everyone in it, every route and every date is invented.
 // It has the same types, fields and relationships as models/climbing/model.json, plus CSV files, so it loads into a generic
-// model. Open it with the Climbing domain to get the logbook pages. See models/climbing-demo/generate.py for how the files are made.
+// model, and a hierarchy on Area, which is the working example of one (docs/models.md). Open it with the Climbing domain to get the logbook pages. See models/climbing-demo/generate.py for how the files are made.
 {
   "name": "Demo climbing logbook",
   "types": [
     {
       "name": "Area", "color": "#0e7490", "icon": "Map",
       "source": { "file": "areas.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true } ]
+      "fields": [ { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true } ],
+      // Areas form a tree through IN. A country is at the top, a region is in a country, and an area is in a region or in
+      // another area, which is how sub-areas nest to any depth. Loading, editing, linking and importing all follow this.
+      "hierarchy": {
+        "by": "kind",
+        "via": "IN",
+        "levels": [
+          { "kind": "country", "root": true },
+          { "kind": "region", "under": [ "country" ] },
+          { "kind": "area", "under": [ "region", "area" ] }
+        ]
+      }
     },
     {
       "name": "Crag", "color": "#a16207", "icon": "Terrain",

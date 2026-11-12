@@ -264,6 +264,46 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("graph_scene");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.HierarchyLevel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsRoot")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_root");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("NodeTypeName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("node_type_name");
+
+                    b.PrimitiveCollection<List<string>>("Under")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("under");
+
+                    b.HasKey("Id")
+                        .HasName("pk_hierarchy_level");
+
+                    b.HasIndex("NodeTypeName", "Kind")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hierarchy_level_node_type_name_kind");
+
+                    b.ToTable("hierarchy_level");
+                });
+
             modelBuilder.Entity("Linkbase.Data.ImportBatch", b =>
                 {
                     b.Property<long>("Id")
@@ -551,6 +591,14 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("color");
 
+                    b.Property<string>("HierarchyField")
+                        .HasColumnType("text")
+                        .HasColumnName("hierarchy_field");
+
+                    b.Property<string>("HierarchyRel")
+                        .HasColumnType("text")
+                        .HasColumnName("hierarchy_rel");
+
                     b.Property<string>("Icon")
                         .HasColumnType("text")
                         .HasColumnName("icon");
@@ -691,6 +739,18 @@ namespace Linkbase.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.HierarchyLevel", b =>
+                {
+                    b.HasOne("Linkbase.Data.NodeType", "NodeType")
+                        .WithMany("HierarchyLevels")
+                        .HasForeignKey("NodeTypeName")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_hierarchy_level_node_type_node_type_name");
+
+                    b.Navigation("NodeType");
+                });
+
             modelBuilder.Entity("Linkbase.Data.ImportBatch", b =>
                 {
                     b.HasOne("Linkbase.Data.AppUser", "User")
@@ -814,6 +874,8 @@ namespace Linkbase.Data.Migrations
             modelBuilder.Entity("Linkbase.Data.NodeType", b =>
                 {
                     b.Navigation("Fields");
+
+                    b.Navigation("HierarchyLevels");
                 });
 #pragma warning restore 612, 618
         }

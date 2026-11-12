@@ -621,6 +621,20 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     }
 
     [Fact]
+    public async Task A_new_record_of_a_hierarchy_type_can_choose_its_parent()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await new ModelLoader(factory).LoadAsync(RepoPaths.Resolve("models/climbing-demo/model.json"), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
+        var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Area"));
+
+        // The parent is there to choose but isn't required, because a country at the top has none.
+        Press(cut, "Add Area");
+        Sees(Dialogs, "Parent");
+        Sees(Dialogs, "Needed below the top level, and left empty at the top.");
+    }
+
+    [Fact]
     public async Task A_new_record_can_create_the_record_its_link_requires()
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));

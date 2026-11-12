@@ -147,6 +147,7 @@
             <ul class="guide-list">
                 <li>Open a record to see every field and every link, grouped by relationship. <em>Edit</em> changes the fields.</li>
                 <li><em>Add link</em> joins it to another record. Only relationships the model defines are offered.</li>
+                <li>Some types are arranged in <strong>levels</strong>, such as countries, regions and areas. A <em>Parent</em> box on the new record form chooses what it is in. It can be left empty for a record at the top level, and is needed below it. You are told if the parent is the wrong level, if the record is already in something, or if a link would go round in a circle. To move a record, remove its link to the old parent, then add a link to the new one.</li>
                 <li><em>Open and edit</em> in Explore jumps straight here from any node.</li>
                 <li>Fields marked <em>kept by</em> something are worked out by a domain module, so there is no box to type in.</li>
             </ul>
@@ -196,6 +197,11 @@
                 New models start as a <strong>model file</strong>, a small JSON description of the types, fields and relationships, plus CSV files of data.
                 One command loads it, and Explore works on it straight away. Models that need their own logic, such as climbing with its grades
                 and trips, add pages of their own. The <code>docs/models.md</code> file in the repository has the file format and the steps.
+            </p>
+            <p>
+                A model file can also say that a type's records form a <strong>hierarchy</strong>: which levels there are, and which level may sit in which.
+                Loading, adding and editing records and links, and committing an import then all follow those rules. An import that would break them is
+                stopped when you commit, and the review tells you which links to untick.
             </p>
         </GuideSection>
 

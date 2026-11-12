@@ -47,7 +47,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
 
         // The refs go with the nodes. Refs to climbing rows stay.
         await RunAsync("DELETE FROM external_ref WHERE node_id IS NOT NULL");
-        await RunAsync("TRUNCATE node_link, node, link_attribute, link_definition, field_definition, node_type");
+        await RunAsync("TRUNCATE node_link, node, link_attribute, link_definition, field_definition, hierarchy_level, node_type");
         foreach (var index in indexes)
         {
             await RunAsync($"DROP INDEX {IndexName(index)}");
@@ -57,12 +57,23 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         {
             var type = model.Types[i];
             await RunAsync(
-                "INSERT INTO node_type (name, color, icon, sort_order, owner) VALUES (@name, @color, @icon, @order, @owner)",
+                "INSERT INTO node_type (name, color, icon, sort_order, owner, hierarchy_field, hierarchy_rel) VALUES (@name, @color, @icon, @order, @owner, @hierarchyField, @hierarchyRel)",
                 ("name", type.Name, NpgsqlDbType.Text),
                 ("color", (object?)type.Color ?? DBNull.Value, NpgsqlDbType.Text),
                 ("icon", (object?)type.Icon ?? DBNull.Value, NpgsqlDbType.Text),
                 ("order", i, NpgsqlDbType.Integer),
-                ("owner", (object?)type.Owner ?? DBNull.Value, NpgsqlDbType.Text));
+                ("owner", (object?)type.Owner ?? DBNull.Value, NpgsqlDbType.Text),
+                ("hierarchyField", (object?)type.Hierarchy?.By ?? DBNull.Value, NpgsqlDbType.Text),
+                ("hierarchyRel", (object?)type.Hierarchy?.Via ?? DBNull.Value, NpgsqlDbType.Text));
+            foreach (var level in type.Hierarchy?.Levels ?? [])
+            {
+                await RunAsync(
+                    "INSERT INTO hierarchy_level (node_type_name, kind, is_root, under) VALUES (@type, @kind, @root, @under)",
+                    ("type", type.Name, NpgsqlDbType.Text),
+                    ("kind", level.Kind, NpgsqlDbType.Text),
+                    ("root", level.Root, NpgsqlDbType.Boolean),
+                    ("under", (level.Under ?? []).ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text));
+            }
             foreach (var field in type.Fields)
             {
                 await RunAsync(
@@ -187,6 +198,8 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         {
             await CheckRequiredLinksAsync(connection, transaction, relationship, cancellationToken);
         }
+
+        await HierarchyChecks.CheckAsync(connection, transaction, batchId: null, requireParent: true, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return new ModelLoadSummary(model.Types.Count, nodes, links, DateTime.UtcNow - started);

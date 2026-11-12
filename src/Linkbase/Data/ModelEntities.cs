@@ -22,7 +22,30 @@ public class NodeType
     // add, edit or delete them, or link them by hand. Null for a type people keep. See docs/models.md.
     public string? Owner { get; set; }
 
+    // Set when the type's records form a hierarchy: the choice field saying which level a record is on, and the relationship
+    // to its parent. The levels are in HierarchyLevels. See docs/models.md.
+    public string? HierarchyField { get; set; }
+    public string? HierarchyRel { get; set; }
+
     public List<FieldDefinition> Fields { get; set; } = [];
+    public List<HierarchyLevel> HierarchyLevels { get; set; } = [];
+}
+
+// One level of a type's hierarchy, such as region: whether it's at the top, and the levels it may sit under.
+public class HierarchyLevel
+{
+    public long Id { get; set; }
+    public required string NodeTypeName { get; set; }
+    public NodeType NodeType { get; set; } = null!;
+
+    // One of the options of the type's HierarchyField.
+    public required string Kind { get; set; }
+
+    // A record at this level has no parent.
+    public bool IsRoot { get; set; }
+
+    // The kinds a record at this level may be in. Empty for a root.
+    public List<string> Under { get; set; } = [];
 }
 
 public class FieldDefinition
@@ -61,7 +84,7 @@ public class LinkDefinition
     // of links each time the home page opens takes too long.
     public long Links { get; set; }
 
-    // The values a link of this kind can carry, such as a person's role on a project. See docs/relationship-attributes.md.
+    // The values a link of this kind can carry, such as a person's role on a project. See docs/history/relationship-attributes.md.
     public List<LinkAttribute> Attributes { get; set; } = [];
 }
 
