@@ -390,8 +390,7 @@ export function update(nodes, edges, anchorId) {
         if (pinned.length === 0) {
             fitAll();
         } else {
-            const addedNodes = cy.collection(added);
-            keepInView(anchor && anchor.nonempty() ? addedNodes.union(anchor) : addedNodes);
+            keepInView(cy.collection(added).union(cy.getElementById(String(anchorId))));
         }
     });
     layout.run();
@@ -480,6 +479,16 @@ export function renderedPosition(nodeId) {
 // The space each node takes up, including its label.
 export function boxes() {
     return cy ? cy.nodes().map(n => ({ nodeId: n.id(), ...n.boundingBox({ includeLabels: true, includeOverlays: false }) })) : [];
+}
+
+// The current zoom level, for tests.
+export function zoom() {
+    return cy.zoom();
+}
+
+// The edges on the canvas, for tests.
+export function edgeList() {
+    return cy.edges().map(e => ({ id: e.id(), source: e.source().id(), target: e.target().id(), relType: e.data('relType') }));
 }
 
 export function fit() {

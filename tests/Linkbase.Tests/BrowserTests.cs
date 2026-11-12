@@ -166,6 +166,20 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
 
     private static long Key(string nodeId) => long.Parse(nodeId[(nodeId.IndexOf(':') + 1)..], System.Globalization.CultureInfo.InvariantCulture);
 
+    // Adds this many made-up nodes around one on the canvas, the way expanding does, and removes any beyond that count.
+    private async Task AddNodesAsync(string anchorId, int count)
+    {
+        await _page.EvaluateAsync("""
+            ({ anchorId, count }) => import('/js/graph.js').then(async m => {
+                const known = (await m.positions()).map(p => p.nodeId).filter(id => !id.startsWith('extra-'));
+                const nodes = [...known, ...Array.from({ length: count }, (_, i) => 'extra-' + (i + 1))]
+                    .map(id => ({ id, label: 'n', kind: 'crag', caption: 'n' }));
+                m.update(nodes, m.edgeList(), anchorId);
+            })
+            """, new { anchorId, count });
+        await _page.WaitForTimeoutAsync(300);
+    }
+
     private async Task<IReadOnlyList<NodePosition>> NodesAsync()
     {
         var json = await _page.EvaluateAsync<JsonElement>(Positions);
@@ -791,6 +805,44 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
 
         await _page.GetByRole(AriaRole.Button, new() { Name = $"Delete scene {scene}" }).ClickAsync();
         await Assertions.Expect(Button(scene)).ToHaveCountAsync(0);
+
+        // Expanding keeps the zoom the user chose, and keeps the expanded node in view.
+        var zoomBox = (await _page.Locator(".explore-canvas").BoundingBoxAsync())!;
+        await _page.Mouse.MoveAsync(zoomBox.X + zoomBox.Width / 2, zoomBox.Y + zoomBox.Height / 2);
+        await _page.Mouse.WheelAsync(0, -300);
+        await _page.WaitForTimeoutAsync(300);
+        var zoomBefore = await _page.EvaluateAsync<double>("() => import('/js/graph.js').then(m => m.zoom())");
+        // Clicking a link selects it.
+        var other = (await NodesAsync()).First(n => n.NodeId != cragNode).NodeId;
+        var (end1, end2) = (await OnScreenAsync(cragNode), await OnScreenAsync(other));
+        await _page.Mouse.ClickAsync((float)((end1.X + end2.X) / 2), (float)((end1.Y + end2.Y) / 2));
+        await AddNodesAsync(cragNode, 1);
+        var zoomAfter = await _page.EvaluateAsync<double>("() => import('/js/graph.js').then(m => m.zoom())");
+        Assert.Equal(zoomBefore, zoomAfter, 6);
+
+        // Pushed out of sight, the view pans to bring what was added back, without zooming.
+        foreach (var direction in new[] { -1, 1 })
+        {
+            var from = direction < 0 ? (X: zoomBox.X + zoomBox.Width - 10, Y: zoomBox.Y + zoomBox.Height - 10) : (X: zoomBox.X + 10, Y: zoomBox.Y + 10);
+            await _page.Mouse.MoveAsync((float)from.X, (float)from.Y);
+            await _page.Mouse.DownAsync();
+            await _page.Mouse.MoveAsync((float)(from.X + direction * zoomBox.Width * 0.9), (float)(from.Y + direction * zoomBox.Height * 0.9), new() { Steps = 6 });
+            await _page.Mouse.UpAsync();
+            await AddNodesAsync(cragNode, 1 + (direction < 0 ? 1 : 2));
+            foreach (var id in new[] { cragNode, direction < 0 ? "extra-2" : "extra-3" })
+            {
+                var shown = await OnScreenAsync(id);
+                Assert.InRange(shown.X, zoomBox.X, zoomBox.X + zoomBox.Width);
+                Assert.InRange(shown.Y, zoomBox.Y, zoomBox.Y + zoomBox.Height);
+            }
+
+            Assert.Equal(zoomBefore, await _page.EvaluateAsync<double>("() => import('/js/graph.js').then(m => m.zoom())"), 6);
+        }
+
+        // A crowd too big for the screen at this zoom zooms out, just enough to show it.
+        await AddNodesAsync(cragNode, 60);
+        Assert.True(await _page.EvaluateAsync<double>("() => import('/js/graph.js').then(m => m.zoom())") < zoomBefore);
+        await AddNodesAsync(cragNode, 0);
 
         // Removing, from the menu.
         var menu = _page.Locator(".explore-menu");
