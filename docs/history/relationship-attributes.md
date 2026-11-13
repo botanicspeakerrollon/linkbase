@@ -1,7 +1,7 @@
 # Relationship attributes
 
 Values that belong to a link rather than to either record, such as a partner's role on an ascent, or how many days a week a
-person works on a project. How they work is in [models](models.md#link-attributes); this is what's built and what isn't.
+person works on a project. How they work is in [models](../models.md#link-attributes); this is what's built and what isn't.
 
 ## Built
 

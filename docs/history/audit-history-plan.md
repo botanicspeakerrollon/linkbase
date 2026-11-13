@@ -1,8 +1,8 @@
 # Audit history plan
 
 Built, apart from the two things listed under [not done](#not-done). This adds an audit trail: what changed, who changed it,
-when, and why. Explore's **As of** control reads it to show the graph on a past day (see [reference](reference.md#as-of)), but
-nothing queries it as a temporal table. How to use it is in [models](models.md#history).
+when, and why. Explore's **As of** control reads it to show the graph on a past day (see [reference](../reference.md#as-of)), but
+nothing queries it as a temporal table. How to use it is in [models](../models.md#history).
 
 ## Decisions
 
@@ -78,7 +78,7 @@ later keeps the log already written but stops adding to it.
 - **Undo.** "Edited since the import" becomes "has a change after the batch committed", replacing the `updated_at`
   heuristic. Reverting one change set becomes possible.
 - **Field-level security.** History keeps old values, so it can leak fields hidden elsewhere. Every change row carries its
-  field key so the same rules can redact it. Add this to [security-roadmap](security-roadmap.md) when permissions are
+  field key so the same rules can redact it. Add this to [security-roadmap](../security-roadmap.md) when permissions are
   designed.
 
 ## Steps

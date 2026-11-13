@@ -91,5 +91,5 @@ climbing_generic"`, and remove its entry from `appsettings.Development.json`.
 
 ## If something goes wrong
 
-- Restore the backup: [operations](operations.md#restoring). Nothing before step 5 changes the typed tables, and step 2 only adds to the database.
+- Restore the backup: [operations](../operations.md#restoring). Nothing before step 5 changes the typed tables, and step 2 only adds to the database.
 - The migration runs in one transaction, so a failure part-way leaves the database as it was.

@@ -6,10 +6,10 @@ these companies lack is the skill to use one. Market claims are unresearched, an
 
 ## Where it stands
 
-Built: the generic store and model files ([models](models.md)), generated list and record pages, Explore with Totals, saved
+Built: the generic store and model files ([models](../models.md)), generated list and record pages, Explore with Totals, saved
 views, Quick-find and plain-English questions, CSV import (also from several files at once) and AI text reading with review and
 undo, the audit history with revert, Home, Timeline and Cleanup, the climbing domain, CI, the container image, and performance
-checked on a large sample ([performance](performance.md)). What each part does is in the [reference](reference.md). Whether climbing should move into the generic store is
+checked on a large sample ([performance](../performance.md)). What each part does is in the [reference](../reference.md). Whether climbing should move into the generic store is
 argued in [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md).
 
 Settled, and not to reopen without a reason:
@@ -17,7 +17,7 @@ Settled, and not to reopen without a reason:
 - One app instance and one database per customer, so a missed filter can't expose another customer's data.
 - The generic store is the product. Climbing is the demo and a personal instance.
 - One permission check on every read, including Explore's raw SQL and free-text search. When sign-in is designed, update
-  `CLAUDE.md` and [security-roadmap](security-roadmap.md), because "sensitive fields are typed columns" doesn't hold in a
+  `CLAUDE.md` and [security-roadmap](../security-roadmap.md), because "sensitive fields are typed columns" doesn't hold in a
   generic store.
 
 Set aside here: sign-in, roles and field permissions. They must finish before a pilot uses real data. The single-user assumption
@@ -37,17 +37,17 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
    audit log already holds old values and deleted records, so reverting a change set only needs something to use them. Together
    they let people edit without fear. Run it alongside the hosting work below.
    **Built:** CSV records update on import, undo puts the values back, and each edit on a record page can be reverted
-   (see [models](models.md#importing-a-csv-file) and [audit-history-plan](audit-history-plan.md#reverting)). **Left:** updating
+   (see [models](../models.md#importing-a-csv-file) and [audit-history-plan](audit-history-plan.md#reverting)). **Left:** updating
    from Read text and links, a way to revert a deleted record, and reverting a change that touched several records.
 5. **Hosting.** Off-site backups first, because nothing else matters if the data can be lost, then per-customer setup and
-   monitoring. See [operations](operations.md) and [deployment-plan](deployment-plan.md).
+   monitoring. See [operations](../operations.md) and [deployment-plan](deployment-plan.md).
 6. **A model from a CSV.** A new customer starts from a blank model, not a model file. Built: the Start from CSVs tab infers
-   types, fields and relationships from several CSVs ([models](models.md#starting-a-model-from-csv-files)). Still to build: an
+   types, fields and relationships from several CSVs ([models](../models.md#starting-a-model-from-csv-files)). Still to build: an
    editor for the result, which is what a pilot relies on most, because it works without a developer. Finish values on links in
    the same stretch, through CSV import, Read text and Explore ([relationship-attributes](history/relationship-attributes.md)).
 7. **The rest of everyday use.** Built, except phone use. Checked by tests and bUnit pages, not yet by using the running app:
    - **A useful Home.** Recent records, changes and imports, and records added per month, each hideable per model with
-     `Models:<key>:Home:Hide` ([models](models.md#configuring-models)). Climbing's Insights page was not folded in.
+     `Models:<key>:Home:Hide` ([models](../models.md#configuring-models)). Climbing's Insights page was not folded in.
    - **Cleanup tools.** `/cleanup`: names that match apart from case and spacing, with merge; records with no links; records
      missing a required value or link. Merge is `RecordRepository.MergeAsync`. Fuzzy duplicates (spelling variants) are not found.
    - **Paths and neighbourhoods.** Explore's Find a path (`PathRepository`, at most 6 links by default, says when it gave up on a

@@ -18,7 +18,7 @@ public sealed partial class ModelFile
     public IReadOnlyList<ModelRelationship> Relationships { get; init; } = [];
 
     // Whether the model keeps an audit trail, and whether every change needs a reason. Both are on if left out. See
-    // docs/audit-history-plan.md.
+    // docs/history/audit-history-plan.md.
     public ModelHistory? History { get; init; }
 
     [JsonIgnore] public bool RecordHistory => History?.Record ?? true;

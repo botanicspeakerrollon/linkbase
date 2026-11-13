@@ -131,7 +131,7 @@ docker compose --profile app up -d --build
 
 CI builds the image on every push, scans it with Trivy and keeps an SBOM. `.gitlab-ci.yml` does the same on a
 self-hosted GitLab without Docker-in-Docker: tests against a `services: postgres` container, the image built with
-Buildah and pushed to the project's registry, then scanned. See [the deployment plan](docs/deployment-plan.md) for
+Buildah and pushed to the project's registry, then scanned. See [the deployment plan](docs/history/deployment-plan.md) for
 Kubernetes and OpenShift.
 
 ## Graph explorer
