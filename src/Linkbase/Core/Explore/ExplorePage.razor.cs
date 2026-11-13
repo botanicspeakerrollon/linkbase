@@ -30,7 +30,41 @@ public partial class ExplorePage
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "Delete", "Escape"];
+
+    // Totals of the number properties over every match of the last search, shown in a panel on request.
+    private bool _summaryOpen;
+    private IReadOnlyList<PropertySummary>? _summary;
+
+    private static string Figure(decimal? value) =>
+        value is { } v ? v.ToString("#,##0.##", System.Globalization.CultureInfo.InvariantCulture) : "–";
+
+    private static string Figure(long value) => value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+
+    private async Task ToggleSummaryAsync()
+    {
+        _summaryOpen = !_summaryOpen && _lastPattern is not null;
+        await LoadSummaryAsync();
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        _summary = null;
+        if (!_summaryOpen || _lastPattern is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _summary = await Graph.SummarisePatternAsync(_lastPattern, _schema!);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+            _summary = [];
+        }
+    }
 
     // Set when the keyboard picks a node in the table, so its row is scrolled to once it's drawn.
     private bool _revealRow;
@@ -185,6 +219,8 @@ public partial class ExplorePage
     private void ForgetCanvas()
     {
         _nodes.Clear();
+        _summaryOpen = false;
+        _summary = null;
         _expanded.Clear();
         _remaining.Clear();
         _edges = [];
@@ -205,6 +241,7 @@ public partial class ExplorePage
         _patternOffset = 0;
         _patternShown = 0;
         await AddPatternResultsAsync();
+        await LoadSummaryAsync();
     }
 
     private Task ShowMorePatternAsync() => AddPatternResultsAsync();

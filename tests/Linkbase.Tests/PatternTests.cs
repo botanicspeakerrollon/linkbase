@@ -372,6 +372,33 @@ public class GraphPatternSqlTests
         var (_, parameters) = GraphPatternSql.Build(Single("Crag", new PatternFilter("name", FilterOperator.Contains, "50%_x")), Schema, 10, 0);
         Assert.Contains(parameters, p => (p.Value as string) == @"%50\%\_x%");
     }
+
+    [Fact]
+    public void A_summary_totals_each_number_property_of_the_typed_nodes()
+    {
+        var (sql, _) = GraphPatternSql.BuildSummary(Single("Route"), Schema);
+
+        Assert.NotNull(sql);
+        Assert.Contains("'length_m'", sql);
+        Assert.Contains("sum(v)", sql);
+    }
+
+    [Fact]
+    public void A_summary_has_nothing_to_total_without_a_typed_node_with_number_properties()
+    {
+        Assert.Null(GraphPatternSql.BuildSummary(Single("Crag"), Schema).Sql);
+        Assert.Null(GraphPatternSql.BuildSummary(Single(null), Schema).Sql);
+    }
+
+    [Fact]
+    public void A_summary_keeps_the_values_of_the_filters_as_parameters()
+    {
+        var (sql, parameters) = GraphPatternSql.BuildSummary(
+            Single("Route", new PatternFilter("length_m", FilterOperator.GreaterThan, "20")), Schema);
+
+        Assert.DoesNotContain("20", sql!.Replace("length_m", ""));
+        Assert.Contains(parameters, p => p.Value is decimal d && d == 20);
+    }
 }
 
 [Trait("Category", "Database")]
@@ -496,6 +523,55 @@ public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime, I
         Assert.Single(second.NodeIds);
         Assert.Equal(0, second.Remaining);
         Assert.Empty(first.NodeIds.Intersect(second.NodeIds));
+    }
+
+    [Fact]
+    public async Task A_summary_totals_a_number_property_over_every_match_and_counts_each_node_once()
+    {
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Word()}");
+        var cragName = $"Crag {Word()}";
+        var crag = await ClimbingStore.AddAsync(_store, "Crag", cragName, null, "IN", area);
+        string? firstRoute = null;
+        foreach (var length in new[] { 10, 20, 30 })
+        {
+            var route = await ClimbingStore.AddAsync(
+                _store, "Route", $"Route {Word()}", new JsonObject { ["grade"] = "VS 4c", ["grade_system"] = "uk_trad", ["discipline"] = "trad", ["length_m"] = length, ["pitches"] = 1 }, "AT", crag);
+            firstRoute ??= route;
+        }
+
+        // Two ascents of one route make that route match twice, but it still counts once.
+        static JsonObject Ascent() => new() { ["date"] = "2020-05-02", ["date_precision"] = "day", ["style"] = "onsight", ["source"] = "manual" };
+        await ClimbingStore.AddAsync(_store, "Ascent", $"Ascent {Word()}", Ascent(), "OF", firstRoute!);
+        await ClimbingStore.AddAsync(_store, "Ascent", $"Ascent {Word()}", Ascent(), "OF", firstRoute!);
+
+        var schema = await Graph().SchemaAsync();
+        var pattern = new GraphPattern(
+            [new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Equals, cragName)]), new PatternNode("Route", []), new PatternNode("Ascent", [])],
+            [new PatternRel("AT", false), new PatternRel("OF", false)]);
+
+        var summary = await Graph().SummarisePatternAsync(pattern, schema);
+
+        var withAscents = Assert.Single(summary, s => s is { Label: "Route", Key: "length_m" });
+        Assert.Equal((1, 10m), (withAscents.Count, withAscents.Sum));
+
+        // Without the ascents, all three routes are matched.
+        var routes = new GraphPattern(
+            [new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Equals, cragName)]), new PatternNode("Route", [])],
+            [new PatternRel("AT", false)]);
+        var all = Assert.Single(await Graph().SummarisePatternAsync(routes, schema), s => s is { Label: "Route", Key: "length_m" });
+        Assert.Equal((3, 60m, 10m, 30m, 20m), (all.Count, all.Sum, all.Min, all.Max, all.Average));
+    }
+
+    [Fact]
+    public async Task A_summary_of_a_search_with_no_matches_has_a_count_of_zero()
+    {
+        var schema = await Graph().SchemaAsync();
+        var none = new GraphPattern([new PatternNode("Route", [new PatternFilter("name", FilterOperator.Equals, $"Nothing {Word()}")])], []);
+
+        var row = Assert.Single(await Graph().SummarisePatternAsync(none, schema), s => s is { Label: "Route", Key: "length_m" });
+
+        Assert.Equal(0, row.Count);
+        Assert.Null(row.Sum);
     }
 
     [Fact]

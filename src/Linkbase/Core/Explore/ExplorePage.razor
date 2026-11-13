@@ -23,6 +23,39 @@
                 <MudButton OnClick="ShowMorePatternAsync" Variant="Variant.Text" Size="Size.Small">Show more</MudButton>
             </MudAlert>
         }
+
+        @if (_summaryOpen && _summary is not null)
+        {
+            <div class="explore-summary mt-2" role="region" aria-label="Totals of the search">
+                @if (_summary.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">The types in this search have no number fields to total.</MudText>
+                }
+                else
+                {
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <thead>
+                            <tr><th>Type</th><th>Field</th><th class="text-right">Count</th><th class="text-right">Sum</th><th class="text-right">Min</th><th class="text-right">Max</th><th class="text-right">Average</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in _summary)
+                            {
+                                <tr>
+                                    <td>@row.Label</td>
+                                    <td>@GraphStyle.PropertyTitle(row.Key)</td>
+                                    <td class="text-right">@Figure(row.Count)</td>
+                                    <td class="text-right">@Figure(row.Sum)</td>
+                                    <td class="text-right">@Figure(row.Min)</td>
+                                    <td class="text-right">@Figure(row.Max)</td>
+                                    <td class="text-right">@Figure(row.Average)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Over every match of the search, not only those shown. A node counts once however often it matches.</MudText>
+                }
+            </div>
+        }
     </div>
 
     <div class="explore-stage">
@@ -39,6 +72,11 @@
                     <MudButton OnClick="@(() => ShowViewAsync(true))" Variant="@(_table ? Variant.Filled : Variant.Outlined)" Color="@(_table ? Color.Primary : Color.Default)"
                                Size="Size.Small" StartIcon="@Icons.Material.Filled.TableRows" title="Table (t)" aria-pressed="@(_table ? "true" : "false")">Table</MudButton>
                 </MudButtonGroup>
+                @if (_lastPattern is not null)
+                {
+                    <MudButton OnClick="ToggleSummaryAsync" Variant="@(_summaryOpen ? Variant.Filled : Variant.Outlined)" Color="@(_summaryOpen ? Color.Primary : Color.Default)"
+                               Size="Size.Small" StartIcon="@Icons.Material.Filled.Functions" title="Totals of number fields (s)" aria-pressed="@(_summaryOpen ? "true" : "false")">Totals</MudButton>
+                }
                 <MudMenu Label="Export" StartIcon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Size="Size.Small" Dense="true"
                          AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                     <ChildContent>

@@ -336,6 +336,19 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         return new PatternResult(rows.SelectMany(r => r.NodeIds).Distinct().ToList(), Math.Max(0, total - offset - rows.Count));
     }
 
+    // Count, sum, smallest, largest and average of each number property, over every match of a pattern.
+    public async Task<IReadOnlyList<PropertySummary>> SummarisePatternAsync(GraphPattern pattern, GraphSchema schema, CancellationToken cancellationToken = default)
+    {
+        var (sql, parameters) = GraphPatternSql.BuildSummary(pattern, schema);
+        if (sql is null)
+        {
+            return [];
+        }
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.Database.SqlQueryRaw<PropertySummary>(sql, parameters.Cast<object>().ToArray()).ToListAsync(cancellationToken);
+    }
+
     // What a node links to, for the Expand menu.
     public async Task<IReadOnlyList<RelationshipCount>> RelationshipCountsAsync(string nodeId, CancellationToken cancellationToken = default)
     {

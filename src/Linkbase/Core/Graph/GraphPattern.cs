@@ -58,6 +58,9 @@ public sealed record GraphPattern(IReadOnlyList<PatternNode> Nodes, IReadOnlyLis
 // Node ids are in the order of the query's matches. Remaining counts matches left out by the limit.
 public sealed record PatternResult(IReadOnlyList<string> NodeIds, int Remaining);
 
+// Count is the nodes that have a number there. Every other figure is null when it's zero.
+public sealed record PropertySummary(string Label, string Key, long Count, decimal? Sum, decimal? Min, decimal? Max, decimal? Average);
+
 public sealed record PropertyMatch(string Label, string Key, string Value);
 
 public sealed record RelationshipCount(string RelType, bool Outgoing, string OtherLabel, int Count);
@@ -75,13 +78,74 @@ public static partial class GraphPatternSql
         }
 
         var parameters = new List<NpgsqlParameter>();
-        string Add(object value, NpgsqlDbType type)
+        var (from, where) = FromAndWhere(pattern, schema, parameters);
+        var Add = ParameterAdder(parameters);
+
+        var indexes = Enumerable.Range(0, pattern.Nodes.Count).ToList();
+        var ids = string.Join(", ", indexes.Select(i => $"n{i}.node_id"));
+
+        // Names that really contain the text come before near misses.
+        var closest = indexes.SelectMany(i => pattern.Nodes[i].Filters
+            .Where(f => f.Key == PatternFilter.AnyField)
+            .Select(f => $"n{i}.name ILIKE {Add($"%{EscapeLike(f.Value)}%", NpgsqlDbType.Text)} DESC"));
+        var order = string.Join(", ", closest.Concat(indexes.SelectMany(i => new[] { $"n{i}.name", $"n{i}.node_id" })));
+        var sql =
+            $"""
+            SELECT ARRAY[{ids}] AS "NodeIds", count(*) OVER () AS "Total"
+            {from}
+            WHERE {string.Join(" AND ", where)}
+            ORDER BY {order}
+            LIMIT {Add(limit, NpgsqlDbType.Integer)} OFFSET {Add(offset, NpgsqlDbType.Integer)}
+            """;
+        return (sql, parameters);
+    }
+
+    // Totals for the number properties of every typed node in a pattern, over all its matches rather than one page. A node
+    // that matches several times, such as a crag with many routes, counts once. Nodes of a type that has no number
+    // properties, and nodes of any type, add nothing.
+    public static (string? Sql, List<NpgsqlParameter> Parameters) BuildSummary(GraphPattern pattern, GraphSchema schema)
+    {
+        var parameters = new List<NpgsqlParameter>();
+        var (from, where) = FromAndWhere(pattern, schema, parameters);
+        var selects = new List<string>();
+        for (var i = 0; i < pattern.Nodes.Count; i++)
         {
-            var name = $"p{parameters.Count}";
-            parameters.Add(new NpgsqlParameter(name, type) { Value = value });
-            return $"@{name}";
+            if (pattern.Nodes[i].Label is not { } label)
+            {
+                continue;
+            }
+
+            foreach (var info in schema.Properties.Where(p => p.Label == label && p.Type == GraphValueType.Number))
+            {
+                // The key is safe to put in the SQL text for the same reasons as in FilterSql.
+                if (!PropertyKey().IsMatch(info.Key))
+                {
+                    continue;
+                }
+
+                // A value that isn't a plain number, from sampled data, is left out rather than failing the cast.
+                var value = $"CASE WHEN n{i}.props->>'{info.Key}' ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN (n{i}.props->>'{info.Key}')::numeric END";
+                selects.Add(
+                    $"""
+                    SELECT '{label.Replace("'", "''")}' AS "Label", '{info.Key}' AS "Key", count(v)::bigint AS "Count", sum(v) AS "Sum", min(v) AS "Min", max(v) AS "Max", avg(v) AS "Average"
+                    FROM (SELECT DISTINCT ON (n{i}.node_id) {value} AS v {from} WHERE {string.Join(" AND ", where)}) t{i}
+                    """);
+            }
         }
 
+        return (selects.Count == 0 ? null : string.Join("\nUNION ALL\n", selects), parameters);
+    }
+
+    private static Func<object, NpgsqlDbType, string> ParameterAdder(List<NpgsqlParameter> parameters) => (value, type) =>
+    {
+        var name = $"p{parameters.Count}";
+        parameters.Add(new NpgsqlParameter(name, type) { Value = value });
+        return $"@{name}";
+    };
+
+    private static (StringBuilder From, List<string> Where) FromAndWhere(GraphPattern pattern, GraphSchema schema, List<NpgsqlParameter> parameters)
+    {
+        var Add = ParameterAdder(parameters);
         var from = new StringBuilder("FROM graph_nodes n0");
         var where = new List<string> { $"n0.user_id = {Add(AppUser.DefaultId, NpgsqlDbType.Bigint)}" };
 
@@ -117,23 +181,7 @@ public static partial class GraphPatternSql
             }
         }
 
-        var indexes = Enumerable.Range(0, pattern.Nodes.Count).ToList();
-        var ids = string.Join(", ", indexes.Select(i => $"n{i}.node_id"));
-
-        // Names that really contain the text come before near misses.
-        var closest = indexes.SelectMany(i => pattern.Nodes[i].Filters
-            .Where(f => f.Key == PatternFilter.AnyField)
-            .Select(f => $"n{i}.name ILIKE {Add($"%{EscapeLike(f.Value)}%", NpgsqlDbType.Text)} DESC"));
-        var order = string.Join(", ", closest.Concat(indexes.SelectMany(i => new[] { $"n{i}.name", $"n{i}.node_id" })));
-        var sql =
-            $"""
-            SELECT ARRAY[{ids}] AS "NodeIds", count(*) OVER () AS "Total"
-            {from}
-            WHERE {string.Join(" AND ", where)}
-            ORDER BY {order}
-            LIMIT {Add(limit, NpgsqlDbType.Integer)} OFFSET {Add(offset, NpgsqlDbType.Integer)}
-            """;
-        return (sql, parameters);
+        return (from, where);
     }
 
     // Conditions on the nodes an expansion adds, as node n0. A condition only applies to types that have that

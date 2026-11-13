@@ -191,6 +191,37 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     }
 
     [Fact]
+    public async Task Totals_sum_the_number_fields_of_the_search_and_say_when_there_are_none()
+    {
+        await SeedAsync();
+        var cut = RenderPage<ExplorePage>();
+        Search(cut, "graph");
+        WaitForOption(cut, "Graph model");
+        Key(cut, "Enter");
+        cut.WaitForAssertion(() => Assert.Contains("update", GraphCalls));
+        Assert.False(HasControl(cut, "Totals"));
+
+        await cut.InvokeAsync(() => cut.Instance.OnNodeDoubleClicked("model:Route"));
+        cut.WaitForAssertion(() => Assert.True(HasControl(cut, "Totals")));
+        Press(cut, "Totals");
+
+        Sees(cut, "Over every match of the search");
+        Sees(cut, "Length");
+        Sees(cut, ">Sum<");
+    }
+
+    [Fact]
+    public async Task Totals_say_when_the_search_has_no_number_fields()
+    {
+        var s = await SeedAsync();
+        var cut = OpenWith(s);
+
+        Press(cut, "Totals");
+
+        cut.WaitForAssertion(() => Assert.Contains("have no number fields to total", cut.Markup));
+    }
+
+    [Fact]
     public async Task Double_clicking_a_type_in_the_model_shows_its_nodes_and_searching_replaces_the_model()
     {
         var s = await SeedAsync();

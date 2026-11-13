@@ -40,6 +40,9 @@ public partial class ExplorePage
             case "e" when _selected is { } node:
                 await ExpandAsync(node.Id);
                 break;
+            case "s" when _lastPattern is not null && _nodes.Count > 0:
+                await ToggleSummaryAsync();
+                break;
             case "Delete" when _selected is { IsModel: false } node:
                 await RemoveAsync(node.Id);
                 break;
