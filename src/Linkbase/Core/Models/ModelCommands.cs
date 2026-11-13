@@ -5,10 +5,11 @@ namespace Linkbase.Core.Models;
 
 //   dotnet run --project src/Linkbase -- model list
 //   dotnet run --project src/Linkbase -- model migrate               Apply migrations to every model's database
+//   dotnet run --project src/Linkbase -- model setup                 Create, migrate and fill the models that name a Seed file
 //   dotnet run --project src/Linkbase -- model load <file> [model]   Load a model file into a model, the first by default
 public sealed class ModelCommands(IServiceProvider services, TextWriter output)
 {
-    public static bool IsCommand(string[] args) => args is ["model", "list"] or ["model", "migrate"] or ["model", "load", _] or ["model", "load", _, _];
+    public static bool IsCommand(string[] args) => args is ["model", "list"] or ["model", "migrate"] or ["model", "setup"] or ["model", "load", _] or ["model", "load", _, _];
 
     public async Task<int> RunAsync(string[] args)
     {
@@ -23,6 +24,10 @@ public sealed class ModelCommands(IServiceProvider services, TextWriter output)
                         await output.WriteLineAsync($"{model.Key}: {model.Name} ({(model.Domains.Count == 0 ? "generic" : string.Join(", ", model.Domains))})");
                     }
 
+                    return 0;
+
+                case ["model", "setup"]:
+                    await new ModelSetup(catalog, services.GetRequiredService<CurrentModel>(), services.GetRequiredService<ModelLoader>()).RunAsync(output);
                     return 0;
 
                 case ["model", "migrate"]:

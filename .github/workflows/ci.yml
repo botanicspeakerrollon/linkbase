@@ -100,3 +100,32 @@ jobs:
           name: sbom
           path: sbom.cdx.json
           retention-days: 90
+
+  # The demo from nothing, as someone trying it would run it: an empty Postgres, the setup step that creates and fills each
+  # model's database, then the app. Fails if setup fails or the app doesn't report every model's database ready.
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Start the demo
+        run: docker compose -f docker-compose.demo.yml up --build -d
+
+      - name: Wait until the app is ready
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/health/ready; then echo; exit 0; fi
+            sleep 2
+          done
+          echo "The demo never became ready" >&2
+          exit 1
+
+      - name: Show the setup output
+        if: always()
+        run: docker compose -f docker-compose.demo.yml logs setup
+
+      - name: Stop the demo
+        if: always()
+        run: docker compose -f docker-compose.demo.yml down -v

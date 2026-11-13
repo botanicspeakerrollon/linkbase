@@ -9,6 +9,9 @@ public sealed record ModelInfo(string Key, string Name, string ConnectionStringN
     // The home page's panels this model leaves out, from Models:<key>:Home:Hide: records, imports, changes or growth.
     public IReadOnlyList<string> HomeHidden { get; init; } = [];
 
+    // A model file to load, from Models:<key>:Seed, when `model setup` finds the model empty. Models without one are left alone.
+    public string? Seed { get; init; }
+
     public bool ShowsOnHome(string panel) => !HomeHidden.Contains(panel, StringComparer.OrdinalIgnoreCase);
 }
 
@@ -30,6 +33,7 @@ public sealed class ModelCatalog
                 int.TryParse(section["Order"], out var order) ? order : int.MaxValue)
             {
                 HomeHidden = section.GetSection("Home:Hide").GetChildren().Select(h => h.Value!).ToList(),
+                Seed = section["Seed"] is { Length: > 0 } seed ? seed : null,
             })
             .OrderBy(m => m.Order)
             .ThenBy(m => m.Key, StringComparer.Ordinal)

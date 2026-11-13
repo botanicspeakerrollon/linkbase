@@ -16,6 +16,23 @@ Locally, five models are configured in `appsettings.Development.json`: your clim
 public transport, the demo climbing logbook and an ArchiMate example. The last four live in the `linkbase-samples` container
 (see [performance](performance.md)). Hover over the rail and use the switcher by the model's name.
 
+## Setting up the example models
+
+`model setup` makes every model that has a `Seed` ready from nothing: it creates the model's database if the server hasn't
+got it, applies the migrations, and loads the seed file if the model has no types or records. It does nothing to a model that
+has data, so it is safe to run again, and nothing to a model with no `Seed`, such as your real logbook.
+
+```json
+"consultancy": { "Name": "Example consultancy", "ConnectionString": "Consultancy", "Seed": "models/consultancy/model.json" }
+```
+
+A `Seed` is a model file, found as given, then beside the app, then from the repo root. The database user needs `CREATEDB`.
+Locally, `dotnet run --project src/Linkbase --launch-profile http -- model setup` does the steps under
+[the demo climbing logbook](#the-demo-climbing-logbook) and [Adding a model](#adding-a-model) for the sample models in
+`appsettings.Development.json`, once the `linkbase-samples` container is running. `docker-compose.demo.yml` runs it in a
+container, with `src/Linkbase/appsettings.Demo.json` as the models, and the image carries the example model folders for
+it (see the README's Try the demo). Swiss public transport is left out, as its load takes about 100 minutes.
+
 ## The demo climbing logbook
 
 `models/climbing-demo/` is a made-up logbook to try the app with, or to show it, without anyone's real data: 45 areas, 39 crags,

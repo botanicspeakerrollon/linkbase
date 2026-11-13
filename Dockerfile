@@ -41,6 +41,9 @@ RUN if command -v apt-get > /dev/null; then \
 # Owned by root and readable by everyone, so whatever user id the platform picks can run it, and none can change it.
 COPY --from=build /app ./
 
+# The example models, which `model setup` loads (see docker-compose.demo.yml). The .dockerignore leaves out the others.
+COPY models/ ./models/
+
 ENV ASPNETCORE_HTTP_PORTS=8080 \
     ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
     HttpsRedirection=false \

@@ -1,0 +1,62 @@
+# The demo: the app with the example models, from nothing, in containers. No setup, no .env, no .NET SDK.
+#
+#   docker compose -f docker-compose.demo.yml up --build        then open http://localhost:8080
+#   docker compose -f docker-compose.demo.yml down -v           stop and delete the demo's data
+#
+# It's a project of its own (linkbase-demo), so it never touches the database `docker-compose.yml` runs. The database isn't
+# published outside Docker's network, which is why its password can be a fixed value. Don't reuse this file for real data.
+# Models and their seed files are in src/Linkbase/appsettings.Demo.json. Reading text with AI is off, as there's no key.
+name: linkbase-demo
+
+x-app: &app
+  build: .
+  image: linkbase-demo:local
+  environment:
+    ASPNETCORE_ENVIRONMENT: Demo
+    Extraction__Enabled: "false"
+    ConnectionStrings__ClimbingDemo: Host=db;Database=climbing_demo;Username=linkbase;Password=demo-only
+    ConnectionStrings__Consultancy: Host=db;Database=consultancy;Username=linkbase;Password=demo-only
+    ConnectionStrings__LinkbaseCode: Host=db;Database=linkbase_code;Username=linkbase;Password=demo-only
+    ConnectionStrings__ArchiMate: Host=db;Database=archimate;Username=linkbase;Password=demo-only
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: linkbase
+      POSTGRES_PASSWORD: demo-only
+      POSTGRES_DB: postgres
+    volumes:
+      - demo-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linkbase -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Creates each model's database, applies the migrations and loads the example data, then exits. It does nothing to a
+  # model that already has data, so `up` again is safe.
+  setup:
+    <<: *app
+    command: ["model", "setup"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  app:
+    <<: *app
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+
+volumes:
+  demo-data:

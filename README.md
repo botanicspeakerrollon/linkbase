@@ -7,6 +7,20 @@ Postgres, with a database per model.
 It started as a personal climbing logbook, which is still its one model with code of its own. See
 [models](docs/models.md) for the rest.
 
+## Try the demo
+
+Needs only Docker. No .NET SDK, no `.env`, no key:
+
+```
+docker compose -f docker-compose.demo.yml up --build
+```
+
+Open <http://localhost:8080>. A fresh Postgres starts, a setup step creates a database for each example model, applies the
+migrations and loads the data (the demo climbing logbook, the example consultancy, a map of this code base and an ArchiMate model, about
+a minute the first time), and then the app starts. The four models are in the switcher by the model's name. Running `up`
+again keeps what's there, and `docker compose -f docker-compose.demo.yml down -v` deletes the demo's data. It's a project
+of its own, so it never touches the database the Prerequisites below set up. Reading text with AI is off, as there's no key.
+
 ## Prerequisites
 
 - [.NET 10 SDK](https://dot.net) (the exact version is pinned in `global.json`)
@@ -43,6 +57,7 @@ dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
 | Add a migration | `dotnet ef migrations add <Name> --project src/Linkbase --output-dir Data/Migrations` |
 | Stop the database | `docker compose down` |
 | Load a model file | `dotnet run --project src/Linkbase --launch-profile http -- model load <file> <model>` (see [models](docs/models.md)) |
+| Create, migrate and fill every model that has a `Seed` | `dotnet run --project src/Linkbase --launch-profile http -- model setup` (see [models](docs/models.md#setting-up-the-example-models)) |
 | Back up the database | `./scripts/backup-db.ps1` (see [operations](docs/operations.md) for restoring and rebuilding) |
 | Look at the tables and query them | `docker exec -it -e PGOPTIONS="-c default_transaction_read_only=on" linkbase-db-1 psql -U linkbase -d linkbase` (read-only; see [Postgres](docs/postgres.md)) |
 

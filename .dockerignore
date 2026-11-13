@@ -9,7 +9,13 @@
 backups/
 data/
 docs/
-models/
+# Only the example models go in, for `model setup` in docker-compose.demo.yml. Not the real climbing one or the Swiss rail one.
+models/*
+!models/climbing-demo/
+!models/consultancy/
+!models/linkbase-code/
+!models/archimate/
+models/*/generate.py
 scripts/
 tests/
 deploy/
