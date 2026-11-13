@@ -8,8 +8,19 @@
                   Required="@Settings.RequireReason" RequiredError="Say why you're making this change" MaxLength="@ChangeRecorder.NoteLimit"
                   AutoFocus="@AutoFocus"
                   HelperText="@(Settings.RequireReason ? "Kept in the history. A line in your own words." : "Kept in the history if you give one.")" />
-    <MudTextField T="string" @bind-Value="Draft.SourceUrl" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Source (optional)"
-                  HelperText="A web address where this can be checked." />
+    <div class="d-flex" style="gap: 8px">
+        <MudSelect T="string" @bind-Value="Draft.SourceKind" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Source kind (optional)"
+                   Clearable="true" Style="flex: 0 0 11rem">
+            @foreach (var kind in Settings.SourceKinds)
+            {
+                <MudSelectItem T="string" Value="@kind">@kind</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTextField T="string" @bind-Value="Draft.SourceId" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Source id (optional)"
+                      MaxLength="@ChangeRecorder.SourceIdLimit" HelperText="A web address, or whatever identifies it in that place." />
+    </div>
+    <MudTextField T="string" @bind-Value="Draft.SourceComment" Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Source comment (optional)"
+                  MaxLength="@ChangeRecorder.NoteLimit" HelperText="Where in the source, in your own words." />
     </div>
 }
 

@@ -496,9 +496,17 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("note");
 
-                    b.Property<string>("SourceUrl")
+                    b.Property<string>("SourceComment")
                         .HasColumnType("text")
-                        .HasColumnName("source_url");
+                        .HasColumnName("source_comment");
+
+                    b.Property<string>("SourceId")
+                        .HasColumnType("text")
+                        .HasColumnName("source_id");
+
+                    b.Property<string>("SourceKind")
+                        .HasColumnType("text")
+                        .HasColumnName("source_kind");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
@@ -639,6 +647,13 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
                         .HasColumnName("require_reason");
+
+                    b.PrimitiveCollection<string[]>("SourceKinds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("source_kinds")
+                        .HasDefaultValueSql("'{}'");
 
                     b.HasKey("Id")
                         .HasName("pk_model_setting");

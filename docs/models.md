@@ -128,6 +128,7 @@ be checked), and the record's page shows its history, newest first.
 
 - `record: false` keeps no history. It can't be combined with `requireReason: true`, so the load says so.
 - `requireReason: false` makes the reason box optional. A reason given is still kept.
+- `sourceKinds` lists the kinds of source a change can name, such as `["Internet", "Jira", "SharePoint"]`. A change can carry a source: its kind, an id (a web address or whatever identifies it there) and a brief comment. `Internet` alone if left out.
 - The settings are saved with the model each time it is loaded, so a file that leaves `history` out turns both back on.
 - Turning history off keeps what was already recorded, and so does a reload.
 - An import is one entry for the whole batch, with its source. Its records show "Added by import" at the start of their

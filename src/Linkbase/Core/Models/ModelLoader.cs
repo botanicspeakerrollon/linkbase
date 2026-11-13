@@ -220,11 +220,13 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         // key to the records they describe. It adds one entry for the load itself.
         await RunAsync(
             """
-            INSERT INTO model_setting (id, record_history, require_reason) VALUES (1, @record, @reason)
-            ON CONFLICT (id) DO UPDATE SET record_history = excluded.record_history, require_reason = excluded.require_reason
+            INSERT INTO model_setting (id, record_history, require_reason, source_kinds) VALUES (1, @record, @reason, @kinds)
+            ON CONFLICT (id) DO UPDATE SET record_history = excluded.record_history, require_reason = excluded.require_reason,
+                source_kinds = excluded.source_kinds
             """,
             ("record", model.RecordHistory, NpgsqlDbType.Boolean),
-            ("reason", model.RequireReason, NpgsqlDbType.Boolean));
+            ("reason", model.RequireReason, NpgsqlDbType.Boolean),
+            ("kinds", model.SourceKinds, NpgsqlDbType.Array | NpgsqlDbType.Text));
         if (model.RecordHistory)
         {
             var summary = System.Text.Json.JsonSerializer.Serialize(new { types = model.Types.Count, records = nodes, links });
