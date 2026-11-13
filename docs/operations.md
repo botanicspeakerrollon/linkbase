@@ -181,16 +181,23 @@ The sample container was renamed in place to `linkbase-samples`, with its role r
 ## Migration history
 
 Migrations were squashed into one `InitialCreate` on 2026-11-10 and again on 2026-11-13. A database made before the latest
-squash has the old migration names in `"__EFMigrationsHistory"`, so `dotnet ef database update` would try to create tables
-that already exist. Its schema is the same, so point it at the baseline once, with the id of the single file in
-`src/Linkbase/Data/Migrations/`:
+squash has the old migration names in `"__EFMigrationsHistory"`, so `dotnet ef database update` or `model migrate` fails with
+"already exists", such as `function "graph_search_text" already exists`. The latest squash also changed the schema (a
+justification's `source_url` became `source_id`, `source_kind` and `source_comment`, and `model_setting` gained
+`source_kinds`), so the history can't just be reset: bring the schema up to date and point the history at the baseline, with
+the id of the single file in `src/Linkbase/Data/Migrations/`:
 
 ```sql
 BEGIN;
+ALTER TABLE justification ADD COLUMN source_id text, ADD COLUMN source_kind text, ADD COLUMN source_comment text;
+UPDATE justification SET source_id = source_url, source_kind = 'Internet' WHERE source_url IS NOT NULL;
+ALTER TABLE justification DROP COLUMN source_url;
+ALTER TABLE model_setting ADD COLUMN source_kinds text[] NOT NULL DEFAULT '{}';
 DELETE FROM "__EFMigrationsHistory";
 INSERT INTO "__EFMigrationsHistory" VALUES ('20261113025612_InitialCreate', '10.0.14');
 COMMIT;
 ```
 
-Run it in every model's database. The same applies to a backup taken before then: restore it, then run the SQL above. Only a
-database that already had every old migration applied (up to `AddFieldMetadata`) can be moved this way.
+Run it once in every model's database (back up the real one first). The same applies to a backup taken before then: restore it,
+then run the SQL above. Only a database that already had every old migration applied (up to `AddFieldMetadata`) can be moved
+this way.
