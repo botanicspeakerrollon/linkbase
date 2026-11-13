@@ -6,6 +6,7 @@ using Linkbase.Data;
 using Linkbase.Domains.Climbing.Data;
 using Linkbase.Core.Graph;
 using Linkbase.Core.Explore;
+using Linkbase.Core.Views;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
@@ -208,6 +209,135 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         Sees(cut, "Over every match of the search");
         Sees(cut, "Length");
         Sees(cut, ">Sum<");
+    }
+
+    [Fact]
+    public async Task Totals_follow_the_next_search()
+    {
+        var s = await SeedAsync();
+        var cut = RenderPage<ExplorePage>();
+        Search(cut, "graph");
+        WaitForOption(cut, "Graph model");
+        Key(cut, "Enter");
+        cut.WaitForAssertion(() => Assert.Contains("update", GraphCalls));
+        await cut.InvokeAsync(() => cut.Instance.OnNodeDoubleClicked("model:Route"));
+        cut.WaitForAssertion(() => Assert.True(HasControl(cut, "Totals")));
+        Press(cut, "Totals");
+        Sees(cut, "Over every match of the search");
+
+        // Now a different search, typed in the bar as before.
+        Search(cut, s.Crag);
+        WaitForOption(cut, s.Crag);
+        Key(cut, "Enter");
+        cut.WaitForAssertion(() => Assert.Contains("pattern-node", cut.Markup));
+        Key(cut, "Enter");
+
+        cut.WaitForAssertion(() => Assert.Contains("have no number fields to total", cut.Markup));
+    }
+
+    private static GraphPattern NamedRoute(string name) =>
+        new([new PatternNode("Route", [new PatternFilter("name", Linkbase.Core.Graph.FilterOperator.Equals, name)])], []);
+
+    // Opens Explore at an address, as a link would.
+    private IRenderedComponent<ExplorePage> OpenAt(string? state)
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo(ViewState.Href(SavedViewKind.Explore, null, state!));
+        return RenderPage<ExplorePage>();
+    }
+
+    private string Address => Services.GetRequiredService<NavigationManager>().Uri;
+
+    [Fact]
+    public async Task A_permalink_opens_the_search_with_its_table_and_totals()
+    {
+        var s = await SeedAsync();
+        var state = new ExploreState { Pattern = NamedRoute(s.Route), Table = true, Totals = true };
+        var cut = OpenAt(state.Encode());
+
+        Sees(cut, s.Route);
+        Sees(cut, "explore-table");
+        Sees(cut, ">Sum<");
+        Assert.Contains("update", GraphCalls);
+    }
+
+    [Fact]
+    public async Task A_permalink_can_hold_the_nodes_themselves()
+    {
+        var s = await SeedAsync();
+        var state = new ExploreState { Nodes = [$"route:{s.RouteId}", $"crag:{s.CragId}", "crag:nobody"] };
+        var cut = OpenAt(state.Encode());
+
+        Told("no longer exist");
+        cut.WaitForAssertion(() => Assert.Contains("update", GraphCalls));
+        var drawn = (object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!;
+        Assert.Equal(2, drawn.Length);
+    }
+
+    [Fact]
+    public async Task The_address_follows_the_page_and_a_plain_page_has_a_plain_address()
+    {
+        var s = await SeedAsync();
+        var cut = OpenWith(s);
+        var query = new Uri(Address).Query;
+        Assert.StartsWith("?v=", query, StringComparison.Ordinal);
+        var state = ViewState.Decode<ExploreState>(query[3..]);
+        Assert.NotNull(state!.Pattern);
+        Assert.Contains($"crag:{s.CragId}", state.Nodes!);
+
+        Press(cut, "Clear");
+        cut.WaitForAssertion(() => Assert.Equal("", new Uri(Address).Query));
+    }
+
+    [Fact]
+    public async Task A_link_that_cant_be_read_says_so_and_leaves_the_page_empty()
+    {
+        await SeedAsync();
+        var cut = OpenAt("not-a-view");
+
+        Told("can't be read");
+        Sees(cut, "Type anything above");
+    }
+
+    [Fact]
+    public async Task A_link_naming_things_the_model_lacks_is_refused_rather_than_run()
+    {
+        await SeedAsync();
+        var pattern = new GraphPattern([new PatternNode("Unicorn", [])], []);
+        var cut = OpenAt(new ExploreState { Pattern = pattern, Filters = [new PatternFilter("nope", Linkbase.Core.Graph.FilterOperator.Equals, "x")] }.Encode());
+
+        Told("Unknown type 'Unicorn'");
+        Sees(cut, "Type anything above");
+    }
+
+    [Fact]
+    public async Task Views_can_be_saved_from_Explore_opened_and_pinned_to_Home()
+    {
+        var s = await SeedAsync();
+        var cut = OpenWith(s);
+        var name = Unique("Crag view");
+
+        Press(cut, "Views");
+        Type(Dialogs, "Name for this view", name);
+        Press(Dialogs, "Save");
+        Told("Saved the view");
+
+        var views = Services.GetRequiredService<Linkbase.Core.Views.SavedViewRepository>();
+        var saved = (await views.ListAsync()).Single(v => v.Name == name);
+        Assert.Equal(SavedViewKind.Explore, saved.Kind);
+        Assert.StartsWith("/explore?v=", saved.Href, StringComparison.Ordinal);
+        Assert.False(saved.Pinned);
+
+        ClickFresh(Dialogs, () => Dialogs.Find($"button[aria-label='Pin {name}']"));
+        for (var tries = 0; tries < 100 && !(await views.PinnedAsync()).Any(v => v.Name == name); tries++)
+        {
+            await Task.Delay(50);
+        }
+
+        Assert.Contains(await views.PinnedAsync(), v => v.Name == name);
+
+        var home = RenderPage<Linkbase.Components.Pages.Home>();
+        Sees(home, "Pinned views");
+        Sees(home, name);
     }
 
     [Fact]

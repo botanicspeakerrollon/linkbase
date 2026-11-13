@@ -1,0 +1,158 @@
+@* Quick-find, opened with Ctrl+K: jump to a record or page, or start adding a record. It closes with the choice, and the
+   layout carries it out, so the dialog never navigates or opens a second dialog itself. *@
+@inject GraphRepository Graph
+@inject RecordRepository Records
+@inject CurrentModel CurrentModel
+@inject IJSRuntime JS
+@using Linkbase.Core.Graph
+@using Linkbase.Core.Records
+@using Linkbase.Core.Models
+
+<MudDialog Class="quickfind" ContentClass="quickfind-content">
+    <DialogContent>
+        <MudTextField T="string" Value="_text" ValueChanged="TextChangedAsync" Immediate="true"
+                      Placeholder="Find a record or page, or add one" Variant="Variant.Outlined" Margin="Margin.Dense"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      OnKeyDown="OnKeyDown" aria-label="Quick-find" />
+        <div id="quickfind-list" class="quickfind-list" role="listbox">
+            @{ var index = 0; }
+            @foreach (var group in Groups)
+            {
+                <div class="quickfind-group">@group.Key</div>
+                @foreach (var item in group)
+                {
+                    var mine = index++;
+                    <div class="quickfind-item @(mine == _active ? "active" : null)" role="option" aria-selected="@(mine == _active ? "true" : "false")" @onclick="() => Pick(item)">
+                        <MudIcon Icon="@item.Icon" Size="Size.Small" Style="@(item.Color is null ? null : $"color: {item.Color}")" />
+                        <span class="quickfind-title">@item.Title</span>
+                        @if (item.Hint is not null)
+                        {
+                            <span class="quickfind-hint">@item.Hint</span>
+                        }
+                    </div>
+                }
+            }
+            @if (_all.Count == 0)
+            {
+                <div class="quickfind-empty">@(_loading ? "Looking…" : "Nothing found.")</div>
+            }
+        </div>
+        <div class="quickfind-keys"><kbd>↑</kbd><kbd>↓</kbd> choose <kbd>Enter</kbd> open <kbd>Esc</kbd> close</div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+
+    private const int RecordLimit = 8;
+
+    private string _text = "";
+    private int _active;
+    private int _searchId;
+    private bool _loading;
+    private bool _scrollNeeded;
+    private IReadOnlyList<RecordType> _types = [];
+    private IReadOnlyList<QuickFindItem> _records = [];
+    private IReadOnlyList<QuickFindItem> _all = [];
+
+    private IEnumerable<IGrouping<string, QuickFindItem>> Groups => _all.GroupBy(i => i.Group);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _types = await Records.TypesAsync();
+        }
+        catch (Exception ex) when (ex is Npgsql.NpgsqlException or InvalidOperationException)
+        {
+            _types = [];
+        }
+
+        Rebuild();
+    }
+
+    private async Task TextChangedAsync(string? text)
+    {
+        _text = text ?? "";
+        var id = ++_searchId;
+        if (_text.Trim().Length < 2)
+        {
+            _loading = false;
+            _records = [];
+            Rebuild();
+            return;
+        }
+
+        _loading = true;
+        IReadOnlyList<QuickFindItem> found;
+        try
+        {
+            var nodes = await Graph.SearchNodesAsync(_text, null);
+            found = nodes.Where(n => !n.IsModel).Take(RecordLimit).Select(QuickFindItems.ForRecord).ToList();
+        }
+        catch (Exception ex) when (ex is Npgsql.NpgsqlException or InvalidOperationException)
+        {
+            found = [];
+        }
+
+        // A slower answer to an earlier text must not replace this one.
+        if (id != _searchId)
+        {
+            return;
+        }
+
+        _loading = false;
+        _records = found;
+        Rebuild();
+    }
+
+    private void Rebuild()
+    {
+        _all = QuickFindItems.Arrange(_text, _records, QuickFindItems.Pages(CurrentModel.Domains, _types), QuickFindItems.Actions(_types));
+        _active = 0;
+        _scrollNeeded = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // AutoFocus is lost to the dialog's own focus handling, so keep asking for a moment once the box is there.
+        if (firstRender)
+        {
+            await using var hotkeys = await JS.InvokeAsync<IJSObjectReference>("import", "./js/hotkeys.js");
+            await hotkeys.InvokeVoidAsync("focusWhenReady", ".quickfind input");
+        }
+
+        if (_scrollNeeded)
+        {
+            _scrollNeeded = false;
+            // The keyboard moves the choice, so keep it in view. The module is the one the layout loaded.
+            await using var hotkeys = await JS.InvokeAsync<IJSObjectReference>("import", "./js/hotkeys.js");
+            await hotkeys.InvokeVoidAsync("scrollIntoView", ".quickfind-item.active");
+        }
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (_all.Count == 0)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _active = (_active + 1) % _all.Count;
+                _scrollNeeded = true;
+                break;
+            case "ArrowUp":
+                _active = (_active - 1 + _all.Count) % _all.Count;
+                _scrollNeeded = true;
+                break;
+            case "Enter":
+                Pick(_all[_active]);
+                break;
+        }
+    }
+
+    private void Pick(QuickFindItem item) => Dialog.Close(DialogResult.Ok(item.Choice));
+}

@@ -1,0 +1,106 @@
+@* Saved views: save the page as it is under a name, and open, pin or delete the ones already saved. Saving under an existing
+   name replaces that view. Pinned views are shown on Home. *@
+@using Microsoft.AspNetCore.Components.Web
+@using Linkbase.Core.Explore
+@inject SavedViewRepository Views
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>Saved views</TitleContent>
+    <DialogContent>
+        @if (State is not null)
+        {
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-1">
+                <MudTextField T="string" @bind-Value="_name" Label="Name for this view" Variant="Variant.Outlined" Margin="Margin.Dense"
+                              Immediate="true" AutoFocus="true" MaxLength="SavedViewRepository.MaxNameLength" OnKeyDown="NameKeyAsync" />
+                <MudButton OnClick="SaveAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@string.IsNullOrWhiteSpace(_name)">Save</MudButton>
+            </MudStack>
+            <MudCheckBox T="bool" @bind-Value="_pin" Label="Pin to Home" Size="Size.Small" Class="mb-2" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="mb-2" Style="color: var(--mud-palette-text-secondary)">There is nothing on this page to save yet.</MudText>
+        }
+
+        @if (_views is null)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_views.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">No saved views yet.</MudText>
+        }
+        else
+        {
+            @foreach (var view in _views)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                    <MudButton Href="@view.Href" OnClick="Close" Variant="Variant.Text" Size="Size.Small" Style="flex: 1; justify-content: flex-start"
+                               StartIcon="@(view.Kind == SavedViewKind.Explore ? Icons.Material.Filled.Hub : Icons.Material.Filled.TableRows)">
+                        @view.Name@(view.Scope is null ? "" : $" ({view.Scope})")
+                    </MudButton>
+                    <MudIconButton OnClick="@(() => TogglePinAsync(view))" Size="Size.Small"
+                                   Icon="@(view.Pinned ? Icons.Material.Filled.PushPin : Icons.Material.Outlined.PushPin)"
+                                   aria-label="@((view.Pinned ? "Unpin " : "Pin ") + view.Name)" aria-pressed="@(view.Pinned ? "true" : "false")" />
+                    <MudIconButton OnClick="@(() => DeleteAsync(view))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" aria-label="@($"Delete view {view.Name}")" />
+                </MudStack>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Variant="Variant.Text">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+
+    // The page's state as it is now, or null when there is nothing to save.
+    [Parameter] public string? State { get; set; }
+    [Parameter] public SavedViewKind Kind { get; set; }
+    [Parameter] public string? Scope { get; set; }
+
+    private IReadOnlyList<SavedViewInfo>? _views;
+    private string? _name;
+    private bool _pin;
+
+    protected override async Task OnInitializedAsync() => _views = await Views.ListAsync();
+
+    private void Close() => Instance.Close();
+
+    private async Task NameKeyAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_name))
+        {
+            await SaveAsync();
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await Views.SaveAsync(_name ?? "", Kind, Scope, State!, _pin);
+            Snackbar.Add($"Saved the view {_name!.Trim()}.", Severity.Success);
+            _name = null;
+            _pin = false;
+            _views = await Views.ListAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+    }
+
+    private async Task TogglePinAsync(SavedViewInfo view)
+    {
+        await Views.SetPinnedAsync(view.Id, !view.Pinned);
+        _views = await Views.ListAsync();
+    }
+
+    private async Task DeleteAsync(SavedViewInfo view)
+    {
+        await Views.DeleteAsync(view.Id);
+        _views = await Views.ListAsync();
+    }
+}

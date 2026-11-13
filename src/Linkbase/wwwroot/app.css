@@ -877,3 +877,16 @@ html:has(.explore) {
         flex-basis: 100%;
     }
 }
+
+/* Quick-find (Ctrl+K) */
+.quickfind-list { max-height: 50vh; overflow-y: auto; margin-top: 8px; }
+.quickfind-group { padding: 8px 12px 4px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mud-palette-text-secondary); }
+.quickfind-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+.quickfind-item:hover { background: var(--mud-palette-action-default-hover); }
+.quickfind-item.active { background: var(--mud-palette-action-default-hover); outline: 1px solid var(--mud-palette-primary); }
+.quickfind-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quickfind-hint { color: var(--mud-palette-text-secondary); font-size: 0.8rem; }
+.quickfind-empty { padding: 12px; color: var(--mud-palette-text-secondary); }
+.quickfind-keys { padding-top: 8px; font-size: 0.75rem; color: var(--mud-palette-text-secondary); }
+.quickfind-keys kbd { margin: 0 4px 0 8px; }
+.quickfind-content { padding-top: 16px; }

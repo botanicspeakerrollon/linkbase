@@ -2,6 +2,10 @@
 @inject RecordRepository Records
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@using Linkbase.Core.Views
+@using Microsoft.JSInterop
 
 @* Every record of one type, generated from the model's definition. *@
 <PageTitle>@Type</PageTitle>
@@ -17,10 +21,16 @@ else if (_type is not null)
             <MudIcon Icon="@_style!.Icon" Style="@($"color: {_style.Color}")" />
             <MudText Typo="Typo.h4" HtmlTag="h1">@Type</MudText>
         </MudStack>
-        @if (_type.Owner is null)
-        {
-            <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add @Type</MudButton>
-        }
+        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+            <MudButton OnClick="OpenViewsAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Bookmarks"
+                       title="Save this search and these filters under a name, or open a saved view">Views</MudButton>
+            <MudIconButton OnClick="CopyLinkAsync" Icon="@Icons.Material.Filled.Link" Disabled="@(CurrentState().IsEmpty)"
+                           aria-label="Copy link to this view" title="Copy a link that opens this list as it is now" />
+            @if (_type.Owner is null)
+            {
+                <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add @Type</MudButton>
+            }
+        </MudStack>
     </MudStack>
 
     @if (_type.Owner is not null)
@@ -31,7 +41,7 @@ else if (_type is not null)
     <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="_search" ValueChanged="SearchAsync" DebounceInterval="300"
                   Label="Search" Placeholder="Any part of the name or a value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                   Clearable="true" Class="mb-3" Style="max-width: 32rem" />
-    <RecordFilterBar Type="_type" FiltersChanged="FilterAsync" />
+    <RecordFilterBar Type="_type" Filters="_filters" FiltersChanged="FilterAsync" />
 
     <MudDataGrid @ref="_grid" T="RecordRow" ServerData="LoadAsync" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.None">
         <Columns>
@@ -68,6 +78,9 @@ else if (_type is not null)
 
     [Parameter] public string Type { get; set; } = "";
 
+    // The list's state, carried in its address so a copy of the address opens the same list. See ViewState.
+    [Parameter, SupplyParameterFromQuery(Name = "v")] public string? View { get; set; }
+
     private MudDataGrid<RecordRow>? _grid;
     private RecordType? _type;
     private LabelStyle? _style;
@@ -76,30 +89,138 @@ else if (_type is not null)
     private RecordSort? _sort;
     private IReadOnlyList<RecordFilter> _filters = [];
 
+    private string? _loadedType;
+    private string? _addressed;
+
+    // Addresses this page has asked the browser to go to and not yet heard back about. See ExplorePage.
+    private readonly List<string?> _sent = [];
+
     protected override async Task OnParametersSetAsync()
     {
-        _type = await Records.TypeAsync(Type);
-        _history = await Records.HistorySettingsAsync();
-        _missing = _type is null;
-        _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
-        _search = null;
-        _sort = null;
-        _filters = [];
+        var typeChanged = _loadedType != Type;
+        if (!typeChanged && View == _addressed && _sent.Count == 0)
+        {
+            return;
+        }
+
+        var index = typeChanged ? -1 : _sent.IndexOf(View);
+        if (index >= 0)
+        {
+            // Our own change coming back.
+            _sent.RemoveRange(0, index + 1);
+            return;
+        }
+
+        _sent.Clear();
+        if (typeChanged)
+        {
+            _loadedType = Type;
+            _type = await Records.TypeAsync(Type);
+            _history = await Records.HistorySettingsAsync();
+            _missing = _type is null;
+            _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
+        }
+
+        Apply(View);
         if (_grid is not null)
         {
             await _grid.ReloadServerData();
         }
     }
 
+    // Makes the list match an address, which is either a link or the page's own previous state.
+    private void Apply(string? address)
+    {
+        _addressed = address;
+        _search = null;
+        _sort = null;
+        _filters = [];
+        if (address is null)
+        {
+            return;
+        }
+
+        if (ViewState.Decode<ListState>(address) is not { } state)
+        {
+            Snackbar.Add("That link can't be read, so the list is unfiltered.", Severity.Warning);
+            return;
+        }
+
+        _search = state.Search;
+        _sort = string.IsNullOrEmpty(state.Sort) ? null : new RecordSort(state.Sort, state.Descending);
+        _filters = (state.Filters ?? []).Where(f => f is { Field: not null, Value: not null }).ToList();
+    }
+
+    private ListState CurrentState() => new()
+    {
+        Search = string.IsNullOrWhiteSpace(_search) ? null : _search,
+        Sort = _sort?.Field,
+        Descending = _sort?.Descending ?? false,
+        Filters = _filters.Count > 0 ? _filters : null,
+    };
+
+    // Puts the list's state in its address, replacing the entry so Back leaves the list rather than undoing each keystroke.
+    private void SyncAddress()
+    {
+        var encoded = CurrentState().Encode();
+        if (encoded == _addressed)
+        {
+            return;
+        }
+
+        _addressed = encoded;
+        _sent.Add(encoded);
+        Navigation.NavigateTo(encoded is null ? GraphStyle.RecordListLink(Type) : $"{GraphStyle.RecordListLink(Type)}?v={encoded}", replace: true);
+    }
+
+    private async Task OpenViewsAsync()
+    {
+        var parameters = new DialogParameters<SavedViewsDialog>
+        {
+            { d => d.State, CurrentState().Encode() },
+            { d => d.Kind, SavedViewKind.List },
+            { d => d.Scope, Type },
+        };
+        await Dialogs.ShowAsync<SavedViewsDialog>("Saved views", parameters, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
+    private async Task CopyLinkAsync()
+    {
+        if (CurrentState().Encode() is not { } state)
+        {
+            return;
+        }
+
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Navigation.ToAbsoluteUri(ViewState.Href(SavedViewKind.List, Type, state)).ToString());
+            Snackbar.Add("Link copied.", Severity.Success);
+        }
+        catch (JSException)
+        {
+            Snackbar.Add("The browser wouldn't copy it. The link is in the address bar.", Severity.Info);
+        }
+    }
+
     private async Task<GridData<RecordRow>> LoadAsync(GridState<RecordRow> state, CancellationToken cancellationToken)
     {
-        var page = await Records.ListAsync(Type, _search, _sort, _filters, state.Page, state.PageSize, cancellationToken);
-        return new GridData<RecordRow> { Items = page.Rows, TotalItems = page.Total };
+        try
+        {
+            var page = await Records.ListAsync(Type, _search, _sort, _filters, state.Page, state.PageSize, cancellationToken);
+            return new GridData<RecordRow> { Items = page.Rows, TotalItems = page.Total };
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            // A link can name a field or a value this type doesn't have.
+            Snackbar.Add(ex.Message, Severity.Warning);
+            return new GridData<RecordRow> { Items = [], TotalItems = 0 };
+        }
     }
 
     private async Task SearchAsync(string? text)
     {
         _search = text;
+        SyncAddress();
         _grid!.NavigateTo(Page.First);
         await _grid.ReloadServerData();
     }
@@ -107,6 +228,7 @@ else if (_type is not null)
     private async Task FilterAsync(IReadOnlyList<RecordFilter> filters)
     {
         _filters = filters;
+        SyncAddress();
         _grid!.NavigateTo(Page.First);
         await _grid.ReloadServerData();
     }
@@ -122,6 +244,7 @@ else if (_type is not null)
     private async Task SortAsync(string field)
     {
         _sort = _sort?.Field != field ? new RecordSort(field) : _sort.Descending ? null : new RecordSort(field, true);
+        SyncAddress();
         _grid!.NavigateTo(Page.First);
         await _grid.ReloadServerData();
     }

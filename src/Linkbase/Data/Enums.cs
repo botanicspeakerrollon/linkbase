@@ -20,3 +20,6 @@ public enum DataSource { Manual, Ukc, MountainProject, WebImport, Csv, Ai }
 
 public enum ImportStatus { Pending, Staged, Committed, Undone, Failed }
 
+
+// What a saved view reopens: the Explore page, or one type's record list.
+public enum SavedViewKind { Explore, List }

@@ -61,6 +61,7 @@ Telemetry.Add(builder.Services, builder.Configuration);
 builder.Services.AddScoped<DatabaseStatusService>();
 builder.Services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("databases", tags: ["ready"]);
 builder.Services.AddScoped<GraphRepository>();
+builder.Services.AddScoped<Linkbase.Core.Views.SavedViewRepository>();
 builder.Services.AddScoped<ModelLoader>();
 builder.Services.AddScoped<RecordHooks>();
 builder.Services.AddScoped<RecordRepository>();

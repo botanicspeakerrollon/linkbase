@@ -43,10 +43,22 @@
     [Parameter, EditorRequired] public RecordType Type { get; set; } = null!;
     [Parameter] public EventCallback<IReadOnlyList<RecordFilter>> FiltersChanged { get; set; }
 
+    // The filters to show, when the page can set them itself, such as from a permalink. Typing reports back through FiltersChanged.
+    [Parameter] public IReadOnlyList<RecordFilter>? Filters { get; set; }
+
     private readonly Dictionary<(string Field, FilterOp Op), string> _values = [];
 
     protected override void OnParametersSet()
     {
+        if (Filters is not null)
+        {
+            _values.Clear();
+            foreach (var filter in Filters.Where(f => Type.Fields.Any(field => field.Key == f.Field)))
+            {
+                _values[(filter.Field, filter.Op)] = filter.Value;
+            }
+        }
+
         // A different type has different fields, so start again.
         if (_values.Keys.Any(k => Type.Fields.All(f => f.Key != k.Field)))
         {

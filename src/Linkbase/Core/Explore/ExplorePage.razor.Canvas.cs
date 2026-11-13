@@ -101,7 +101,18 @@ public partial class ExplorePage
     {
         var filter = relType is null ? Filter : Filter with { RelTypes = [relType] };
         // What's on the graph is excluded, so "show more" gets the next batch. Removed nodes aren't on it, so they come back.
-        var result = await Graph.NeighboursAsync(nodeId, filter, _nodes.Keys, ExpansionLimit);
+        GraphNeighbours result;
+        try
+        {
+            result = await Graph.NeighboursAsync(nodeId, filter, _nodes.Keys, ExpansionLimit);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            // A filter that came from a link can name a value the field can't hold.
+            Snackbar.Add(ex.Message, Severity.Warning);
+            return;
+        }
+
         foreach (var node in result.Nodes)
         {
             _nodes.TryAdd(node.Id, node);
@@ -128,6 +139,7 @@ public partial class ExplorePage
 
     private async Task DrawAsync(string? anchorId)
     {
+        SyncAddress();
         if (_module is not null)
         {
             var (nodes, edges) = CanvasElements();
@@ -264,6 +276,7 @@ public partial class ExplorePage
         _sceneName = name;
         var (nodes, edges) = CanvasElements();
         await _module.InvokeVoidAsync("restore", nodes, edges, scene.Positions);
+        SyncAddress();
 
         var missing = scene.Positions.Count - subgraph.Nodes.Count;
         if (missing > 0)

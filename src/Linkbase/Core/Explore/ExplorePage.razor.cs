@@ -6,6 +6,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using Linkbase.Data;
 using Linkbase.Core.Graph;
+using Linkbase.Core.Views;
 using FilterOperator = Linkbase.Core.Graph.FilterOperator;
 
 namespace Linkbase.Core.Explore;
@@ -30,7 +31,7 @@ public partial class ExplorePage
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "Delete", "Escape"];
 
     // Totals of the number properties over every match of the last search, shown in a panel on request.
     private bool _summaryOpen;
@@ -44,6 +45,7 @@ public partial class ExplorePage
     private async Task ToggleSummaryAsync()
     {
         _summaryOpen = !_summaryOpen && _lastPattern is not null;
+        SyncAddress();
         await LoadSummaryAsync();
     }
 
@@ -97,7 +99,7 @@ public partial class ExplorePage
         }
     }
 
-    private IReadOnlyCollection<string> _relTypes = [];
+    private List<string> _relTypes = [];
     private readonly List<PatternFilter> _propertyFilters = [];
     private string? _filterKey;
     private FilterOperator _filterOperator;
@@ -128,9 +130,20 @@ public partial class ExplorePage
     {
         _propertyFilters.Add(new PatternFilter(_filterKey!, _filterOperator, _filterValue!.Trim()));
         ChooseFilterKey(null);
+        SyncAddress();
     }
 
-    private void RemoveFilter(MudChip<string> chip) => _propertyFilters.RemoveAll(f => FilterText(f) == chip.Value);
+    private void RemoveFilter(MudChip<string> chip)
+    {
+        _propertyFilters.RemoveAll(f => FilterText(f) == chip.Value);
+        SyncAddress();
+    }
+
+    private void ChooseRelTypes(IEnumerable<string>? relTypes)
+    {
+        _relTypes = relTypes?.ToList() ?? [];
+        SyncAddress();
+    }
 
     private static string FilterText(PatternFilter filter) =>
         $"{filter.Key} {PatternBuilder.OperatorText(filter.Operator)} {filter.Value}";
@@ -175,7 +188,15 @@ public partial class ExplorePage
             _hotkeys = null;
         }
 
+        _ready = true;
         StateHasChanged();
+
+        // The page was opened from a permalink or a saved view.
+        if (View != _addressed)
+        {
+            await ApplyAddressAsync(View);
+            StateHasChanged();
+        }
     }
 
     // Replaces the canvas with the model itself: one node per type and one link per kind of relationship.

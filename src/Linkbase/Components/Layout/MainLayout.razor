@@ -114,9 +114,47 @@
 
     // The keys that work everywhere and need the server. The rest are handled in the browser.
     [JSInvokable]
-    public Task OnHotkey(string key) => key == "?"
-        ? InvokeAsync(() => Dialogs.ShowAsync<HotkeysDialog>("Keyboard shortcuts", new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true }))
-        : Task.CompletedTask;
+    public Task OnHotkey(string key) => key switch
+    {
+        "?" => InvokeAsync(() => Dialogs.ShowAsync<HotkeysDialog>("Keyboard shortcuts", new DialogOptions { CloseButton = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true })),
+        "quickfind" => InvokeAsync(QuickFindAsync),
+        _ => Task.CompletedTask,
+    };
+
+    // Ctrl+K. The dialog says where to go or what to add, and this does it.
+    private async Task QuickFindAsync()
+    {
+        var dialog = await Dialogs.ShowAsync<QuickFindDialog>("Quick-find", new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true, NoHeader = true, Position = DialogPosition.TopCenter });
+        if (await dialog.Result is not { Canceled: false, Data: QuickFindChoice choice })
+        {
+            return;
+        }
+
+        if (choice.Href is not null)
+        {
+            Navigation.NavigateTo(choice.Href);
+        }
+        else if (choice.AddType is not null)
+        {
+            await AddRecordAsync(choice.AddType);
+        }
+    }
+
+    private async Task AddRecordAsync(string typeName)
+    {
+        var type = await Records.TypeAsync(typeName);
+        if (type is null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<RecordDialog> { { d => d.Type, type }, { d => d.History, await Records.HistorySettingsAsync() } };
+        var dialog = await Dialogs.ShowAsync<RecordDialog>($"Add {typeName}", parameters);
+        if (await dialog.Result is { Canceled: false, Data: string key })
+        {
+            Navigation.NavigateTo(GraphStyle.RecordLink(typeName, key));
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

@@ -170,6 +170,23 @@ A saved Explore canvas.
 
 Unique: (`user_id`, `name`).
 
+### `saved_view`
+A named state of Explore or of one type's record list. `state` is the text the page's address carries in its `v` parameter.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity |
+| `user_id` | bigint | FK to `app_user.id` |
+| `name` | text | |
+| `kind` | text | `explore` or `list` |
+| `scope` | text | nullable; the type a list view is of |
+| `state` | text | URL-safe base64 of JSON; see `Core/Views/ViewState.cs` |
+| `pinned` | boolean | shown on Home |
+| `created_at` | timestamptz | |
+| `updated_at` | timestamptz | |
+
+Unique: (`user_id`, `name`).
+
 ### `data_protection_key`
 ASP.NET Core data protection keys.
 
@@ -237,7 +254,7 @@ Indexes: (`entity_kind`, `entity_id`, `id`), (`related_id`, `id`), `change_set_i
 ## Relationships
 
 ```
-app_user ──< node, import_batch, graph_scene
+app_user ──< node, import_batch, graph_scene, saved_view
 node_type ──< node, field_definition, link_definition (as source and as target)
 node ──< node_link (as source and as target)
 import_batch ──< node, node_link, external_ref, staged_item, justification

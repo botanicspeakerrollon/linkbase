@@ -24,9 +24,7 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
 
 ## The order
 
-1. **Saved views and permalinks.** Save a search, an Explore canvas state, a filter or a Totals query under a name, pin it to
-   Home, and give every Explore state an address. Explore's state looks ephemeral today. Small, and it makes everything below
-   stickier.
+1. ~~**Saved views and permalinks.**~~ Done: Explore and record lists keep their state in the address (`?v=`), a named view is that state saved (`saved_view`), and pinned views show on Home. Not yet: saving a Totals query apart from its search, or a link that opens a view as read-only for someone else, which waits for sign-in.
 2. **Quick-find.** Ctrl+K jumps to any record, type or page and runs actions such as adding an ascent. It is the one feature that
    makes the whole app drivable from the keyboard.
 3. **Plain-English questions.** A box that takes "routes I climbed in Spain above 7a" and compiles it to a search pattern. The
