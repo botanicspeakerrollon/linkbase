@@ -289,7 +289,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
     public async Task Required_links_are_heard_of_and_go_with_derived_ones_when_their_record_is_deleted()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await TestModels.LoadAsync(factory, 
+        await TestModels.LoadAsync(factory,
             OwnedModel.Write(_folder, OwnedModel.Json.Replace("\"toColumn\": \"route\" } }", "\"toColumn\": \"route\" }, \"required\": true }")), TextWriter.Null);
         var records = new RecordRepository(factory, new RecordHooks([_hook]));
 

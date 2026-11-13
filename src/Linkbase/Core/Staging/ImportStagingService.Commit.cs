@@ -96,7 +96,8 @@ public sealed partial class ImportStagingService
             SELECT e.type, e.rel_type, e.target_type, count(*)::int
             FROM added a JOIN eligible e ON e.source_id = a.source_id AND e.rel_type = a.rel_type AND e.target_id = a.target_id AND e.props = a.props
             GROUP BY e.type, e.rel_type, e.target_type
-            """, connection, transaction) { CommandTimeout = 0 })
+            """, connection, transaction)
+        { CommandTimeout = 0 })
         {
             command.Parameters.Add(new NpgsqlParameter("batch", NpgsqlDbType.Bigint) { Value = batchId });
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);

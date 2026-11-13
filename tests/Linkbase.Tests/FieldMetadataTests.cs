@@ -261,7 +261,11 @@ public sealed class FieldMetadataTests(PostgresFixture fixture) : IDisposable, I
         var (_, records) = await LoadedAsync();
         RecordInput Person(string dates = "", string scores = "", string languages = "") => new("", new Dictionary<string, string?>
         {
-            ["name_first"] = "Ana", ["name_last"] = "Lopez", ["certified_on"] = dates, ["scores"] = scores, ["languages"] = languages,
+            ["name_first"] = "Ana",
+            ["name_last"] = "Lopez",
+            ["certified_on"] = dates,
+            ["scores"] = scores,
+            ["languages"] = languages,
         })
         { Links = [new NewLink("MEMBER_OF", "team:t1")] };
 

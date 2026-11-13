@@ -8,6 +8,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
+
 public sealed partial class RecordRepository
 {
     // Lets the modules' hooks set the fields they keep.
