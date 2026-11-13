@@ -1,0 +1,58 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_key" Label="New key" AutoFocus="true"
+                          HelperText="@($"Lower case letters, digits and underscores, starting with a letter{(Home.IsLink ? "" : ", and not name")}.")"
+                          Required="true" RequiredError="A key is needed" />
+            @if (Settings.Record)
+            {
+                <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy">Rename</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public FieldHome Home { get; set; } = null!;
+    [Parameter, EditorRequired] public string OldKey { get; set; } = "";
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private string _key = "";
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    protected override void OnInitialized() => _key = OldKey;
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            await Editor.RenameFieldAsync(Home, OldKey, _key, _reason.ToReason());
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

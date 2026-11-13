@@ -8,8 +8,9 @@ these companies lack is the skill to use one. Market claims are unresearched, an
 
 Built: the generic store and model files ([models](models.md)), generated list and record pages, Explore with Totals, saved
 views, Quick-find and plain-English questions, CSV import (also from several files at once) and AI text reading with review and
-undo, the audit history with revert, Home, Timeline and Cleanup, the climbing domain, CI, the container image, and performance
-checked on a large sample ([performance](performance.md)). What each part does is in the [reference](reference.md). Whether climbing should move into the generic store is
+undo, the Model editor (types, fields, relationships and link values, without a developer), the audit history with revert,
+Home, Timeline and Cleanup, the climbing domain, CI, the container image, and performance checked on a large sample
+([performance](performance.md)). What each part does is in the [reference](reference.md). Whether climbing should move into the generic store is
 argued in [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md).
 
 Settled, and not to reopen without a reason:
@@ -42,9 +43,12 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
 5. **Hosting.** Off-site backups first, because nothing else matters if the data can be lost, then per-customer setup and
    monitoring. See [operations](operations.md) and [deployment-plan](deployment-plan.md).
 6. **A model from a CSV.** A new customer starts from a blank model, not a model file. Built: the Start from CSVs tab infers
-   types, fields and relationships from several CSVs ([models](models.md#starting-a-model-from-csv-files)). Still to build: an
-   editor for the result, which is what a pilot relies on most, because it works without a developer. Finish values on links in
-   the same stretch, through CSV import, Read text and Explore ([relationship-attributes](history/relationship-attributes.md)).
+   types, fields and relationships from several CSVs ([models](models.md#starting-a-model-from-csv-files)), and the Model
+   editor changes the result (or any model) afterwards: types, fields, relationships and link values, without a developer
+   ([models](models.md#editing-a-model-in-the-app), [reference](reference.md#8-the-model-editor)). **Left, on link values**
+   ([relationship-attributes](history/relationship-attributes.md)): CSV import and Read text still only fill a link's values
+   when the relationship already has them, not update one that already has different values; and Explore can't filter or ask
+   about a value on a link, only show it.
 7. **The rest of everyday use.** Built, except phone use. Checked by tests and bUnit pages, not yet by using the running app:
    - **A useful Home.** Recent records, changes and imports, and records added per month, each hideable per model with
      `Models:<key>:Home:Hide` ([models](models.md#configuring-models)). Climbing's Insights page was not folded in.

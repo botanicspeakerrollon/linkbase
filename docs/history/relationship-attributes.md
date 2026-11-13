@@ -23,9 +23,17 @@ First used on the example consultancy's `Person WORKS_ON Project`, which has `ro
 - **Record page.** Each link shows its values as chips, with an edit button, and the Add link dialog has a box for each.
   `FieldInputs` is the shared set of boxes, used by the record form too.
 
+## Built, since
+
+- **Defining attributes outside the model file.** The [model editor](../models.md#editing-a-model-in-the-app) adds, edits,
+  renames, retypes and deletes a relationship's attributes (and a type's fields) from the app. An import still only fills
+  values the relationship already has, never adds a new one.
+
 ## Not built
 
-- **Defining attributes outside the model file.** An import or Read text can fill a relationship's values, not add one.
+- **Updating an attribute's value on re-import.** An import or Read text can fill a relationship's values when it has none
+  yet, not change one that already has different values. CSV *records* update this way ([models](../models.md#importing-a-csv-file));
+  CSV *links* and Read text don't yet.
 - **Filtering** on an attribute in `GraphPattern` (`e{i}.props->>'role'`). Don't index attribute values up front: at Swiss rail
   scale (tens of millions of links) that is a real cost.
 - **Derived relationships.** Links to or from a module's derived types are the module's, so people can't edit their values.

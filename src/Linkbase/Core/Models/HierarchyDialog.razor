@@ -1,0 +1,151 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+@* Sets how a type's records form a tree: a choice field says the level, a relationship to itself says the parent, and each
+   level says what it may sit under, or that it's at the top. The levels always cover the field's options exactly. *@
+<MudDialog>
+    <DialogContent>
+        @if (ByOptions.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">@Type.Name needs a required choice field with one value, to say each record's level. Add one first.</MudAlert>
+        }
+        else if (ViaOptions.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">@Type.Name needs a relationship to itself that isn't required, to go from a record to its parent. Add one first.</MudAlert>
+        }
+        else
+        {
+            <MudForm @ref="_form">
+                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="_by" ValueChanged="ChooseByAsync" Label="Level field">
+                    @foreach (var field in ByOptions)
+                    {
+                        <MudSelectItem T="string" Value="@field.Key">@field.Key</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_via" Label="Parent relationship">
+                    @foreach (var rel in ViaOptions)
+                    {
+                        <MudSelectItem T="string" Value="@rel">@Type.Name @rel @Type.Name</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_levels.Count > 0)
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1">Levels</MudText>
+                    @foreach (var level in _levels)
+                    {
+                        <MudPaper Elevation="0" Class="pa-2 mb-2" Style="border: 1px solid var(--mud-palette-lines-default)">
+                            <MudText Typo="Typo.body2" Class="mb-1"><b>@level.Kind</b></MudText>
+                            <MudCheckBox T="bool" Value="level.Root" ValueChanged="@(v => SetRoot(level, v))" Label="At the top, with no parent" />
+                            @if (!level.Root)
+                            {
+                                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" MultiSelection="true"
+                                           SelectedValues="level.Under" SelectedValuesChanged="@(v => SetUnder(level, v))" Label="May be under" Clearable="true">
+                                    @foreach (var other in _levels.Where(l => l.Kind != level.Kind))
+                                    {
+                                        <MudSelectItem T="string" Value="@other.Kind">@other.Kind</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                        </MudPaper>
+                    }
+                }
+                @if (Settings.Record)
+                {
+                    <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+                }
+            </MudForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="@(_busy || ByOptions.Count == 0 || ViaOptions.Count == 0)">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private sealed class LevelDraft
+    {
+        public required string Kind { get; init; }
+        public bool Root { get; set; }
+        public IReadOnlyCollection<string> Under { get; set; } = [];
+    }
+
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public TypeOutline Type { get; set; } = null!;
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private string _by = "";
+    private string _via = "";
+    private List<LevelDraft> _levels = [];
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    private IReadOnlyList<FieldSpec> ByOptions => Type.Fields.Where(f => f.Type == FieldType.Choice && f.Required && !f.Multiple).ToList();
+
+    // A relationship from the type to itself, other than a required one, which couldn't have a top level with no parent.
+    [Parameter] public IReadOnlyList<RelationshipOutline> Relationships { get; set; } = [];
+
+    private IReadOnlyList<string> ViaOptions => Relationships.Where(r => r.From == Type.Name && r.To == Type.Name && !r.Required).Select(r => r.Rel).ToList();
+
+    protected override void OnInitialized()
+    {
+        if (Type.Hierarchy is { } hierarchy && ByOptions.Any(f => f.Key == hierarchy.By))
+        {
+            _by = hierarchy.By;
+            _via = hierarchy.Via;
+            _levels = hierarchy.Levels.Select(l => new LevelDraft { Kind = l.Kind, Root = l.Root, Under = l.Under.ToList() }).ToList();
+        }
+        else if (ByOptions.Count > 0)
+        {
+            _by = ByOptions[0].Key;
+            _via = ViaOptions.FirstOrDefault() ?? "";
+            _levels = LevelsFor(ByOptions[0]);
+        }
+    }
+
+    private static List<LevelDraft> LevelsFor(FieldSpec field) => field.OptionList.Select(o => new LevelDraft { Kind = o }).ToList();
+
+    private Task ChooseByAsync(string key)
+    {
+        _by = key;
+        _levels = LevelsFor(ByOptions.Single(f => f.Key == key));
+        return Task.CompletedTask;
+    }
+
+    private void SetRoot(LevelDraft level, bool root)
+    {
+        level.Root = root;
+        if (root)
+        {
+            level.Under = [];
+        }
+    }
+
+    private static void SetUnder(LevelDraft level, IEnumerable<string> under) => level.Under = under.ToList();
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var spec = new HierarchySpec(_by, _via, _levels.Select(l => new LevelSpec(l.Kind, l.Root, l.Under.ToList())).ToList());
+            await Editor.SetHierarchyAsync(Type.Name, spec, _reason.ToReason());
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

@@ -1,0 +1,128 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+@* Adds a field (or, on a relationship, a value its links carry), or edits one that's already there: its description, group,
+   whether it's required, and a choice's options. Its type and key change through the other dialogs, since they rewrite data. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_key" Label="Key" AutoFocus="true" Disabled="Existing is not null"
+                          HelperText="@($"Lower case letters, digits and underscores, starting with a letter{(Home.IsLink ? "" : ", and not name")}.")"
+                          Required="true" RequiredError="@($"A {Home.Noun} needs a key")" />
+            @if (Existing is null)
+            {
+                <MudSelect T="FieldType" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_type" Label="Type" ToStringFunc="Labelled">
+                    @foreach (var type in Types)
+                    {
+                        <MudSelectItem T="FieldType" Value="@type">@Labelled(type)</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (!Home.IsLink)
+                {
+                    <MudCheckBox T="bool" @bind-Value="_multiple" Label="Holds several values" Disabled="_type == FieldType.Boolean" />
+                }
+            }
+            @if (_type == FieldType.Choice)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_options" Label="Options" Lines="4"
+                              HelperText="One per line, up to 50." Required="true" RequiredError="A choice needs its options" />
+            }
+            <MudCheckBox T="bool" @bind-Value="_required" Label="@($"Required: a {(Home.IsLink ? "link" : "record")} can't be saved without it")" />
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_description" Label="Description (optional)" Lines="2"
+                          HelperText="Shown beside it, as a hint." />
+            @if (!Home.IsLink)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_group" Label="Group (optional)"
+                              HelperText="Fields with the same group are shown together under its heading." />
+            }
+            @if (Settings.Record)
+            {
+                <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy">@(Existing is null ? "Add" : "Save")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public FieldHome Home { get; set; } = null!;
+    [Parameter] public FieldSpec? Existing { get; set; }
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private static readonly FieldType[] Types = [FieldType.Text, FieldType.Number, FieldType.Date, FieldType.Boolean, FieldType.Choice];
+
+    private MudForm? _form;
+    private string _key = "";
+    private FieldType _type = FieldType.Text;
+    private bool _multiple;
+    private bool _required;
+    private string? _options;
+    private string? _description;
+    private string? _group;
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is { } field)
+        {
+            _key = field.Key;
+            _type = field.Type;
+            _multiple = field.Multiple;
+            _required = field.Required;
+            _options = field.OptionList.Count == 0 ? null : string.Join('\n', field.OptionList);
+            _description = field.Description;
+            _group = field.Group;
+        }
+    }
+
+    private static string Labelled(FieldType type) => type switch
+    {
+        FieldType.Text => "Text",
+        FieldType.Number => "Number",
+        FieldType.Date => "Date",
+        FieldType.Boolean => "Yes/no",
+        FieldType.Choice => "Choice",
+        _ => type.ToString(),
+    };
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        var options = _type == FieldType.Choice
+            ? _options?.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).ToList()
+            : null;
+        var spec = new FieldSpec(_key, _type, options, _required, _multiple, _description, _group);
+        _busy = true;
+        try
+        {
+            if (Existing is null)
+            {
+                await Editor.AddFieldAsync(Home, spec, _reason.ToReason());
+            }
+            else
+            {
+                await Editor.UpdateFieldAsync(Home, spec, _reason.ToReason());
+            }
+
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

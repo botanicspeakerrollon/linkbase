@@ -1,0 +1,85 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+@* Converts a field's (or link value's) values to another type. A value that doesn't fit stops it, with examples. *@
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-3">@Field.Key is @Described(Field.Type) now.</MudText>
+        <MudForm @ref="_form">
+            <MudSelect T="FieldType" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_to" Label="New type" ToStringFunc="Described">
+                @foreach (var type in Targets)
+                {
+                    <MudSelectItem T="FieldType" Value="@type">@Described(type)</MudSelectItem>
+                }
+            </MudSelect>
+            @if (_to == FieldType.Choice)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_options" Label="Options (optional)" Lines="4"
+                              HelperText="One per line. Left empty, the values already there become the options." />
+            }
+            @if (Settings.Record)
+            {
+                <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy">Change type</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public FieldHome Home { get; set; } = null!;
+    [Parameter, EditorRequired] public FieldSpec Field { get; set; } = null!;
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private FieldType _to;
+    private string? _options;
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    private IReadOnlyList<FieldType> Targets => Field.Type == FieldType.Text
+        ? [FieldType.Number, FieldType.Date, FieldType.Boolean, FieldType.Choice]
+        : [FieldType.Text];
+
+    protected override void OnInitialized() => _to = Targets[0];
+
+    private static string Described(FieldType type) => type switch
+    {
+        FieldType.Number => "a number",
+        FieldType.Date => "a date",
+        FieldType.Boolean => "a yes/no",
+        FieldType.Choice => "a choice",
+        _ => "text",
+    };
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        var options = _to == FieldType.Choice
+            ? _options?.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).ToList()
+            : null;
+        _busy = true;
+        try
+        {
+            await Editor.ChangeFieldTypeAsync(Home, Field.Key, _to, options, _reason.ToReason());
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

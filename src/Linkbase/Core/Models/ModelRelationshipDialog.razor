@@ -1,0 +1,106 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+@* Adds a relationship between two types, or changes an existing one's required and max rules. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            @if (Existing is null)
+            {
+                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_from" Label="From type" Required="true" RequiredError="Choose a type">
+                    @foreach (var type in Types)
+                    {
+                        <MudSelectItem T="string" Value="@type">@type</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_rel" Label="Relationship"
+                              HelperText="Capitals, digits and underscores, such as SUPPLIES." Required="true" RequiredError="Give it a name" />
+                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_to" Label="To type" Required="true" RequiredError="Choose a type">
+                    @foreach (var type in Types)
+                    {
+                        <MudSelectItem T="string" Value="@type">@type</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                <MudText Class="mb-3">@Existing.Label</MudText>
+            }
+            <MudCheckBox T="bool" @bind-Value="_required" Label="@($"Required: a {FromType} needs at least one")" />
+            <MudNumericField T="int?" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_max" Label="Max links (optional)" Min="1"
+                              HelperText="@($"The most of these one {FromType} record may have. Leave empty for no limit.")" />
+            @if (Settings.Record)
+            {
+                <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy">@(Existing is null ? "Add" : "Save")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<string> Types { get; set; } = [];
+    [Parameter] public RelationshipOutline? Existing { get; set; }
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private string _from = "";
+    private string _rel = "";
+    private string _to = "";
+    private bool _required;
+    private int? _max;
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    private string FromType => Existing?.From ?? (_from.Length == 0 ? "record" : _from);
+
+    protected override void OnInitialized()
+    {
+        _from = Types.FirstOrDefault() ?? "";
+        _to = Types.FirstOrDefault() ?? "";
+        if (Existing is { } rel)
+        {
+            _from = rel.From;
+            _rel = rel.Rel;
+            _to = rel.To;
+            _required = rel.Required;
+            _max = rel.Max;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            if (Existing is null)
+            {
+                await Editor.AddRelationshipAsync(_from, _rel, _to, _required, _max, _reason.ToReason());
+            }
+            else
+            {
+                await Editor.SetRelationshipRulesAsync(Existing.From, Existing.Rel, Existing.To, _required, _max, _reason.ToReason());
+            }
+
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

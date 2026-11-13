@@ -1,0 +1,57 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-3">@Existing.Label</MudText>
+        <MudForm @ref="_form">
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_rel" Label="New name" AutoFocus="true"
+                          HelperText="Capitals, digits and underscores, such as SUPPLIES." Required="true" RequiredError="Give it a name" />
+            @if (Settings.Record)
+            {
+                <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy">Rename</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public RelationshipOutline Existing { get; set; } = null!;
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private string _rel = "";
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    protected override void OnInitialized() => _rel = Existing.Rel;
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            await Editor.RenameRelationshipAsync(Existing.From, Existing.Rel, Existing.To, _rel, _reason.ToReason());
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}
