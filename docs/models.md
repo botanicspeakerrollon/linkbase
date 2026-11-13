@@ -315,6 +315,25 @@ Undoing an import removes what it added, except a record edited since (its `upda
 something has been linked to since, and one that a record which stays needs through a link its type requires. They're
 listed, the import stays committed, and it can be undone again once they're dealt with.
 
+## Starting a model from CSV files
+
+The **Start from CSVs** tab of the Import page builds a model from several files at once, so a new customer needs no model
+file. Choose all the files, and it guesses from their names and headers:
+
+- Each file is a type, named from the file (`clients.csv` is `Client`, `people.csv` is `Person`), with a key column
+  (`id`, `key`, `code` or the type's id), a name column (the first with "name" in it) and a field for each other column, typed
+  from its values.
+- A column holding another file's type, such as `client_id` in `projects.csv`, is a link from each project to its client, named
+  `HAS_CLIENT`, not a field. A second column to the same type is named after its header.
+- A file with columns for two types and no key of its own, such as `assignments.csv` with `person` and `project`, is links
+  between them. Its other columns aren't kept, since link values are defined in a model file only.
+
+Everything guessed can be corrected before **Check**, which reports problems in any file and changes nothing. **Create the
+model** then imports each file's records, and then the links, through the same service as the CSV tab, so each file is an
+import of its own in **Recent imports** and can be undone there. Records are checked before anything is written; a problem
+found only in the links is reported once the records are in. Types already in the model are added to, as in the CSV tab.
+Editing the model afterwards, in the app, isn't built yet.
+
 ## Reading text
 
 **Read text** finds records and links in pasted text or a fetched page, using the current model. The model's types, fields and

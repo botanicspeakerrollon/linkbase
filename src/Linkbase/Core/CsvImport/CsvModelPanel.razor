@@ -1,0 +1,306 @@
+@using System.Globalization
+@inject CsvModelStarter Starter
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@* Starts a model from several CSV files: choose them all, correct the guessed types, fields and relationships, then create. *@
+<MudText Typo="Typo.body2" Class="mb-4 mt-2" Style="color: var(--mud-palette-text-secondary)">
+    Choose all your CSV files at once, such as clients, projects and people. Each becomes a type, a column holding another
+    type's keys (such as client_id) becomes a link to it, and a file of nothing but two such columns becomes links between them.
+    Check the guesses below, then create.
+</MudText>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">1. Choose the files</MudText>
+    <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadAsync" Accept=".csv,.txt" MaximumFileCount="30" MaxFileSize="CsvImportService.MaxBytes">
+        <CustomContent Context="upload">
+            <MudButton OnClick="@upload.OpenFilePickerAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.UploadFile">@(_files.Count == 0 ? "Choose CSV files" : "Choose different files")</MudButton>
+        </CustomContent>
+        <SelectedTemplate />
+    </MudFileUpload>
+    @if (_reading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mt-2" />
+    }
+    @if (_files.Count > 0)
+    {
+        <MudText Typo="Typo.body2" Class="mt-2">
+            @string.Join(", ", _files.Select(f => $"{f.File.FileName} ({f.File.Rows.ToString("N0", CultureInfo.InvariantCulture)} rows)"))
+        </MudText>
+    }
+</MudPaper>
+
+@if (_files.Count > 0)
+{
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">2. Check what they become</MudText>
+        @foreach (var file in _files)
+        {
+            var current = file;
+            <MudPaper Class="pa-3 mb-3" Outlined="true" Elevation="0">
+                <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mb-2">@current.File.FileName</MudText>
+                <MudRadioGroup T="bool" Value="current.IsLinks" ValueChanged="@(v => Changed(() => current.IsLinks = v))">
+                    <MudRadio T="bool" Value="false">Records of a type</MudRadio>
+                    <MudRadio T="bool" Value="true" Disabled="@(_files.Count(f => !f.IsLinks) < 2)">Links between two types</MudRadio>
+                </MudRadioGroup>
+
+                @if (!current.IsLinks)
+                {
+                    <MudGrid Spacing="2" Class="mt-1">
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Type" Value="current.Type"
+                                          ValueChanged="@(v => Changed(() => current.Type = v))" HelperText="Singular, starting with a capital, such as Supplier" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Key column" Value="current.KeyColumn"
+                                       ValueChanged="@(v => Changed(() => current.KeyColumn = v))" ToStringFunc="@(i => Header(current, i))"
+                                       HelperText="What identifies each row">
+                                @foreach (var column in current.File.Columns)
+                                {
+                                    <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Name column" Value="current.NameColumn"
+                                       ValueChanged="@(v => Changed(() => current.NameColumn = v))" ToStringFunc="@(i => i < 0 ? "The key" : Header(current, i))"
+                                       HelperText="What each record is called">
+                                <MudSelectItem Value="-1">The key</MudSelectItem>
+                                @foreach (var column in current.File.Columns)
+                                {
+                                    <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (current.Fields.Count > 0)
+                    {
+                        <MudText Typo="Typo.caption" Class="mt-2">Fields</MudText>
+                        <MudSimpleTable Dense="true" Elevation="0" Class="csv-columns">
+                            <thead><tr><th>Keep</th><th>Column</th><th>Such as</th><th>Field</th><th>Type</th></tr></thead>
+                            <tbody>
+                                @foreach (var field in current.Fields)
+                                {
+                                    var column = Column(current, field.Column);
+                                    <tr>
+                                        <td><MudCheckBox T="bool" Value="field.Include" ValueChanged="@(v => Changed(() => field.Include = v))" Dense="true" aria-label="@($"Keep {column.Header} of {current.File.FileName}")" /></td>
+                                        <td>@column.Header</td>
+                                        <td class="csv-samples">@string.Join(", ", column.Samples)</td>
+                                        <td><MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Value="field.Key" ValueChanged="@(v => Changed(() => field.Key = v))" Disabled="!field.Include" aria-label="@($"Field for {column.Header} of {current.File.FileName}")" /></td>
+                                        <td>
+                                            <MudSelect T="FieldType" Variant="Variant.Outlined" Margin="Margin.Dense" Value="field.Type" ValueChanged="@(v => Changed(() => field.Type = v))"
+                                                       ToStringFunc="@(t => CsvImportService.Labelled(t))" Disabled="!field.Include" aria-label="@($"Type of {column.Header} of {current.File.FileName}")">
+                                                @foreach (var type in Enum.GetValues<FieldType>())
+                                                {
+                                                    <MudSelectItem Value="type">@CsvImportService.Labelled(type)</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    }
+
+                    @if (current.Links.Count > 0)
+                    {
+                        <MudText Typo="Typo.caption" Class="mt-2">Links to other types</MudText>
+                        @foreach (var link in current.Links)
+                        {
+                            var column = Column(current, link.Column);
+                            <div class="d-flex align-center flex-wrap" style="gap: 12px">
+                                <MudCheckBox T="bool" Value="link.Include" ValueChanged="@(v => Changed(() => link.Include = v))" Dense="true" Label="@($"{current.Type} → {column.Header}")" />
+                                <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="To type" Value="link.ToType" Disabled="!link.Include"
+                                           ValueChanged="@(v => Changed(() => link.ToType = v))" Style="max-width: 200px">
+                                    @foreach (var type in TypeNames())
+                                    {
+                                        <MudSelectItem Value="@type">@type</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationship" Value="link.RelType" Disabled="!link.Include"
+                                              ValueChanged="@(v => Changed(() => link.RelType = Rel(v)))" Style="max-width: 240px" />
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <MudGrid Spacing="2" Class="mt-1">
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="From type" Value="current.FromType" ValueChanged="@(v => Changed(() => current.FromType = v))">
+                                @foreach (var type in TypeNames())
+                                {
+                                    <MudSelectItem Value="@type">@type</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Its key column" Value="current.FromColumn"
+                                       ValueChanged="@(v => Changed(() => current.FromColumn = v))" ToStringFunc="@(i => Header(current, i))">
+                                @foreach (var column in current.File.Columns)
+                                {
+                                    <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationship" Value="current.RelType"
+                                          ValueChanged="@(v => Changed(() => current.RelType = Rel(v)))" HelperText="Capitals, such as WORKS_ON" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="To type" Value="current.ToType" ValueChanged="@(v => Changed(() => current.ToType = v))">
+                                @foreach (var type in TypeNames())
+                                {
+                                    <MudSelectItem Value="@type">@type</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Its key column" Value="current.ToColumn"
+                                       ValueChanged="@(v => Changed(() => current.ToColumn = v))" ToStringFunc="@(i => Header(current, i))">
+                                @foreach (var column in current.File.Columns)
+                                {
+                                    <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                    <MudText Typo="Typo.caption">Other columns of a links file aren't kept: links carry only values a model file defines.</MudText>
+                }
+            </MudPaper>
+        }
+
+        <MudButton OnClick="CheckAsync" Variant="Variant.Outlined" Disabled="_working">Check</MudButton>
+        <MudButton OnClick="CreateAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_working || _checked != true)" Class="ml-2">Create the model</MudButton>
+        @if (_checked == true)
+        {
+            <MudAlert Severity="Severity.Success" Dense="true" Class="mt-2">Nothing wrong found. Creating imports every file, one import each.</MudAlert>
+        }
+    </MudPaper>
+}
+
+@foreach (var problem in _problems)
+{
+    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-1">@problem</MudAlert>
+}
+
+@if (_done.Count > 0)
+{
+    <MudAlert Severity="Severity.Success" Class="mb-4">
+        <div>Added:</div>
+        <ul>
+            @foreach (var line in _done)
+            {
+                <li>@line</li>
+            }
+        </ul>
+        @* A full load, so the rail lists the new types. Each import can be undone under Recent imports. *@
+        <MudButton OnClick="@(() => Navigation.NavigateTo("/", forceLoad: true))" Variant="Variant.Outlined" Size="Size.Small">See the model</MudButton>
+    </MudAlert>
+}
+
+@code {
+    private List<ProposedFile> _files = [];
+    private List<string> _problems = [];
+    private List<string> _done = [];
+    private bool _reading;
+    private bool _working;
+    private bool? _checked;
+
+    private IEnumerable<string> TypeNames() => _files.Where(f => !f.IsLinks).Select(f => f.Type.Trim()).Where(t => t.Length > 0).Distinct();
+
+    private static CsvColumn Column(ProposedFile file, int index) => file.File.Columns.First(c => c.Index == index);
+
+    private static string Header(ProposedFile file, int index) => file.File.Columns.FirstOrDefault(c => c.Index == index)?.Header ?? "";
+
+    private static string Rel(string? text) => text?.Trim().ToUpperInvariant().Replace(' ', '_') ?? "";
+
+    // Any change means the check has to be run again.
+    private void Changed(Action change)
+    {
+        change();
+        _checked = null;
+        _problems = [];
+    }
+
+    private async Task UploadAsync(IReadOnlyList<IBrowserFile>? uploads)
+    {
+        if (uploads is null || uploads.Count == 0)
+        {
+            return;
+        }
+
+        _reading = true;
+        _checked = null;
+        _problems = [];
+        _done = [];
+        try
+        {
+            var read = new List<CsvFile>();
+            foreach (var upload in uploads)
+            {
+                if (upload.Size > CsvImportService.MaxBytes)
+                {
+                    throw new LinkbaseValidationException($"{upload.Name} is over {CsvImportService.MaxBytes / 1024 / 1024} MB. Split it into smaller files.");
+                }
+
+                await using var stream = upload.OpenReadStream(CsvImportService.MaxBytes);
+                read.Add(CsvImportService.Read(await CsvImportService.SaveAsync(stream), upload.Name));
+            }
+
+            _files = CsvModelStarter.Propose(read).ToList();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _files = [];
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _reading = false;
+        }
+    }
+
+    private async Task CheckAsync()
+    {
+        _working = true;
+        try
+        {
+            _problems = (await Starter.CheckAsync(_files)).ToList();
+            _checked = _problems.Count == 0;
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        _working = true;
+        try
+        {
+            var outcome = await Starter.ApplyAsync(_files);
+            _problems = outcome.Problems.ToList();
+            _done = outcome.Done.ToList();
+            if (outcome.Applied)
+            {
+                _files = [];
+                _checked = null;
+            }
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _working = false;
+        }
+    }
+}
