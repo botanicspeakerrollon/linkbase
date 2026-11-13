@@ -35,7 +35,7 @@ public sealed record PendingChange(
     string? OldValue = null, string? NewValue = null);
 
 // Writes the audit trail, in the same transaction as the change it describes, so the two can't disagree. Every code path
-// that changes records or links calls it (ChangeRecorderCoverageTests checks that). See docs/audit-history-plan.md.
+// that changes records or links calls it (ChangeRecorderCoverageTests checks that). See docs/history/audit-history-plan.md.
 public static class ChangeRecorder
 {
     public const int NoteLimit = 500;

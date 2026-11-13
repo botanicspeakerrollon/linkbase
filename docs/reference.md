@@ -217,7 +217,7 @@ nothing. *Create the model* then imports each file's records, then the links, on
 already in the model are added to.
 
 **Not yet.** Link values and hierarchies, descriptions, groups and limits come from a model file only. An editor for the
-result is the next piece of work ([extensibility-plan](extensibility-plan.md)).
+result is the next piece of work ([extensibility-plan](history/extensibility-plan.md)).
 
 ## 8. Importing: Read text
 
@@ -283,7 +283,7 @@ gone or the record was edited since.
 Recent imports). Reverting a delete has no button, because a deleted record has no page. Import undo still judges "edited
 since" by `updated_at`, and notices no link edits.
 
-**See also.** [audit-history-plan](audit-history-plan.md), `Core/History`.
+**See also.** [audit-history-plan](history/audit-history-plan.md), `Core/History`.
 
 ## 11. Saved views and permalinks
 

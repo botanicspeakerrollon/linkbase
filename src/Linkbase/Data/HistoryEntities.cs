@@ -1,6 +1,6 @@
 namespace Linkbase.Data;
 
-// The audit trail: what changed, who changed it, when, and why. See docs/audit-history-plan.md.
+// The audit trail: what changed, who changed it, when, and why. See docs/history/audit-history-plan.md.
 
 // manual: a person edited something. import: an import was committed or undone, or a model file was loaded. derived: a domain
 // module rebuilt records it owns, such as trips. correction: a fix from the corrections file.

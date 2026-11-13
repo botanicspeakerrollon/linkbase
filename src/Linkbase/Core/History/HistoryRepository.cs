@@ -17,7 +17,7 @@ public sealed record HistoryEntry(
 // a link the end of it that is nearer.
 public sealed record NearbyChange(long ChangeSetId, DateTimeOffset When, JustificationKind Kind, string? Note, string RecordId, string RecordName, string Description);
 
-// Reads the audit trail. See docs/audit-history-plan.md.
+// Reads the audit trail. See docs/history/audit-history-plan.md.
 public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
     public const int PageSize = 30;

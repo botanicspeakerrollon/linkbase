@@ -181,7 +181,7 @@ be checked), and the record's page shows its history, newest first.
 - A domain module's rebuild, such as climbing's trips, is one entry of kind Derived listing the records that came, went
   or differed.
 
-See [audit-history-plan](audit-history-plan.md) for the design.
+See [audit-history-plan](history/audit-history-plan.md) for the design.
 
 ### Owned by a module
 

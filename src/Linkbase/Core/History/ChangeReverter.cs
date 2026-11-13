@@ -11,7 +11,7 @@ namespace Linkbase.Core.History;
 // It only goes ahead when things are still as the edit left them. If a value has been changed again since, or the record or
 // link has gone, it stops and says what is different, so a revert never overwrites later work. A change that touched several
 // records can't be reverted this way. Imports are undone from the imports page, and a module's derived records follow from the
-// change that caused them. See docs/audit-history-plan.md.
+// change that caused them. See docs/history/audit-history-plan.md.
 public sealed class ChangeReverter(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordRepository records)
 {
     private const int NoteShown = 400;

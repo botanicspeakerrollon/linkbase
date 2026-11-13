@@ -6,7 +6,7 @@ Climbing is the one model with its own typed tables. Every other model lives in 
 the definition tables). This plan moves climbing into the generic store too, so there's one way to store, import, show and
 edit data, and climbing becomes a model file plus a small module of behaviour.
 
-It replaces the "climbing stays as typed tables" choice in [extensibility-plan.md](../extensibility-plan.md).
+It replaces the "climbing stays as typed tables" choice in [extensibility-plan.md](extensibility-plan.md).
 
 ## Where we are
 
@@ -187,5 +187,5 @@ Each step leaves the app working, and the real data isn't touched until step 6.
 - **Route descriptions.** Dropped from the model file, because no route has one. Say if that's wrong before step 6.
 - **Demo.** A made-up climbing logbook can be generated once step 2 exists, the same way the consultancy sample is. The
   real logbook can't be the demo, because the repo must stay anonymous.
-- **Field-level security.** Still unsolved for the generic store (see [security-roadmap.md](security-roadmap.md)). This
+- **Field-level security.** Still unsolved for the generic store (see [security-roadmap.md](../security-roadmap.md)). This
   move doesn't make it worse for customers, but climbing loses its typed columns.
