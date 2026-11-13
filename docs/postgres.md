@@ -87,6 +87,7 @@ Every database has the same tables, because there's one schema. A model only fil
 | `graph_nodes`, `graph_edges` | Views of the generic store as one graph. Explore reads these |
 | `climbing_ascent_facts` and the other `climbing_` views | What Insights reads: each ascent with its place and season, trips and partners |
 | `graph_scene` | Scenes saved in Explore |
+| `saved_view` | Named states of Explore and record lists, some pinned to Home |
 | `import_batch` | Each import, so it can be undone. A CSV import's file name and counts are in `raw_payload` |
 | `app_user` | The one user for now |
 | `__EFMigrationsHistory` | Which migrations have been applied. Its name needs double quotes |

@@ -3,6 +3,8 @@
 @inject CurrentModel CurrentModel
 @inject GraphRepository Graph
 @inject RecordRepository Records
+@inject SavedViewRepository SavedViews
+@using Linkbase.Core.Views
 @using Linkbase.Core.Explore
 @using Linkbase.Core.Records
 
@@ -29,6 +31,18 @@ else if (_status.PendingMigrations > 0)
 }
 else if (_counts is not null)
 {
+    @if (_pinned.Count > 0)
+    {
+        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">Pinned views</MudText>
+        <div class="d-flex flex-wrap mb-6" style="gap: 8px">
+            @foreach (var view in _pinned)
+            {
+                <MudChip T="string" Href="@view.Href" Variant="Variant.Outlined"
+                         Icon="@(view.Kind == SavedViewKind.Explore ? Icons.Material.Filled.Hub : Icons.Material.Filled.TableRows)">@view.Name</MudChip>
+            }
+        </div>
+    }
+
     @* Every model's home is the same: what's in it, and a way in. *@
     <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">What's in this model</MudText>
     @if (_counts.Count == 0)
@@ -77,6 +91,7 @@ else if (_counts is not null)
     private IReadOnlyDictionary<string, int>? _counts;
     private IReadOnlyList<RecordType> _types = [];
     private IReadOnlyList<ConnectionCount> _links = [];
+    private IReadOnlyList<SavedViewInfo> _pinned = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,6 +101,7 @@ else if (_counts is not null)
             _counts = await Graph.NodeCountsAsync();
             _types = await Records.TypesAsync();
             _links = await Graph.ConnectionCountsAsync();
+            _pinned = await SavedViews.PinnedAsync();
         }
     }
 

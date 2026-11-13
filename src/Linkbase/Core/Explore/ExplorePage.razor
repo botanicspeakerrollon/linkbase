@@ -1,9 +1,12 @@
 @page "/explore"
 @using FilterOperator = Linkbase.Core.Graph.FilterOperator
+@using Linkbase.Core.Views
 @implements IAsyncDisposable
 @inject GraphRepository Graph
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IDialogService Dialogs
 
 <PageTitle>Explore</PageTitle>
 
@@ -209,6 +212,14 @@
             <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Clear (c)">Clear</MudButton>
         </MudStack>
 
+        <div class="explore-section-title">Saved views</div>
+        <MudStack Row="true" Spacing="1">
+            <MudButton OnClick="OpenViewsAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" StartIcon="@Icons.Material.Filled.Bookmarks"
+                       title="Save this search and canvas under a name, or open one (v)">Views</MudButton>
+            <MudButton OnClick="CopyLinkAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" StartIcon="@Icons.Material.Filled.Link"
+                       Disabled="@(CurrentState().IsEmpty)" title="Copy a link that opens Explore as it is now">Copy link</MudButton>
+        </MudStack>
+
         <div class="explore-section-title">Saved scenes</div>
         <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
             <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_sceneName" Label="Scene name" />
@@ -224,7 +235,7 @@
 
         <div class="explore-section-title">When expanding, only show</div>
         <MudStack Spacing="2">
-            <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Label="Relationships" @bind-SelectedValues="_relTypes" MultiSelection="true" Clearable="true">
+            <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Label="Relationships" SelectedValues="_relTypes" SelectedValuesChanged="ChooseRelTypes" MultiSelection="true" Clearable="true">
                 @foreach (var relType in _schema?.RelTypes ?? [])
                 {
                     <MudSelectItem T="string" Value="relType">@relType</MudSelectItem>

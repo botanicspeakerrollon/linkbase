@@ -54,6 +54,26 @@ public class GraphScene : ITimestamped
     public DateTimeOffset UpdatedAt { get; set; }
 }
 
+// A named, reopenable state of a page: an Explore search or canvas, or a record list's search and filters. State is the
+// same text the page's address carries in its v parameter, so a view and a permalink are one thing. Pinned views are
+// shown on Home. See Core/Views.
+public class SavedView : ITimestamped
+{
+    public long Id { get; set; }
+    public long UserId { get; set; }
+    public AppUser User { get; set; } = null!;
+    public required string Name { get; set; }
+    public SavedViewKind Kind { get; set; }
+
+    // The type a list view is of. Null for Explore.
+    public string? Scope { get; set; }
+
+    public required string State { get; set; }
+    public bool Pinned { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}
+
 // An id in another system, such as a UKC crag id, for a node in the generic store.
 public class ExternalRef : ImportedEntity
 {

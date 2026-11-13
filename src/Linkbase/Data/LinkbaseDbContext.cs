@@ -14,6 +14,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<ExternalRef> ExternalRefs => Set<ExternalRef>();
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<GraphScene> GraphScenes => Set<GraphScene>();
+    public DbSet<SavedView> SavedViews => Set<SavedView>();
     public DbSet<NodeType> NodeTypes => Set<NodeType>();
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
     public DbSet<LinkDefinition> LinkDefinitions => Set<LinkDefinition>();
@@ -51,6 +52,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         configurationBuilder.Properties<ImportStatus>().HaveConversion<SnakeCaseEnumConverter<ImportStatus>>();
         configurationBuilder.Properties<DatePrecision>().HaveConversion<SnakeCaseEnumConverter<DatePrecision>>();
         configurationBuilder.Properties<StagedKind>().HaveConversion<SnakeCaseEnumConverter<StagedKind>>();
+        configurationBuilder.Properties<SavedViewKind>().HaveConversion<SnakeCaseEnumConverter<SavedViewKind>>();
         configurationBuilder.Properties<FieldType>().HaveConversion<SnakeCaseEnumConverter<FieldType>>();
         configurationBuilder.Properties<JustificationKind>().HaveConversion<SnakeCaseEnumConverter<JustificationKind>>();
         configurationBuilder.Properties<ChangeEntityKind>().HaveConversion<SnakeCaseEnumConverter<ChangeEntityKind>>();
@@ -82,6 +84,12 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         {
             scene.Property(s => s.Nodes).HasColumnType("jsonb");
             scene.HasIndex(s => new { s.UserId, s.Name }).IsUnique();
+        });
+
+        modelBuilder.Entity<SavedView>(view =>
+        {
+            view.HasIndex(v => new { v.UserId, v.Name }).IsUnique();
+            view.Property(v => v.Pinned).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<NodeType>(type => type.HasKey(t => t.Name));

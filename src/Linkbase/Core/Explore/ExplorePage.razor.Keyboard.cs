@@ -43,6 +43,9 @@ public partial class ExplorePage
             case "s" when _lastPattern is not null && _nodes.Count > 0:
                 await ToggleSummaryAsync();
                 break;
+            case "v":
+                await OpenViewsAsync();
+                break;
             case "Delete" when _selected is { IsModel: false } node:
                 await RemoveAsync(node.Id);
                 break;
@@ -101,6 +104,7 @@ public partial class ExplorePage
         }
 
         _table = table;
+        SyncAddress();
         // Nodes may have been added or removed while the table covered the canvas.
         if (!table)
         {
