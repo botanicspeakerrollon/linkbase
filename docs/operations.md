@@ -180,16 +180,17 @@ The sample container was renamed in place to `linkbase-samples`, with its role r
 
 ## Migration history
 
-Migrations were squashed into one `InitialCreate` on 2026-11-10. A database made before then has the old migration names in
-`"__EFMigrationsHistory"`, so `dotnet ef database update` would try to create tables that already exist. Point it at the
-baseline once, with the id of the single file in `src/Linkbase/Data/Migrations/`:
+Migrations were squashed into one `InitialCreate` on 2026-11-10 and again on 2026-11-13. A database made before the latest
+squash has the old migration names in `"__EFMigrationsHistory"`, so `dotnet ef database update` would try to create tables
+that already exist. Its schema is the same, so point it at the baseline once, with the id of the single file in
+`src/Linkbase/Data/Migrations/`:
 
 ```sql
 BEGIN;
 DELETE FROM "__EFMigrationsHistory";
-INSERT INTO "__EFMigrationsHistory" VALUES ('20261109111942_InitialCreate', '10.0.14');
+INSERT INTO "__EFMigrationsHistory" VALUES ('20261113025612_InitialCreate', '10.0.14');
 COMMIT;
 ```
 
-The same applies to a backup taken before then: restore it, then run the SQL above. Only a database that already had every
-old migration applied can be moved this way.
+Run it in every model's database. The same applies to a backup taken before then: restore it, then run the SQL above. Only a
+database that already had every old migration applied (up to `AddFieldMetadata`) can be moved this way.

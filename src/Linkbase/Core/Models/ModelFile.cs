@@ -23,6 +23,7 @@ public sealed partial class ModelFile
 
     [JsonIgnore] public bool RecordHistory => History?.Record ?? true;
     [JsonIgnore] public bool RequireReason => RecordHistory && (History?.RequireReason ?? true);
+    [JsonIgnore] public string[] SourceKinds => History?.SourceKinds?.Select(k => k.Trim()).ToArray() ?? [];
 
     // The folder the CSV files were found in, once read.
     [JsonIgnore] public string DataFolder { get; private set; } = "";
@@ -79,6 +80,16 @@ public sealed partial class ModelFile
         if (History is { Record: false, RequireReason: true })
         {
             problems.Add("History can't both be off and require a reason. Leave requireReason out, or set it to false.");
+        }
+
+        if (SourceKinds.Any(k => k.Length is 0 or > 60))
+        {
+            problems.Add("Each source kind needs a name of 1 to 60 characters.");
+        }
+
+        foreach (var duplicate in SourceKinds.GroupBy(k => k, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+        {
+            problems.Add($"Source kind '{duplicate.Key}' is listed more than once.");
         }
 
         foreach (var type in Types)
@@ -482,4 +493,8 @@ public sealed class ModelHistory
 {
     public bool? Record { get; init; }
     public bool? RequireReason { get; init; }
+
+    // The kinds of source a change can name, such as Internet or the applications of the organisation. Just Internet if
+    // left out.
+    public IReadOnlyList<string>? SourceKinds { get; init; }
 }

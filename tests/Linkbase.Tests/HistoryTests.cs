@@ -64,7 +64,9 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         var (factory, records) = await LoadAsync();
         await using (var db = factory.CreateDbContext())
         {
-            Assert.Equal(new HistorySettings(true, true), await ChangeRecorder.SettingsAsync(db, default));
+            var settings = await ChangeRecorder.SettingsAsync(db, default);
+            Assert.Equal((true, true), (settings.Record, settings.RequireReason));
+            Assert.Equal(["Internet"], settings.SourceKinds);
         }
 
         var missing = await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.CreateAsync("Person", "z1", Person("Zoe Adams")));
@@ -76,7 +78,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
 
         await using var check = factory.CreateDbContext();
         var justification = await check.Justifications.SingleAsync(j => j.Note == "Joined in March");
-        Assert.Equal((JustificationKind.Manual, "https://example.com/hr/zoe"), (justification.Kind, justification.SourceUrl));
+        Assert.Equal((JustificationKind.Manual, "https://example.com/hr/zoe"), (justification.Kind, justification.SourceId));
         var created = await check.Changes.SingleAsync(c => c.EntityId == "person:z1");
         Assert.Equal((ChangeEntityKind.Node, ChangeOp.Create), (created.EntityKind, created.Op));
         Assert.Contains("Zoe Adams", created.NewValue);
@@ -84,12 +86,12 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     }
 
     [Fact]
-    public async Task A_source_has_to_be_a_web_address()
+    public async Task A_source_that_is_a_web_address_has_to_be_http_or_https()
     {
         var (_, records) = await LoadAsync();
 
         var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(
-            () => records.CreateAsync("Person", "z1", Person("Zoe Adams"), new ChangeReason("Joined", "javascript:alert(1)")));
+            () => records.CreateAsync("Person", "z1", Person("Zoe Adams"), new ChangeReason("Joined", "ftp://example.com/zoe")));
 
         Assert.Contains("http", ex.Message);
         Assert.Null(await records.GetAsync("Person", "z1"));

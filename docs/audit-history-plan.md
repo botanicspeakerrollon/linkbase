@@ -31,6 +31,7 @@ when, and why. It doesn't let you view the data as it was on a past date. How to
 | --- | --- | --- |
 | `history.record` | `true` | Keep a change log. `false` keeps nothing, and then `requireReason` means nothing. |
 | `history.requireReason` | `true` | A change can't be saved without a reason. `false` makes the reason box optional. |
+| `history.sourceKinds` | `["Internet"]` | The kinds of source a change can name, such as `Internet` or the applications of the organisation. |
 
 `ModelFile.Validate` rejects `record: false` together with `requireReason: true` written explicitly. Both settings are saved
 with the model in a one-row `model_setting` table, so the running app knows them without the file. Turning history off
@@ -40,7 +41,7 @@ later keeps the log already written but stops adding to it.
 
 | Table | Holds |
 | --- | --- |
-| `justification` | The why: `kind` (`manual`, `import`, `derived`, `correction`), a short paraphrased `note`, `source_url`, optional `import_batch_id`, `user_id`, `created_at`. |
+| `justification` | The why: `kind` (`manual`, `import`, `derived`, `correction`), a short paraphrased `note`, a source (`source_id`, `source_kind`, `source_comment`), optional `import_batch_id`, `user_id`, `created_at`. |
 | `change_set` | One intent or transaction: one save, one import commit, one trip rebuild. Has one `justification_id`, and `cause_change_set_id` for derived work. |
 | `change` | One row per thing changed: `change_set_id`, `entity_kind` (`node`, `link`, `external_ref`, `definition`), `entity_id`, `op` (`create`, `update`, `delete`), `field_key`, `old_value`, `new_value`. |
 

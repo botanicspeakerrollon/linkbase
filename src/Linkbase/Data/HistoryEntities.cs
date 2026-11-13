@@ -22,15 +22,22 @@ public class ModelSetting
     public int Id { get; set; } = OnlyId;
     public bool RecordHistory { get; set; } = true;
     public bool RequireReason { get; set; } = true;
+
+    // The kinds of source a person can pick, from the model file. Empty means just Internet.
+    public string[] SourceKinds { get; set; } = [];
 }
 
-// The why of a change set. The note is a brief paraphrase, never text copied from a source.
+// The why of a change set. The note is a brief paraphrase, never text copied from a source. The source says where the change
+// came from: SourceId identifies it (a web address, a ticket number, a document name), SourceKind says what sort of place that
+// is (Internet, or an application in the organisation), and SourceComment is a brief paraphrased remark about it.
 public class Justification
 {
     public long Id { get; set; }
     public JustificationKind Kind { get; set; }
     public string? Note { get; set; }
-    public string? SourceUrl { get; set; }
+    public string? SourceId { get; set; }
+    public string? SourceKind { get; set; }
+    public string? SourceComment { get; set; }
     public long? ImportBatchId { get; set; }
     public ImportBatch? ImportBatch { get; set; }
     public long UserId { get; set; }
