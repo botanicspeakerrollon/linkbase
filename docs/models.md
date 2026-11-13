@@ -253,6 +253,9 @@ hierarchy defined yet. Hierarchies are set in the model file only, never by an i
   `appsettings.Development.local.json` or an environment variable, never in a committed settings file. See [operations](operations.md#secrets).
 - **Domains** lists the domain modules a model uses, by key. Leave it out for a generic model.
 - **Order** sets the order in the switcher. The first model is the default.
+- **Home:Hide** lists the home page's panels this model leaves out: `records`, `changes`, `imports` or `growth`, as in
+  `"Home": { "Hide": [ "growth" ] }`. Growth counts every record, so a model with millions may prefer to hide it. Recent records and
+  changes come from the audit trail, so they are empty where history is off.
 - **With no `Models` section**, there's one model, using `ConnectionStrings:Linkbase` and every domain. **With one model**, the
   switcher is hidden. That's how a customer's instance should be set up: their model only.
 
@@ -321,6 +324,25 @@ with the records that stay. A value already back at its old value is skipped, so
 Undoing an import removes what it added, except a record edited since (its `updated_at` differs from `created_at`), one
 something has been linked to since, and one that a record which stays needs through a link its type requires. They're
 listed, the import stays committed, and it can be undone again once they're dealt with.
+
+## Starting a model from CSV files
+
+The **Start from CSVs** tab of the Import page builds a model from several files at once, so a new customer needs no model
+file. Choose all the files, and it guesses from their names and headers:
+
+- Each file is a type, named from the file (`clients.csv` is `Client`, `people.csv` is `Person`), with a key column
+  (`id`, `key`, `code` or the type's id), a name column (the first with "name" in it) and a field for each other column, typed
+  from its values.
+- A column holding another file's type, such as `client_id` in `projects.csv`, is a link from each project to its client, named
+  `HAS_CLIENT`, not a field. A second column to the same type is named after its header.
+- A file with columns for two types and no key of its own, such as `assignments.csv` with `person` and `project`, is links
+  between them. Its other columns aren't kept, since link values are defined in a model file only.
+
+Everything guessed can be corrected before **Check**, which reports problems in any file and changes nothing. **Create the
+model** then imports each file's records, and then the links, through the same service as the CSV tab, so each file is an
+import of its own in **Recent imports** and can be undone there. Records are checked before anything is written; a problem
+found only in the links is reported once the records are in. Types already in the model are added to, as in the CSV tab.
+Editing the model afterwards, in the app, isn't built yet.
 
 ## Reading text
 

@@ -7,6 +7,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IDialogService Dialogs
+@inject Linkbase.Core.Timeline.TimelineRepository Times
 
 <PageTitle>Explore</PageTitle>
 
@@ -131,13 +132,13 @@
         @if (_selected is { } node)
         {
             <MudChip T="string" Size="Size.Small" Style="@GraphStyle.ChipStyle(GraphStyle.For(node, _schema).Color)" Class="ma-0 mb-1">@node.Label</MudChip>
-            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@node.Name</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@ShownName(node)</MudText>
 
-            @if (node.Properties.Count > 0)
+            @if (ShownProperties(node).Count > 0)
             {
                 <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
                     <tbody>
-                        @foreach (var property in node.Properties)
+                        @foreach (var property in ShownProperties(node))
                         {
                             <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">@GraphStyle.PropertyTitle(property.Key)</td><td>@property.Value</td></tr>
                         }
@@ -161,6 +162,10 @@
 
             @if (!node.IsModel)
             {
+                <MudButton OnClick="FindPathAsync" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
+                           title="How is it connected to another record? (w)">Find a path…</MudButton>
+                <MudButton OnClick="ShowNearbyChangesAsync" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
+                           title="What changed in its neighbourhood since a date (d)">What changed nearby…</MudButton>
                 <MudButton OnClick="@(() => RemoveAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
                            title="Takes it off the graph. Expanding a neighbour brings it back. (Delete)">Remove</MudButton>
             }
@@ -191,6 +196,10 @@
                     }
                 </tbody>
             </MudSimpleTable>
+            @if (!_showingModel)
+            {
+                <LinkHistory Edge="edge" />
+            }
         }
         else
         {
@@ -207,6 +216,25 @@
         </div>
         <MudSwitch T="bool" Value="_linkValues" ValueChanged="ToggleLinkValuesAsync" Label="@(_showingModel ? "Show attribute names on links" : "Show values on links")"
                    Color="Color.Primary" Size="Size.Small" Class="mt-1" />
+        @if (!_showingModel && _nodes.Count > 0)
+        {
+            <div class="explore-section-title">As of</div>
+            <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="Show the graph as it was on" Date="_asOf" DateChanged="ChooseAsOfAsync"
+                           Clearable="true" DateFormat="yyyy-MM-dd" MaxDate="DateTime.Today" />
+            @if (_historyStart is not null)
+            {
+                <MudSlider T="int" Min="0" Max="HistoryDays" Value="SliderValue" ValueChanged="SlideAsync" Immediate="false" Size="Size.Small" aria-label="Day to show the graph as of" />
+            }
+            @if (_asOf is not null)
+            {
+                var hiddenNodes = _asOfView.MissingNodes.Count;
+                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
+                    As of @_asOf.Value.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture): @hiddenNodes @(hiddenNodes == 1 ? "record" : "records") and
+                    @_asOfView.MissingEdges.Count @(_asOfView.MissingEdges.Count == 1 ? "link" : "links") didn't exist yet, so aren't shown.
+                    Values are as they were. Records since deleted can't be shown.
+                </MudText>
+            }
+        }
         <MudStack Row="true" Spacing="1" Class="mt-2">
             <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Fit (f)">Fit</MudButton>
             <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Clear (c)">Clear</MudButton>

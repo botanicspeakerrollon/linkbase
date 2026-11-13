@@ -1,0 +1,61 @@
+@using System.Globalization
+@using Linkbase.Core.History
+@inject HistoryRepository History
+
+@* What changed in a record's neighbourhood since a date: to it, to what it is linked to, and to their links. *@
+<MudDialog>
+    <DialogContent>
+        <MudDatePicker Label="Since" Variant="Variant.Outlined" Margin="Margin.Dense" Date="_since" DateChanged="ChooseAsync" MaxDate="DateTime.Today"
+                       DateFormat="yyyy-MM-dd" Class="mb-2" />
+        @if (_busy)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_changes.Count == 0)
+        {
+            <MudText Typo="Typo.body2">Nothing has changed near @Node.Name since then.</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="0" Class="nearby-changes">
+                <tbody>
+                    @foreach (var change in _changes)
+                    {
+                        <tr>
+                            <td class="nearby-when">@change.When.ToLocalTime().ToString("d MMM HH:mm", CultureInfo.InvariantCulture)</td>
+                            <td>@change.RecordName</td>
+                            <td>@change.Description@(string.IsNullOrWhiteSpace(change.Note) ? "" : $" ({change.Note})")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            @if (_changes.Count >= HistoryRepository.NearbyShown)
+            {
+                <MudText Typo="Typo.caption">Only the newest @HistoryRepository.NearbyShown changes are shown. Choose a later date to narrow it.</MudText>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public GraphNode Node { get; set; } = null!;
+
+    private DateTime? _since = DateTime.Today.AddDays(-30);
+    private bool _busy = true;
+    private IReadOnlyList<NearbyChange> _changes = [];
+
+    protected override Task OnInitializedAsync() => ChooseAsync(_since);
+
+    private async Task ChooseAsync(DateTime? date)
+    {
+        _since = date ?? DateTime.Today.AddDays(-30);
+        _busy = true;
+        var local = DateTime.SpecifyKind(_since.Value.Date, DateTimeKind.Local);
+        _changes = await History.NearbyAsync(Node.Id, new DateTimeOffset(local));
+        _busy = false;
+    }
+}

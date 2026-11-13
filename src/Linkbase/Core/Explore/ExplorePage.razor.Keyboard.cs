@@ -46,6 +46,12 @@ public partial class ExplorePage
             case "v":
                 await OpenViewsAsync();
                 break;
+            case "w" when _selected is { IsModel: false }:
+                await FindPathAsync();
+                break;
+            case "d" when _selected is { IsModel: false }:
+                await ShowNearbyChangesAsync();
+                break;
             case "Delete" when _selected is { IsModel: false } node:
                 await RemoveAsync(node.Id);
                 break;

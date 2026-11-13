@@ -31,7 +31,7 @@ public partial class ExplorePage
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "w", "d", "Delete", "Escape"];
 
     // Totals of the number properties over every match of the last search, shown in a panel on request.
     private bool _summaryOpen;
@@ -108,7 +108,42 @@ public partial class ExplorePage
     private IReadOnlyList<string> _scenes = [];
     private string? _sceneName;
 
-    private IEnumerable<GraphNode> VisibleNodes => _nodes.Values;
+    // While an "as of" day is chosen, what didn't exist yet stays in _nodes (so clearing the day brings it back) but isn't shown.
+    private DateTime? _asOf;
+    private DateOnly? _historyStart;
+    private Linkbase.Core.Timeline.AsOfView _asOfView = Linkbase.Core.Timeline.AsOfView.None;
+
+    private IEnumerable<GraphNode> VisibleNodes => _nodes.Values.Where(n => !_asOfView.MissingNodes.Contains(n.Id));
+
+    private string ShownName(GraphNode node) => _asOfView.Rewound.TryGetValue(node.Id, out var then) ? then.Name : node.Name;
+
+    private IReadOnlyList<GraphProperty> ShownProperties(GraphNode node) => _asOfView.Rewound.TryGetValue(node.Id, out var then) ? then.Properties : node.Properties;
+
+    // Days from the start of the history to today, for the slider.
+    private int HistoryDays => _historyStart is { } start ? Math.Max(1, DateOnly.FromDateTime(DateTime.Today).DayNumber - start.DayNumber) : 0;
+
+    private int SliderValue => _historyStart is { } start && _asOf is { } day ? Math.Clamp(DateOnly.FromDateTime(day).DayNumber - start.DayNumber, 0, HistoryDays) : HistoryDays;
+
+    private async Task ChooseAsOfAsync(DateTime? day)
+    {
+        // Today is the same as no day: the graph as it is.
+        _asOf = day is { } d && d.Date >= DateTime.Today ? null : day?.Date;
+        await DrawAsync(null);
+    }
+
+    private Task SlideAsync(int days) =>
+        ChooseAsOfAsync(_historyStart is { } start ? start.AddDays(days).ToDateTime(TimeOnly.MinValue) : null);
+
+    private async Task RefreshAsOfAsync()
+    {
+        _asOfView = _asOf is { } day && !_showingModel
+            ? await Times.AsOfAsync(_nodes.Values.ToList(), _edges, new DateTimeOffset(day.Date.AddDays(1)))
+            : Linkbase.Core.Timeline.AsOfView.None;
+        if (_selected is { } selected && _asOfView.MissingNodes.Contains(selected.Id))
+        {
+            _selected = null;
+        }
+    }
 
     private GraphFilter Filter => new()
     {
@@ -163,6 +198,7 @@ public partial class ExplorePage
 
         _scenes = await Graph.SceneNamesAsync();
         _schema = await Graph.SchemaAsync();
+        _historyStart = await Times.EarliestAsync();
 
         // The search bar can work before the graph libraries finish loading from the CDN.
         StateHasChanged();

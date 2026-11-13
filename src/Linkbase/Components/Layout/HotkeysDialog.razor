@@ -59,8 +59,15 @@
             ("c", "Clear the graph"),
             ("n p", "Select the next or previous node"),
             ("e", "Expand the selected node"),
+            ("w", "Find how the selected node is connected to another record"),
+            ("d", "See what changed near the selected node since a date"),
             ("Delete", "Remove the selected node. Expanding a neighbour brings it back"),
             ("Esc", "Close the menu, or clear the selection"),
+        ]),
+        ("Cleanup",
+        [
+            ("d u m", "Duplicates, records with no links, records missing a required value"),
+            ("r", "Look again"),
         ]),
     ];
 

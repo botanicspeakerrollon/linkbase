@@ -4,7 +4,13 @@ using Npgsql;
 namespace Linkbase.Core.Models;
 
 // A model the app can show, each in its own database. Domains are the domain modules it uses, such as Climbing.
-public sealed record ModelInfo(string Key, string Name, string ConnectionStringName, IReadOnlyList<string> Domains, int Order);
+public sealed record ModelInfo(string Key, string Name, string ConnectionStringName, IReadOnlyList<string> Domains, int Order)
+{
+    // The home page's panels this model leaves out, from Models:<key>:Home:Hide: records, imports, changes or growth.
+    public IReadOnlyList<string> HomeHidden { get; init; } = [];
+
+    public bool ShowsOnHome(string panel) => !HomeHidden.Contains(panel, StringComparer.OrdinalIgnoreCase);
+}
 
 // The models configured under Models, in order. With none configured, there's one model, using ConnectionStrings:Linkbase
 // and every domain. With only one, the app has no switcher. See docs/models.md.
@@ -21,7 +27,10 @@ public sealed class ModelCatalog
                 section["Name"] ?? section.Key,
                 section["ConnectionString"] ?? section.Key,
                 section.GetSection("Domains").GetChildren().Select(d => d.Value!).ToList(),
-                int.TryParse(section["Order"], out var order) ? order : int.MaxValue))
+                int.TryParse(section["Order"], out var order) ? order : int.MaxValue)
+            {
+                HomeHidden = section.GetSection("Home:Hide").GetChildren().Select(h => h.Value!).ToList(),
+            })
             .OrderBy(m => m.Order)
             .ThenBy(m => m.Key, StringComparer.Ordinal)
             .ToList();

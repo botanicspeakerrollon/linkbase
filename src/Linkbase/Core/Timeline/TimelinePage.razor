@@ -1,0 +1,176 @@
+@page "/timeline"
+@using System.Globalization
+@using Linkbase.Core.Explore
+@inject TimelineRepository Repository
+
+<PageTitle>Timeline</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Timeline</MudText>
+<MudText Typo="Typo.body2" Class="mb-3" Style="color: var(--mud-palette-text-secondary)">
+    Records laid out by one of their dates. Choose a month to look closer.
+</MudText>
+
+@if (_fields is null)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else if (_fields.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">This model has no date fields to draw a timeline from.</MudAlert>
+}
+else
+{
+    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2" AlignItems="AlignItems.Start" Class="mb-3">
+        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Type" Value="_type" ValueChanged="ChooseTypeAsync" Style="min-width: 12rem" data-hotkey-search>
+            @foreach (var type in _fields.Select(f => f.Type).Distinct())
+            {
+                <MudSelectItem T="string" Value="@type">@type</MudSelectItem>
+            }
+        </MudSelect>
+        <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Date" Value="_field" ValueChanged="ChooseFieldAsync" Style="min-width: 12rem"
+                   ToStringFunc="@(k => k is null ? "" : RecordRepository.Title(k))">
+            @foreach (var field in _fields.Where(f => f.Type == _type))
+            {
+                <MudSelectItem T="string" Value="@field.Key">@RecordRepository.Title(field.Key)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="From" Date="_from" DateChanged="ChooseFromAsync" Clearable="true" DateFormat="yyyy-MM-dd" />
+        <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="To" Date="_to" DateChanged="ChooseToAsync" Clearable="true" DateFormat="yyyy-MM-dd" />
+    </MudStack>
+
+    @if (_busy)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (_data is { } data)
+    {
+        <MudText Typo="Typo.body2" Class="mb-2">
+            @data.Total.ToString("N0", CultureInfo.InvariantCulture) @(data.Total == 1 ? "record" : "records")
+            @if (data.Undated > 0)
+            {
+                <span style="color: var(--mud-palette-text-secondary)"> · @data.Undated.ToString("N0", CultureInfo.InvariantCulture) with no @RecordRepository.Title(_field!).ToLowerInvariant()</span>
+            }
+        </MudText>
+
+        @if (data.Months.Count > 0)
+        {
+            var most = data.Months.Max(m => m.Count);
+            <div class="timeline-months" role="group" aria-label="Records per month">
+                @foreach (var month in data.Months)
+                {
+                    <button type="button" class="timeline-month" @onclick="@(() => ChooseMonthAsync(month.Month))"
+                            title="@($"{month.Month}: {month.Count:N0}")" aria-label="@($"{month.Month}, {month.Count} records. Show only this month")">
+                        <span class="timeline-bar" style="@($"height: {Math.Max(4, (int)(100.0 * month.Count / most))}%")"></span>
+                        <span class="timeline-label">@(month.Month.EndsWith("-01", StringComparison.Ordinal) || month == data.Months[0] ? month : "")</span>
+                    </button>
+                }
+            </div>
+        }
+
+        @if (data.Entries.Count == 0)
+        {
+            <MudText Typo="Typo.body2" Class="mt-4">Nothing has a date in that range.</MudText>
+        }
+        else
+        {
+            foreach (var month in data.Entries.GroupBy(e => e.Date.ToString("yyyy-MM", CultureInfo.InvariantCulture)))
+            {
+                <MudText Typo="Typo.subtitle1" HtmlTag="h2" Class="mt-4 mb-1">@MonthName(month.Key)</MudText>
+                <MudSimpleTable Dense="true" Elevation="1" Class="timeline-table">
+                    <tbody>
+                        @foreach (var entry in month)
+                        {
+                            <tr>
+                                <td class="timeline-date">@entry.Date.ToString("ddd d", CultureInfo.InvariantCulture)</td>
+                                <td><MudLink Href="@GraphStyle.RecordLink(_type!, entry.Key)">@entry.Name</MudLink></td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @if (data.Total > data.Entries.Count)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-3">
+                    Showing the newest @data.Entries.Count.ToString("N0", CultureInfo.InvariantCulture). Choose a month, or a range, to see the rest.
+                </MudAlert>
+            }
+        }
+    }
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "type")] public string? InitialType { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "field")] public string? InitialField { get; set; }
+
+    private IReadOnlyList<DateFieldOption>? _fields;
+    private string? _type;
+    private string? _field;
+    private DateTime? _from;
+    private DateTime? _to;
+    private bool _busy;
+    private TimelineData? _data;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _fields = await Repository.DateFieldsAsync();
+        var chosen = _fields.FirstOrDefault(f => f.Type == InitialType && f.Key == InitialField) ?? _fields.FirstOrDefault(f => f.Type == InitialType) ?? _fields.FirstOrDefault();
+        if (chosen is not null)
+        {
+            (_type, _field) = (chosen.Type, chosen.Key);
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_type is null || _field is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        StateHasChanged();
+        _data = await Repository.LoadAsync(_type, _field, Text(_from), Text(_to));
+        _busy = false;
+    }
+
+    private static string? Text(DateTime? date) => date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static string MonthName(string month) =>
+        DateTime.ParseExact(month, "yyyy-MM", CultureInfo.InvariantCulture).ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+
+    private async Task ChooseTypeAsync(string? type)
+    {
+        _type = type;
+        _field = _fields!.First(f => f.Type == type).Key;
+        _from = _to = null;
+        await LoadAsync();
+    }
+
+    private async Task ChooseFieldAsync(string? field)
+    {
+        _field = field;
+        await LoadAsync();
+    }
+
+    private async Task ChooseFromAsync(DateTime? date)
+    {
+        _from = date;
+        await LoadAsync();
+    }
+
+    private async Task ChooseToAsync(DateTime? date)
+    {
+        _to = date;
+        await LoadAsync();
+    }
+
+    private async Task ChooseMonthAsync(string month)
+    {
+        var first = DateTime.ParseExact(month, "yyyy-MM", CultureInfo.InvariantCulture);
+        _from = first;
+        _to = first.AddMonths(1).AddDays(-1);
+        await LoadAsync();
+    }
+}

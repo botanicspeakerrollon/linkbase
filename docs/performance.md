@@ -126,3 +126,15 @@ The generic store should do what the sample does.
 - **Not tested:** several users at once, a real server, and writes, including how much the indexes slow them. The busiest stop
   measured is the busiest one named Zürich HB, so a stop with more links may exist. The link columns are indexed here by the
   loader, which the real climbing views are not.
+
+## The everyday-use queries
+
+Measured by hand in `psql` on 13 November 2026 against the same 3.6M nodes, not by the performance test:
+
+| What | Time |
+| --- | --- |
+| Home: records added per month (`HomeRepository.GrowthAsync`) | 2.3 s. It reads every record, so the page draws first and asks for it afterwards. A model can hide it with `Home:Hide` |
+| Home: recent records, changes, imports | Read the audit trail and import batches by id, so they don't depend on the record count |
+| Cleanup: duplicate names across four types | 2.3 s |
+| Cleanup: records with no links, across four types | 9.1 s, 67 ms for one small type. It is on demand, and a type narrows it |
+| Path search: one level from 5,000 stops | 350 ms. Each level is capped at 5,000 records and 50,000 links, and the search says when it was cut short |
