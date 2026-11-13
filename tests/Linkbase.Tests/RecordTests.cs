@@ -39,7 +39,14 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var types = await records.TypesAsync();
 
         Assert.Equal(["Person", "Team", "Client", "Project"], types.Select(t => t.Name));
-        Assert.Equal([new RecordField("title", FieldType.Text), new RecordField("joined", FieldType.Date), new RecordField("skills", FieldType.List)], types[0].Fields);
+        var person = types[0];
+        Assert.Equal(["name_first", "name_last", "title", "joined", "skills", "working_language", "certified_on"], person.Fields.Select(f => f.Key));
+        Assert.Equal("{name_first} {name_last}", person.NameTemplate);
+        Assert.Equal(["Name", "Name", "Role", "Role", null, null, null], person.Fields.Select(f => f.Group));
+        Assert.Equal(new RecordField("joined", FieldType.Date) { Group = "Role", Description = "The day they started." }, person.Fields[3]);
+        Assert.Equal(new RecordField("skills", FieldType.List) { Multiple = true, Description = "Things they could lead a workshop on." }, person.Fields[4]);
+        Assert.Equal(FieldType.Date, person.Fields[6].Type);
+        Assert.True(person.Fields[6].Multiple);
         Assert.Equal("#4338ca", (await records.TypeAsync("Team"))!.Color);
         Assert.Null(await records.TypeAsync("Nope"));
     }
@@ -150,8 +157,8 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     {
         var (factory, records) = await ExampleAsync();
 
-        var key = await records.CreateAsync("Person", null, new RecordInput(" Zoë Adams ", new Dictionary<string, string?> { ["title"] = "Designer", ["joined"] = "2026-01-05" }));
-        var again = await records.CreateAsync("Person", "", new RecordInput("Zoë Adams", new Dictionary<string, string?>()));
+        var key = await records.CreateAsync("Person", null, TestModels.Person(" Zoë Adams ", new() { ["title"] = "Designer", ["joined"] = "2026-01-05" }));
+        var again = await records.CreateAsync("Person", "", TestModels.Person("Zoë Adams"));
         var given = await records.CreateAsync("Project", "x-1", new RecordInput("Website", new Dictionary<string, string?> { ["budget"] = "12500.50", ["status"] = "proposed" }));
 
         Assert.Equal(("zoe-adams", "zoe-adams-2", "x-1"), (key, again, given));
@@ -167,7 +174,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
 
     [Theory]
     [InlineData("Person", "p1", "Someone", "joined", "2026-01-01", "already a Person with the key p1")]
-    [InlineData("Person", null, "  ", "title", "x", "needs a name")]
+    [InlineData("Person", null, "  ", "title", "x", "to make its name")]
     [InlineData("Person", null, "Someone", "joined", "5 May", "must be a date")]
     [InlineData("Project", null, "Something", "budget", "lots", "must be a number")]
     [InlineData("Project", null, "Something", "status", "paused", "Status must be one of proposed, active, live or closed")]
@@ -178,7 +185,9 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var (_, records) = await ExampleAsync();
 
         var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() =>
-            records.CreateAsync(type, key, new RecordInput(name, new Dictionary<string, string?> { [field] = value })));
+            records.CreateAsync(type, key, type == "Person"
+                ? TestModels.Person(name, new() { [field] = value })
+                : new RecordInput(name, new Dictionary<string, string?> { [field] = value })));
 
         Assert.Contains(message, ex.Message);
     }
@@ -192,7 +201,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
 
         Assert.Equal("live", (await records.GetAsync("Project", key))!.Values["status"]);
         var status = (await records.TypeAsync("Project"))!.Fields.Single(f => f.Key == "status");
-        Assert.Equal(new RecordField("status", FieldType.Choice, ["proposed", "active", "live", "closed"]) { Required = true }, status);
+        Assert.Equal(new RecordField("status", FieldType.Choice, ["proposed", "active", "live", "closed"]) { Required = true, Description = "Where the project is now." }, status);
     }
 
     [Fact]
@@ -200,7 +209,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     {
         var (factory, records) = await ExampleAsync();
 
-        var key = await records.CreateAsync("Person", null, new RecordInput("Zoë Adams", new Dictionary<string, string?> { ["skills"] = " Figma \r\n\nSQL, Postgres\nfigma" }));
+        var key = await records.CreateAsync("Person", null, TestModels.Person("Zoë Adams", new() { ["skills"] = " Figma \r\n\nSQL, Postgres\nfigma" }));
 
         var zoe = (await records.GetAsync("Person", key))!;
         Assert.Equal("Figma\nSQL, Postgres", zoe.Values["skills"]);
@@ -308,7 +317,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     public async Task Links_only_follow_the_models_relationships_and_a_linked_record_cant_be_deleted()
     {
         var (factory, records) = await ExampleAsync();
-        var key = await records.CreateAsync("Person", null, new RecordInput("New starter", new Dictionary<string, string?>()));
+        var key = await records.CreateAsync("Person", null, TestModels.Person("New starter"));
         var id = $"person:{key}";
 
         Assert.Contains(new LinkOption("WORKS_ON", true, "Project"), await records.LinkOptionsAsync("Person"));
@@ -340,7 +349,10 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var (_, records) = await ExampleAsync();
 
         var attributes = await records.LinkAttributesAsync("Person", "WORKS_ON", "Project");
-        Assert.Equal([new RecordField("role", FieldType.Text), new RecordField("days_a_week", FieldType.Number)], attributes);
+        Assert.Equal(
+            [new RecordField("role", FieldType.Text) { Description = "What they do on this project." },
+             new RecordField("days_a_week", FieldType.Number) { Description = "Days a week they spend on it." }],
+            attributes);
         Assert.Empty(await records.LinkAttributesAsync("Person", "MEMBER_OF", "Team"));
 
         var links = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "WORKS_ON").Links;
@@ -394,7 +406,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     {
         var (factory, records) = await ExampleAsync();
         var refs = new ExternalRefRepository(factory);
-        var key = await records.CreateAsync("Person", null, new RecordInput("New starter", new Dictionary<string, string?>()));
+        var key = await records.CreateAsync("Person", null, TestModels.Person("New starter"));
         var id = $"person:{key}";
 
         await refs.AddAsync(id, DataSource.Ukc, " 123 ", "https://example.test/people/123");
@@ -582,18 +594,20 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     public async Task Links_are_added_from_the_models_relationships()
     {
         await UseExampleAsync();
-        // A client can only be linked one way, from a project, so that's chosen already.
+        // A client can only be linked one way, from a project, so that's chosen already. A project is for one client at most, so it
+        // has to be one without a client.
         var key = await Records.CreateAsync("Client", null, new RecordInput("New client", new Dictionary<string, string?>()));
+        await Records.CreateAsync("Project", "fresh", new RecordInput("Fresh project", new Dictionary<string, string?> { ["status"] = "proposed" }));
         var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Client").Add(x => x.Key, key));
         Sees(cut, "No links yet.");
 
         Press(cut, "Add link");
         Sees(Dialogs, "Project FOR Client");
-        Pick(Dialogs, "Project", "repairs", "Repairs tracker");
+        Pick(Dialogs, "Project", "fresh", "Fresh project");
         Press(Dialogs, "Link");
 
         Told("Linked.");
-        Sees(cut, "Repairs tracker");
+        Sees(cut, "Fresh project");
         Sees(cut, "← FOR");
     }
 

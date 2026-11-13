@@ -50,7 +50,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     }
 
     private static RecordInput Person(string name, string? title = null) =>
-        new(name, new Dictionary<string, string?> { ["title"] = title });
+        TestModels.Person(name, new() { ["title"] = title });
 
     private static async Task<List<Change>> ChangesAsync(ModelFactory factory)
     {
@@ -106,7 +106,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         await records.UpdateAsync("person:z1", Person("Zoe Adams-Hill", "Lead designer"), new ChangeReason("Nothing changed"));
 
         var edits = (await ChangesAsync(factory)).Where(c => c is { EntityKind: ChangeEntityKind.Node, Op: ChangeOp.Update }).ToList();
-        Assert.Equal([("name", "Zoe Adams", "Zoe Adams-Hill"), ("title", "Designer", "Lead designer")], edits.Select(c => (c.FieldKey!, c.OldValue!, c.NewValue!)));
+        Assert.Equal([("name", "Zoe Adams", "Zoe Adams-Hill"), ("name_last", "Adams", "Adams-Hill"), ("title", "Designer", "Lead designer")], edits.Select(c => (c.FieldKey!, c.OldValue!, c.NewValue!)));
         await using var db = factory.CreateDbContext();
         Assert.False(await db.Justifications.AnyAsync(j => j.Note == "Nothing changed"));
 

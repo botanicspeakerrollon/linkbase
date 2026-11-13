@@ -109,6 +109,9 @@ JSON, with comments allowed. Paths are relative to the model file.
 In Explore, a filter on a list matches when any of its values does, so `skills = postgres` finds everyone with Postgres
 among their skills.
 
+The example consultancy (`models/consultancy/model.json`) shows `description`, `group`, `multiple`, `nameTemplate` and `max` in use: a
+person's name is made from two grouped fields, and a person is in at most one team.
+
 A row without a value for a required field stops the load, and so does a record left without a required relationship's
 link, once every link is in. Both say which rows or records.
 

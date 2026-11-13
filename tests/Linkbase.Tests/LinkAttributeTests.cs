@@ -86,15 +86,12 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
         var factory = await ExampleAsync();
         var records = new RecordRepository(factory);
 
-        var key = await records.CreateAsync("Person", null, new RecordInput("Joiner", new Dictionary<string, string?>())
-        {
-            Links =
-            [
-                new NewLink("WORKS_ON", "project:pr4", Values("Lead", "2")),
-                new NewLink("WORKS_ON", "project:pr4", Values("Cover", "1")),
-                new NewLink("WORKS_ON", "project:pr4", Values("Cover", "1")),
-            ],
-        });
+        var key = await records.CreateAsync("Person", null, TestModels.Person("Joiner", links:
+        [
+            new NewLink("WORKS_ON", "project:pr4", Values("Lead", "2")),
+            new NewLink("WORKS_ON", "project:pr4", Values("Cover", "1")),
+            new NewLink("WORKS_ON", "project:pr4", Values("Cover", "1")),
+        ]));
         var links = await WorksOnAsync(records, $"person:{key}");
         Assert.Equal(["Cover", "Lead"], links.Select(l => l.Values["role"]).Order());
 
@@ -104,7 +101,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
         }
 
         var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => records.CreateAsync(
-            "Person", null, new RecordInput("Other", new Dictionary<string, string?>()) { Links = [new NewLink("WORKS_ON", "project:pr4")] }));
+            "Person", null, TestModels.Person("Other", links: [new NewLink("WORKS_ON", "project:pr4")])));
         Assert.Contains("Role is required", ex.Message);
         Assert.Null(await records.GetAsync("Person", "other"));
     }

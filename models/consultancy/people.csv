@@ -1,9 +1,9 @@
-id,name,title,team,joined,skills
-p1,Ava Lindqvist,Design lead,t1,2019-03-04,Service design|Workshops|Figma
-p2,Ben Okafor,Product designer,t1,2022-09-12,Figma|User research
-p3,Chloe Marsh,Engineering lead,t2,2018-01-15,C#|Postgres|Hiring
-p4,Dev Raman,Backend engineer,t2,2021-06-01,C#|Postgres
-p5,Ella Novak,Frontend engineer,t2,2023-02-20,TypeScript|Accessibility
-p6,Finn Doyle,Delivery manager,t3,2020-11-02,
-p7,Grace Ito,Data engineer,t2,2024-04-08,Python | Postgres|
-p8,Hugo Brandt,Account manager,t3,2019-08-19,Workshops
+id,name_first,name_last,title,team,joined,skills,working_language,certified_on
+p1,Ava,Lindqvist,Design lead,t1,2019-03-04,Service design|Workshops|Figma,English|German,2021-05-10|2024-06-03
+p2,Ben,Okafor,Product designer,t1,2022-09-12,Figma|User research,English,
+p3,Chloe,Marsh,Engineering lead,t2,2018-01-15,C#|Postgres|Hiring,English|French,2020-02-14
+p4,Dev,Raman,Backend engineer,t2,2021-06-01,C#|Postgres,English,2023-11-20|2025-03-18
+p5,Ella,Novak,Frontend engineer,t2,2023-02-20,TypeScript|Accessibility,English|Czech,
+p6,Finn,Doyle,Delivery manager,t3,2020-11-02,,English,2022-01-31
+p7,Grace,Ito,Data engineer,t2,2024-04-08,Python | Postgres|,English|Japanese,
+p8,Hugo,Brandt,Account manager,t3,2019-08-19,Workshops,English|German,
