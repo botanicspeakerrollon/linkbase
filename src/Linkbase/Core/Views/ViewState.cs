@@ -53,8 +53,13 @@ public static class ViewState
     }
 }
 
+// Where one node sat on the canvas when a view was saved with its layout pinned.
+public sealed record ScenePosition(string NodeId, double X, double Y);
+
 // An Explore page's state. A canvas is its Nodes, or, when there are too many for an address, only the Pattern that made it.
-// The expansion filters and the table and totals switches come back too, so the page looks as it did.
+// The expansion filters and the table and totals switches come back too, so the page looks as it did. Positions is set only
+// when the view was saved with its hand-arranged layout pinned (what used to be a separate "scene"); otherwise the canvas
+// lays the nodes out fresh.
 public sealed record ExploreState
 {
     // More than this and the address gets too long to share. The pattern alone then reopens the first page of matches.
@@ -62,6 +67,7 @@ public sealed record ExploreState
 
     public GraphPattern? Pattern { get; init; }
     public IReadOnlyList<string>? Nodes { get; init; }
+    public IReadOnlyList<ScenePosition>? Positions { get; init; }
     public bool Model { get; init; }
     public bool Table { get; init; }
     public bool Totals { get; init; }

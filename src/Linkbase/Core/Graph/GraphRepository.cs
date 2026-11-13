@@ -57,10 +57,6 @@ public sealed record GraphNeighbours(IReadOnlyList<GraphNode> Nodes, int Remaini
 
 public sealed record Subgraph(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
-public sealed record ScenePosition(string NodeId, double X, double Y);
-
-public sealed record SavedScene(string Name, IReadOnlyList<ScenePosition> Positions);
-
 
 public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
@@ -392,58 +388,6 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     // A link's attributes as text, or null when it has none.
     private static Dictionary<string, string>? EdgeValues(string props) =>
         props.Length <= 2 ? null : Records.RecordRepository.Values(props) is { Count: > 0 } values ? values : null;
-
-    public async Task<IReadOnlyList<string>> SceneNamesAsync(CancellationToken cancellationToken = default)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await db.GraphScenes.AsNoTracking()
-            .Where(s => s.UserId == AppUser.DefaultId)
-            .OrderBy(s => s.Name)
-            .Select(s => s.Name)
-            .ToListAsync(cancellationToken);
-    }
-
-    // Saving under an existing name replaces that scene.
-    public async Task SaveSceneAsync(string name, IReadOnlyList<ScenePosition> positions, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new LinkbaseValidationException("A scene needs a name.");
-        }
-
-        var trimmed = name.Trim();
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var scene = await db.GraphScenes.SingleOrDefaultAsync(s => s.UserId == AppUser.DefaultId && s.Name == trimmed, cancellationToken);
-        var nodes = JsonSerializer.Serialize(positions);
-        if (scene is null)
-        {
-            db.GraphScenes.Add(new GraphScene { UserId = AppUser.DefaultId, Name = trimmed, Nodes = nodes });
-        }
-        else
-        {
-            scene.Nodes = nodes;
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<SavedScene?> LoadSceneAsync(string name, CancellationToken cancellationToken = default)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var nodes = await db.GraphScenes.AsNoTracking()
-            .Where(s => s.UserId == AppUser.DefaultId && s.Name == name)
-            .Select(s => s.Nodes)
-            .SingleOrDefaultAsync(cancellationToken);
-        return nodes is null ? null : new SavedScene(name, JsonSerializer.Deserialize<List<ScenePosition>>(nodes) ?? []);
-    }
-
-    public async Task DeleteSceneAsync(string name, CancellationToken cancellationToken = default)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        await db.GraphScenes
-            .Where(s => s.UserId == AppUser.DefaultId && s.Name == name)
-            .ExecuteDeleteAsync(cancellationToken);
-    }
 
     private static GraphNode ToNode(string id, string label, string name, string props)
     {

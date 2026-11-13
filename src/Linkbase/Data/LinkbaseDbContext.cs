@@ -13,7 +13,6 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<AppUser> Users => Set<AppUser>();
     public DbSet<ExternalRef> ExternalRefs => Set<ExternalRef>();
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
-    public DbSet<GraphScene> GraphScenes => Set<GraphScene>();
     public DbSet<SavedView> SavedViews => Set<SavedView>();
     public DbSet<NodeType> NodeTypes => Set<NodeType>();
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
@@ -78,12 +77,6 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         modelBuilder.Entity<ImportBatch>(batch =>
         {
             batch.Property(b => b.RawPayload).HasColumnType("jsonb");
-        });
-
-        modelBuilder.Entity<GraphScene>(scene =>
-        {
-            scene.Property(s => s.Nodes).HasColumnType("jsonb");
-            scene.HasIndex(s => new { s.UserId, s.Name }).IsUnique();
         });
 
         modelBuilder.Entity<SavedView>(view =>

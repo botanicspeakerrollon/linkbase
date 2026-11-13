@@ -446,7 +446,7 @@ export function positions() {
     return cy ? cy.nodes().map(n => ({ nodeId: n.id(), x: n.position('x'), y: n.position('y') })) : [];
 }
 
-// Shows a saved scene with its nodes exactly where they were saved.
+// Shows a saved view whose layout was pinned, with its nodes exactly where they were saved.
 export function restore(nodes, edges, savedPositions) {
     if (!cy) {
         return;

@@ -98,7 +98,7 @@ Climbing module keeps the grade rank and the trips. See [the plan](history/climb
 
 Loading replaces everything in the model's generic store, in one transaction, so a failed load changes nothing. Node ids are
 the type in lower case, a colon and the row's key, such as `stop:8503000`, so they stay the same when a model is reloaded, and
-saved scenes still line up.
+saved views still line up.
 
 ## The model file
 

@@ -42,21 +42,9 @@ public class GraphEdgeRow
     public required string Props { get; set; }
 }
 
-// A saved view of the graph explorer: which nodes were visible and where.
-public class GraphScene : ITimestamped
-{
-    public long Id { get; set; }
-    public long UserId { get; set; }
-    public AppUser User { get; set; } = null!;
-    public required string Name { get; set; }
-    public required string Nodes { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public DateTimeOffset UpdatedAt { get; set; }
-}
-
 // A named, reopenable state of a page: an Explore search or canvas, or a record list's search and filters. State is the
-// same text the page's address carries in its v parameter, so a view and a permalink are one thing. Pinned views are
-// shown on Home. See Core/Views.
+// same text the page's address carries in its v parameter, so a view and a permalink are one thing. An Explore view can
+// also pin its nodes' positions, which is what used to be a separate "scene". Pinned views are shown on Home. See Core/Views.
 public class SavedView : ITimestamped
 {
     public long Id { get; set; }

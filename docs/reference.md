@@ -93,7 +93,7 @@ joined by relationships written `REL →` or `← REL`. Conditions are a propert
 Typing plain text searches every record's name and values. Suggestions follow the step you are on and draw values from the
 data. Typing `graph` shows the model itself (types as nodes, relationships as links); *Show all* on a type brings in its records.
 
-*Ask.* The Ask box under the search bar (`a`) turns a question of up to 300 characters into a pattern and puts it in the search
+*Ask.* The Ask box under the search bar (`a`) turns a question of up to 300 characters into a pattern via an LLM call and puts it in the search
 bar, where it can be read and edited. Only the question and the model's type, field and relationship names are sent out. The
 answer is checked by `PatternChecker`: every type, field and relationship must exist in the model, in that direction; a value
 must appear in the question; at most 5 steps, 6 conditions on a step and 100 characters in a value. A failure says why and
@@ -109,8 +109,6 @@ with their values (`WORKS_ON · Lead · 3`). Models can give types a colour, an 
 
 *Totals.* `s` shows count, sum, minimum, maximum and average of each number field of the search's matches.
 
-*Scenes.* A named snapshot of the nodes and where they sit.
-
 *Export.* Nodes (CSV), links (CSV), both (JSON), picture (PNG).
 
 *Find a path* (`w`). The shortest chain of links, in either direction, between the selected record and another, up to 6 links.
@@ -120,7 +118,7 @@ It stops looking through a hub that is too busy and says so.
 
 *Link history.* Selecting a link lists its changes under its values.
 
-<a id="as-of"></a>*As of.* A date or slider hides records and links that did not exist on that day and shows the rest with the
+*As of.* A date or slider hides records and links that did not exist on that day and shows the rest with the
 values they had, rewound from the audit trail.
 
 **Limits.** Saved canvases keep at most 150 nodes in an address; beyond that only the pattern is kept and the first page of
@@ -229,7 +227,7 @@ result is the next piece of work ([extensibility-plan](extensibility-plan.md)).
 
 **Description.** Paste text, or give an address to fetch (up to 5 MB, refused by sites that block it; pasting is more reliable and
 the right way for sites that forbid scraping). The model's types, fields, relationships and link values become the extraction
-tool's schema, so the answer can only name what the model has. Then `ModelExtractionValidator` drops any name or value not in the
+tool's schema, so the answer from the LLM can only name what the model has. Then `ModelExtractionValidator` drops any name or value not in the
 source text, or over 200 characters, and a domain's `CheckExtracted` drops what it can tell is wrong. A type that requires links
 is kept only when the text gives them. Records already here, matched by key or exact name,
 are left alone but can be linked to. The rest is staged for review, committed and undone exactly as a CSV import.
@@ -294,8 +292,9 @@ since" by `updated_at`, and notices no link edits.
 A page's state is JSON in its address (`?v=`, URL-safe, at most 8,000 characters). Explore keeps its pattern, canvas, expansion
 filters, and table and totals switches; a record list keeps its search, sort and filters. **Copy link** and the address bar both
 give the same view. A **saved view** (`v`) is that state under a name (up to 80 characters); saving under an existing name
-replaces it. Pinned views show on Home. Whatever the state names is checked against the model before use, so a stale or tampered
-address can only fail to open.
+replaces it. Pinned views show on Home. Saving an Explore view can also tick *Keep nodes exactly where they are*, which adds
+each node's canvas position to the state, so reopening it places nodes back exactly where they were instead of laying them out
+fresh. Whatever the state names is checked against the model before use, so a stale or tampered address can only fail to open.
 
 **Not yet.** Sharing a view as read-only waits for sign-in.
 
@@ -418,7 +417,7 @@ The `?` dialog is the source of truth; this is its content.
 | Explore: Ask | Built | |
 | Explore: path, nearby changes, as of, link history | Built | Deleted records not shown as of |
 | Lists and record pages, forms, hierarchies, link values | Built | No bulk edit; no model editor |
-| Saved views, scenes, permalinks | Built | No read-only share |
+| Saved views, pinned layouts, permalinks | Built | No read-only share |
 | Quick-find | Partial | Only "add" as an action |
 | Import: CSV records and links | Built | |
 | Import: update existing records | Partial | CSV records only |
@@ -458,8 +457,9 @@ The `?` dialog is the source of truth; this is its content.
 module, not typed in. **Domain module.** Code that adds pages, hooks and importers to some models. **Edge.** A link.
 **Hook.** A module's code that runs when records of chosen types are saved. **Key.** A record's identifier within its type.
 **Model.** One self-contained database of types, records and links. **Node.** A record. **Pattern.** The chain of typed, filtered
-steps that Explore searches for. **Relationship.** A named, directed kind of link between two types. **Scene.** A saved canvas.
-**Staged.** Waiting in review, not yet written. **View.** A saved page state, pinnable to Home.
+steps that Explore searches for. **Relationship.** A named, directed kind of link between two types.
+**Staged.** Waiting in review, not yet written. **View.** A saved page state, pinnable to Home; an Explore view can also pin its
+canvas's node positions.
 
 # Appendix E. Where each feature lives in the code
 

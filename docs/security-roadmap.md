@@ -9,7 +9,7 @@ routes and crags are shareable, or some crags' locations are hidden.
 ## What's already in place
 
 - Climbing now lives in the generic store, so its values (including `notes`, partners and crag coordinates) are inside `node.props` JSON, not typed columns. Field-level security has to be applied in the repositories and views, or those fields moved into typed columns first.
-- Every `node`, `import_batch` and `graph_scene` row has a `user_id`.
+- Every `node`, `import_batch` and `saved_view` row has a `user_id`.
 - All reads go through repositories that project to DTOs, so one place can apply a field policy.
 - The graph views build `props` from named columns, so a new column can't leak into them by accident.
 

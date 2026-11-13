@@ -331,51 +331,6 @@ namespace Linkbase.Data.Migrations
                     b.ToView("graph_nodes", (string)null);
                 });
 
-            modelBuilder.Entity("Linkbase.Data.GraphScene", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Nodes")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("nodes");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_graph_scene");
-
-                    b.HasIndex("UserId", "Name")
-                        .IsUnique()
-                        .HasDatabaseName("ix_graph_scene_user_id_name");
-
-                    b.ToTable("graph_scene");
-                });
-
             modelBuilder.Entity("Linkbase.Data.HierarchyLevel", b =>
                 {
                     b.Property<long>("Id")
@@ -1037,18 +992,6 @@ namespace Linkbase.Data.Migrations
                         .HasConstraintName("fk_field_definition_node_type_node_type_name");
 
                     b.Navigation("NodeType");
-                });
-
-            modelBuilder.Entity("Linkbase.Data.GraphScene", b =>
-                {
-                    b.HasOne("Linkbase.Data.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_graph_scene_app_user_user_id");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Linkbase.Data.HierarchyLevel", b =>

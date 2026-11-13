@@ -26,6 +26,16 @@ public class ViewStateTests
         Assert.True(back.Totals);
     }
 
+    [Fact]
+    public void A_pinned_layouts_positions_survive_the_address()
+    {
+        var state = new ExploreState { Nodes = ["crag:1"], Positions = [new ScenePosition("crag:1", 1.5, -2.5)] };
+
+        var back = ViewState.Decode<ExploreState>(ViewState.Encode(state))!;
+
+        Assert.Equal(state.Positions, back.Positions);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

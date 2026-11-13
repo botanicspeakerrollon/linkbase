@@ -121,7 +121,7 @@ public class LinkAttribute
 public class Node : ITimestamped
 {
     // The node's id across the whole graph: its type in lower case, a colon, and its key from the source data, such as
-    // stop:8503000. It stays the same when a model is reloaded, so saved scenes still line up.
+    // stop:8503000. It stays the same when a model is reloaded, so saved views still line up.
     public required string Id { get; set; }
 
     public long UserId { get; set; }
