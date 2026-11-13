@@ -156,6 +156,28 @@ public class AnthropicModelExtractorTests
     }
 
     [Fact]
+    public void An_answer_of_the_wrong_shape_is_refused_with_a_reason_instead_of_crashing()
+    {
+        var input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>("""{"records":"not a list"}""")!;
+
+        var ex = Assert.Throws<ExtractionFailedException>(() => AnthropicModelExtractor.ReadResponse("tool_use", input));
+
+        Assert.Contains("expected shape", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_page_text_is_fenced_and_earlier_records_are_named_only_for_a_continuation()
+    {
+        var first = AnthropicModelExtractor.BuildUserMessage("Atlas is active.", []);
+        var later = AnthropicModelExtractor.BuildUserMessage("Atlas is for Northwind.", ["Atlas", "Northwind"]);
+
+        Assert.StartsWith("<page_text>", first, StringComparison.Ordinal);
+        Assert.DoesNotContain("continues", first, StringComparison.Ordinal);
+        Assert.Contains("Records named earlier in the page: Atlas, Northwind.", later, StringComparison.Ordinal);
+        Assert.EndsWith("</page_text>", later, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Reads_the_answer_and_refuses_an_unfinished_one()
     {
         var input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
