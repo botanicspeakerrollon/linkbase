@@ -3,6 +3,7 @@
 Start here:
 
 - [reference](reference.md): what Linkbase contains, feature by feature, in the style of a manual: synopsis, description, limits, what isn't built.
+- [requirements](requirements.md): the same ground as formal, numbered, testable requirements, for tracing a change or a test back to something agreed.
 - The **user guide** is in the app, under Guide in the rail (`/guide`), written for the people using it.
 
 Current:
