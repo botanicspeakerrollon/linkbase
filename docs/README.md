@@ -7,7 +7,7 @@ Current:
 - [operations](operations.md): backing up, restoring and rebuilding the database, secrets.
 - [postgres](postgres.md): getting into the databases and querying them by hand.
 - [performance](performance.md): the large Swiss rail sample and how queries are checked against it.
-- [extensibility-plan](extensibility-plan.md): the product plan and which phases are done.
+- [extensibility-plan](extensibility-plan.md): what's built and what to do next, in order.
 - [security-roadmap](security-roadmap.md): sign-in, roles and field-level permissions (not started).
 - [audit-history-plan](audit-history-plan.md): the audit trail, with a reason for each change (built, apart from reverting and Explore).
 - [relationship-attributes](history/relationship-attributes.md): values on links, such as a partner's role (idea, not started).
