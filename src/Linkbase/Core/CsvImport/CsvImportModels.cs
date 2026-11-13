@@ -25,9 +25,13 @@ public sealed record CsvFile(string Path, string FileName, IReadOnlyList<CsvColu
 
 public sealed record CsvFieldMapping(int Column, string Key, FieldType Type);
 
-// Each row is a record of the type, identified by the key column. A new type and new fields are added to the model.
-// UpdateExisting changes records whose key is already there to the file's values, where they differ, instead of leaving them.
-// Only the columns the file has a value for change, and the changes are logged so they can be put back.
+// Each row is a record of the type, identified by the key column. KeyColumn is -1 when the file has no column to use as
+// a key: then NameColumn must be set, and each row is identified by its name instead. Its key is the name's slug
+// ("zoe-adams" for "Zoë Adams"), reused from a record already here with the same name (ignoring case), or made up and
+// disambiguated when it's new. Two rows with the same name (ignoring case) are the same record; a name that matches more
+// than one record already here is added as new, with a note, rather than guessed. A new type and new fields are added to
+// the model. UpdateExisting changes records whose key is already there to the file's values, where they differ, instead
+// of leaving them. Only the columns the file has a value for change, and the changes are logged so they can be put back.
 public sealed record CsvRecordMapping(string Type, int KeyColumn, int? NameColumn, IReadOnlyList<CsvFieldMapping> Fields, bool UpdateExisting = false);
 
 // Each row links the record of one type whose key is in one column to the record of another whose key is in another.

@@ -162,13 +162,16 @@ public sealed partial class CsvImportService
 
     // The column that identifies each row: one called id, key or code, or the type's id, such as supplier_id. The first
     // column if there's none.
-    public static int GuessKeyColumn(CsvFile file, string? type)
+    public static int GuessKeyColumn(CsvFile file, string? type) => GuessKeyColumnOrNone(file, type) ?? 0;
+
+    // The same guess, but null rather than the first column when nothing looks like a key, so a caller can offer
+    // identifying rows by name instead of guessing a column that probably isn't one.
+    public static int? GuessKeyColumnOrNone(CsvFile file, string? type)
     {
         var typeName = type?.ToLowerInvariant();
         string Plain(string header) => new(header.Where(char.IsAsciiLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
         return file.Columns.FirstOrDefault(c => Plain(c.Header) is "id" or "key" or "code")?.Index
-            ?? file.Columns.FirstOrDefault(c => typeName is not null && Plain(c.Header) is var plain && (plain == $"{typeName}id" || plain == $"{typeName}key" || plain == $"{typeName}code"))?.Index
-            ?? 0;
+            ?? file.Columns.FirstOrDefault(c => typeName is not null && Plain(c.Header) is var plain && (plain == $"{typeName}id" || plain == $"{typeName}key" || plain == $"{typeName}code"))?.Index;
     }
 
     // Which existing type a file of records belongs to, from what's in it: columns named like the type's fields, keys that
@@ -181,7 +184,8 @@ public sealed partial class CsvImportService
         }
 
         var headers = file.Columns.Where(c => c.Index != keyColumn).Select(c => FieldKey(c.Header)).ToHashSet();
-        var keys = KeySample(file.Path, keyColumn);
+        // No key column means no keys to check against what's already here; only the fields and the file's name can tell.
+        var keys = keyColumn < 0 ? [] : KeySample(file.Path, keyColumn);
         // One type at a time, so each lookup uses the (type, key) index rather than reading every record.
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var known = new Dictionary<string, int>();

@@ -95,7 +95,9 @@
             <MudGrid Spacing="2">
                 <MudItem xs="12" md="4">
                     <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Key column" Value="_keyColumn" ValueChanged="SetKeyColumn"
-                               ToStringFunc="Header" HelperText="What identifies each row, such as an id or code">
+                               ToStringFunc="@(i => i < 0 ? "No key column" : Header(i))"
+                               HelperText="@(_keyColumn < 0 ? "Rows are identified by name instead" : "What identifies each row, such as an id or code")">
+                        <MudSelectItem Value="-1">No key column</MudSelectItem>
                         @foreach (var column in _file.Columns)
                         {
                             <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
@@ -105,7 +107,10 @@
                 <MudItem xs="12" md="4">
                     <MudSelect T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Name column" Value="_nameColumn" ValueChanged="SetNameColumn"
                                ToStringFunc="@(i => i < 0 ? "The key" : Header(i))" HelperText="What each record is called">
-                        <MudSelectItem Value="-1">The key</MudSelectItem>
+                        @if (_keyColumn >= 0)
+                        {
+                            <MudSelectItem Value="-1">The key</MudSelectItem>
+                        }
                         @foreach (var column in _file.Columns)
                         {
                             <MudSelectItem Value="column.Index">@column.Header</MudSelectItem>
@@ -117,7 +122,14 @@
             <MudCheckBox T="bool" Value="_update" ValueChanged="@(v => Changed(() => _update = v))" Dense="true" Class="mt-2"
                          Label="Update records that are already here" />
             <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
-                Matched by key. Only values the file has change, and undoing the import puts them back.
+                @if (_keyColumn < 0)
+                {
+                    @:Matched by name, ignoring case. A name that matches more than one record already here is added as new. Only values the file has change, and undoing the import puts them back.
+                }
+                else
+                {
+                    @:Matched by key. Only values the file has change, and undoing the import puts them back.
+                }
             </MudText>
 
             <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-3 mb-1">Fields</MudText>

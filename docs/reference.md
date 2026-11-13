@@ -180,9 +180,14 @@ rows), guesses the type from the file name, keys and columns that look like the 
 the relationship the other way. It accepts comma or semicolon files up to 100 MB. Field types are guessed from the first 1,000
 rows, and a new type or new fields join the model.
 
-*Check* reports rows to add, rows skipped and why (no key, repeated key, a link to a missing record, already here), and stops on a
-value that does not fit its field. A required field needs a column; a type that requires links cannot be imported this way.
-List values split on `|`.
+With no column that looks like a key, **No key column** identifies each row by its name instead (which must then have a
+column): matched against existing records of the type ignoring case, and otherwise keyed from the name's slug the same way
+a hand-added record is (`zoe-adams`), disambiguated if it collides. A name matching more than one existing record is added
+as new, with a note.
+
+*Check* reports rows to add, rows skipped and why (no key, repeated key or name, a link to a missing record, already here), and
+stops on a value that does not fit its field. A required field needs a column; a type that requires links cannot be imported
+this way. List values split on `|`.
 
 *Update records that are already here* gives the matched record the file's values where they differ. An empty cell never
 clears a value, and with no name column the name stays. The review lists each change as `city: Bern → Zurich`, and commit writes
@@ -195,7 +200,9 @@ Untick items, then Commit or Discard. Commit is one transaction and skips anythi
 since, one something now links to, one a staying record needs through a required link, and a value changed again since.
 The import stays committed; undo can be repeated.
 
-**Not yet.** Updates work for CSV records only: links, and Read text, still skip what exists.
+**Not yet.** Updates work for CSV records only: links, and Read text, still skip what exists. A link's own columns (both
+ends, and Start from CSVs) still need a real key column on both sides; a link to a record identified by name, rather than
+a key, isn't resolved yet.
 
 **See also.** [models](models.md#importing-a-csv-file), `Core/CsvImport`, `Core/Staging`.
 

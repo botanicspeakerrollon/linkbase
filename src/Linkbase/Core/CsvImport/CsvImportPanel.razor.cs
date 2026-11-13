@@ -163,7 +163,8 @@ public partial class CsvImportPanel
                 Include = CsvImportService.TypeForColumn(c.Header, typeNames) is null,
             });
             _newType = CsvImportService.TypeFromFile(upload.Name);
-            _keyColumn = CsvImportService.GuessKeyColumn(_file, _newType);
+            // Nothing that looks like an id, key or code column means the file probably has none: identify rows by name instead.
+            _keyColumn = CsvImportService.GuessKeyColumnOrNone(_file, _newType) ?? -1;
 
             // Records of a type that's already here go to it, judged by their fields, keys and the file's name.
             var typeGuess = await Importer.GuessTypeAsync(_file, _keyColumn, _newType, _types);
@@ -172,10 +173,11 @@ public partial class CsvImportPanel
             if (typeGuess is not null)
             {
                 ChooseType(typeGuess.Type);
-                _keyColumn = CsvImportService.GuessKeyColumn(_file, typeGuess.Type);
+                _keyColumn = CsvImportService.GuessKeyColumnOrNone(_file, typeGuess.Type) ?? -1;
             }
 
-            _nameColumn = _file.Columns.FirstOrDefault(c => c.Index != _keyColumn && c.Header.Contains("name", StringComparison.OrdinalIgnoreCase))?.Index ?? -1;
+            var nameGuess = _file.Columns.FirstOrDefault(c => c.Index != _keyColumn && c.Header.Contains("name", StringComparison.OrdinalIgnoreCase))?.Index;
+            _nameColumn = nameGuess ?? (_keyColumn < 0 ? 0 : -1);
 
             // Two columns naming types here means links between them.
             var guess = CsvImportService.GuessLinks(_file, _types.Select(t => t.Name).ToList(), _relationships);

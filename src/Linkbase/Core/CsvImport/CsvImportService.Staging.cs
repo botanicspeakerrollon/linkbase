@@ -29,6 +29,11 @@ public sealed partial class CsvImportService
             problems.Add("A type's name is letters and digits, starting with a capital, such as Supplier.");
         }
 
+        if (mapping.KeyColumn < 0 && mapping.NameColumn is null)
+        {
+            problems.Add("Choose a name column, to identify rows without a key column.");
+        }
+
         foreach (var field in mapping.Fields)
         {
             if (!ModelFile.FieldKey().IsMatch(field.Key) || field.Key == "name")
@@ -118,6 +123,8 @@ public sealed partial class CsvImportService
         }
 
         var rows = new List<RecordRow>();
+        var noKeyColumn = mapping.KeyColumn < 0;
+        var pendingNoKey = new List<(int Line, string Name, string Props)>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var (empty, repeats, bad) = (0, 0, 0);
         if (problems.Count == 0)
@@ -129,20 +136,41 @@ public sealed partial class CsvImportService
             while (reader.Read())
             {
                 line++;
-                var key = reader.GetField(mapping.KeyColumn)?.Trim() ?? "";
-                if (key.Length == 0)
+                string key;
+                string? name;
+                string dedupeOn;
+                if (noKeyColumn)
                 {
-                    empty++;
-                    continue;
+                    // No key column: the row is identified by its name instead, resolved to a key once every row is read.
+                    name = reader.GetField(mapping.NameColumn!.Value)?.Trim();
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        empty++;
+                        continue;
+                    }
+
+                    key = "";
+                    dedupeOn = name.ToLowerInvariant();
+                }
+                else
+                {
+                    key = reader.GetField(mapping.KeyColumn)?.Trim() ?? "";
+                    if (key.Length == 0)
+                    {
+                        empty++;
+                        continue;
+                    }
+
+                    name = mapping.NameColumn is { } nameColumn ? reader.GetField(nameColumn)?.Trim() : null;
+                    dedupeOn = key;
                 }
 
-                if (!seen.Add(key))
+                if (!seen.Add(dedupeOn))
                 {
                     repeats++;
                     continue;
                 }
 
-                var name = mapping.NameColumn is { } nameColumn ? reader.GetField(nameColumn)?.Trim() : null;
                 var props = new JsonObject();
                 foreach (var field in mapping.Fields)
                 {
@@ -188,8 +216,20 @@ public sealed partial class CsvImportService
                     }
                 }
 
-                rows.Add(new RecordRow(key, string.IsNullOrEmpty(name) ? key : name, props.ToJsonString(), !string.IsNullOrEmpty(name)));
+                if (noKeyColumn)
+                {
+                    pendingNoKey.Add((line, name!, props.ToJsonString()));
+                }
+                else
+                {
+                    rows.Add(new RecordRow(key, string.IsNullOrEmpty(name) ? key : name, props.ToJsonString(), !string.IsNullOrEmpty(name)));
+                }
             }
+        }
+
+        if (noKeyColumn && problems.Count == 0 && pendingNoKey.Count > 0)
+        {
+            await ResolveByNameAsync(mapping.Type, pendingNoKey, rows, notes, cancellationToken);
         }
 
         if (bad > ProblemsShown)
@@ -384,6 +424,75 @@ public sealed partial class CsvImportService
         }
 
         return changed;
+    }
+
+    // Turns rows with no key column into RecordRows, by name: a name that matches one record already here (ignoring
+    // case) reuses its key, so the row updates it instead of duplicating it. A name matching several is added as new,
+    // with a note, rather than guessed. Anything new gets a key slugged from its name, same as a hand-added record,
+    // disambiguated against every key the type already has and every key this file has just made up.
+    private async Task ResolveByNameAsync(
+        string type, List<(int Line, string Name, string Props)> pending, List<RecordRow> rows, List<string> notes, CancellationToken cancellationToken)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var normalized = pending.Select(p => p.Name.ToLowerInvariant()).Distinct().ToList();
+        var matches = new Dictionary<string, List<string>>();
+        foreach (var chunk in normalized.Chunk(10_000))
+        {
+            var found = await db.Nodes.AsNoTracking()
+                .Where(n => n.Type == type && chunk.Contains(n.Name.ToLower()))
+                .Select(n => new { n.Key, n.Name })
+                .ToListAsync(cancellationToken);
+            foreach (var node in found)
+            {
+                (matches.TryGetValue(node.Name.ToLowerInvariant(), out var list) ? list : matches[node.Name.ToLowerInvariant()] = []).Add(node.Key);
+            }
+        }
+
+        HashSet<string>? taken = null;
+        var ambiguous = 0;
+        foreach (var (line, name, props) in pending)
+        {
+            var candidates = matches.GetValueOrDefault(name.ToLowerInvariant()) ?? [];
+            string key;
+            if (candidates.Count == 1)
+            {
+                key = candidates[0];
+            }
+            else
+            {
+                if (candidates.Count > 1 && ++ambiguous <= ProblemsShown)
+                {
+                    notes.Add($"Row {line}: \"{name}\" matches {candidates.Count} {type} records already here, so it was added as new. Rename it or the existing ones to tell them apart.");
+                }
+
+                taken ??= await AllKeysAsync(db, type, cancellationToken);
+                key = FreeKey(RecordRepository.Slug(name), taken);
+                taken.Add(key);
+            }
+
+            rows.Add(new RecordRow(key, name, props));
+        }
+
+        if (ambiguous > ProblemsShown)
+        {
+            notes.Add($"And {ambiguous - ProblemsShown:N0} more names that match several {type} records already here, added as new.");
+        }
+    }
+
+    private static async Task<HashSet<string>> AllKeysAsync(LinkbaseDbContext db, string type, CancellationToken cancellationToken) =>
+        (await db.Nodes.AsNoTracking().Where(n => n.Type == type).Select(n => n.Key).ToListAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
+
+    // Same disambiguation as a hand-added record (RecordRepository.FreeKeyAsync), but against a key set already in memory,
+    // so a whole file is resolved without a database round trip per row.
+    private static string FreeKey(string stem, HashSet<string> taken)
+    {
+        var key = stem;
+        for (var i = 2; taken.Contains(key); i++)
+        {
+            key = $"{stem}-{i}";
+        }
+
+        return key;
     }
 
     private static async Task<HashSet<string>> ExistingKeysAsync(LinkbaseDbContext db, string type, List<string> keys, CancellationToken cancellationToken)

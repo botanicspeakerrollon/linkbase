@@ -280,7 +280,10 @@ adds. The CSV tab works without writing a model file. Each file is one of two th
 
 - **Records of one type**, new or already in the model. Choose the column that identifies each row (the key) and the one that
   names it, then which other columns to keep, each as a field with a type. The types are guessed from the first 1,000 rows. A
-  new type, and new fields on a type that's already there, join the model.
+  new type, and new fields on a type that's already there, join the model. A file with nothing to use as a key — just names,
+  no id — can choose **No key column** instead: the name identifies each row, matched against what's already here ignoring
+  case, and a new row's key is made from its name the same way a hand-added record's is (`zoe-adams` for "Zoë Adams"). A name
+  that matches more than one record already here is added as new rather than guessed, with a note to say so.
 - **Links between records already here**, such as which supplier supplies which project: the type and key column at each end,
   and the relationship's name. Import the records first.
 
@@ -293,12 +296,15 @@ model has the relationship the other way. The relationship lists those the model
 the only one, and a new name can be typed. For records, it picks the existing type the file looks like, and says why under the
 type: keys already there count most, then the file's name, then each column named like one of the type's fields. With no
 clear winner it's a new type. A column naming another type starts unticked, as it holds keys rather than a value. The key
-is a column called `id`, `key`, `code` or after the type, such as `supplier_id`. The first five rows are shown under the
+is a column called `id`, `key`, `code` or after the type, such as `supplier_id`; with none of those, **No key column** is
+chosen instead, and a "name"-looking column is guessed for the name. The first five rows are shown under the
 file, to check the choices against.
 
-**Check** says how many rows would be added, and why any are skipped: no key, a key repeated in the file, a link to a
-record that isn't there, or one that's already here. A value that doesn't fit its field's type stops the import, and the
-first ten are listed. A list field's values are split by `|`, as in a model file. A record whose key is already here is left as it is, unless **Update records that are already here** is ticked (see below).
+**Check** says how many rows would be added, and why any are skipped: no key, a key repeated in the file (or, with no key
+column, a name repeated, ignoring case), a link to a record that isn't there, or one that's already here. A value that
+doesn't fit its field's type stops the import, and the first ten are listed. A list field's values are split by `|`, as in
+a model file. A record whose key is already here (or, with no key column, whose name matches, ignoring case) is left as it
+is, unless **Update records that are already here** is ticked (see below).
 
 To try it, `models/consultancy/import-demo/` and `models/swiss-rail/import-demo/` have files and a README each, saying what to
 choose and what Check should say.

@@ -177,6 +177,60 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
     }
 
     [Fact]
+    public async Task With_no_key_column_rows_are_identified_by_name_and_keys_are_slugged()
+    {
+        var (factory, importer) = await ExampleAsync();
+        var file = Csv("suppliers.csv", "name,founded\nAcme,2001-04-02\nAcme,1999-01-01\n,2020-01-01\n");
+        var mapping = new CsvRecordMapping("Supplier", -1, 0, [new CsvFieldMapping(1, "founded", FieldType.Date)]);
+
+        var plan = await importer.PlanAsync(file, mapping);
+        Assert.Equal((3, 1, 0, 2), (plan.Rows, plan.ToAdd, plan.AlreadyThere, plan.Skipped));
+
+        await importer.ImportAsync(file, mapping);
+
+        var records = new RecordRepository(factory);
+        var acme = (await records.GetAsync("Supplier", "acme"))!;
+        Assert.Equal(("Acme", "2001-04-02"), (acme.Name, acme.Values["founded"]));
+
+        // Re-importing the same name, in any case, matches the record already here instead of adding another.
+        var again = Csv("more.csv", "name,founded\nACME,2001-04-02\nBrill,1999-12-31\n");
+        var againMapping = new CsvRecordMapping("Supplier", -1, 0, [new CsvFieldMapping(1, "founded", FieldType.Date)]);
+        var againPlan = await importer.PlanAsync(again, againMapping);
+        Assert.Equal((1, 1), (againPlan.ToAdd, againPlan.AlreadyThere));
+
+        await importer.ImportAsync(again, againMapping);
+        var brill = (await records.GetAsync("Supplier", "brill"))!;
+        Assert.Equal("Brill", brill.Name);
+    }
+
+    [Fact]
+    public async Task A_name_that_matches_several_records_already_here_is_added_as_new_with_a_note()
+    {
+        var (factory, importer) = await ExampleAsync();
+        await importer.ImportAsync(Csv("first.csv", "name\nAcme\n"), new CsvRecordMapping("Supplier", -1, 0, []));
+        var records = new RecordRepository(factory);
+        await records.CreateAsync("Supplier", "acme-again", new RecordInput("Acme", new Dictionary<string, string?>()));
+        var file = Csv("suppliers.csv", "name\nAcme\n");
+        var mapping = new CsvRecordMapping("Supplier", -1, 0, []);
+
+        var plan = await importer.PlanAsync(file, mapping);
+
+        Assert.Equal(1, plan.ToAdd);
+        Assert.Contains(plan.Notes, n => n.Contains("matches 2 Supplier records already here", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task No_key_column_needs_a_name_column()
+    {
+        var (_, importer) = await ExampleAsync();
+        var file = Csv("suppliers.csv", "founded\n2001-04-02\n");
+
+        var plan = await importer.PlanAsync(file, new CsvRecordMapping("Supplier", -1, null, []));
+
+        Assert.Equal(["Choose a name column, to identify rows without a key column."], plan.Problems);
+    }
+
+    [Fact]
     public async Task Adds_to_an_existing_type_and_leaves_records_already_there_alone()
     {
         var (factory, importer) = await ExampleAsync();
