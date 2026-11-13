@@ -19,6 +19,10 @@ public sealed record HistorySettings(bool Record, bool RequireReason, IReadOnlyL
 
     public static readonly HistorySettings Default = new(true, true);
 
+    // None declared is kept as null, so settings with the same values are equal.
+    public static HistorySettings From(bool record, bool requireReason, string[] declaredSourceKinds) =>
+        new(record, requireReason, declaredSourceKinds.Length == 0 ? null : declaredSourceKinds);
+
     // Whether a person has to give a reason before a change is saved.
     public bool NeedsReason => Record && RequireReason;
 
@@ -56,7 +60,7 @@ public static class ChangeRecorder
 
     public static async Task<HistorySettings> SettingsAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
         await db.ModelSettings.AsNoTracking()
-            .Select(s => new HistorySettings(s.RecordHistory, s.RequireReason, s.SourceKinds))
+            .Select(s => HistorySettings.From(s.RecordHistory, s.RequireReason, s.SourceKinds))
             .SingleOrDefaultAsync(cancellationToken) ?? HistorySettings.Default;
 
     public static async Task<HistorySettings> SettingsAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, CancellationToken cancellationToken)
@@ -64,7 +68,7 @@ public static class ChangeRecorder
         await using var command = new NpgsqlCommand("SELECT record_history, require_reason, source_kinds FROM model_setting WHERE id = 1", connection, transaction);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         return await reader.ReadAsync(cancellationToken)
-            ? new HistorySettings(reader.GetBoolean(0), reader.GetBoolean(1), reader.GetFieldValue<string[]>(2))
+            ? HistorySettings.From(reader.GetBoolean(0), reader.GetBoolean(1), reader.GetFieldValue<string[]>(2))
             : HistorySettings.Default;
     }
 
