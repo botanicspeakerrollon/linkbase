@@ -32,6 +32,15 @@ dotnet run --project src/Linkbase --launch-profile http -- model load models/cli
 Its route grade ranks and trips are written into the files, since hooks don't run when a model file is loaded. Reloading
 replaces everything, edits included.
 
+## The model of this code base
+
+`models/linkbase-code/` maps Linkbase itself: folders, source files, C# types (and Razor components) and docs, with who is
+defined where, who implements what, which test class tests which type, which files use a type and what the docs mention.
+`generate.py` makes the CSV files from `git ls-files`, so run it from inside the repo and reload to bring the model up to date.
+Links are found by name, not by compiling, so a type is only linked when its name is unique and at least four letters long.
+It is a map to explore, not proof of what depends on what. History is off for it, since it is rebuilt from git. Load it like
+any other model (see [Adding a model](#adding-a-model)), with `model load models/linkbase-code/model.json linkbase-code`.
+
 ## Climbing in the generic store
 
 Climbing's records are in the generic store like any other model's. Its model file is `models/climbing/model.json`, and the

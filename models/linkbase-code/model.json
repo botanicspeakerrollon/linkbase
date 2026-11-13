@@ -1,0 +1,54 @@
+// A map of this code base: folders, files, C# types and docs, and how they refer to one another. The CSV files are made from the
+// tracked files by generate.py, so reload after running it. Links are found by name, so they are a guide rather than a proof.
+{
+  "name": "Linkbase code",
+  // Rebuilt from git whenever it is loaded, so there is nothing to audit.
+  "history": { "record": false },
+  "types": [
+    {
+      "name": "Folder", "color": "#a16207", "icon": "Folder",
+      "source": { "file": "folders.csv", "key": "path", "name": "name" },
+      "fields": []
+    },
+    {
+      "name": "SourceFile", "color": "#0f766e", "icon": "Description",
+      "source": { "file": "files.csv", "key": "path", "name": "name" },
+      "fields": [
+        { "key": "language", "type": "choice", "options": [ "csharp", "razor", "javascript", "css", "markdown", "powershell", "python", "json", "project", "yaml" ], "required": true },
+        { "key": "layer", "type": "choice", "options": [ "core", "domain", "data", "ui", "tests", "docs", "tooling", "app" ], "required": true, "description": "Which part of the architecture the file belongs to, from where it is." },
+        { "key": "lines", "type": "number" }
+      ]
+    },
+    {
+      "name": "CodeType", "color": "#4338ca", "icon": "Code",
+      "source": { "file": "types.csv", "key": "key", "name": "name" },
+      "fields": [
+        { "key": "kind", "type": "choice", "options": [ "class", "record", "interface", "struct", "enum", "component" ], "required": true, "description": "A component is a Razor page or control." },
+        { "key": "namespace" },
+        { "key": "layer", "type": "choice", "options": [ "core", "domain", "data", "ui", "tests", "docs", "tooling", "app" ], "required": true }
+      ]
+    },
+    {
+      "name": "Doc", "color": "#c2410c", "icon": "MenuBook",
+      "source": { "file": "docs.csv", "key": "path", "name": "name" },
+      "fields": [
+        { "key": "lines", "type": "number" },
+        { "key": "state", "type": "choice", "options": [ "current", "history" ], "required": true, "description": "History is a plan or note kept for the record, not a description of how things are." }
+      ]
+    }
+  ],
+  "relationships": [
+    { "from": "Folder", "type": "IN", "to": "Folder", "max": 1, "source": { "file": "folders.csv", "fromColumn": "path", "toColumn": "parent" } },
+    { "from": "SourceFile", "type": "IN", "to": "Folder", "required": true, "max": 1, "source": { "file": "files.csv", "fromColumn": "path", "toColumn": "folder" } },
+    { "from": "CodeType", "type": "DEFINED_IN", "to": "SourceFile", "required": true, "max": 1, "source": { "file": "types.csv", "fromColumn": "key", "toColumn": "file" } },
+    // Interfaces and base classes alike.
+    { "from": "CodeType", "type": "IMPLEMENTS", "to": "CodeType", "source": { "file": "implements.csv", "fromColumn": "type", "toColumn": "base" } },
+    // FooTests tests Foo.
+    { "from": "CodeType", "type": "TESTS", "to": "CodeType", "source": { "file": "tests.csv", "fromColumn": "test", "toColumn": "subject" } },
+    // The file names a type defined somewhere else.
+    { "from": "SourceFile", "type": "USES", "to": "CodeType", "source": { "file": "uses.csv", "fromColumn": "file", "toColumn": "type" } },
+    { "from": "Doc", "type": "MENTIONS", "to": "CodeType", "source": { "file": "doc_mentions.csv", "fromColumn": "doc", "toColumn": "type" } },
+    { "from": "Doc", "type": "COVERS", "to": "SourceFile", "source": { "file": "doc_covers.csv", "fromColumn": "doc", "toColumn": "file" } },
+    { "from": "Doc", "type": "LINKS_TO", "to": "Doc", "source": { "file": "doc_links.csv", "fromColumn": "doc", "toColumn": "target" } }
+  ]
+}
