@@ -161,7 +161,7 @@ public partial class CsvImportPanel
                 Type = c.Guess,
                 Include = CsvImportService.TypeForColumn(c.Header, typeNames) is null,
             });
-            _newType = TypeFromFile(upload.Name);
+            _newType = CsvImportService.TypeFromFile(upload.Name);
             _keyColumn = CsvImportService.GuessKeyColumn(_file, _newType);
 
             // Records of a type that's already here go to it, judged by their fields, keys and the file's name.
@@ -315,19 +315,4 @@ public partial class CsvImportPanel
             : new(_fromType, _fromColumn, _relType ?? "", _toType, _toColumn,
                 Attributes().Select(a => (Attribute: a, Column: AttributeColumn(a))).Where(a => a.Column >= 0)
                     .Select(a => new CsvFieldMapping(a.Column, a.Attribute.Key, a.Attribute.Type)).ToList());
-
-    // suppliers.csv suggests Supplier.
-    private static string TypeFromFile(string fileName)
-    {
-        var stem = Path.GetFileNameWithoutExtension(fileName);
-        var words = stem.Split(['_', '-', ' ', '.'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(w => new string(w.Where(char.IsAsciiLetterOrDigit).ToArray()))
-            .Where(w => w.Length > 0)
-            .Select(w => char.ToUpperInvariant(w[0]) + w[1..].ToLowerInvariant());
-        var name = string.Concat(words);
-        name = name.EndsWith("ies", StringComparison.Ordinal) ? name[..^3] + "y"
-            : name.EndsWith('s') && !name.EndsWith("ss", StringComparison.Ordinal) ? name[..^1]
-            : name;
-        return name.Length > 0 && char.IsAsciiLetterUpper(name[0]) ? name : "";
-    }
 }

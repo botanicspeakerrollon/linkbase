@@ -67,6 +67,7 @@ builder.Services.AddScoped<RecordRepository>();
 builder.Services.AddScoped<Linkbase.Core.History.HistoryRepository>();
 builder.Services.AddScoped<ExternalRefRepository>();
 builder.Services.AddScoped<CsvImportService>();
+builder.Services.AddScoped<CsvModelStarter>();
 builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();
 builder.Services.AddHttpClient<Linkbase.Core.Extraction.PageTextFetcher>(client => client.Timeout = TimeSpan.FromSeconds(30));
 builder.Services.AddScoped<Linkbase.Core.Extraction.ModelExtractionService>();

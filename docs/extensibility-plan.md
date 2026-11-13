@@ -39,9 +39,10 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
    they let people edit without fear. Run it alongside the hosting work below.
 5. **Hosting.** Off-site backups first, because nothing else matters if the data can be lost, then per-customer setup and
    monitoring. See [operations](operations.md) and [deployment-plan](deployment-plan.md).
-6. **A model from a CSV.** A new customer starts from a blank model file. A flow that infers types and fields from a CSV, then an
-   editor for the result, is what a pilot relies on most, because it works without a developer. Finish values on links in the
-   same stretch, through CSV import, Read text and Explore ([relationship-attributes](history/relationship-attributes.md)).
+6. **A model from a CSV.** A new customer starts from a blank model, not a model file. Built: the Start from CSVs tab infers
+   types, fields and relationships from several CSVs ([models](models.md#starting-a-model-from-csv-files)). Still to build: an
+   editor for the result, which is what a pilot relies on most, because it works without a developer. Finish values on links in
+   the same stretch, through CSV import, Read text and Explore ([relationship-attributes](history/relationship-attributes.md)).
 7. **The rest of everyday use**, in this order:
    - **A useful Home.** Home is a list of types. Add recent records, imports and changes, and counts over time, configurable per
      model. Climbing's Insights page is the seed.

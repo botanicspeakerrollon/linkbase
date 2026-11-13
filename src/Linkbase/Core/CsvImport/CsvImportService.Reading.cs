@@ -72,6 +72,22 @@ public sealed partial class CsvImportService
         return new CsvFile(path, fileName, columns, rows) { Preview = preview };
     }
 
+    // suppliers.csv suggests Supplier.
+    public static string TypeFromFile(string fileName)
+    {
+        var stem = Path.GetFileNameWithoutExtension(fileName);
+        var words = stem.Split(['_', '-', ' ', '.'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => new string(w.Where(char.IsAsciiLetterOrDigit).ToArray()))
+            .Where(w => w.Length > 0)
+            .Select(w => char.ToUpperInvariant(w[0]) + w[1..].ToLowerInvariant());
+        var name = string.Concat(words);
+        name = name.EndsWith("People", StringComparison.Ordinal) ? name[..^6] + "Person"
+            : name.EndsWith("ies", StringComparison.Ordinal) ? name[..^3] + "y"
+            : name.EndsWith('s') && !name.EndsWith("ss", StringComparison.Ordinal) ? name[..^1]
+            : name;
+        return name.Length > 0 && char.IsAsciiLetterUpper(name[0]) ? name : "";
+    }
+
     // A field's key from a column's header, such as days_a_week from "Days a week".
     public static string FieldKey(string header)
     {

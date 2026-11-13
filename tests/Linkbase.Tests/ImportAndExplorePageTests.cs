@@ -48,6 +48,25 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
         ClickFresh(cut, () => cut.FindAll(".mud-tab").First(t => t.TextContent.Trim() == "CSV file"));
         Assert.Contains("Choose a CSV file", cut.Markup, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task The_import_page_can_start_a_model_from_several_csv_files()
+    {
+        var store = await ClimbingStore.CreateAsync(Fixture);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(store);
+        Services.AddSingleton<IModelExtractor>(new NoExtractor());
+        Services.AddSingleton(new PageTextFetcher(new HttpClient()));
+        Services.AddSingleton<Linkbase.Core.Staging.ImportStagingService>();
+        Services.AddSingleton<ModelExtractionService>();
+        Services.AddSingleton<Linkbase.Core.CsvImport.CsvImportService>();
+        Services.AddSingleton<Linkbase.Core.CsvImport.CsvModelStarter>();
+        Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(new Microsoft.Extensions.Configuration.ConfigurationManager());
+        var cut = RenderPage<Linkbase.Core.Import.ImportHubPage>();
+
+        ClickFresh(cut, () => cut.FindAll(".mud-tab").First(t => t.TextContent.Trim() == "Start from CSVs"));
+
+        Assert.Contains("Choose CSV files", cut.Markup, StringComparison.Ordinal);
+    }
 }
 
 [Trait("Category", "Database")]
