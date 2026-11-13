@@ -100,8 +100,8 @@ else
 }
 
 @code {
-    [SupplyParameterFromQuery(Name = "type")] public string? InitialType { get; set; }
-    [SupplyParameterFromQuery(Name = "field")] public string? InitialField { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "type")] public string? InitialType { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "field")] public string? InitialField { get; set; }
 
     private IReadOnlyList<DateFieldOption>? _fields;
     private string? _type;

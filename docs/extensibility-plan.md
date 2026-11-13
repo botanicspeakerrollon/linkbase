@@ -42,16 +42,17 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
 6. **A model from a CSV.** A new customer starts from a blank model file. A flow that infers types and fields from a CSV, then an
    editor for the result, is what a pilot relies on most, because it works without a developer. Finish values on links in the
    same stretch, through CSV import, Read text and Explore ([relationship-attributes](history/relationship-attributes.md)).
-7. **The rest of everyday use**, in this order:
-   - **A useful Home.** Home is a list of types. Add recent records, imports and changes, and counts over time, configurable per
-     model. Climbing's Insights page is the seed.
-   - **Cleanup tools.** A duplicate finder with merge, and lists of records with no links or a required field missing. Import
-     review protects the way in and nothing protects the data once it is in.
-   - **Paths and neighbourhoods.** "How is A connected to B?" as a shortest-path button, and "what changed near this node since
-     X". Also show History in Explore's link details, where only the record page has it.
-   - **Time.** A timeline for dated records, and an "as of" slider that uses the audit history to show the graph as it was.
-   - **Phone use.** Climbing is logged at the crag. Check Logbook and adding an ascent at phone width, make quick logging work
-     one-handed, and add a phone-sized browser test.
+7. **The rest of everyday use.** Built, except phone use. Checked by tests and bUnit pages, not yet by using the running app:
+   - **A useful Home.** Recent records, changes and imports, and records added per month, each hideable per model with
+     `Models:<key>:Home:Hide` ([models](models.md#configuring-models)). Climbing's Insights page was not folded in.
+   - **Cleanup tools.** `/cleanup`: names that match apart from case and spacing, with merge; records with no links; records
+     missing a required value or link. Merge is `RecordRepository.MergeAsync`. Fuzzy duplicates (spelling variants) are not found.
+   - **Paths and neighbourhoods.** Explore's Find a path (`PathRepository`, at most 6 links by default, says when it gave up on a
+     hub), What changed nearby, and History in a link's details.
+   - **Time.** `/timeline` for any single-valued date field, and Explore's As of date and slider. As of hides records and links that
+     did not exist yet and rewinds values from the audit trail. Records deleted since are not drawn, and links that came in before history was kept look old.
+   - **Phone use.** Still to do. Climbing is logged at the crag. Check Logbook and adding an ascent at phone width, make quick logging
+     work one-handed, and add a phone-sized browser test.
 
 Items 1 to 3 and 7 came from reading the page list, not from using the app, so check each against the running app before
 building it. Every new page or dialog gets focus handling and hotkeys, and keeps to the dark theme and shared styles.

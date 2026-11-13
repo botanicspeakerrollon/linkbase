@@ -1,4 +1,7 @@
+using Bunit;
 using Linkbase.Core;
+using Linkbase.Core.Explore;
+using Linkbase.Components.Pages;
 using Linkbase.Core.Cleanup;
 using Linkbase.Core.Graph;
 using Linkbase.Core.History;
@@ -8,7 +11,10 @@ using Linkbase.Core.Records;
 using Linkbase.Core.Timeline;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MudBlazor;
 
 namespace Linkbase.Tests;
 
@@ -307,5 +313,83 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
         Assert.False(one.ShowsOnHome(HomeRepository.Imports));
         Assert.True(one.ShowsOnHome(HomeRepository.Changes));
         Assert.True(catalog.Find("two")!.ShowsOnHome(HomeRepository.Growth));
+    }
+}
+
+// The new pages and dialogs, rendered against the climbing model in a database of its own.
+public sealed class EverydayUsePageTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
+{
+    [Fact]
+    public async Task Home_draws_how_many_records_were_added_each_month()
+    {
+        await SeedAsync();
+        var cut = RenderPage<Home>();
+
+        Sees(cut, "Records added each month");
+        Sees(cut, "home-growth-bar");
+    }
+
+    [Fact]
+    public async Task Cleanup_shows_a_duplicate_group_and_merges_it_from_the_dialog()
+    {
+        var store = await UseClimbingStoreAsync();
+        var name = $"Twin Crag {Guid.NewGuid():N}";
+        var country = await ClimbingStore.AddCountryAsync(store, Unique("Country"));
+        var first = await ClimbingStore.AddAsync(store, "Crag", name, null, "IN", country);
+        var second = await ClimbingStore.AddAsync(store, "Crag", name.ToUpperInvariant(), null, "IN", country);
+        var cut = RenderPage<Linkbase.Core.Cleanup.CleanupPage>();
+
+        Sees(cut, name);
+        Press(cut, "Merge 1 into the one kept");
+        Press(Dialogs, "Merge");
+
+        Told("Merged 1 into");
+        await using var db = store.CreateDbContext();
+        Assert.Single(await db.Nodes.Where(n => n.Id == first || n.Id == second).ToListAsync());
+    }
+
+    [Fact]
+    public async Task Cleanup_lists_records_with_no_links()
+    {
+        var store = await UseClimbingStoreAsync();
+        var name = $"Lonely Partner {Guid.NewGuid():N}";
+        await ClimbingStore.AddAsync(store, "Partner", name);
+        var cut = RenderPage<Linkbase.Core.Cleanup.CleanupPage>();
+
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[role=tab]")));
+        ClickFresh(cut, () => cut.FindAll("[role=tab]").First(t => t.TextContent.Contains("No links", StringComparison.Ordinal)));
+
+        Sees(cut, name);
+    }
+
+    [Fact]
+    public async Task The_timeline_lists_ascents_by_their_date()
+    {
+        await SeedAsync(new DateOnly(2019, 7, 14));
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/timeline?type=Ascent&field=date");
+        var cut = RenderPage<Linkbase.Core.Timeline.TimelinePage>();
+
+        Sees(cut, "July 2019");
+        Sees(cut, "timeline-month");
+    }
+
+    [Fact]
+    public async Task The_path_dialog_finds_how_two_records_connect_and_hands_the_path_back()
+    {
+        var store = await UseClimbingStoreAsync();
+        var place = await ClimbingStore.AddPlaceAsync(store);
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        RenderPage<ExplorePage>();
+        var start = new GraphNode(place.RouteId, "Route", place.Route, []);
+
+        var reference = await Dialogs.InvokeAsync(() => dialogs.ShowAsync<PathDialog>("How are they connected?", new DialogParameters<PathDialog> { { d => d.Start, start } }));
+        Pick(Dialogs, "To", place.Crag, place.Crag);
+        Press(Dialogs, "Find");
+
+        Sees(Dialogs, "1 link apart");
+        Press(Dialogs, "Show on graph");
+        var result = await reference.Result;
+        var path = Assert.IsType<Linkbase.Core.Paths.PathResult>(result!.Data);
+        Assert.Equal([place.RouteId, place.CragId], path.NodeIds);
     }
 }

@@ -189,11 +189,14 @@ else if (_counts is not null)
         }
     }
 
+    private bool _growthAsked;
+
     // Growth reads every record, so it comes after the page has drawn, and a failure just leaves the panel out.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && _counts is not null && CurrentModel.Info.ShowsOnHome(HomeRepository.Growth))
+        if (!_growthAsked && _counts is not null && CurrentModel.Info.ShowsOnHome(HomeRepository.Growth))
         {
+            _growthAsked = true;
             try
             {
                 _growth = await Overview.GrowthAsync(12, DateTimeOffset.UtcNow);
