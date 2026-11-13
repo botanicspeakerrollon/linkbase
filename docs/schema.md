@@ -187,6 +187,7 @@ The model's history settings, from its model file. At most one row (`id = 1`); n
 | `id` | integer | PK, always 1 |
 | `record_history` | boolean | default `true`. Whether changes are logged |
 | `require_reason` | boolean | default `true`. Whether a person has to give a reason |
+| `source_kinds` | text[] | default empty. The kinds of source a change can name; empty means just `Internet` |
 
 ### `justification`
 The why of a change set. `note` is a brief paraphrase, never text copied from a source.
@@ -196,7 +197,9 @@ The why of a change set. `note` is a brief paraphrase, never text copied from a 
 | `id` | bigint | PK, identity |
 | `kind` | text | `manual`, `import`, `derived` or `correction` |
 | `note` | text | nullable |
-| `source_url` | text | nullable |
+| `source_id` | text | nullable. What identifies the source: a web address, a ticket number, a document name |
+| `source_kind` | text | nullable. One of the model's `source_kinds` |
+| `source_comment` | text | nullable. A brief paraphrased remark about the source |
 | `import_batch_id` | bigint | nullable, FK to `import_batch.id` |
 | `user_id` | bigint | FK to `app_user.id` |
 | `created_at` | timestamptz | default `now()` |
@@ -287,5 +290,5 @@ The `climbing_*` views belong to the climbing domain, but they are created in ev
 
 ## Migration history
 
-`__EFMigrationsHistory` has `20261109111942_InitialCreate`, then the later migrations in `src/Linkbase/Data/Migrations`, the
-newest being `AddAuditHistory`.
+`__EFMigrationsHistory` has `20261113025612_InitialCreate`, the one baseline, then any later migrations in
+`src/Linkbase/Data/Migrations`.

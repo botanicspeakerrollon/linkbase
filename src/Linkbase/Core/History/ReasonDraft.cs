@@ -4,8 +4,12 @@ namespace Linkbase.Core.History;
 public sealed class ReasonDraft
 {
     public string? Note { get; set; }
-    public string? SourceUrl { get; set; }
+    public string? SourceId { get; set; }
+    public string? SourceKind { get; set; }
+    public string? SourceComment { get; set; }
 
     public ChangeReason? ToReason() =>
-        string.IsNullOrWhiteSpace(Note) && string.IsNullOrWhiteSpace(SourceUrl) ? null : new ChangeReason(Note?.Trim() ?? "", SourceUrl?.Trim());
+        new[] { Note, SourceId, SourceKind, SourceComment }.All(string.IsNullOrWhiteSpace)
+            ? null
+            : new ChangeReason(Note?.Trim() ?? "", SourceId?.Trim(), SourceKind?.Trim(), SourceComment?.Trim());
 }

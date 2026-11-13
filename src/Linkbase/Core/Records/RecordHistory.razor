@@ -17,9 +17,30 @@
                         {
                             <span class="history-note">@entry.Note</span>
                         }
-                        @if (entry.SourceUrl is { } source && Uri.TryCreate(source, UriKind.Absolute, out var url) && url.Scheme is "http" or "https")
+                        @if (entry.SourceId is { } source)
                         {
-                            <MudLink Href="@source" Target="_blank" rel="noopener noreferrer">Source</MudLink>
+                            <span class="history-source">
+                                @if (entry.SourceKind is { } sourceKind)
+                                {
+                                    <span>@sourceKind: </span>
+                                }
+                                @if (Uri.TryCreate(source, UriKind.Absolute, out var url) && url.Scheme is "http" or "https")
+                                {
+                                    <MudLink Href="@source" Target="_blank" rel="noopener noreferrer">@source</MudLink>
+                                }
+                                else
+                                {
+                                    <span>@source</span>
+                                }
+                            </span>
+                        }
+                        else if (entry.SourceKind is { } kindOnly)
+                        {
+                            <span class="history-source">@kindOnly</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(entry.SourceComment))
+                        {
+                            <span class="history-note">(@entry.SourceComment)</span>
                         }
                     </div>
                     @foreach (var change in entry.Changes)

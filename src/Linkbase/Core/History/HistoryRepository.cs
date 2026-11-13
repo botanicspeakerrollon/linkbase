@@ -10,8 +10,8 @@ public sealed record HistoryChange(
 
 // A change set with its reason, as the timeline shows it. Only the changes that touch the record are listed.
 public sealed record HistoryEntry(
-    long ChangeSetId, DateTimeOffset When, JustificationKind Kind, string? Note, string? SourceUrl, long? ImportBatchId, long? CauseChangeSetId,
-    IReadOnlyList<HistoryChange> Changes);
+    long ChangeSetId, DateTimeOffset When, JustificationKind Kind, string? Note, string? SourceId, string? SourceKind, string? SourceComment,
+    long? ImportBatchId, long? CauseChangeSetId, IReadOnlyList<HistoryChange> Changes);
 
 // Reads the audit trail. See docs/audit-history-plan.md.
 public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
@@ -38,7 +38,8 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
             .Take(PageSize)
             .Select(s => new
             {
-                s.Id, s.CreatedAt, s.Justification.Kind, s.Justification.Note, s.Justification.SourceUrl, s.Justification.ImportBatchId, s.CauseChangeSetId,
+                s.Id, s.CreatedAt, s.Justification.Kind, s.Justification.Note, s.Justification.SourceId, s.Justification.SourceKind,
+                s.Justification.SourceComment, s.Justification.ImportBatchId, s.CauseChangeSetId,
             })
             .ToListAsync(cancellationToken);
         var ids = entries.Select(e => e.Id).ToList();
@@ -48,7 +49,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
         var names = await db.Nodes.AsNoTracking().Where(n => others.Contains(n.Id)).Select(n => new { n.Id, n.Name }).ToDictionaryAsync(n => n.Id, n => n.Name, cancellationToken);
 
         var result = entries.Select(e => new HistoryEntry(
-            e.Id, e.CreatedAt, e.Kind, e.Note, e.SourceUrl, e.ImportBatchId, e.CauseChangeSetId,
+            e.Id, e.CreatedAt, e.Kind, e.Note, e.SourceId, e.SourceKind, e.SourceComment, e.ImportBatchId, e.CauseChangeSetId,
             changes.Where(c => c.ChangeSetId == e.Id).Select(c =>
             {
                 var other = c.EntityKind == ChangeEntityKind.Link ? (c.EntityId == nodeId ? c.RelatedId : c.EntityId) : null;
@@ -66,7 +67,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
                 .SingleOrDefaultAsync(cancellationToken);
             if (added is not null && !changes.Any(c => c.EntityKind == ChangeEntityKind.Node && c.EntityId == nodeId && c.Op == ChangeOp.Create))
             {
-                result.Add(new HistoryEntry(0, added.CreatedAt, JustificationKind.Import, $"Added by import #{added.ImportBatchId}", added.SourceUrl, added.ImportBatchId, null, []));
+                result.Add(new HistoryEntry(0, added.CreatedAt, JustificationKind.Import, $"Added by import #{added.ImportBatchId}", added.SourceUrl, null, null, added.ImportBatchId, null, []));
             }
         }
 

@@ -152,6 +152,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             setting.Property(s => s.Id).ValueGeneratedNever();
             setting.Property(s => s.RecordHistory).HasDefaultValue(true);
             setting.Property(s => s.RequireReason).HasDefaultValue(true);
+            setting.Property(s => s.SourceKinds).HasDefaultValueSql("'{}'");
             setting.ToTable(t => t.HasCheckConstraint("ck_model_setting_one_row", "id = 1"));
         });
 
