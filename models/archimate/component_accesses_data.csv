@@ -1,0 +1,14 @@
+component,data,access_type
+order-management-system,order-record,write
+order-management-system,stock-level-record,read
+point-of-sale-system,payment-transaction,write
+payment-gateway-adapter,payment-transaction,read_write
+warehouse-management-system,stock-level-record,write
+delivery-scheduling-app,delivery-schedule,write
+customer-relationship-management-system,customer-profile,read_write
+supplier-portal,supplier-record,write
+pricing-engine,price-table,write
+loyalty-rewards-app,loyalty-account,read_write
+fraud-detection-system,fraud-score,write
+reporting-dashboard,sales-report,read
+returns-processing-app,order-record,read_write

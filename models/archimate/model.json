@@ -1,0 +1,91 @@
+// A made-up retail group's enterprise architecture, in ArchiMate's three core layers (business, application,
+// technology), to show a larger generic model with cross-layer serving and realization. Everything here is fictional.
+{
+  "name": "Aldergate Retail Group (ArchiMate)",
+  "types": [
+    {
+      "name": "BusinessActor", "color": "#ca8a04", "icon": "Person",
+      "source": { "file": "actors.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "actor_type", "type": "choice", "options": [ "internal", "external" ], "description": "Staff or an outside party." },
+        { "key": "department", "description": "The part of the business they belong to." }
+      ]
+    },
+    {
+      "name": "BusinessRole", "color": "#d97706", "icon": "Badge",
+      "source": { "file": "roles.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "description", "description": "What the role is responsible for." } ]
+    },
+    {
+      "name": "BusinessProcess", "color": "#eab308", "icon": "Sync",
+      "source": { "file": "processes.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "frequency", "type": "choice", "options": [ "continuous", "daily", "weekly", "monthly", "ad_hoc" ], "description": "How often it runs." },
+        { "key": "owner_department", "description": "Who is accountable for it." }
+      ]
+    },
+    {
+      "name": "BusinessService", "color": "#facc15", "icon": "RoomService",
+      "source": { "file": "business_services.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "channel", "type": "choice", "options": [ "online", "in_store", "phone", "any" ], "description": "How customers reach it." } ]
+    },
+    {
+      "name": "BusinessObject", "color": "#a16207", "icon": "Description",
+      "source": { "file": "business_objects.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "retention_period", "description": "How long it must be kept, such as \"7 years\"." } ]
+    },
+    {
+      "name": "ApplicationComponent", "color": "#2563eb", "icon": "Widgets",
+      "source": { "file": "app_components.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "vendor", "type": "choice", "options": [ "in_house", "third_party" ], "description": "Who built it." },
+        { "key": "lifecycle_status", "type": "choice", "options": [ "active", "legacy", "planned" ], "description": "Where it is in its lifecycle." }
+      ]
+    },
+    {
+      "name": "ApplicationService", "color": "#0ea5e9", "icon": "Cloud",
+      "source": { "file": "app_services.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "availability", "type": "choice", "options": [ "business_hours", "24x7" ], "description": "When it can be called." } ]
+    },
+    {
+      "name": "DataObject", "color": "#0284c7", "icon": "Storage",
+      "source": { "file": "data_objects.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "classification", "type": "choice", "options": [ "public", "internal", "confidential", "restricted" ], "description": "How sensitive it is." } ]
+    },
+    {
+      "name": "TechnologyNode", "color": "#16a34a", "icon": "Dns",
+      "source": { "file": "tech_nodes.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "environment", "type": "choice", "options": [ "production", "staging", "dr" ], "description": "Which environment it runs in." },
+        { "key": "hosting", "type": "choice", "options": [ "on_prem", "cloud" ], "description": "Where it physically runs." }
+      ]
+    },
+    {
+      "name": "TechnologyService", "color": "#22c55e", "icon": "SettingsEthernet",
+      "source": { "file": "tech_services.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "provider", "description": "Who runs it." } ]
+    }
+  ],
+  "relationships": [
+    { "from": "BusinessActor", "type": "ASSIGNMENT", "to": "BusinessRole", "source": { "file": "actor_roles.csv", "fromColumn": "actor", "toColumn": "role" } },
+    { "from": "BusinessRole", "type": "ASSIGNMENT", "to": "BusinessProcess", "source": { "file": "role_processes.csv", "fromColumn": "role", "toColumn": "process" } },
+    { "from": "BusinessProcess", "type": "REALIZATION", "to": "BusinessService", "source": { "file": "process_realizes_service.csv", "fromColumn": "process", "toColumn": "service" } },
+    { "from": "BusinessProcess", "type": "TRIGGERING", "to": "BusinessProcess", "source": { "file": "process_triggers.csv", "fromColumn": "from", "toColumn": "to" } },
+    {
+      "from": "BusinessProcess", "type": "ACCESS", "to": "BusinessObject",
+      "source": { "file": "process_accesses_object.csv", "fromColumn": "process", "toColumn": "object" },
+      "fields": [ { "key": "access_type", "type": "choice", "options": [ "read", "write", "read_write" ], "description": "How the process touches the object." } ]
+    },
+    { "from": "ApplicationService", "type": "SERVING", "to": "BusinessProcess", "source": { "file": "app_service_serves_process.csv", "fromColumn": "service", "toColumn": "process" } },
+    { "from": "ApplicationComponent", "type": "REALIZATION", "to": "ApplicationService", "source": { "file": "component_realizes_service.csv", "fromColumn": "component", "toColumn": "service" } },
+    {
+      "from": "ApplicationComponent", "type": "ACCESS", "to": "DataObject",
+      "source": { "file": "component_accesses_data.csv", "fromColumn": "component", "toColumn": "data" },
+      "fields": [ { "key": "access_type", "type": "choice", "options": [ "read", "write", "read_write" ], "description": "How the component touches the data." } ]
+    },
+    { "from": "DataObject", "type": "REALIZATION", "to": "BusinessObject", "source": { "file": "data_realizes_object.csv", "fromColumn": "data", "toColumn": "object" } },
+    { "from": "ApplicationComponent", "type": "ASSIGNMENT", "to": "TechnologyNode", "source": { "file": "component_deployed_on_node.csv", "fromColumn": "component", "toColumn": "node" } },
+    { "from": "TechnologyService", "type": "SERVING", "to": "ApplicationComponent", "source": { "file": "techservice_serves_component.csv", "fromColumn": "service", "toColumn": "component" } },
+    { "from": "TechnologyNode", "type": "REALIZATION", "to": "TechnologyService", "source": { "file": "node_realizes_techservice.csv", "fromColumn": "node", "toColumn": "service" } }
+  ]
+}

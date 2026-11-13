@@ -1,0 +1,13 @@
+id,name,vendor,lifecycle_status
+order-management-system,Order Management System,in_house,active
+point-of-sale-system,Point of Sale System,third_party,active
+payment-gateway-adapter,Payment Gateway Adapter,in_house,active
+warehouse-management-system,Warehouse Management System,third_party,active
+delivery-scheduling-app,Delivery Scheduling App,in_house,active
+customer-relationship-management-system,Customer Relationship Management System,third_party,active
+supplier-portal,Supplier Portal,in_house,active
+pricing-engine,Pricing Engine,in_house,active
+loyalty-rewards-app,Loyalty Rewards App,in_house,planned
+fraud-detection-system,Fraud Detection System,third_party,active
+reporting-dashboard,Reporting Dashboard,in_house,active
+returns-processing-app,Returns Processing App,in_house,legacy

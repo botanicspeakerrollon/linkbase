@@ -1,0 +1,9 @@
+id,name,environment,hosting
+order-platform-cluster,Order Platform Cluster,production,cloud
+pos-terminal-fleet,POS Terminal Fleet,production,on_prem
+payment-processing-server,Payment Processing Server,production,on_prem
+warehouse-edge-server,Warehouse Edge Server,production,on_prem
+crm-database-server,CRM Database Server,production,cloud
+supplier-portal-web-server,Supplier Portal Web Server,production,cloud
+analytics-data-warehouse,Analytics Data Warehouse,production,cloud
+fraud-detection-gpu-cluster,Fraud Detection GPU Cluster,production,cloud

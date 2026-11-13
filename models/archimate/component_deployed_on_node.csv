@@ -1,0 +1,13 @@
+component,node
+order-management-system,order-platform-cluster
+point-of-sale-system,pos-terminal-fleet
+payment-gateway-adapter,payment-processing-server
+warehouse-management-system,warehouse-edge-server
+delivery-scheduling-app,order-platform-cluster
+customer-relationship-management-system,crm-database-server
+supplier-portal,supplier-portal-web-server
+pricing-engine,order-platform-cluster
+loyalty-rewards-app,crm-database-server
+fraud-detection-system,fraud-detection-gpu-cluster
+reporting-dashboard,analytics-data-warehouse
+returns-processing-app,order-platform-cluster

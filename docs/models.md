@@ -12,9 +12,9 @@ There are two kinds:
 
 ## Trying it
 
-Locally, four models are configured in `appsettings.Development.json`: your climbing logbook, the example consultancy, Swiss
-public transport and the demo climbing logbook. The last three live in the `linkbase-samples` container (see
-[performance](performance.md)). Hover over the rail and use the switcher by the model's name.
+Locally, five models are configured in `appsettings.Development.json`: your climbing logbook, the example consultancy, Swiss
+public transport, the demo climbing logbook and an ArchiMate example. The last four live in the `linkbase-samples` container
+(see [performance](performance.md)). Hover over the rail and use the switcher by the model's name.
 
 ## The demo climbing logbook
 
@@ -31,6 +31,22 @@ dotnet run --project src/Linkbase --launch-profile http -- model load models/cli
 
 Its route grade ranks and trips are written into the files, since hooks don't run when a model file is loaded. Reloading
 replaces everything, edits included.
+
+## The ArchiMate example
+
+`models/archimate/` is a made-up retail group's enterprise architecture, in ArchiMate's three core layers: 10 business
+actors, 8 business roles, 14 business processes, 8 business services and 8 business objects; 12 application components,
+10 application services and 10 data objects; 8 technology nodes and 6 technology services, 94 records in all. The 139
+links between them use only real ArchiMate relationship kinds (`ASSIGNMENT`, `REALIZATION`, `SERVING`, `ACCESS` and
+`TRIGGERING`), reused across layers the way ArchiMate itself reuses them, such as a process realizing a business service
+and a component realizing an application service. To load it, make a database and load the model file like any other
+(see [Adding a model](#adding-a-model)):
+
+```powershell
+docker exec linkbase-samples psql -U linkbase -d postgres -c "CREATE DATABASE archimate"
+dotnet ef database update --project src/Linkbase --connection "Host=127.0.0.1;Port=55433;Database=archimate;Username=linkbase"
+dotnet run --project src/Linkbase --launch-profile http -- model load models/archimate/model.json archimate
+```
 
 ## The model of this code base
 
