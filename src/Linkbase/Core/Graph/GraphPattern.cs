@@ -27,7 +27,21 @@ public sealed record GraphPropertyInfo(string Label, string Key, GraphValueType 
     public override int GetHashCode() => HashCode.Combine(Label, Key, Type, Options.Count);
 }
 
-// What exists in the graph: which labels link to which, and which properties each label has.
+// A value a relationship's links can carry, such as a partner's role. See docs/models.md#link-attributes. Keyed by RelType
+// alone: the same relationship name between different type pairs is rare, and treated the same loose way a node property's
+// label already is when a filter doesn't say one.
+public sealed record GraphLinkPropertyInfo(string RelType, string Key, GraphValueType Type)
+{
+    public IReadOnlyList<string> Options { get; init; } = [];
+
+    public bool Equals(GraphLinkPropertyInfo? other) =>
+        other is not null && RelType == other.RelType && Key == other.Key && Type == other.Type && Options.SequenceEqual(other.Options);
+
+    public override int GetHashCode() => HashCode.Combine(RelType, Key, Type, Options.Count);
+}
+
+// What exists in the graph: which labels link to which, and which properties each label (and, separately, each
+// relationship's links) has.
 public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IReadOnlyList<GraphPropertyInfo> Properties)
 {
     // In the order of Properties, which the repository lists with the most common types first.
@@ -37,6 +51,9 @@ public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IRe
 
     // How the model file says its types should look, where it says so.
     public IReadOnlyList<GraphTypeInfo> Types { get; init; } = [];
+
+    // The values each relationship's links can carry. Empty for a relationship with none.
+    public IReadOnlyList<GraphLinkPropertyInfo> LinkProperties { get; init; } = [];
 }
 
 public sealed record GraphTypeInfo(string Label, string? Color, string? Icon);
@@ -50,7 +67,11 @@ public sealed record PatternFilter(string Key, FilterOperator Operator, string V
 // A null label matches a node of any kind.
 public sealed record PatternNode(string? Label, IReadOnlyList<PatternFilter> Filters);
 
-public sealed record PatternRel(string RelType, bool Outgoing);
+public sealed record PatternRel(string RelType, bool Outgoing)
+{
+    // Conditions on the values the matched link itself carries, such as role = Lead. See docs/models.md#link-attributes.
+    public IReadOnlyList<PatternFilter> Filters { get; init; } = [];
+}
 
 // A chain such as Crag <-AT- Route. There's always one more node than there are relationships.
 public sealed record GraphPattern(IReadOnlyList<PatternNode> Nodes, IReadOnlyList<PatternRel> Rels);
@@ -160,6 +181,11 @@ public static partial class GraphPatternSql
             var (near, far) = rel.Outgoing ? ("source_id", "target_id") : ("target_id", "source_id");
             from.Append(System.Globalization.CultureInfo.InvariantCulture, $" JOIN graph_edges e{i} ON e{i}.{near} = n{i}.node_id AND e{i}.rel_type = {Add(rel.RelType, NpgsqlDbType.Text)}");
             from.Append(System.Globalization.CultureInfo.InvariantCulture, $" JOIN graph_nodes n{i + 1} ON n{i + 1}.node_id = e{i}.{far}");
+
+            foreach (var filter in rel.Filters)
+            {
+                where.Add(LinkFilterSql(i, rel.RelType, filter, schema, Add));
+            }
         }
 
         for (var i = 0; i < pattern.Nodes.Count; i++)
@@ -210,14 +236,32 @@ public static partial class GraphPatternSql
 
         var type = ValueType(schema, label, filter.Key)
             ?? throw new LinkbaseValidationException($"Unknown property '{filter.Key}'.");
+        var column = filter.Key == "name" ? $"n{index}.name" : $"n{index}.props->>'{filter.Key}'";
+        return ValueFilterSql(column, $"n{index}.props", filter, type, add);
+    }
 
-        // The key is safe to put in the SQL text: it came from the schema, and it must also look like a column name.
+    // A filter on a matched link's own values, such as role = Lead, found on relationship e{index}.
+    private static string LinkFilterSql(int index, string relType, PatternFilter filter, GraphSchema schema, Func<object, NpgsqlDbType, string> add)
+    {
+        if (filter.Key == PatternFilter.AnyField)
+        {
+            throw new LinkbaseValidationException("A link's own condition needs one of its values, not free text.");
+        }
+
+        var type = LinkValueType(schema, relType, filter.Key)
+            ?? throw new LinkbaseValidationException($"'{relType}' has no value called '{filter.Key}'.");
+        return ValueFilterSql($"e{index}.props->>'{filter.Key}'", $"e{index}.props", filter, type, add);
+    }
+
+    // Shared by a node's own filters and a link's: the key has already been checked against the schema, so it's safe in
+    // the SQL text, and it must also look like a column name.
+    private static string ValueFilterSql(string column, string propsColumn, PatternFilter filter, GraphValueType type, Func<object, NpgsqlDbType, string> add)
+    {
         if (!PropertyKey().IsMatch(filter.Key))
         {
             throw new LinkbaseValidationException($"Unknown property '{filter.Key}'.");
         }
 
-        var column = filter.Key == "name" ? $"n{index}.name" : $"n{index}.props->>'{filter.Key}'";
         switch (type)
         {
             case GraphValueType.Number:
@@ -237,7 +281,7 @@ public static partial class GraphPatternSql
             case GraphValueType.Boolean:
                 return $"{column} = {add(filter.Value.Trim().ToLowerInvariant(), NpgsqlDbType.Text)}";
             case GraphValueType.List when filter.Key != "name":
-                return ListSql(index, filter, add);
+                return ListSql(propsColumn, filter, add);
             default:
                 return TextSql(column, filter, add);
         }
@@ -275,9 +319,9 @@ public static partial class GraphPatternSql
     }
 
     // A list matches when any of its values does. A value that isn't an array, from sampled data, counts as one value.
-    private static string ListSql(int index, PatternFilter filter, Func<object, NpgsqlDbType, string> add)
+    private static string ListSql(string propsColumn, PatternFilter filter, Func<object, NpgsqlDbType, string> add)
     {
-        var json = $"n{index}.props->'{filter.Key}'";
+        var json = $"{propsColumn}->'{filter.Key}'";
         var values = $"jsonb_array_elements_text(CASE jsonb_typeof({json}) WHEN 'array' THEN {json} ELSE jsonb_build_array({json}) END)";
         return $"EXISTS (SELECT 1 FROM {values} item WHERE {TextSql("item", filter, add)})";
     }
@@ -297,6 +341,9 @@ public static partial class GraphPatternSql
         var found = schema.Properties.FirstOrDefault(p => p.Key == key && (label is null || p.Label == label));
         return found?.Type;
     }
+
+    private static GraphValueType? LinkValueType(GraphSchema schema, string relType, string key) =>
+        schema.LinkProperties.FirstOrDefault(p => p.RelType == relType && p.Key == key)?.Type;
 
     [GeneratedRegex("^[a-z][a-z_]*$")]
     private static partial Regex PropertyKey();

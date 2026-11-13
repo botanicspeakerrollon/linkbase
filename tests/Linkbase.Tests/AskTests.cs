@@ -29,6 +29,7 @@ public class PatternCheckerTests
         [
             new GraphConnection("Crag", "IN", "Country"),
             new GraphConnection("Route", "AT", "Crag"),
+            new GraphConnection("Person", "WORKS_ON", "Route"),
         ],
         [
             new GraphPropertyInfo("Crag", "name", GraphValueType.Text),
@@ -38,7 +39,11 @@ public class PatternCheckerTests
             new GraphPropertyInfo("Route", "length_m", GraphValueType.Number),
             new GraphPropertyInfo("Route", "style", GraphValueType.Choice) { Options = ["Sport", "Trad"] },
             new GraphPropertyInfo("Route", "first_climbed", GraphValueType.Date),
-        ]);
+            new GraphPropertyInfo("Person", "name", GraphValueType.Text),
+        ])
+    {
+        LinkProperties = [new GraphLinkPropertyInfo("WORKS_ON", "role", GraphValueType.Choice) { Options = ["Lead", "Support"] }],
+    };
 
     private static GraphPattern Route(params PatternFilter[] filters) => new([new PatternNode("Route", filters)], []);
 
@@ -134,6 +139,36 @@ public class PatternCheckerTests
     }
 
     [Fact]
+    public void A_filter_on_a_links_own_value_is_matched_to_its_choice()
+    {
+        var pattern = new GraphPattern(
+            [new PatternNode("Person", []), new PatternNode("Route", [])],
+            [new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter("role", FilterOperator.Equals, "lead")] }]);
+
+        var result = PatternChecker.Check(pattern, Schema, "leads");
+
+        Assert.Equal("Lead", result.Rels[0].Filters[0].Value);
+    }
+
+    [Fact]
+    public void A_links_own_filter_naming_a_value_it_doesnt_carry_is_refused()
+    {
+        var pattern = new GraphPattern(
+            [new PatternNode("Person", []), new PatternNode("Route", [])],
+            [new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter("days_a_week", FilterOperator.Equals, "3")] }]);
+        Assert.Throws<QuestionFailedException>(() => PatternChecker.Check(pattern, Schema, "3 days a week"));
+    }
+
+    [Fact]
+    public void A_links_own_filter_cant_be_free_text()
+    {
+        var pattern = new GraphPattern(
+            [new PatternNode("Person", []), new PatternNode("Route", [])],
+            [new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter(PatternFilter.AnyField, FilterOperator.Contains, "x")] }]);
+        Assert.Throws<QuestionFailedException>(() => PatternChecker.Check(pattern, Schema, "x"));
+    }
+
+    [Fact]
     public void A_pattern_that_isnt_a_chain_is_refused()
     {
         Fails(new GraphPattern([], []), "x");
@@ -155,7 +190,10 @@ public class AnthropicQuestionCompilerTests
 {
     private static readonly GraphSchema Schema = new(
         [new GraphConnection("Route", "AT", "Crag")],
-        [new GraphPropertyInfo("Route", "grade", GraphValueType.Text), new GraphPropertyInfo("Crag", "name", GraphValueType.Text)]);
+        [new GraphPropertyInfo("Route", "grade", GraphValueType.Text), new GraphPropertyInfo("Crag", "name", GraphValueType.Text)])
+    {
+        LinkProperties = [new GraphLinkPropertyInfo("AT", "pitch", GraphValueType.Number)],
+    };
 
     private static Dictionary<string, JsonElement> Input(string json) =>
         JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json)!;
@@ -169,6 +207,7 @@ public class AnthropicQuestionCompilerTests
         Assert.Equal(["Route", "Crag", "Anything"], node["type"]!["enum"]!.AsArray().Select(n => n!.GetValue<string>()));
         Assert.Equal(["grade", "name", "*"], node["filters"]!["items"]!["properties"]!["field"]!["enum"]!.AsArray().Select(n => n!.GetValue<string>()));
         Assert.Equal(["AT"], schema["properties"]!["links"]!["items"]!["properties"]!["rel_type"]!["enum"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(["pitch"], schema["properties"]!["links"]!["items"]!["properties"]!["filters"]!["items"]!["properties"]!["field"]!["enum"]!.AsArray().Select(n => n!.GetValue<string>()));
     }
 
     [Fact]
@@ -177,9 +216,31 @@ public class AnthropicQuestionCompilerTests
         var prompt = AnthropicQuestionCompiler.SystemPrompt(Schema, new DateOnly(2026, 5, 1));
 
         Assert.Contains("Route: grade (text)", prompt);
-        Assert.Contains("Route AT Crag", prompt);
+        Assert.Contains("Route AT Crag, carrying: pitch (a number)", prompt);
         Assert.Contains("Today is 2026-05-01", prompt);
         Assert.Contains("ignore them", prompt);
+    }
+
+    [Fact]
+    public void A_links_filters_become_part_of_the_pattern()
+    {
+        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+            """
+            {"records":[{"type":"Route","filters":[]},{"type":"Crag","filters":[]}],
+             "links":[{"rel_type":"AT","direction":"outgoing","filters":[{"field":"pitch","operator":"equals","value":"2"}]}]}
+            """));
+
+        Assert.Equal("pitch", pattern.Rels[0].Filters[0].Key);
+        Assert.Equal("2", pattern.Rels[0].Filters[0].Value);
+    }
+
+    [Fact]
+    public void A_link_with_no_filters_key_is_read_as_having_none()
+    {
+        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+            """{"records":[{"type":"Route","filters":[]},{"type":"Crag","filters":[]}],"links":[{"rel_type":"AT","direction":"outgoing"}]}"""));
+
+        Assert.Empty(pattern.Rels[0].Filters);
     }
 
     [Fact]

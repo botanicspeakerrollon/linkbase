@@ -207,9 +207,22 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         var infos = labels.Select(label => new GraphPropertyInfo(label, "name", GraphValueType.Text)).ToList();
         infos.AddRange(defined.SelectMany(t => t.Fields.Select(f => new GraphPropertyInfo(t.Name, f.Key, TypeOf(f.Type)) { Options = f.Options ?? [] })));
         infos.AddRange(properties.Select(p => new GraphPropertyInfo(p.Label, p.Key, TypeOf(p.Key, p.JsonType))));
+
+        // The same relationship name is rarely reused between different type pairs; where it is, the first pair's
+        // definition of a shared key wins, the same loose way a node property's label already is when unspecified.
+        var attributes = await db.LinkAttributes.AsNoTracking()
+            .OrderBy(a => a.Id)
+            .Select(a => new { a.LinkDefinition.RelType, a.Key, a.Type, a.Options })
+            .ToListAsync(cancellationToken);
+        var linkInfos = attributes
+            .GroupBy(a => (a.RelType, a.Key))
+            .Select(g => new GraphLinkPropertyInfo(g.Key.RelType, g.Key.Key, TypeOf(g.First().Type)) { Options = g.First().Options ?? [] })
+            .ToList();
+
         return new GraphSchema(links.Concat(connections.Select(c => new GraphConnection(c.SourceLabel, c.RelType, c.TargetLabel))).ToList(), infos)
         {
             Types = defined.Select(t => new GraphTypeInfo(t.Name, t.Color, t.Icon)).ToList(),
+            LinkProperties = linkInfos,
         };
     }
 
