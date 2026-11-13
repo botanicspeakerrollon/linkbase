@@ -1,5 +1,8 @@
 @using System.Globalization
 @inject HistoryRepository History
+@inject ChangeReverter Reverter
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
 
 @* One record's audit trail, newest first: what changed, when, and why. Only shown where the model keeps a history. *@
 @if (_entries.Count > 0)
@@ -42,6 +45,10 @@
                         {
                             <span class="history-note">(@entry.SourceComment)</span>
                         }
+                        @if (entry.ChangeSetId != 0 && entry.Kind == JustificationKind.Manual)
+                        {
+                            <MudButton OnClick="@(() => RevertAsync(entry))" Variant="Variant.Text" Size="Size.Small" Disabled="_busy">Revert</MudButton>
+                        }
                     </div>
                     @foreach (var change in entry.Changes)
                     {
@@ -62,6 +69,11 @@
 
     // Changes after this component first showed, such as an edit, are picked up by loading again.
     [Parameter] public int Version { get; set; }
+
+    // Called once an edit has been reverted, so the page can show the record as it is now.
+    [Parameter] public EventCallback OnReverted { get; set; }
+
+    private bool _busy;
 
     private List<HistoryEntry> _entries = [];
     private bool _more;
@@ -86,6 +98,35 @@
         var page = await History.ForRecordAsync(RecordId, _entries.Where(e => e.ChangeSetId != 0).Select(e => e.When).Min());
         _entries.AddRange(page);
         _more = page.Count >= HistoryRepository.PageSize;
+    }
+
+    // Puts back what one edit changed, if nothing has changed it since. The revert is an edit of its own, in the history.
+    private async Task RevertAsync(HistoryEntry entry)
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Revert this change?",
+            "The values it changed go back to what they were, as a new edit in the history. If any of them has been changed again since, nothing is reverted.",
+            yesText: "Revert", cancelText: "Cancel");
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var notes = await Reverter.RevertAsync(entry.ChangeSetId);
+            Snackbar.Add(notes.Count == 0 ? "Change reverted." : $"Change reverted. {string.Join(" ", notes)}", Severity.Success);
+            await OnReverted.InvokeAsync();
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private static string KindName(JustificationKind kind) => kind switch

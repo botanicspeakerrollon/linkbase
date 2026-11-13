@@ -65,6 +65,7 @@ builder.Services.AddScoped<ModelLoader>();
 builder.Services.AddScoped<RecordHooks>();
 builder.Services.AddScoped<RecordRepository>();
 builder.Services.AddScoped<Linkbase.Core.History.HistoryRepository>();
+builder.Services.AddScoped<Linkbase.Core.History.ChangeReverter>();
 builder.Services.AddScoped<ExternalRefRepository>();
 builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();

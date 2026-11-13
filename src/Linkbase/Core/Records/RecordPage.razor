@@ -142,7 +142,7 @@ else if (_record is not null && _type is not null)
         }
     }
 
-    <RecordHistory RecordId="@_record.Id" Version="_version" />
+    <RecordHistory RecordId="@_record.Id" Version="_version" OnReverted="LoadAsync" />
 }
 
 @code {
