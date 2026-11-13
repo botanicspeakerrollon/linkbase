@@ -60,7 +60,10 @@ public sealed partial class ImportStagingService
         var links = counts.GetValueOrDefault(StagedKind.Link);
         var notes = (summary["notes"] as JsonArray)?.Select(n => (string?)n ?? "").ToList() ?? [];
         return new StagedBatch(id, source, (string?)summary["file"] ?? ExternalRefRepository.SourceName(source), (string?)summary["what"] ?? "records", status, records.Total, links.Total,
-            records.Included + links.Included, (int?)summary["alreadyThere"] ?? 0, (int?)summary["skipped"] ?? 0, notes, (int?)summary["added"] ?? 0, at);
+            records.Included + links.Included, (int?)summary["alreadyThere"] ?? 0, (int?)summary["skipped"] ?? 0, notes, (int?)summary["added"] ?? 0, at)
+        {
+            Updating = (int?)summary["updating"] ?? 0,
+        };
     }
 
     // A page of a batch's items for review: records in the order they were in the file, then links.
@@ -95,11 +98,52 @@ public sealed partial class ImportStagingService
             }
         }
 
+        // A record that is already there is shown by what it would change.
+        var current = new Dictionary<string, (string Name, string Props)>(StringComparer.Ordinal);
+        var records = items.Where(i => i.Kind == StagedKind.Record && i.SourceId != null).Select(i => i.SourceId!).ToList();
+        if (records.Count > 0 && await UpdatesAsync(db, batchId, cancellationToken))
+        {
+            foreach (var node in await db.Nodes.AsNoTracking().Where(n => records.Contains(n.Id)).Select(n => new { n.Id, n.Name, n.Props }).ToListAsync(cancellationToken))
+            {
+                current[node.Id] = (node.Name, node.Props);
+            }
+        }
+
         string End(string? id) => id is null ? "" : names.GetValueOrDefault(id, id);
         return new StagedPage(total, items.Select(i => i.Kind == StagedKind.Record
-            ? new StagedRow(i.Id, i.Kind, i.Type, i.Name ?? i.Key ?? "", Detail(i.Key, i.Props), i.Included)
+            ? i.SourceId is not null && current.TryGetValue(i.SourceId, out var there)
+                ? new StagedRow(i.Id, i.Kind, i.Type, i.Name ?? i.Key ?? "", $"Update {i.Key}: {Changes(there.Name, there.Props, i.Name ?? "", i.Props)}", i.Included) { Updating = true }
+                : new StagedRow(i.Id, i.Kind, i.Type, i.Name ?? i.Key ?? "", Detail(i.Key, i.Props), i.Included)
             : new StagedRow(i.Id, i.Kind, i.Type, $"{End(i.SourceId)} {i.RelType} {End(i.TargetId)}", LinkDetail(i.Type, i.RelType, i.TargetType, i.Props), i.Included) { TargetType = i.TargetType }).ToList());
     }
+
+    private static async Task<bool> UpdatesAsync(LinkbaseDbContext db, long batchId, CancellationToken cancellationToken) =>
+        JsonNode.Parse(await db.ImportBatches.AsNoTracking().Where(b => b.Id == batchId).Select(b => b.RawPayload).SingleOrDefaultAsync(cancellationToken) ?? "{}") is JsonObject summary
+        && (bool?)summary["update"] == true;
+
+    // What staged values would change on a record, such as "city: Bern → Zurich · rating: (empty) → 4". Values the import has
+    // none for are left alone, so they aren't listed.
+    private static string Changes(string name, string props, string stagedName, string? stagedProps)
+    {
+        var now = RecordRepository.Values(props);
+        var parts = new List<string>();
+        if (stagedName != name)
+        {
+            parts.Add($"name: {Shown(name)} → {Shown(stagedName)}");
+        }
+
+        foreach (var (key, value) in RecordRepository.Values(stagedProps ?? "{}"))
+        {
+            if (now.GetValueOrDefault(key) != value)
+            {
+                parts.Add($"{key}: {Shown(now.GetValueOrDefault(key))} → {Shown(value)}");
+            }
+        }
+
+        return parts.Count == 0 ? "no change" : string.Join(" · ", parts);
+    }
+
+    private static string Shown(string? text) => string.IsNullOrEmpty(text) ? "(empty)" : text.Replace("\n", ",");
 
     // The kinds of record it links, then the link's values, such as "Person WORKS_ON Project · role: Lead".
     private static string LinkDetail(string sourceType, string? relType, string? targetType, string? props)

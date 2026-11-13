@@ -16,7 +16,8 @@ namespace Linkbase.Core.CsvImport;
 
 public sealed partial class CsvImportService
 {
-    private sealed record RecordRow(string Key, string Name, string Props);
+    // Named is whether the file gave the record a name, or the key stands in for one.
+    private sealed record RecordRow(string Key, string Name, string Props, bool Named = true);
 
     // Choices are each choice field's options: the ones it already has, or, for a new field, the values in its column.
     private async Task<(List<RecordRow> Rows, List<string> Problems, List<string> Notes, int Skipped, Dictionary<string, List<string>> Choices)> ReadRecordsAsync(
@@ -187,7 +188,7 @@ public sealed partial class CsvImportService
                     }
                 }
 
-                rows.Add(new RecordRow(key, string.IsNullOrEmpty(name) ? key : name, props.ToJsonString()));
+                rows.Add(new RecordRow(key, string.IsNullOrEmpty(name) ? key : name, props.ToJsonString(), !string.IsNullOrEmpty(name)));
             }
         }
 
@@ -333,6 +334,56 @@ public sealed partial class CsvImportService
         }
 
         return (pairs, problems, notes, empty + missing + repeats);
+    }
+
+    // Why a file can't update records of the type: the model must keep a history to put them back from, and a module that keeps
+    // fields of the type would have to set them again.
+    private async Task<List<string>> UpdateProblemsAsync(LinkbaseDbContext db, CsvRecordMapping mapping, CancellationToken cancellationToken)
+    {
+        var problems = new List<string>();
+        if (!mapping.UpdateExisting)
+        {
+            return problems;
+        }
+
+        if (!(await Linkbase.Core.History.ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
+        {
+            problems.Add("Updating records needs the model to keep a history, so the changes can be put back. This model doesn't.");
+        }
+
+        if (_hooks.Watch(mapping.Type))
+        {
+            problems.Add($"{mapping.Type} records are kept up to date by a module, so a file can't update them. Untick updating.");
+        }
+
+        return problems;
+    }
+
+    // The rows whose key is already there and whose values differ, by key. A row keeps the record's own name unless the file
+    // names it, and a column left empty leaves the value alone, so the staged values are only what would change.
+    private static async Task<Dictionary<string, RecordRow>> ChangedAsync(
+        LinkbaseDbContext db, CsvRecordMapping mapping, List<RecordRow> rows, HashSet<string> existing, CancellationToken cancellationToken)
+    {
+        var changed = new Dictionary<string, RecordRow>(StringComparer.Ordinal);
+        var wanted = rows.Where(r => existing.Contains(r.Key)).ToDictionary(r => r.Key, StringComparer.Ordinal);
+        foreach (var chunk in wanted.Keys.Chunk(10_000))
+        {
+            var nodes = await db.Nodes.AsNoTracking().Where(n => n.Type == mapping.Type && chunk.Contains(n.Key))
+                .Select(n => new { n.Key, n.Name, n.Props }).ToListAsync(cancellationToken);
+            foreach (var node in nodes)
+            {
+                var row = wanted[node.Key];
+                var name = row.Named && mapping.NameColumn is not null ? row.Name : node.Name;
+                var now = RecordRepository.Values(node.Props);
+                var differs = name != node.Name || RecordRepository.Values(row.Props).Any(v => now.GetValueOrDefault(v.Key) != v.Value);
+                if (differs)
+                {
+                    changed[row.Key] = row with { Name = name };
+                }
+            }
+        }
+
+        return changed;
     }
 
     private static async Task<HashSet<string>> ExistingKeysAsync(LinkbaseDbContext db, string type, List<string> keys, CancellationToken cancellationToken)

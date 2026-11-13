@@ -26,7 +26,9 @@ public sealed record CsvFile(string Path, string FileName, IReadOnlyList<CsvColu
 public sealed record CsvFieldMapping(int Column, string Key, FieldType Type);
 
 // Each row is a record of the type, identified by the key column. A new type and new fields are added to the model.
-public sealed record CsvRecordMapping(string Type, int KeyColumn, int? NameColumn, IReadOnlyList<CsvFieldMapping> Fields);
+// UpdateExisting changes records whose key is already there to the file's values, where they differ, instead of leaving them.
+// Only the columns the file has a value for change, and the changes are logged so they can be put back.
+public sealed record CsvRecordMapping(string Type, int KeyColumn, int? NameColumn, IReadOnlyList<CsvFieldMapping> Fields, bool UpdateExisting = false);
 
 // Each row links the record of one type whose key is in one column to the record of another whose key is in another.
 // Attributes are columns holding the link's own values, such as a role: each Key is one of the relationship's attributes,
@@ -36,10 +38,17 @@ public sealed record CsvLinkMapping(string FromType, int FromColumn, string RelT
 // What an import would do. Problems stop it; rows that are skipped don't.
 public sealed record CsvImportPlan(int Rows, int ToAdd, int AlreadyThere, int Skipped, IReadOnlyList<string> Problems, IReadOnlyList<string> Notes)
 {
-    public bool CanImport => Problems.Count == 0 && ToAdd > 0;
+    public bool CanImport => Problems.Count == 0 && (ToAdd > 0 || ToUpdate > 0);
+
+    // Records already there that the file would change, when it was asked to update them. AlreadyThere then counts only the
+    // ones it wouldn't change.
+    public int ToUpdate { get; init; }
 }
 
-public sealed record CsvImportResult(long BatchId, int Added);
+public sealed record CsvImportResult(long BatchId, int Added)
+{
+    public int Updated { get; init; }
+}
 
 // What a file of links probably is, from its headers and the model. RelType is filled in when the model has exactly one
 // relationship between the two types.

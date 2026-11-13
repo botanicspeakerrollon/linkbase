@@ -23,6 +23,10 @@ else if (_batch is not null)
     <MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Review @_batch.File</MudText>
     <MudText Typo="Typo.body2" Class="mb-3" Style="color: var(--mud-palette-text-secondary)">
         @Count(_batch.Items) @_batch.What staged, @Count(_batch.Included) included.
+        @if (_batch.Updating > 0)
+        {
+            <span> @Count(_batch.Updating) of them update records already here.</span>
+        }
         @if (_batch.AlreadyThere > 0)
         {
             <span> @Count(_batch.AlreadyThere) already here, left as they are.</span>
@@ -150,7 +154,9 @@ else if (_batch is not null)
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
             $"Commit {Count(_batch!.Included)} item(s)?",
-            "They are added together. Undoing the import afterwards removes them again.",
+            _batch.Updating > 0
+                ? "They are added and updated together. Undoing the import afterwards removes what it added and puts back the values it changed."
+                : "They are added together. Undoing the import afterwards removes them again.",
             yesText: "Commit", cancelText: "Cancel");
         if (confirmed != true)
         {

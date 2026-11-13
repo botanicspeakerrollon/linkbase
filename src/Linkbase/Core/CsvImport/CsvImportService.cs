@@ -17,7 +17,8 @@ namespace Linkbase.Core.CsvImport;
 
 // Reads a CSV file of records or links and stages what it would add, for review and commit by ImportStagingService, or
 // imports it straight away, which is staging and committing in one go. Records whose key is already there are left as they
-// are, so undoing an import only ever removes what it added. See docs/models.md.
+// are, unless the mapping asks to update them: then the values that differ are changed, logged, and put back by undoing.
+// See docs/models.md.
 public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks? hooks = null)
 {
     private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
@@ -34,7 +35,9 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
         var (rows, problems, notes, skipped, _) = await ReadRecordsAsync(file, mapping, cancellationToken);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var existing = await ExistingKeysAsync(db, mapping.Type, rows.Select(r => r.Key).ToList(), cancellationToken);
-        return new CsvImportPlan(file.Rows, rows.Count(r => !existing.Contains(r.Key)), rows.Count(r => existing.Contains(r.Key)), skipped, problems, notes);
+        problems = [.. problems, .. await UpdateProblemsAsync(db, mapping, cancellationToken)];
+        var updating = mapping.UpdateExisting && problems.Count == 0 ? (await ChangedAsync(db, mapping, rows, existing, cancellationToken)).Count : 0;
+        return new CsvImportPlan(file.Rows, rows.Count(r => !existing.Contains(r.Key)), rows.Count(r => existing.Contains(r.Key)) - updating, skipped, problems, notes) { ToUpdate = updating };
     }
 
     public async Task<CsvImportPlan> PlanAsync(CsvFile file, CsvLinkMapping mapping, CancellationToken cancellationToken = default)
@@ -54,7 +57,7 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
     private async Task<CsvImportResult> CommitAsync(long batch, CancellationToken cancellationToken)
     {
         var committed = await _staging.CommitAsync(batch, cancellationToken);
-        return new CsvImportResult(batch, committed.Added);
+        return new CsvImportResult(batch, committed.Added) { Updated = committed.Updated };
     }
 
     // Works out which records the file would add and stages them, for review. Nothing else changes until the batch is
@@ -65,6 +68,7 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
         Stop(problems);
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        Stop(await UpdateProblemsAsync(db, mapping, cancellationToken));
         var existing = await ExistingKeysAsync(db, mapping.Type, rows.Select(r => r.Key).ToList(), cancellationToken);
 
         // A module's hooks set the fields it keeps, so they're staged with the record.
@@ -80,14 +84,19 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
             }).ToList();
         }
 
-        var added = rows.Where(r => !existing.Contains(r.Key)).ToList();
+        var updates = mapping.UpdateExisting ? await ChangedAsync(db, mapping, rows, existing, cancellationToken) : [];
+        var staged = rows.Select(r => existing.Contains(r.Key) ? updates.GetValueOrDefault(r.Key) : r).OfType<RecordRow>().ToList();
         var model = new ModelChanges(
             [mapping.Type],
             mapping.Fields.Select(f => new StagedField(mapping.Type, f.Key, f.Type, choices.TryGetValue(f.Key, out var options) ? options : [])).ToList(),
             []);
         return await _staging.StageAsync(
-            new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.Type} records", model, rows.Count - added.Count, skipped, notes),
-            added.Select(r => new StagedRecord(mapping.Type, r.Key, r.Name, r.Props)),
+            new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.Type} records", model, rows.Count - staged.Count, skipped, notes)
+            {
+                UpdateExisting = mapping.UpdateExisting,
+                Updating = updates.Count,
+            },
+            staged.Select(r => new StagedRecord(mapping.Type, r.Key, r.Name, r.Props)),
             [],
             cancellationToken);
     }

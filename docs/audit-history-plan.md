@@ -86,9 +86,22 @@ later keeps the log already written but stops adding to it.
 2. Staging commit and undo, module rebuilds, definition changes, and the Reason box. **Done**
 3. History timeline on the record page. **Done**
 
+## Reverting
+
+`ChangeReverter` puts back what one manual edit changed. The History list on a record page has a **Revert** button on each edit.
+A revert is an edit of its own: it goes through the repository, is logged as "Reverted change #n" and runs the hooks. It goes
+ahead only when things are still as that edit left them. A value changed again since, a link that has gone or a record that has
+been edited stops it, with a message, and nothing is changed.
+
+It reverts a field edit, a link added, removed or edited, a record created (if nothing has been done to it) and a record deleted
+(back with its values and the links its type requires; its ids in other systems aren't restored). A change that touched several
+records, an import, a correction and a derived change can't be reverted this way: undo an import from the imports page, and
+revert the change that caused a derived one. Updates made by an import are put back when that import is undone, using the same
+old values. A deleted record has no page to show its History on, so reverting a delete has no button yet.
+
 ## Not done
 
-- **Reverting a change set.** The log has what's needed (old values, and whole records for deletes), but nothing uses it yet.
+- **Reverting more than one record's change.** See [reverting](#reverting) for what works.
 - **The precise undo rule.** Import undo still decides a record was "edited since" from `updated_at`. A link whose values were
   edited since isn't noticed either, because links have no timestamps.
 - **History in Explore's link details.** Only the record page shows it.

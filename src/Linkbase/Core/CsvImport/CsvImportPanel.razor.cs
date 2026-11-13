@@ -48,7 +48,8 @@ public partial class CsvImportPanel
     private Dictionary<(string From, string Rel, string To), IReadOnlyList<RecordField>> _linkAttributes = [];
     private readonly Dictionary<string, int> _attributeColumns = [];
     private CsvImportPlan? _plan;
-    private (int Added, string? Type)? _done;
+    private (int Added, int Updated, string? Type)? _done;
+    private bool _update;
 
     // Kept so an upload that arrives before the model has loaded waits for it, rather than guessing against nothing.
     private Task _loaded = Task.CompletedTask;
@@ -265,7 +266,7 @@ public partial class CsvImportPanel
             var result = _links
                 ? await Importer.ImportAsync(_file!, LinkMapping())
                 : await Importer.ImportAsync(_file!, RecordMapping());
-            _done = (result.Added, _links ? null : RecordMapping().Type);
+            _done = (result.Added, result.Updated, _links ? null : RecordMapping().Type);
             _plan = null;
             _file = null;
             await RefreshAsync();
@@ -307,7 +308,8 @@ public partial class CsvImportPanel
         _nameColumn < 0 ? null : _nameColumn,
         _fields.Where(f => f.Key != _keyColumn && f.Key != _nameColumn && f.Value.Include)
             .Select(f => new CsvFieldMapping(f.Key, f.Value.Key.Trim(), f.Value.Type))
-            .ToList());
+            .ToList(),
+        _update);
 
     private CsvLinkMapping LinkMapping() =>
         _fromType is null || _toType is null

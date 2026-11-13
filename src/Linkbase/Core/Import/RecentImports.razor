@@ -58,7 +58,7 @@
     {
         var confirmed = await Dialogs.ShowMessageBoxAsync(
             $"Undo importing {batch.File}?",
-            $"This removes the {Count(batch.Added)} {batch.What} it added. Anything edited or linked to since stays, and is listed. Types and fields it added stay.",
+            $"This removes the {Count(batch.Added)} {batch.What} it added. Values it changed on records already there are put back. Anything edited or linked to since stays, and is listed. Types and fields it added stay.",
             yesText: "Undo", cancelText: "Cancel");
         if (confirmed != true)
         {

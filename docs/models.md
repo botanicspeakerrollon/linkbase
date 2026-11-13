@@ -295,7 +295,7 @@ file, to check the choices against.
 
 **Check** says how many rows would be added, and why any are skipped: no key, a key repeated in the file, a link to a
 record that isn't there, or one that's already here. A value that doesn't fit its field's type stops the import, and the
-first ten are listed. A list field's values are split by `|`, as in a model file. A record whose key is already here is left as it is, never updated.
+first ten are listed. A list field's values are split by `|`, as in a model file. A record whose key is already here is left as it is, unless **Update records that are already here** is ticked (see below).
 
 To try it, `models/consultancy/import-demo/` and `models/swiss-rail/import-demo/` have files and a README each, saying what to
 choose and what Check should say.
@@ -307,6 +307,16 @@ you want), then **Commit** adds the rest, or **Discard** drops the lot. Staging 
 (`Core/Staging`) takes any importer's records, links and model changes, and holds them in `staged_item` until they're
 committed. Committing is one transaction, and skips a record or link that has become a duplicate, or whose ends have gone,
 since it was staged. Things already here are never staged, only counted.
+
+**Updating.** With that box ticked, a record whose key is already here takes the file's values where they differ. Only what the
+file has changes: an empty cell leaves the value alone, and with no name column the record keeps its name. Check counts the
+records it would update, the review lists each one by what changes (`city: Bern → Zurich`), and commit writes one field-level
+entry per change to the audit trail, under the import. It needs the model to keep a history, because that is what puts the values
+back, and it can't update a type a domain module keeps up to date. Only CSV records update so far: links and Read text still skip
+what is already here.
+
+Undoing an import also puts back the values it changed. A value someone has changed again since stays as it is and is listed
+with the records that stay. A value already back at its old value is skipped, so an undo that left something can be run again.
 
 Undoing an import removes what it added, except a record edited since (its `updated_at` differs from `created_at`), one
 something has been linked to since, and one that a record which stays needs through a link its type requires. They're

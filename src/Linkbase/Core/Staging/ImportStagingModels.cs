@@ -45,6 +45,13 @@ public sealed record StagingRequest(DataSource Source, string File, string What,
     }
 
     public IReadOnlyList<StagedRef> Refs { get; init; } = [];
+
+    // Records staged whose key is already there are updated with the staged values, rather than skipped. Updating is how many
+    // of the staged records are of that kind. Only fields the import has a value for change, and each change is logged, so it
+    // can be put back.
+    public bool UpdateExisting { get; init; }
+
+    public int Updating { get; init; }
 }
 
 public sealed record StagedBatch(
@@ -52,12 +59,18 @@ public sealed record StagedBatch(
     IReadOnlyList<string> Notes, int Added, DateTimeOffset At)
 {
     public int Items => Records + Links;
+
+    // How many of the records would update one that is already there. Counted when the import was staged.
+    public int Updating { get; init; }
 }
 
 // For a link, Type is its source's type and TargetType its target's.
 public sealed record StagedRow(long Id, StagedKind Kind, string Type, string Title, string Detail, bool Included)
 {
     public string? TargetType { get; init; }
+
+    // The record is already there, and committing changes it. Detail says how.
+    public bool Updating { get; init; }
 }
 
 public sealed record StagedPage(int Total, IReadOnlyList<StagedRow> Rows);
@@ -65,6 +78,9 @@ public sealed record StagedPage(int Total, IReadOnlyList<StagedRow> Rows);
 public sealed record StagedCommit(long BatchId, int Records, int Links)
 {
     public int Added => Records + Links;
+
+    // Records that were already there and changed.
+    public int Updated { get; init; }
 }
 
 // What undoing removed. Kept says what stayed and why: a record edited since the import, or one that something else now
@@ -72,4 +88,7 @@ public sealed record StagedCommit(long BatchId, int Records, int Links)
 public sealed record StagedUndo(int Records, int Links, IReadOnlyList<string> Kept)
 {
     public bool Complete => Kept.Count == 0;
+
+    // Records that were already there, put back to the values they had before the import changed them.
+    public int Reverted { get; init; }
 }

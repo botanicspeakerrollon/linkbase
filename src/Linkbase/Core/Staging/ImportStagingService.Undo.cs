@@ -91,6 +91,8 @@ public sealed partial class ImportStagingService
         await db.ExternalRefs.Where(r => r.ImportBatchId == batchId).ExecuteDeleteAsync(cancellationToken);
         var recordsRemoved = await db.Nodes.Where(n => n.ImportBatchId == batchId && !keep.Contains(n.Id)).ExecuteDeleteAsync(cancellationToken);
         await RemoveWhatItCreatedAsync(db, batch.RawPayload, cancellationToken);
+        var (restored, reverted) = await RevertUpdatesAsync(db, batchId, kept, cancellationToken);
+        changes.AddRange(restored);
         if (kept.Count == 0)
         {
             batch.Status = ImportStatus.Undone;
@@ -100,9 +102,13 @@ public sealed partial class ImportStagingService
         long? changeSet = null;
         if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
         {
-            changeSet = await ChangeRecorder.WriteAsync(db, JustificationKind.Import, new ChangeReason($"Import #{batchId} undone", batch.SourceUrl),
-                [new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Delete,
-                    OldValue: JsonSerializer.Serialize(new { records = recordsRemoved, links = linksRemoved, kept = kept.Count }))],
+            List<PendingChange> undone =
+            [
+                new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Delete,
+                    OldValue: JsonSerializer.Serialize(new { records = recordsRemoved, links = linksRemoved, kept = kept.Count, reverted = reverted.Count })),
+                .. reverted,
+            ];
+            changeSet = await ChangeRecorder.WriteAsync(db, JustificationKind.Import, new ChangeReason($"Import #{batchId} undone", batch.SourceUrl), undone,
                 importBatchId: batchId, cancellationToken: cancellationToken);
         }
 
@@ -112,7 +118,98 @@ public sealed partial class ImportStagingService
             await _hooks.AfterChangeAsync(changes, cancellationToken);
         }
 
-        return new StagedUndo(recordsRemoved, linksRemoved, kept);
+        return new StagedUndo(recordsRemoved, linksRemoved, kept) { Reverted = restored.Count };
+    }
+
+    // Puts back what a committing import changed on records that were already there, field by field, as the trail logged it
+    // (its old values). A field someone has changed since stays as it is, and is reported, like a record edited since. One that
+    // is back at its old value already, from an earlier undo that left something, is skipped.
+    private async Task<(List<RecordChange> Restored, List<PendingChange> Logged)> RevertUpdatesAsync(
+        LinkbaseDbContext db, long batchId, List<string> kept, CancellationToken cancellationToken)
+    {
+        var restored = new List<RecordChange>();
+        var logged = new List<PendingChange>();
+        var updates = await db.Changes.AsNoTracking()
+            .Where(c => c.EntityKind == ChangeEntityKind.Node && c.Op == ChangeOp.Update
+                && c.ChangeSet.Justification.ImportBatchId == batchId && c.ChangeSet.Justification.Kind == JustificationKind.Import
+                && db.Changes.Any(b => b.ChangeSetId == c.ChangeSetId && b.EntityKind == ChangeEntityKind.ImportBatch && b.Op == ChangeOp.Create))
+            .OrderBy(c => c.Id)
+            .Select(c => new { c.EntityId, c.FieldKey, c.OldValue, c.NewValue })
+            .ToListAsync(cancellationToken);
+        if (updates.Count == 0)
+        {
+            return (restored, logged);
+        }
+
+        var records = new RecordRepository(contextFactory);
+        var types = new Dictionary<string, RecordType?>(StringComparer.Ordinal);
+        var shown = 0;
+        foreach (var group in updates.GroupBy(u => u.EntityId))
+        {
+            var node = await db.Nodes.SingleOrDefaultAsync(n => n.Id == group.Key, cancellationToken);
+            if (node is null)
+            {
+                continue;
+            }
+
+            if (!types.TryGetValue(node.Type, out var type))
+            {
+                types[node.Type] = type = await records.TypeAsync(node.Type, cancellationToken);
+            }
+
+            var nameBefore = node.Name;
+            var before = RecordRepository.Values(node.Props);
+            var name = node.Name;
+            var values = before.ToDictionary(v => v.Key, v => (string?)v.Value);
+            foreach (var change in group)
+            {
+                var key = change.FieldKey ?? "name";
+                var now = key == "name" ? name : values.GetValueOrDefault(key);
+                if (now == change.NewValue || (string.IsNullOrEmpty(now) && string.IsNullOrEmpty(change.NewValue)))
+                {
+                    if (key == "name")
+                    {
+                        name = change.OldValue ?? name;
+                    }
+                    else
+                    {
+                        values[key] = change.OldValue;
+                    }
+                }
+                else if (!(now == change.OldValue || (string.IsNullOrEmpty(now) && string.IsNullOrEmpty(change.OldValue))))
+                {
+                    if (++shown <= KeptShown)
+                    {
+                        kept.Add($"{node.Type} '{nameBefore}': {RecordRepository.Title(key)} was changed since the import, so it stays as it is.");
+                    }
+                }
+            }
+
+            if (type is null)
+            {
+                continue;
+            }
+
+            var props = RecordRepository.Props(type.Editable, values, node.Props);
+            var after = RecordRepository.Values(props);
+            if (name == nameBefore && after.OrderBy(v => v.Key).SequenceEqual(before.OrderBy(v => v.Key)))
+            {
+                continue;
+            }
+
+            node.Name = name;
+            node.Props = props;
+            await db.SaveChangesAsync(cancellationToken);
+            logged.AddRange(ChangeRecorder.NodeUpdated(node.Id, nameBefore, before, node.Name, after));
+            restored.Add(new RecordChange(RecordChangeKind.Updated, node.Type, node.Id, before, after));
+        }
+
+        if (shown > KeptShown)
+        {
+            kept.Add($"And {shown - KeptShown:N0} more values changed since the import.");
+        }
+
+        return (restored, logged);
     }
 
     // The batch's links that go. A link between two records that stay is kept with them, and so is a link a record that stays

@@ -114,6 +114,12 @@
                 </MudItem>
             </MudGrid>
 
+            <MudCheckBox T="bool" Value="_update" ValueChanged="@(v => Changed(() => _update = v))" Dense="true" Class="mt-2"
+                         Label="Update records that are already here" />
+            <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
+                Matched by key. Only values the file has change, and undoing the import puts them back.
+            </MudText>
+
             <MudText Typo="Typo.subtitle2" HtmlTag="h3" Class="mt-3 mb-1">Fields</MudText>
             <MudSimpleTable Dense="true" Elevation="0" Class="csv-columns">
                 <thead>
@@ -215,6 +221,10 @@
         <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">3. Import</MudText>
         <MudText Typo="Typo.body1" Class="mb-2">
             @Count(_plan.ToAdd) @(_links ? "new link(s)" : "new record(s)") to add.
+            @if (_plan.ToUpdate > 0)
+            {
+                <span>@Count(_plan.ToUpdate) already here to update.</span>
+            }
             @if (_plan.AlreadyThere > 0)
             {
                 <span>@Count(_plan.AlreadyThere) already here, left as they are.</span>
@@ -229,7 +239,7 @@
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-1">@problem</MudAlert>
         }
         <MudButton OnClick="ImportAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_plan.CanImport || _importing)" Class="mt-2">
-            Import @Count(_plan.ToAdd)
+            Import @Count(_plan.ToAdd + _plan.ToUpdate)
         </MudButton>
         <MudButton OnClick="StageAsync" Variant="Variant.Outlined" Disabled="@(!_plan.CanImport || _importing)" Class="mt-2 ml-2">
             Review first
@@ -241,7 +251,7 @@
 {
     <MudAlert Severity="Severity.Success" Class="mb-4">
         <div class="d-flex align-center flex-wrap" style="gap: 12px">
-            <span>Added @Count(_done.Value.Added) @(_done.Value.Type is null ? "link(s)" : $"{_done.Value.Type} record(s)").</span>
+            <span>Added @Count(_done.Value.Added) @(_done.Value.Type is null ? "link(s)" : $"{_done.Value.Type} record(s)")@(_done.Value.Updated > 0 ? $" and updated {Count(_done.Value.Updated)}" : "").</span>
             @if (_done.Value.Type is { } type)
             {
                 @* A full load, so the rail lists a type that's new. *@

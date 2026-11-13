@@ -47,6 +47,12 @@ public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbCon
             ["notes"] = new JsonArray(request.Notes.Select(n => (JsonNode?)JsonValue.Create(n)).ToArray()),
             ["model"] = JsonSerializer.SerializeToNode(request.Model, Json),
         };
+        if (request.UpdateExisting)
+        {
+            summary["update"] = true;
+            summary["updating"] = request.Updating;
+        }
+
         if (request.Refs.Count > 0)
         {
             summary["refs"] = JsonSerializer.SerializeToNode(request.Refs, Json);

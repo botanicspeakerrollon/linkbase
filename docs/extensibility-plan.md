@@ -37,6 +37,9 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
    matched by key with a preview of what would change and the import recorded as the source, is how real data stays current. The
    audit log already holds old values and deleted records, so reverting a change set only needs something to use them. Together
    they let people edit without fear. Run it alongside the hosting work below.
+   **Built:** CSV records update on import, undo puts the values back, and each edit on a record page can be reverted
+   (see [models](models.md#importing-a-csv-file) and [audit-history-plan](audit-history-plan.md#reverting)). **Left:** updating
+   from Read text and links, a way to revert a deleted record, and reverting a change that touched several records.
 5. **Hosting.** Off-site backups first, because nothing else matters if the data can be lost, then per-customer setup and
    monitoring. See [operations](operations.md) and [deployment-plan](deployment-plan.md).
 6. **A model from a CSV.** A new customer starts from a blank model file. A flow that infers types and fields from a CSV, then an

@@ -66,6 +66,10 @@ public sealed partial class ImportStagingService
             }
         }
 
+        // Records already there that the import has new values for, read before the insert so it can't see its own. A staged
+        // record whose key is there is updated only when the import was staged to update, else it is skipped as before.
+        var updates = (bool?)summary["update"] == true ? await PlanUpdatesAsync(connection, transaction, batchId, cancellationToken) : [];
+
         var records = await ExecuteAsync(connection, transaction,
             """
             INSERT INTO node (id, user_id, type, key, name, props, import_batch_id)
@@ -105,6 +109,15 @@ public sealed partial class ImportStagingService
             {
                 counts.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt32(3)));
             }
+        }
+
+        foreach (var update in updates)
+        {
+            await ExecuteAsync(connection, transaction,
+                "UPDATE node SET name = @name, props = @props, updated_at = now() WHERE id = @id",
+                ("name", update.NewName, NpgsqlDbType.Text),
+                ("props", update.NewProps, NpgsqlDbType.Jsonb),
+                ("id", update.Id, NpgsqlDbType.Text));
         }
 
         // A link that would break a type's hierarchy stops the commit, which rolls back, and the batch stays staged. A record
@@ -149,8 +162,9 @@ public sealed partial class ImportStagingService
         {
             var logged = new List<PendingChange>
             {
-                new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create, NewValue: JsonSerializer.Serialize(new { records, links })),
+                new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create, NewValue: JsonSerializer.Serialize(new { records, links, updated = updates.Count })),
             };
+            logged.AddRange(updates.SelectMany(u => ChangeRecorder.NodeUpdated(u.Id, u.OldName, RecordRepository.Values(u.OldProps), u.NewName, RecordRepository.Values(u.NewProps))));
             logged.AddRange(newTypes.Select(t => new PendingChange(ChangeEntityKind.Definition, $"type:{t}", ChangeOp.Create)));
             logged.AddRange(newFields.Select(f => new PendingChange(ChangeEntityKind.Definition, $"field:{f}", ChangeOp.Create)));
             logged.AddRange(newRelationships.OfType<JsonObject>().Select(r => new PendingChange(
@@ -164,16 +178,50 @@ public sealed partial class ImportStagingService
         created["types"] = newTypes;
         created["relationships"] = newRelationships;
         await ExecuteAsync(connection, transaction,
-            "UPDATE import_batch SET status = 'committed', raw_payload = raw_payload || jsonb_build_object('added', @added, 'created', @created::jsonb), updated_at = now() WHERE id = @batch",
+            "UPDATE import_batch SET status = 'committed', raw_payload = raw_payload || jsonb_build_object('added', @added, 'updated', @updated, 'created', @created::jsonb), updated_at = now() WHERE id = @batch",
             ("added", records + links, NpgsqlDbType.Integer),
+            ("updated", updates.Count, NpgsqlDbType.Integer),
             ("created", created.ToJsonString(), NpgsqlDbType.Text),
             ("batch", batchId, NpgsqlDbType.Bigint));
         await transaction.CommitAsync(cancellationToken);
         using (ChangeRecorder.Causing(changeSet))
         {
-            await _hooks.AfterChangeAsync(await ChangesAsync(db, batchId, removing: false, [], cancellationToken), cancellationToken);
+            var changes = await ChangesAsync(db, batchId, removing: false, [], cancellationToken);
+            var watched = _hooks.Watched;
+            changes.AddRange(updates.Where(u => watched.Contains(u.Type)).Select(u =>
+                new RecordChange(RecordChangeKind.Updated, u.Type, u.Id, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
+            await _hooks.AfterChangeAsync(changes, cancellationToken);
         }
 
-        return new StagedCommit(batchId, records, links);
+        return new StagedCommit(batchId, records, links) { Updated = updates.Count };
+    }
+
+    private sealed record PlannedUpdate(string Id, string Type, string OldName, string OldProps, string NewName, string NewProps);
+
+    // The staged records whose key is already there, with what each would become: the staged name, and the record's values with
+    // the staged ones laid over them. Those that would come out the same aren't included.
+    private static async Task<List<PlannedUpdate>> PlanUpdatesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, long batchId, CancellationToken cancellationToken)
+    {
+        var found = new List<PlannedUpdate>();
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT n.id, n.type, n.name, n.props::text, s.name, (n.props || coalesce(s.props, '{}'::jsonb))::text
+            FROM staged_item s JOIN node n ON n.id = s.source_id
+            WHERE s.import_batch_id = @batch AND s.kind = 'record' AND s.included
+            ORDER BY s.id
+            """, connection, transaction)
+        { CommandTimeout = 0 };
+        command.Parameters.Add(new NpgsqlParameter("batch", NpgsqlDbType.Bigint) { Value = batchId });
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var update = new PlannedUpdate(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.IsDBNull(4) ? reader.GetString(2) : reader.GetString(4), reader.GetString(5));
+            if (update.NewName != update.OldName || !RecordRepository.Values(update.OldProps).OrderBy(v => v.Key).SequenceEqual(RecordRepository.Values(update.NewProps).OrderBy(v => v.Key)))
+            {
+                found.Add(update);
+            }
+        }
+
+        return found;
     }
 }
