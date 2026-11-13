@@ -16,6 +16,10 @@
                 <MudButton OnClick="SaveAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@string.IsNullOrWhiteSpace(_name)">Save</MudButton>
             </MudStack>
             <MudCheckBox T="bool" @bind-Value="_pin" Label="Pin to Home" Size="Size.Small" Class="mb-2" />
+            @if (CanPinLayout)
+            {
+                <MudCheckBox T="bool" @bind-Value="_pinLayout" Label="Keep nodes exactly where they are" Size="Size.Small" Class="mb-2" />
+            }
         }
         else
         {
@@ -60,9 +64,14 @@
     [Parameter] public SavedViewKind Kind { get; set; }
     [Parameter] public string? Scope { get; set; }
 
+    // Explore only: whether there's a canvas to pin the layout of, and how to get its state with positions included.
+    [Parameter] public bool CanPinLayout { get; set; }
+    [Parameter] public Func<Task<string?>>? PinnedState { get; set; }
+
     private IReadOnlyList<SavedViewInfo>? _views;
     private string? _name;
     private bool _pin;
+    private bool _pinLayout;
 
     protected override async Task OnInitializedAsync() => _views = await Views.ListAsync();
 
@@ -80,10 +89,12 @@
     {
         try
         {
-            await Views.SaveAsync(_name ?? "", Kind, Scope, State!, _pin);
+            var state = _pinLayout && PinnedState is not null ? await PinnedState() ?? State! : State!;
+            await Views.SaveAsync(_name ?? "", Kind, Scope, state, _pin);
             Snackbar.Add($"Saved the view {_name!.Trim()}.", Severity.Success);
             _name = null;
             _pin = false;
+            _pinLayout = false;
             _views = await Views.ListAsync();
         }
         catch (LinkbaseValidationException ex)

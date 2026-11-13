@@ -156,22 +156,10 @@ A node or link proposed by an import, waiting for review.
 | `target_type` | text | nullable; links only |
 | `included` | boolean | whether the reviewer kept it |
 
-### `graph_scene`
-A saved Explore canvas.
-
-| Column | Type | Notes |
-| --- | --- | --- |
-| `id` | bigint | PK, identity |
-| `user_id` | bigint | FK to `app_user.id` |
-| `name` | text | |
-| `nodes` | jsonb | the nodes and positions on the canvas |
-| `created_at` | timestamptz | default `now()` |
-| `updated_at` | timestamptz | default `now()` |
-
-Unique: (`user_id`, `name`).
-
 ### `saved_view`
-A named state of Explore or of one type's record list. `state` is the text the page's address carries in its `v` parameter.
+A named state of Explore or of one type's record list. `state` is the text the page's address carries in its `v` parameter. An
+Explore view saved with its layout pinned has each node's canvas position in `state` too; reopening it places nodes back
+exactly where they were instead of laying them out fresh.
 
 | Column | Type | Notes |
 | --- | --- | --- |
@@ -254,7 +242,7 @@ Indexes: (`entity_kind`, `entity_id`, `id`), (`related_id`, `id`), `change_set_i
 ## Relationships
 
 ```
-app_user ──< node, import_batch, graph_scene, saved_view
+app_user ──< node, import_batch, saved_view
 node_type ──< node, field_definition, link_definition (as source and as target)
 node ──< node_link (as source and as target)
 import_batch ──< node, node_link, external_ref, staged_item, justification
@@ -280,7 +268,6 @@ justification ──< change_set ──< change
 | `field_definition` | `ix_field_definition_node_type_name_key` | `node_type_name`, `key` | unique |
 | `link_definition` | `ix_link_definition_source_type_rel_type_target_type` | `source_type`, `rel_type`, `target_type` | unique |
 | `link_definition` | `ix_link_definition_target_type` | `target_type` | |
-| `graph_scene` | `ix_graph_scene_user_id_name` | `user_id`, `name` | unique |
 | `import_batch` | `ix_import_batch_user_id` | `user_id` | |
 | `staged_item` | `ix_staged_item_import_batch_id_kind_id` | `import_batch_id`, `kind`, `id` | |
 

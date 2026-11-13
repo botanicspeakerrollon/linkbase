@@ -6,6 +6,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using Linkbase.Data;
 using Linkbase.Core.Graph;
+using Linkbase.Core.Views;
 using FilterOperator = Linkbase.Core.Graph.FilterOperator;
 
 namespace Linkbase.Core.Explore;
@@ -137,14 +138,23 @@ public partial class ExplorePage
         await DrawAsync(anchorId);
     }
 
-    private async Task DrawAsync(string? anchorId)
+    // Positions is set only when restoring a view saved with its layout pinned: the canvas then places nodes exactly where
+    // they were, instead of laying them out fresh.
+    private async Task DrawAsync(string? anchorId, IReadOnlyList<ScenePosition>? positions = null)
     {
         SyncAddress();
         await RefreshAsOfAsync();
         if (_module is not null)
         {
             var (nodes, edges) = CanvasElements();
-            await _module.InvokeVoidAsync("update", nodes, edges, anchorId);
+            if (positions is not null)
+            {
+                await _module.InvokeVoidAsync("restore", nodes, edges, positions);
+            }
+            else
+            {
+                await _module.InvokeVoidAsync("update", nodes, edges, anchorId);
+            }
         }
     }
 
@@ -278,59 +288,4 @@ public partial class ExplorePage
         await DrawAsync(null);
     }
 
-    private async Task SaveSceneAsync()
-    {
-        if (_module is null)
-        {
-            return;
-        }
-
-        try
-        {
-            var positions = await _module.InvokeAsync<ScenePosition[]>("positions");
-            await Graph.SaveSceneAsync(_sceneName ?? "", positions);
-            _scenes = await Graph.SceneNamesAsync();
-            Snackbar.Add("Scene saved.", Severity.Success);
-        }
-        catch (LinkbaseValidationException ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Warning);
-        }
-    }
-
-    private async Task LoadSceneAsync(string name)
-    {
-        var scene = await Graph.LoadSceneAsync(name);
-        if (scene is null || _module is null)
-        {
-            return;
-        }
-
-        var subgraph = await Graph.SubgraphAsync(scene.Positions.Select(p => p.NodeId).ToList());
-        ForgetCanvas();
-        foreach (var node in subgraph.Nodes)
-        {
-            _nodes[node.Id] = node;
-            _expanded.Add(node.Id);
-        }
-
-        _edges = subgraph.Edges;
-        _selected = null;
-        _sceneName = name;
-        var (nodes, edges) = CanvasElements();
-        await _module.InvokeVoidAsync("restore", nodes, edges, scene.Positions);
-        SyncAddress();
-
-        var missing = scene.Positions.Count - subgraph.Nodes.Count;
-        if (missing > 0)
-        {
-            Snackbar.Add($"{missing} {(missing == 1 ? "node" : "nodes")} in this scene no longer exist.", Severity.Info);
-        }
-    }
-
-    private async Task DeleteSceneAsync(string name)
-    {
-        await Graph.DeleteSceneAsync(name);
-        _scenes = await Graph.SceneNamesAsync();
-    }
 }

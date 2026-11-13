@@ -130,7 +130,7 @@ public partial class ExplorePage
 
             _edges = subgraph.Edges;
             _lastPattern = pattern;
-            await DrawAsync(null);
+            await DrawAsync(null, state.Positions);
             await LoadSummaryAsync();
             if (subgraph.Nodes.Count < ids.Count)
             {
@@ -168,8 +168,23 @@ public partial class ExplorePage
         {
             { d => d.State, CurrentState().Encode() },
             { d => d.Kind, SavedViewKind.Explore },
+            { d => d.CanPinLayout, _nodes.Count > 0 && !_showingModel },
+            { d => d.PinnedState, PinnedStateAsync },
         };
         await Dialogs.ShowAsync<SavedViewsDialog>("Saved views", parameters, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+    }
+
+    // The current state with the canvas's exact node positions pinned, for a view that should reopen with its hand-arranged
+    // layout rather than a fresh one. What used to be a separate "scene" is now this: a saved view with its layout pinned.
+    private async Task<string?> PinnedStateAsync()
+    {
+        if (_module is null || _nodes.Count == 0 || _showingModel)
+        {
+            return CurrentState().Encode();
+        }
+
+        var positions = await _module.InvokeAsync<ScenePosition[]>("positions");
+        return (CurrentState() with { Positions = positions }).Encode();
     }
 
     private async Task CopyLinkAsync()

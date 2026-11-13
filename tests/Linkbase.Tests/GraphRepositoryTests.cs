@@ -203,24 +203,6 @@ public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<Postg
     }
 
     [Fact]
-    public async Task Scenes_save_replace_load_and_delete()
-    {
-        var graph = new GraphRepository(fixture.ContextFactory());
-        var name = Unique("Scene");
-        await graph.SaveSceneAsync(name, [new ScenePosition("crag:1", 1.5, 2.5)]);
-        await graph.SaveSceneAsync(name, [new ScenePosition("crag:2", 3, 4), new ScenePosition("crag:3", 5, 6)]);
-
-        Assert.Contains(name, await graph.SceneNamesAsync());
-        var scene = await graph.LoadSceneAsync(name);
-        Assert.Equal(2, scene!.Positions.Count);
-        Assert.Equal(new ScenePosition("crag:2", 3, 4), scene.Positions[0]);
-
-        await graph.DeleteSceneAsync(name);
-        Assert.Null(await graph.LoadSceneAsync(name));
-        await Assert.ThrowsAsync<LinkbaseValidationException>(() => graph.SaveSceneAsync(" ", []));
-    }
-
-    [Fact]
     public void Route_captions_include_the_grade_and_ascents_show_date_and_style()
     {
         var route = new GraphNode("route:1", "Route", "Slab", [new GraphProperty("grade", "VS 4c")]);

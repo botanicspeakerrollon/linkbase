@@ -105,9 +105,6 @@ public partial class ExplorePage
     private FilterOperator _filterOperator;
     private string? _filterValue;
 
-    private IReadOnlyList<string> _scenes = [];
-    private string? _sceneName;
-
     // While an "as of" day is chosen, what didn't exist yet stays in _nodes (so clearing the day brings it back) but isn't shown.
     private DateTime? _asOf;
     private DateOnly? _historyStart;
@@ -196,7 +193,6 @@ public partial class ExplorePage
             return;
         }
 
-        _scenes = await Graph.SceneNamesAsync();
         _schema = await Graph.SchemaAsync();
         _historyStart = await Times.EarliestAsync();
 

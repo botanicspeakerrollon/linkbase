@@ -195,7 +195,10 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         Assert.Equal((await Services.GetRequiredService<GraphRepository>().SchemaAsync()).Labels.Count, ((object[])drawn[0]!).Length);
         Assert.NotEmpty((object[])drawn[1]!);
         Assert.Contains((object[])drawn[1]!, e => System.Text.RegularExpressions.Regex.IsMatch(e.ToString()!, @"relType = AT \(\d"));
-        Assert.True(Control(cut, "Save").HasAttribute("disabled"));
+
+        Press(cut, "Views");
+        DoesNotSee(Dialogs, "Keep nodes exactly where they are");
+        Press(Dialogs, "Close");
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeRightClicked("model:Crag", 10, 20));
         DoesNotSee(cut, "explore-menu");
@@ -865,64 +868,74 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task Scenes_save_load_report_missing_nodes_and_delete()
+    public async Task A_view_can_be_saved_with_its_layout_pinned_and_reopening_it_restores_exact_positions()
     {
         var s = await SeedAsync();
-        var name = Unique("Scene");
-        var cut = Render(s);
+        var cut = OpenWith(s);
+        var name = Unique("Crag view");
+        _graph.Setup<ScenePosition[]>("positions").SetResult([new ScenePosition($"crag:{s.CragId}", 5, 6)]);
 
-        _graph.Setup<ScenePosition[]>("positions").SetResult([new ScenePosition($"crag:{s.CragId}", 1, 2), new ScenePosition("crag:-1", 3, 4)]);
-        Press(cut, "Save");
-        Told("cene");
-        Snackbar.Clear();
+        Press(cut, "Views");
+        Type(Dialogs, "Name for this view", name);
+        Dialogs.FindAll(".mud-checkbox").First(c => c.TextContent.Contains("Keep nodes")).QuerySelector("input")!.Change(true);
+        Press(Dialogs, "Save");
+        Told("Saved the view");
 
-        Type(cut, "Scene name", name);
-        Press(cut, "Save");
-        Told("Scene saved.");
-        Sees(cut, name);
+        var saved = (await Services.GetRequiredService<Linkbase.Core.Views.SavedViewRepository>().ListAsync()).Single(v => v.Name == name);
+        var state = ViewState.Decode<ExploreState>(saved.State)!;
+        Assert.Equal(new ScenePosition($"crag:{s.CragId}", 5, 6), state.Positions!.Single());
 
-        Press(cut, "Clear");
-        Press(cut, name);
-        Told("1 node in this scene no longer exist.");
-        Sees(cut, s.Crag);
-        cut.WaitForAssertion(() => Assert.Contains("restore", GraphCalls));
-
-        var loaded = RenderPage<ExplorePage>();
-        Sees(loaded, name);
-        cut.Find($"button[aria-label='Delete scene {name}']").Click();
-        DoesNotSee(cut, $"Delete scene {name}");
-
-        Press(loaded, name);
+        var loaded = OpenAt(saved.State);
+        loaded.WaitForAssertion(() => Assert.Contains("restore", GraphCalls));
+        var drawn = (object[])_graph.Invocations.Last(i => i.Identifier == "restore").Arguments[0]!;
+        Assert.Single(drawn);
     }
 
     [Fact]
-    public async Task A_scene_with_every_node_present_reports_nothing()
+    public async Task A_view_saved_with_its_layout_pinned_restores_exact_positions_and_reports_missing_nodes()
     {
         var s = await SeedAsync();
-        var name = Unique("Scene");
-        await Services.GetRequiredService<GraphRepository>().SaveSceneAsync(name, [new ScenePosition($"crag:{s.CragId}", 1, 2)]);
+        var state = new ExploreState
+        {
+            Nodes = [$"crag:{s.CragId}", "crag:nobody"],
+            Positions = [new ScenePosition($"crag:{s.CragId}", 1, 2), new ScenePosition("crag:nobody", 3, 4)],
+        };
 
-        var cut = RenderPage<ExplorePage>();
-        Press(cut, name);
+        var cut = OpenAt(state.Encode());
+
+        Told("1 of the records in this view no longer exist.");
+        cut.WaitForAssertion(() => Assert.Contains("restore", GraphCalls));
+        var drawn = (object[])_graph.Invocations.Last(i => i.Identifier == "restore").Arguments[0]!;
+        Assert.Single(drawn);
+    }
+
+    [Fact]
+    public async Task A_pinned_layout_view_with_every_node_present_reports_nothing()
+    {
+        var s = await SeedAsync();
+        var state = new ExploreState { Nodes = [$"crag:{s.CragId}"], Positions = [new ScenePosition($"crag:{s.CragId}", 1, 2)] };
+
+        var cut = OpenAt(state.Encode());
 
         cut.WaitForAssertion(() => Assert.Contains("restore", GraphCalls));
         Assert.Empty(Snackbar.ShownSnackbars);
     }
 
     [Fact]
-    public async Task Save_and_fit_do_nothing_before_the_graph_has_loaded()
+    public async Task Saving_a_pinned_layout_view_is_safe_before_the_graph_has_loaded()
     {
         Services.AddSingleton<IJSRuntime>(new NoNetworkJs());
         var s = await SeedAsync();
-        var name = Unique("Scene");
-        await Services.GetRequiredService<GraphRepository>().SaveSceneAsync(name, []);
         var cut = OpenWithoutDrawing(s);
+        var name = Unique("View");
 
         Press(cut, "Fit");
-        Press(cut, "Save");
-        Press(cut, name);
+        Press(cut, "Views");
+        Type(Dialogs, "Name for this view", name);
+        Dialogs.FindAll(".mud-checkbox").First(c => c.TextContent.Contains("Keep nodes")).QuerySelector("input")!.Change(true);
+        Press(Dialogs, "Save");
 
-        Assert.Empty(Snackbar.ShownSnackbars);
+        Told("Saved the view");
     }
 
     private IRenderedComponent<ExplorePage> OpenWithoutDrawing(Seeded s)

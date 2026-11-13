@@ -11,7 +11,7 @@ public sealed record TripRebuildSummary(int Trips, int LinkedAscents, int Inferr
 
 // Works out the trips for the generic store: works out the trips from the Ascent records and replaces the Trip records and their
 // links. An ascent's country is the top of the areas above its route's crag. A trip keeps its node key across rebuilds,
-// found by its trip_key field, so its id and any saved scene stay the same. New trips take the next number.
+// found by its trip_key field, so its id and any saved view stay the same. New trips take the next number.
 public sealed class GenericTripService(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
     public async Task<TripRebuildSummary> RebuildAsync(IReadOnlyList<TripMerge> merges, CancellationToken cancellationToken = default)

@@ -249,19 +249,6 @@
                        Disabled="@(CurrentState().IsEmpty)" title="Copy a link that opens Explore as it is now">Copy link</MudButton>
         </MudStack>
 
-        <div class="explore-section-title">Saved scenes</div>
-        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
-            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_sceneName" Label="Scene name" />
-            <MudButton OnClick="SaveSceneAsync" Variant="Variant.Outlined" Size="Size.Small" Disabled="@(_nodes.Count == 0 || _showingModel)">Save</MudButton>
-        </MudStack>
-        @foreach (var scene in _scenes)
-        {
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                <MudButton OnClick="@(() => LoadSceneAsync(scene))" Variant="Variant.Text" Size="Size.Small" Style="flex: 1; justify-content: flex-start">@scene</MudButton>
-                <MudIconButton OnClick="@(() => DeleteSceneAsync(scene))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" aria-label="@($"Delete scene {scene}")" />
-            </MudStack>
-        }
-
         <div class="explore-section-title">When expanding, only show</div>
         <MudStack Spacing="2">
             <MudSelect Variant="Variant.Outlined" Margin="Margin.Dense" T="string" Label="Relationships" SelectedValues="_relTypes" SelectedValuesChanged="ChooseRelTypes" MultiSelection="true" Clearable="true">

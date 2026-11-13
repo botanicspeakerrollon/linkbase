@@ -756,7 +756,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
     {
         var s = await SeedAsync();
         var cragNode = $"crag:{s.CragId}";
-        var scene = $"Scene {Guid.NewGuid():N}";
+        var viewName = $"View {Guid.NewGuid():N}";
         var cdp = await _page.Context.NewCDPSessionAsync(_page);
         await cdp.SendAsync("Profiler.enable");
         await cdp.SendAsync("Profiler.startPreciseCoverage", new Dictionary<string, object> { ["callCount"] = true, ["detailed"] = true });
@@ -816,15 +816,21 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await _page.SetViewportSizeAsync(1400, 900);
         await Button("Fit").ClickAsync();
 
-        // A scene comes back exactly as saved.
-        await _page.GetByLabel("Scene name").FillAsync(scene);
-        await _page.GetByLabel("Scene name").BlurAsync();
+        // A view saved with its layout pinned comes back exactly as saved.
+        await Button("Views").ClickAsync();
+        await _page.GetByLabel("Name for this view").FillAsync(viewName);
+        await _page.GetByLabel("Keep nodes exactly where they are").CheckAsync();
         await Button("Save").ClickAsync();
-        await Button(scene).WaitForAsync();
+        var dialog = _page.GetByRole(AriaRole.Dialog);
+        var viewLink = _page.GetByRole(AriaRole.Link, new() { Name = viewName, Exact = true });
+        await Assertions.Expect(viewLink).ToBeVisibleAsync();
         var saved = await NodesAsync();
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true }).ClickAsync();
         await Button("Clear").ClickAsync();
         await WaitForExactNodesAsync(0);
-        await Button(scene).ClickAsync();
+
+        await Button("Views").ClickAsync();
+        await _page.GetByRole(AriaRole.Link, new() { Name = viewName, Exact = true }).ClickAsync();
         await WaitForExactNodesAsync(saved.Count);
         var restored = await NodesAsync();
         foreach (var node in saved)
@@ -835,8 +841,11 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
             Assert.Equal(node.Y, match.Y, 6);
         }
 
-        await _page.GetByRole(AriaRole.Button, new() { Name = $"Delete scene {scene}" }).ClickAsync();
-        await Assertions.Expect(Button(scene)).ToHaveCountAsync(0);
+        await Button("Views").ClickAsync();
+        await _page.GetByRole(AriaRole.Button, new() { Name = $"Delete view {viewName}" }).ClickAsync();
+        await Assertions.Expect(viewLink).ToHaveCountAsync(0);
+        await dialog.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true }).ClickAsync();
+        await Assertions.Expect(dialog).ToHaveCountAsync(0);
 
         // Expanding keeps the zoom the user chose, and keeps the expanded node in view.
         var zoomBox = (await _page.Locator(".explore-canvas").BoundingBoxAsync())!;
