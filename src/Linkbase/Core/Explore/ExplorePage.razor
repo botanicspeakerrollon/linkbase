@@ -89,7 +89,7 @@
     <aside class="explore-panel">
         @if (_selected is { } node)
         {
-            <MudChip T="string" Size="Size.Small" Style="@($"background-color: {GraphStyle.For(node, _schema).Color}; color: #ffffff")" Class="ma-0 mb-1">@node.Label</MudChip>
+            <MudChip T="string" Size="Size.Small" Style="@GraphStyle.ChipStyle(GraphStyle.For(node, _schema).Color)" Class="ma-0 mb-1">@node.Label</MudChip>
             <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@node.Name</MudText>
 
             @if (node.Properties.Count > 0)

@@ -117,7 +117,7 @@ else if (_batch is not null)
     private LabelStyle StyleOf(string type) =>
         _types.TryGetValue(type, out var found) ? GraphStyle.For(type, found.Color, found.Icon) : GraphStyle.For(type, null, null);
 
-    private string ChipStyle(string type) => $"background-color: {StyleOf(type).Color}; color: #ffffff";
+    private string ChipStyle(string type) => GraphStyle.ChipStyle(StyleOf(type).Color);
 
     private static string Count(int count) => count.ToString("N0", CultureInfo.InvariantCulture);
 

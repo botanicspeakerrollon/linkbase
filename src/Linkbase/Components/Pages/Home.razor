@@ -42,7 +42,7 @@ else if (_counts is not null)
             {
                 var defined = _types.Any(t => t.Name == label);
                 <MudChip T="string" Href="@(defined ? GraphStyle.RecordListLink(label) : "/explore")"
-                         Style="@($"background-color: {ColorOf(label)}; color: #ffffff")">@label @count.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</MudChip>
+                         Style="@GraphStyle.ChipStyle(ColorOf(label))">@label @count.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</MudChip>
             }
         </div>
 

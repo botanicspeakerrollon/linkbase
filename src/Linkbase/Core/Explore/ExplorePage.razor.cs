@@ -240,7 +240,7 @@ public partial class ExplorePage
     }
 
     private string ChipStyle(string label) =>
-        $"background-color: {GraphStyle.For(label, _schema).Color}; color: #ffffff";
+        GraphStyle.ChipStyle(GraphStyle.For(label, _schema).Color);
 
     public async ValueTask DisposeAsync()
     {

@@ -48,6 +48,9 @@ public static class GraphStyle
         return style with { Color = color ?? style.Color, Icon = shown };
     }
 
+    // The inline style of a chip showing a type, in the type's colour.
+    public static string ChipStyle(string color) => $"background-color: {color}; color: #ffffff";
+
     // A Material icon by name, such as Train, or null if there's no such icon.
     public static string? IconNamed(string? name) =>
         name is null ? null : typeof(Icons.Material.Filled).GetField(name)?.GetValue(null) as string;

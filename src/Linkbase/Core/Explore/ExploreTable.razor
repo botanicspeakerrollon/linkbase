@@ -159,9 +159,5 @@
     private static string Count(int shown, int total) =>
         shown == total ? total.ToString("N0", CultureInfo.InvariantCulture) : $"{shown:N0} of {total:N0}";
 
-    private string ChipStyle(string label)
-    {
-        var style = GraphStyle.For(label, Schema);
-        return $"background-color: {style.Color}; color: #ffffff";
-    }
+    private string ChipStyle(string label) => GraphStyle.ChipStyle(GraphStyle.For(label, Schema).Color);
 }
