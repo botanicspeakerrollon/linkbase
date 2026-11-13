@@ -31,7 +31,7 @@ public partial class ExplorePage
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "w", "d", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "a", "w", "d", "Delete", "Escape"];
 
     // Totals of the number properties over every match of the last search, shown in a panel on request.
     private bool _summaryOpen;
@@ -285,6 +285,16 @@ public partial class ExplorePage
         _selected = null;
         _menu = null;
         _showingModel = false;
+    }
+
+    private PatternSearchBar? _searchBar;
+    private AskBox? _askBox;
+
+    // An answer to a question goes into the search bar as well as running, so people can see the pattern and change it.
+    private async Task RunAnswerAsync(GraphPattern pattern)
+    {
+        _searchBar?.ShowPattern(pattern);
+        await RunPatternAsync(pattern);
     }
 
     private async Task RunPatternAsync(GraphPattern pattern)

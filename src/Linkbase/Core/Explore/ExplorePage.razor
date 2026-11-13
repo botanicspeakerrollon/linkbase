@@ -18,7 +18,8 @@
             <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2">@_loadError</MudAlert>
         }
 
-        <PatternSearchBar Schema="_schema" OnRun="RunPatternAsync" OnShowModel="ShowModelAsync" AutoFocus="true" />
+        <PatternSearchBar @ref="_searchBar" Schema="_schema" OnRun="RunPatternAsync" OnShowModel="ShowModelAsync" AutoFocus="true" />
+        <AskBox @ref="_askBox" Schema="_schema" OnAnswer="RunAnswerAsync" />
 
         @if (_lastPattern is not null && _patternRemaining > 0)
         {

@@ -1,0 +1,92 @@
+@using Linkbase.Core.Ask
+@implements IDisposable
+@inject QuestionService Questions
+@inject IConfiguration Configuration
+
+@if (Available)
+{
+    <div class="ask-box mt-2" role="search" aria-label="Ask a question">
+        <MudTextField @ref="_field" @bind-Value="_question" Label="Ask in plain English (A)" Placeholder="Routes I climbed in Spain above 7a"
+                      Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" Disabled="_asking" MaxLength="QuestionService.MaxQuestionLength"
+                      OnKeyDown="OnKeyDownAsync" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AutoAwesome"
+                      OnAdornmentClick="AskAsync" AdornmentAriaLabel="Ask" HelperText="@_help"
+                      UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "off", ["spellcheck"] = "false" })" />
+        @if (_asking)
+        {
+            <MudProgressLinear Indeterminate="true" Size="Size.Small" Class="mt-1" />
+        }
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">@_error</MudAlert>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public GraphSchema? Schema { get; set; }
+    [Parameter] public EventCallback<GraphPattern> OnAnswer { get; set; }
+
+    private MudTextField<string>? _field;
+    private string? _question;
+    private string? _error;
+    private bool _asking;
+    private CancellationTokenSource? _cancel;
+
+    private const string _help = "The answer appears in the search bar above, where you can change it. Your question is sent to Anthropic to be read.";
+
+    // The question goes to Anthropic, so an administrator can turn it off with the same setting as reading text.
+    public bool Available => Schema is not null
+        && !string.Equals(Configuration["Extraction:Enabled"], "false", StringComparison.OrdinalIgnoreCase);
+
+    public async Task FocusAsync()
+    {
+        if (_field is not null)
+        {
+            await _field.FocusAsync();
+        }
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await AskAsync();
+        }
+    }
+
+    private async Task AskAsync()
+    {
+        if (_asking || Schema is null)
+        {
+            return;
+        }
+
+        _error = null;
+        _asking = true;
+        _cancel?.Dispose();
+        var cancel = _cancel = new CancellationTokenSource();
+        try
+        {
+            var pattern = await Questions.AskAsync(Schema, _question ?? "", cancel.Token);
+            await OnAnswer.InvokeAsync(pattern);
+        }
+        catch (QuestionFailedException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (OperationCanceledException)
+        {
+            // The page closed while the question was out.
+        }
+        finally
+        {
+            _asking = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _cancel?.Cancel();
+        _cancel?.Dispose();
+    }
+}

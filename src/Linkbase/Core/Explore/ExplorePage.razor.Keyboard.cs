@@ -46,6 +46,9 @@ public partial class ExplorePage
             case "v":
                 await OpenViewsAsync();
                 break;
+            case "a" when _askBox is { Available: true } box:
+                await box.FocusAsync();
+                break;
             case "w" when _selected is { IsModel: false }:
                 await FindPathAsync();
                 break;

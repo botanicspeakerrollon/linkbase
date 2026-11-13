@@ -976,6 +976,20 @@ public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture
 
     private static SearchInput Input(IRenderedComponent<PatternSearchBar> cut) => new(cut);
 
+    [Fact]
+    public async Task Shows_an_answer_to_a_question_for_editing_without_running_it()
+    {
+        var cut = Bar();
+
+        await cut.InvokeAsync(() => cut.Instance.ShowPattern(new GraphPattern(
+            [new PatternNode("Route", [new PatternFilter("name", Linkbase.Core.Graph.FilterOperator.Contains, "Sun")]), new PatternNode("Crag", [])],
+            [new PatternRel("AT", true)])));
+
+        Assert.Contains("AT →", cut.Markup);
+        Assert.Contains("Sun", cut.Markup);
+        Assert.Null(_ran);
+    }
+
     private sealed class SearchInput(IRenderedComponent<PatternSearchBar> cut)
     {
         public void Type(string text) => cut.Find("input").Input(text);
