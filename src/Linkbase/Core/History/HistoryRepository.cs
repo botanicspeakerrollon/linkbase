@@ -78,6 +78,8 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
     // links of any of them. Newest first. The neighbourhood is the record and up to NearLimit of its neighbours.
     public async Task<IReadOnlyList<NearbyChange>> NearbyAsync(string nodeId, DateTimeOffset since, CancellationToken cancellationToken = default)
     {
+        // Npgsql only accepts offset 0 for timestamptz, and callers pass local-offset times.
+        since = since.ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var near = await db.NodeLinks.AsNoTracking()
             .Where(l => l.SourceId == nodeId || l.TargetId == nodeId)

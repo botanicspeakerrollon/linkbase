@@ -118,6 +118,8 @@ public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> cont
             return AsOfView.None;
         }
 
+        // Npgsql only accepts offset 0 for timestamptz, and callers pass local-offset times.
+        at = at.ToUniversalTime();
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var ids = nodes.Select(n => n.Id).ToList();
 
