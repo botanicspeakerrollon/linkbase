@@ -41,6 +41,9 @@ jobs:
       - name: Restore
         run: dotnet restore Linkbase.sln
 
+      - name: Check formatting
+        run: dotnet format whitespace Linkbase.sln --verify-no-changes
+
       # Warnings are errors, from Directory.Build.props.
       - name: Build
         run: dotnet build Linkbase.sln -c Release --no-restore
