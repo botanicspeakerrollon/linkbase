@@ -253,6 +253,9 @@ hierarchy defined yet. Hierarchies are set in the model file only, never by an i
   `appsettings.Development.local.json` or an environment variable, never in a committed settings file. See [operations](operations.md#secrets).
 - **Domains** lists the domain modules a model uses, by key. Leave it out for a generic model.
 - **Order** sets the order in the switcher. The first model is the default.
+- **Home:Hide** lists the home page's panels this model leaves out: `records`, `changes`, `imports` or `growth`, as in
+  `"Home": { "Hide": [ "growth" ] }`. Growth counts every record, so a model with millions may prefer to hide it. Recent records and
+  changes come from the audit trail, so they are empty where history is off.
 - **With no `Models` section**, there's one model, using `ConnectionStrings:Linkbase` and every domain. **With one model**, the
   switcher is hidden. That's how a customer's instance should be set up: their model only.
 

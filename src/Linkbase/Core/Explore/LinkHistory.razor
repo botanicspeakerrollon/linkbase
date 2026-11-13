@@ -1,0 +1,52 @@
+@using System.Globalization
+@using Linkbase.Core.History
+@inject HistoryRepository History
+
+@* One link's history in Explore's details panel: when it was made, edited or removed, and why. Nothing is shown where there is none. *@
+@if (_entries.Count > 0)
+{
+    <div class="explore-section-title">History</div>
+    <ul class="link-history">
+        @foreach (var entry in _entries)
+        {
+            <li>
+                <span class="link-history-when">@entry.When.ToLocalTime().ToString("d MMM yyyy HH:mm", CultureInfo.InvariantCulture)</span>
+                @foreach (var change in entry.Changes)
+                {
+                    <span>@Describe(change)</span>
+                }
+                @if (!string.IsNullOrWhiteSpace(entry.Note))
+                {
+                    <span class="link-history-note">@entry.Note</span>
+                }
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired] public GraphEdge Edge { get; set; } = null!;
+
+    private IReadOnlyList<HistoryEntry> _entries = [];
+    private string? _loaded;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loaded == Edge.Key)
+        {
+            return;
+        }
+
+        _loaded = Edge.Key;
+        _entries = await History.ForLinkAsync(Edge.SourceId, Edge.RelType, Edge.TargetId);
+    }
+
+    private static string Describe(HistoryChange change) => change.Op switch
+    {
+        ChangeOp.Create => "Linked.",
+        ChangeOp.Delete => "Unlinked.",
+        _ => $"{Linkbase.Core.Records.RecordRepository.Title(change.FieldKey ?? "value")}: {Show(change.OldValue)} → {Show(change.NewValue)}",
+    };
+
+    private static string Show(string? value) => string.IsNullOrEmpty(value) ? "(empty)" : value.Replace('\n', ',');
+}
