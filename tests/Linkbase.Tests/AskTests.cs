@@ -315,10 +315,26 @@ public class AskBoxTests : BunitContext
     }
 
     [Fact]
+    public void The_example_comes_from_the_models_own_types()
+    {
+        Assert.Equal("Route records with length m over 10", AskBox.Example(new GraphSchema([], [new GraphPropertyInfo("Route", "length_m", GraphValueType.Number)])));
+        Assert.Equal("Route records linked to a Crag", AskBox.Example(Schema));
+        Assert.Null(AskBox.Example(new GraphSchema([], [])));
+    }
+
+    [Fact]
+    public void Escape_is_left_to_the_page_by_marking_the_box_as_a_search_box()
+    {
+        var cut = Render(_ => throw new InvalidOperationException());
+
+        Assert.True(cut.Find("input").HasAttribute("data-hotkey-search"));
+    }
+
+    [Fact]
     public void It_is_hidden_when_sending_text_to_anthropic_is_turned_off()
     {
         var cut = Render(_ => throw new InvalidOperationException(), enabled: false);
 
-        Assert.DoesNotContain("plain English", cut.Markup);
+        Assert.Empty(cut.FindAll("input"));
     }
 }

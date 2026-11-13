@@ -5,12 +5,26 @@
 
 @if (Available)
 {
-    <div class="ask-box mt-2" role="search" aria-label="Ask a question">
-        <MudTextField @ref="_field" @bind-Value="_question" Label="Ask in plain English (A)" Placeholder="Routes I climbed in Spain above 7a"
-                      Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" Disabled="_asking" MaxLength="QuestionService.MaxQuestionLength"
-                      OnKeyDown="OnKeyDownAsync" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AutoAwesome"
-                      OnAdornmentClick="AskAsync" AdornmentAriaLabel="Ask" HelperText="@_help"
-                      UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "off", ["spellcheck"] = "false" })" />
+    <div class="ask-box mt-2">
+        <div class="pattern-bar" @onclick="FocusAsync">
+            <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" Style="color: var(--mud-palette-text-secondary)" />
+            <input @ref="_input"
+                   value="@_question"
+                   @oninput="OnInput"
+                   @onkeydown="OnKeyDownAsync"
+                   disabled="@_asking"
+                   maxlength="@QuestionService.MaxQuestionLength"
+                   aria-label="Ask a question"
+                   data-hotkey-search
+                   autocomplete="off"
+                   spellcheck="false"
+                   placeholder="@Placeholder" />
+            @if (!string.IsNullOrWhiteSpace(_question))
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="ClearAsync" aria-label="Clear question" />
+                <MudButton OnClick="AskAsync" Disabled="_asking" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">Ask</MudButton>
+            }
+        </div>
         @if (_asking)
         {
             <MudProgressLinear Indeterminate="true" Size="Size.Small" Class="mt-1" />
@@ -19,6 +33,7 @@
         {
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">@_error</MudAlert>
         }
+        <div class="ask-note">The answer appears in the search bar above, where you can change it. Your question is sent to Anthropic to be read.</div>
     </div>
 }
 
@@ -26,25 +41,39 @@
     [Parameter, EditorRequired] public GraphSchema? Schema { get; set; }
     [Parameter] public EventCallback<GraphPattern> OnAnswer { get; set; }
 
-    private MudTextField<string>? _field;
+    private ElementReference _input;
     private string? _question;
     private string? _error;
     private bool _asking;
     private CancellationTokenSource? _cancel;
 
-    private const string _help = "The answer appears in the search bar above, where you can change it. Your question is sent to Anthropic to be read.";
-
     // The question goes to Anthropic, so an administrator can turn it off with the same setting as reading text.
     public bool Available => Schema is not null
         && !string.Equals(Configuration["Extraction:Enabled"], "false", StringComparison.OrdinalIgnoreCase);
 
-    public async Task FocusAsync()
+    // An example made from the model's own types, so it reads right for any model.
+    private string Placeholder => Example(Schema) is { } example ? $"Ask in plain English, such as: {example}" : "Ask in plain English about your data";
+
+    public static string? Example(GraphSchema? schema)
     {
-        if (_field is not null)
+        if (schema is null)
         {
-            await _field.FocusAsync();
+            return null;
         }
+
+        var number = schema.Properties.FirstOrDefault(p => p.Type == GraphValueType.Number);
+        if (number is not null)
+        {
+            return $"{number.Label} records with {number.Key.Replace('_', ' ')} over 10";
+        }
+
+        var link = schema.Connections.FirstOrDefault(c => c.SourceLabel != c.TargetLabel);
+        return link is null ? null : $"{link.SourceLabel} records linked to a {link.TargetLabel}";
     }
+
+    public async Task FocusAsync() => await _input.FocusAsync();
+
+    private void OnInput(ChangeEventArgs e) => _question = e.Value?.ToString();
 
     private async Task OnKeyDownAsync(KeyboardEventArgs e)
     {
@@ -52,6 +81,13 @@
         {
             await AskAsync();
         }
+    }
+
+    private async Task ClearAsync()
+    {
+        _question = null;
+        _error = null;
+        await FocusAsync();
     }
 
     private async Task AskAsync()
@@ -82,6 +118,9 @@
         {
             _asking = false;
         }
+
+        // A disabled input loses focus, so give it back for the next question.
+        await FocusAsync();
     }
 
     public void Dispose()

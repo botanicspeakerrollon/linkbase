@@ -69,7 +69,7 @@ public sealed class AnthropicQuestionCompiler(IConfiguration configuration, Http
         var prompt = new StringBuilder();
         prompt.AppendLine("You turn a question about a person's data into a search, by calling the build_search tool once.");
         prompt.AppendLine();
-        prompt.AppendLine("A search is a chain of records joined by links, such as Crag, then the link AT, then Route. Each record in the chain can carry conditions on its fields. The search finds every chain that matches.");
+        prompt.AppendLine("A search is a chain of records joined by links, such as one type, then a link, then another type the data connects it to. Each record in the chain can carry conditions on its fields. The search finds every chain that matches.");
         prompt.AppendLine();
         prompt.AppendLine("The data has these types and fields:");
         foreach (var label in schema.Labels)

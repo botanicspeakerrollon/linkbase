@@ -637,6 +637,18 @@ html:has(.explore) {
     color: var(--mud-palette-text-secondary);
 }
 
+/* The question box under the search bar. It looks like the bar, and its note shows only while it has focus. */
+.ask-note {
+    display: none;
+    margin: 4px 2px 0;
+    font-size: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.ask-box:focus-within .ask-note {
+    display: block;
+}
+
 /* One node of the search, with its conditions inside it. Coloured inline to match the canvas. */
 .pattern-node {
     display: inline-flex;
