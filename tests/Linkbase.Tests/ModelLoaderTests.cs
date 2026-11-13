@@ -51,6 +51,19 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     }
 
     [Fact]
+    public async Task Loads_the_model_of_this_code_base()
+    {
+        var factory = await NewDatabaseAsync();
+
+        var summary = await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/linkbase-code/model.json"), TextWriter.Null);
+
+        // The files are made from whatever is tracked, so the counts change with the code. It has to load and be joined up.
+        Assert.Equal(4, summary.Types);
+        Assert.True(summary.Nodes > 300);
+        Assert.True(summary.Links > summary.Nodes);
+    }
+
+    [Fact]
     public async Task Loads_the_example_model_and_explore_sees_it()
     {
         var factory = await NewDatabaseAsync();

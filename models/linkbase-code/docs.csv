@@ -1,0 +1,18 @@
+path,name,lines,state
+CLAUDE.md,Linkbase,90,current
+README.md,Linkbase,181,current
+docs/README.md,Docs,17,current
+docs/architecture.md,Where things live,68,current
+docs/audit-history-plan.md,Audit history plan,105,current
+docs/deployment-plan.md,Deployment plan,61,current
+docs/extensibility-plan.md,Product plan,101,current
+docs/history/climbing-switch.md,Switching the real logbook to the generic store,96,history
+docs/history/climbing-to-generic-plan.md,Moving climbing into the generic store,192,history
+docs/history/import-mapping.md,Import mapping,165,history
+docs/history/relationship-attributes.md,Relationship attributes,37,history
+docs/models.md,Models,385,current
+docs/operations.md,Operations,196,current
+docs/performance.md,Performance and the large sample,129,current
+docs/postgres.md,Looking inside Postgres,276,current
+docs/schema.md,Database schema,292,current
+docs/security-roadmap.md,Security roadmap,41,current
