@@ -1,0 +1,11 @@
+id,name,classification
+order-record,Order Record,internal
+stock-level-record,Stock Level Record,internal
+payment-transaction,Payment Transaction,restricted
+delivery-schedule,Delivery Schedule,internal
+customer-profile,Customer Profile,confidential
+supplier-record,Supplier Record,confidential
+price-table,Price Table,internal
+loyalty-account,Loyalty Account,confidential
+fraud-score,Fraud Score,restricted
+sales-report,Sales Report,internal

@@ -1,0 +1,9 @@
+id,name,retention_period
+customer-order,Customer Order,7 years
+payment-receipt,Payment Receipt,7 years
+delivery-note,Delivery Note,3 years
+return-request,Return Request,3 years
+supplier-contract,Supplier Contract,10 years
+price-list,Price List,2 years
+customer-complaint,Customer Complaint,3 years
+fraud-case,Fraud Case,10 years

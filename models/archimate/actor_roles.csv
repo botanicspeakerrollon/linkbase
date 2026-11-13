@@ -1,0 +1,11 @@
+actor,role
+store-manager,order-handler
+store-manager,inventory-controller
+store-associate,order-handler
+store-associate,customer-advisor
+warehouse-operator,inventory-controller
+warehouse-operator,delivery-coordinator
+finance-clerk,payment-processor
+marketing-lead,pricing-analyst
+supplier-account-manager,vendor-liaison
+compliance-officer,risk-reviewer

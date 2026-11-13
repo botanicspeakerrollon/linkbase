@@ -1,0 +1,15 @@
+role,process
+order-handler,capture-order
+inventory-controller,check-stock-availability
+inventory-controller,replenish-stock
+payment-processor,process-payment
+payment-processor,reconcile-daily-takings
+customer-advisor,handle-return
+customer-advisor,resolve-customer-complaint
+delivery-coordinator,pick-and-pack-order
+delivery-coordinator,arrange-delivery
+pricing-analyst,set-retail-pricing
+pricing-analyst,run-promotional-campaign
+vendor-liaison,negotiate-supplier-contract
+vendor-liaison,onboard-new-supplier
+risk-reviewer,review-fraud-alert

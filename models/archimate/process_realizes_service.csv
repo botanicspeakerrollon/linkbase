@@ -1,0 +1,14 @@
+process,service
+capture-order,online-ordering-service
+check-stock-availability,online-ordering-service
+process-payment,in-store-checkout-service
+pick-and-pack-order,delivery-tracking-service
+arrange-delivery,delivery-tracking-service
+handle-return,returns-service
+resolve-customer-complaint,customer-support-service
+replenish-stock,supplier-procurement-service
+negotiate-supplier-contract,supplier-procurement-service
+onboard-new-supplier,supplier-procurement-service
+set-retail-pricing,pricing-service
+run-promotional-campaign,pricing-service
+run-promotional-campaign,loyalty-programme-service
