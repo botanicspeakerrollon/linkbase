@@ -1,0 +1,254 @@
+@page "/cleanup"
+@inject CleanupRepository Cleanup
+@inject RecordRepository Records
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>Cleanup</PageTitle>
+<PageHotkeys Keys="Hotkeys" OnKey="OnHotkeyAsync" />
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Cleanup</MudText>
+<MudText Typo="Typo.body2" Class="mb-3" Style="color: var(--mud-palette-text-secondary)">
+    Things worth a second look in the data that is already here. Types a module derives, such as trips, are left out, because they are rebuilt from the other records.
+</MudText>
+
+<MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Type" Value="_type" ValueChanged="ChooseTypeAsync" Clearable="true"
+           Style="max-width: 20rem" Class="mb-3" data-hotkey-search>
+    @foreach (var type in _types)
+    {
+        <MudSelectItem T="string" Value="@type.Name">@type.Name</MudSelectItem>
+    }
+</MudSelect>
+
+<MudTabs Elevation="1" ApplyEffectsToContainer="true" TabPanelsClass="pt-4" ActivePanelIndex="_tab" ActivePanelIndexChanged="ChooseTabAsync">
+    <MudTabPanel Text="Duplicates (d)">
+        @if (_busy)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_duplicates is null || _duplicates.Groups.Count == 0)
+        {
+            <MudText Typo="Typo.body2">No records share a name.</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="mb-3">Names that match once capitals and spacing are ignored. Choose the record to keep. The others are folded into it: it gains any value it lacked, and takes over their links and ids.</MudText>
+            @foreach (var group in _duplicates.Groups)
+            {
+                var keepId = KeepFor(group);
+                <MudPaper Elevation="1" Class="pa-3 mb-3 cleanup-group">
+                    <MudText Typo="Typo.subtitle1" HtmlTag="h2">@group.Type: @group.Name</MudText>
+                    <MudSimpleTable Dense="true" Elevation="0" Class="mb-2">
+                        <thead><tr><th>Keep</th><th>Name</th><th>Key</th><th>Links</th><th>Last changed</th></tr></thead>
+                        <tbody>
+                            @foreach (var record in group.Records)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="radio" name="@GroupName(group)" checked="@(record.Id == keepId)" aria-label="@($"Keep {record.Name}, key {record.Key}")"
+                                               @onchange="@(() => _keep[GroupName(group)] = record.Id)" />
+                                    </td>
+                                    <td><MudLink Href="@GraphStyle.RecordLink(group.Type, record.Key)">@record.Name</MudLink></td>
+                                    <td>@record.Key</td>
+                                    <td>@record.Links.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                    <td>@record.UpdatedAt.ToLocalTime().ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                    <MudButton OnClick="@(() => MergeAsync(group))" Variant="Variant.Outlined" Size="Size.Small">
+                        Merge @(group.Records.Count - 1) into the one kept
+                    </MudButton>
+                </MudPaper>
+            }
+
+            @if (_duplicates.More)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">Only the first @CleanupRepository.GroupLimit groups are shown. Merge some and this list will move on.</MudAlert>
+            }
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="No links (u)">
+        @if (_busy)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_unlinked is null || _unlinked.Items.Count == 0)
+        {
+            <MudText Typo="Typo.body2">Every record is linked to something.</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="1">
+                <thead><tr><th>Type</th><th>Name</th><th>Key</th></tr></thead>
+                <tbody>
+                    @foreach (var record in _unlinked.Items)
+                    {
+                        <tr>
+                            <td>@record.Type</td>
+                            <td><MudLink Href="@GraphStyle.RecordLink(record.Type, record.Key)">@record.Name</MudLink></td>
+                            <td>@record.Key</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            @if (_unlinked.More)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">Only the first @CleanupRepository.ItemLimit are shown. Choose a type to narrow it.</MudAlert>
+            }
+        }
+    </MudTabPanel>
+    <MudTabPanel Text="Missing values (m)">
+        @if (_busy)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else if (_missing is null || _missing.Items.Count == 0)
+        {
+            <MudText Typo="Typo.body2">Nothing required is missing.</MudText>
+        }
+        else
+        {
+            <MudSimpleTable Dense="true" Elevation="1">
+                <thead><tr><th>Type</th><th>Name</th><th>What is missing</th></tr></thead>
+                <tbody>
+                    @foreach (var issue in _missing.Items)
+                    {
+                        <tr>
+                            <td>@issue.Type</td>
+                            <td><MudLink Href="@GraphStyle.RecordLink(issue.Type, issue.Key)">@issue.Name</MudLink></td>
+                            <td>@issue.Problem</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+            @if (_missing.More)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">Only the first @CleanupRepository.ItemLimit are shown. Choose a type to narrow it.</MudAlert>
+            }
+        }
+    </MudTabPanel>
+</MudTabs>
+
+@code {
+    private static readonly string[] Hotkeys = ["d", "u", "m", "r"];
+
+    private IReadOnlyList<RecordType> _types = [];
+    private HistorySettings _history = HistorySettings.Default;
+    private string? _type;
+    private int _tab;
+    private bool _busy = true;
+    private DuplicateGroups? _duplicates;
+    private CleanupList<CleanupRecord>? _unlinked;
+    private CleanupList<CleanupIssue>? _missing;
+
+    // The record chosen to keep in each group, by group. The one with most links is the default.
+    private readonly Dictionary<string, string> _keep = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _types = (await Records.TypesAsync()).Where(t => t.Owner is null).ToList();
+        _history = await Records.HistorySettingsAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _busy = true;
+        StateHasChanged();
+        _keep.Clear();
+        switch (_tab)
+        {
+            case 0:
+                _duplicates = await Cleanup.DuplicatesAsync(_type);
+                break;
+            case 1:
+                _unlinked = await Cleanup.UnlinkedAsync(_type);
+                break;
+            default:
+                _missing = await Cleanup.MissingRequiredAsync(_type);
+                break;
+        }
+
+        _busy = false;
+    }
+
+    private async Task ChooseTypeAsync(string? type)
+    {
+        _type = type;
+        await LoadAsync();
+    }
+
+    private async Task ChooseTabAsync(int tab)
+    {
+        _tab = tab;
+        await LoadAsync();
+    }
+
+    private async Task OnHotkeyAsync(string key)
+    {
+        switch (key)
+        {
+            case "d":
+                await ChooseTabAsync(0);
+                break;
+            case "u":
+                await ChooseTabAsync(1);
+                break;
+            case "m":
+                await ChooseTabAsync(2);
+                break;
+            case "r":
+                await LoadAsync();
+                break;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static string GroupName(DuplicateGroup group) => $"keep-{group.Type}-{group.Records[0].Id}";
+
+    private string KeepFor(DuplicateGroup group) =>
+        _keep.TryGetValue(GroupName(group), out var chosen) ? chosen : group.Records.OrderByDescending(r => r.Links).First().Id;
+
+    private async Task MergeAsync(DuplicateGroup group)
+    {
+        var keep = group.Records.First(r => r.Id == KeepFor(group));
+        var drops = group.Records.Where(r => r.Id != keep.Id).ToList();
+        var message = $"Folds {drops.Count} {(drops.Count == 1 ? "record" : "records")} into {keep.Name} ({keep.Key}). Their links and ids move to it, and they are deleted. The history keeps what they held.";
+        ChangeReason? reason = null;
+        if (_history.Record)
+        {
+            var parameters = new DialogParameters<ReasonDialog> { { d => d.Message, message }, { d => d.ConfirmText, "Merge" }, { d => d.Settings, _history } };
+            var dialog = await Dialogs.ShowAsync<ReasonDialog>($"Merge into {keep.Name}?", parameters);
+            if (await dialog.Result is not { Canceled: false, Data: ReasonDraft draft })
+            {
+                return;
+            }
+
+            reason = draft.ToReason();
+        }
+        else if (await Dialogs.ShowMessageBoxAsync($"Merge into {keep.Name}?", message, yesText: "Merge", cancelText: "Cancel") != true)
+        {
+            return;
+        }
+
+        var merged = 0;
+        try
+        {
+            foreach (var drop in drops)
+            {
+                await Records.MergeAsync(keep.Id, drop.Id, reason);
+                merged++;
+            }
+
+            Snackbar.Add($"Merged {merged} into {keep.Name}.", Severity.Success);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(merged == 0 ? ex.Message : $"Merged {merged}, then stopped: {ex.Message}", Severity.Warning);
+        }
+
+        await LoadAsync();
+    }
+}

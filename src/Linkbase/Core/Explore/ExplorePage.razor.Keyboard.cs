@@ -43,6 +43,12 @@ public partial class ExplorePage
             case "s" when _lastPattern is not null && _nodes.Count > 0:
                 await ToggleSummaryAsync();
                 break;
+            case "w" when _selected is { IsModel: false }:
+                await FindPathAsync();
+                break;
+            case "d" when _selected is { IsModel: false }:
+                await ShowNearbyChangesAsync();
+                break;
             case "Delete" when _selected is { IsModel: false } node:
                 await RemoveAsync(node.Id);
                 break;

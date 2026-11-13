@@ -3,6 +3,8 @@
 @inject CurrentModel CurrentModel
 @inject GraphRepository Graph
 @inject RecordRepository Records
+@inject HomeRepository Overview
+@using Linkbase.Core.Home
 @using Linkbase.Core.Explore
 @using Linkbase.Core.Records
 
@@ -69,6 +71,84 @@ else if (_counts is not null)
                 </tbody>
             </MudSimpleTable>
         }
+
+        @if (_records.Count > 0)
+        {
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent records</MudText>
+            <MudSimpleTable Dense="true" Elevation="1" Class="home-recent">
+                <tbody>
+                    @foreach (var record in _records)
+                    {
+                        <tr>
+                            <td><span class="home-links-dot" style="@($"background-color: {ColorOf(record.Type)}")"></span>@record.Type</td>
+                            <td><MudLink Href="@GraphStyle.RecordLink(record.Type, record.Key)">@record.Name</MudLink></td>
+                            <td>@(record.Added ? "Added" : "Edited")</td>
+                            <td class="home-when">@When(record.At)</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        @if (_changes.Count > 0)
+        {
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent changes</MudText>
+            <MudSimpleTable Dense="true" Elevation="1" Class="home-recent">
+                <tbody>
+                    @foreach (var change in _changes)
+                    {
+                        <tr>
+                            <td class="home-when">@When(change.At)</td>
+                            <td>@change.Kind</td>
+                            <td>@(string.IsNullOrWhiteSpace(change.Note) ? "No reason given" : change.Note)</td>
+                            <td class="home-links-count">@change.Changes.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) changes</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        @if (_imports.Count > 0)
+        {
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Recent imports</MudText>
+            <MudSimpleTable Dense="true" Elevation="1" Class="home-recent">
+                <tbody>
+                    @foreach (var import in _imports)
+                    {
+                        <tr>
+                            <td class="home-when">@When(import.At)</td>
+                            <td>@import.Source</td>
+                            <td>@(import.SourceUrl ?? "")</td>
+                            <td>
+                                @if (import.Status == ImportStatus.Staged)
+                                {
+                                    <MudLink Href="@($"/import/review/{import.Id}")">Review</MudLink>
+                                }
+                                else
+                                {
+                                    @import.Status
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        }
+
+        @if (_growth is not null && _growth.Any(m => m.Count > 0))
+        {
+            var most = _growth.Max(m => m.Count);
+            <MudText Typo="Typo.h6" HtmlTag="h2" Class="mt-6 mb-2">Records added each month</MudText>
+            <div class="home-growth" role="img" aria-label="@GrowthSummary()">
+                @foreach (var month in _growth)
+                {
+                    <div class="home-growth-month" title="@($"{month.Month:MMM yyyy}: {month.Count:N0}")">
+                        <div class="home-growth-bar" style="@($"height: {Math.Max(month.Count == 0 ? 0 : 4, (int)(100.0 * month.Count / most))}%")"></div>
+                        <span>@month.Month.ToString("MMM", System.Globalization.CultureInfo.InvariantCulture)</span>
+                    </div>
+                }
+            </div>
+        }
     }
 }
 
@@ -77,6 +157,12 @@ else if (_counts is not null)
     private IReadOnlyDictionary<string, int>? _counts;
     private IReadOnlyList<RecordType> _types = [];
     private IReadOnlyList<ConnectionCount> _links = [];
+    private IReadOnlyList<RecentRecord> _records = [];
+    private IReadOnlyList<RecentImport> _imports = [];
+    private IReadOnlyList<RecentChange> _changes = [];
+    private IReadOnlyList<MonthCount>? _growth;
+
+    private const int Shown = 8;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,8 +172,44 @@ else if (_counts is not null)
             _counts = await Graph.NodeCountsAsync();
             _types = await Records.TypesAsync();
             _links = await Graph.ConnectionCountsAsync();
+            if (CurrentModel.Info.ShowsOnHome(HomeRepository.RecentRecords))
+            {
+                _records = await Overview.RecentRecordsAsync(Shown);
+            }
+
+            if (CurrentModel.Info.ShowsOnHome(HomeRepository.Changes))
+            {
+                _changes = await Overview.RecentChangesAsync(Shown);
+            }
+
+            if (CurrentModel.Info.ShowsOnHome(HomeRepository.Imports))
+            {
+                _imports = await Overview.RecentImportsAsync(Shown);
+            }
         }
     }
+
+    // Growth reads every record, so it comes after the page has drawn, and a failure just leaves the panel out.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _counts is not null && CurrentModel.Info.ShowsOnHome(HomeRepository.Growth))
+        {
+            try
+            {
+                _growth = await Overview.GrowthAsync(12, DateTimeOffset.UtcNow);
+                StateHasChanged();
+            }
+            catch (Exception ex) when (ex is Npgsql.NpgsqlException or InvalidOperationException)
+            {
+                _growth = null;
+            }
+        }
+    }
+
+    private static string When(DateTimeOffset at) => at.ToLocalTime().ToString("d MMM yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+
+    private string GrowthSummary() =>
+        string.Join(", ", _growth!.Select(m => $"{m.Month:MMM yyyy} {m.Count}"));
 
     private string ColorOf(string label)
     {

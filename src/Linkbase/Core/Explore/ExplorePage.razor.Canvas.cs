@@ -128,6 +128,7 @@ public partial class ExplorePage
 
     private async Task DrawAsync(string? anchorId)
     {
+        await RefreshAsOfAsync();
         if (_module is not null)
         {
             var (nodes, edges) = CanvasElements();
@@ -140,7 +141,7 @@ public partial class ExplorePage
         var visible = VisibleNodes.Select(n => n.Id).ToHashSet();
         var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, kind = n.Property("kind"), caption = GraphStyle.Caption(n) }).ToArray();
         var edges = _edges
-            .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId))
+            .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId) && !_asOfView.MissingEdges.Contains(e.Key))
             .Select(e => (object)new { id = e.Key, source = e.SourceId, target = e.TargetId, relType = EdgeCaption(e) })
             .ToArray();
         return (nodes, edges);
@@ -207,6 +208,48 @@ public partial class ExplorePage
         _remaining.Remove(nodeId);
         _selected = null;
         await DrawAsync(null);
+    }
+
+    // "How is this connected to...?": picks the other end in a dialog and draws the shortest path between them.
+    private async Task FindPathAsync()
+    {
+        var parameters = new DialogParameters<PathDialog> { { d => d.Start, _selected is { IsModel: false } start ? start : null } };
+        var dialog = await Dialogs.ShowAsync<PathDialog>("How are they connected?", parameters, new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: Linkbase.Core.Paths.PathResult path })
+        {
+            await ShowPathAsync(path);
+        }
+    }
+
+    // Adds the path's records, and every link between records on the canvas. Records already there stay where they are.
+    private async Task ShowPathAsync(Linkbase.Core.Paths.PathResult path)
+    {
+        if (_showingModel)
+        {
+            ForgetCanvas();
+        }
+
+        var found = await Graph.SubgraphAsync(path.NodeIds);
+        foreach (var node in found.Nodes)
+        {
+            _nodes.TryAdd(node.Id, node);
+        }
+
+        _selected = _nodes.GetValueOrDefault(path.NodeIds[0]);
+        await RefreshEdgesAndDrawAsync(anchorId: null);
+        await SelectOnCanvasAsync(path.NodeIds[0]);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowNearbyChangesAsync()
+    {
+        if (_selected is not { IsModel: false } node)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<NearbyChangesDialog> { { d => d.Node, node } };
+        await Dialogs.ShowAsync<NearbyChangesDialog>($"What changed near {node.Name}", parameters, new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
     }
 
     private async Task FitAsync()

@@ -1,0 +1,107 @@
+@using Linkbase.Core.Paths
+@inject GraphRepository Graph
+@inject PathRepository Paths
+
+@* "How is A connected to B?": picks two records, finds the shortest chain of links between them and offers to draw it. *@
+<MudDialog>
+    <DialogContent>
+        <MudAutocomplete T="GraphNode" Variant="Variant.Outlined" Margin="Margin.Dense" Label="From" @bind-Value="_from" SearchFunc="SearchAsync"
+                         ToStringFunc="@(n => n?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true" AutoFocus="@(_from is null)" CoerceText="false">
+            <ItemTemplate Context="node">@node.Name <MudText Typo="Typo.caption" Inline="true">@node.Label</MudText></ItemTemplate>
+        </MudAutocomplete>
+        <MudAutocomplete T="GraphNode" Variant="Variant.Outlined" Margin="Margin.Dense" Label="To" @bind-Value="_to" SearchFunc="SearchAsync"
+                         ToStringFunc="@(n => n?.Name)" DebounceInterval="200" ResetValueOnEmptyText="true" AutoFocus="@(_from is not null)" CoerceText="false">
+            <ItemTemplate Context="node">@node.Name <MudText Typo="Typo.caption" Inline="true">@node.Label</MudText></ItemTemplate>
+        </MudAutocomplete>
+        <MudNumericField T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="At most this many links apart" @bind-Value="_maxHops" Min="1" Max="10" />
+
+        @if (_busy)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mt-2" />
+        }
+        else if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">@_error</MudAlert>
+        }
+        else if (_result is { Found: false })
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                @(_result.Truncated
+                    ? "No path found, but the search gave up on a very busy record, so one may exist."
+                    : $"They aren't connected within {_result.MaxHops} links.")
+            </MudAlert>
+        }
+        else if (_result is { } result)
+        {
+            <MudText Typo="Typo.subtitle2" Class="mt-2 mb-1">@result.Hops @(result.Hops == 1 ? "link" : "links") apart</MudText>
+            <ol class="path-steps" aria-label="The path">
+                @for (var i = 0; i < result.NodeIds.Count; i++)
+                {
+                    var node = _names.GetValueOrDefault(result.NodeIds[i]);
+                    <li>
+                        <strong>@(node?.Name ?? result.NodeIds[i])</strong> <MudText Typo="Typo.caption" Inline="true">@node?.Label</MudText>
+                        @if (i < result.Edges.Count)
+                        {
+                            var edge = result.Edges[i];
+                            <div class="path-link">@(edge.SourceId == result.NodeIds[i] ? $"{edge.RelType} →" : $"← {edge.RelType}")</div>
+                        }
+                    </li>
+                }
+            </ol>
+            @if (result.Truncated)
+            {
+                <MudText Typo="Typo.caption">The search skipped part of a very busy record, so a shorter path may exist.</MudText>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Close</MudButton>
+        <MudButton OnClick="FindAsync" Variant="@(_result is { Found: true } ? Variant.Outlined : Variant.Filled)" Color="Color.Primary" Disabled="@(_from is null || _to is null || _busy)">Find</MudButton>
+        @if (_result is { Found: true })
+        {
+            <MudButton OnClick="@(() => Instance.Close(DialogResult.Ok(_result)))" Variant="Variant.Filled" Color="Color.Primary">Show on graph</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+
+    // The record to start from, such as the one selected in Explore.
+    [Parameter] public GraphNode? Start { get; set; }
+
+    private GraphNode? _from;
+    private GraphNode? _to;
+    private int _maxHops = PathRepository.DefaultMaxHops;
+    private bool _busy;
+    private PathResult? _result;
+    private Dictionary<string, GraphNode> _names = [];
+
+    protected override void OnInitialized() => _from = Start;
+
+    private string? _error;
+
+    private async Task<IEnumerable<GraphNode>> SearchAsync(string? text, CancellationToken cancellationToken) =>
+        await Graph.SearchNodesAsync(text, null, cancellationToken);
+
+    private async Task FindAsync()
+    {
+        _busy = true;
+        _result = null;
+        _error = null;
+        try
+        {
+            _result = await Paths.ShortestPathAsync(_from!.Id, _to!.Id, Math.Clamp(_maxHops, 1, 10));
+            var subgraph = await Graph.SubgraphAsync(_result.NodeIds);
+            _names = subgraph.Nodes.ToDictionary(n => n.Id);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

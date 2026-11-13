@@ -32,6 +32,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
         Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
         Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
+        AddEverydayRepositories();
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
         Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
         Services.AddSingleton<CurrentModel>();
@@ -203,9 +204,20 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
             Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
             Services.AddSingleton<InsightsRepository>();
+            AddEverydayRepositories();
         }
 
         return _climbing;
+    }
+
+    // The home, cleanup, path and timeline repositories. Registered again with the others when the store changes, so they
+    // read the same database.
+    private void AddEverydayRepositories()
+    {
+        Services.AddSingleton<Linkbase.Core.Home.HomeRepository>();
+        Services.AddSingleton<Linkbase.Core.Cleanup.CleanupRepository>();
+        Services.AddSingleton<Linkbase.Core.Paths.PathRepository>();
+        Services.AddSingleton<Linkbase.Core.Timeline.TimelineRepository>();
     }
 
     private static long KeyOf(string nodeId) => long.Parse(nodeId[(nodeId.IndexOf(':') + 1)..], System.Globalization.CultureInfo.InvariantCulture);
