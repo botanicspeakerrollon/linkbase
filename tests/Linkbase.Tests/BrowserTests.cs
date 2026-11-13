@@ -290,6 +290,38 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
 
     // Without ToStringFunc these would show raw enum names, which is easy to break and only shows up here.
     [Fact]
+    public async Task Quick_find_jumps_to_a_record_and_a_page_from_the_keyboard_alone()
+    {
+        var s = await SeedAsync();
+        await _page.GotoAsync($"{_url}/insights", new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        // Ctrl+K opens it with the box focused, even though the page's own field was focused first.
+        await _page.Keyboard.PressAsync("/");
+        await _page.Keyboard.PressAsync("Control+k");
+        var box = _page.GetByPlaceholder("Find a record or page, or add one");
+        await Assertions.Expect(box).ToBeFocusedAsync();
+
+        await box.FillAsync(s.Crag);
+        await Assertions.Expect(_page.Locator(".quickfind-item.active .quickfind-title")).ToHaveTextAsync(s.Crag);
+        await _page.Keyboard.PressAsync("Enter");
+        await Assertions.Expect(_page.Locator(".quickfind")).ToHaveCountAsync(0);
+        await Assertions.Expect(_page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/data/Crag/"));
+
+        await _page.Keyboard.PressAsync("Control+k");
+        await Assertions.Expect(box).ToBeFocusedAsync();
+        await box.FillAsync("explore");
+        await Assertions.Expect(_page.Locator(".quickfind-item.active .quickfind-title")).ToHaveTextAsync("Explore");
+        await _page.Keyboard.PressAsync("Enter");
+        await Assertions.Expect(_page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/explore$"));
+
+        // Esc closes it and changes nothing.
+        await _page.Keyboard.PressAsync("Control+k");
+        await Assertions.Expect(box).ToBeFocusedAsync();
+        await _page.Keyboard.PressAsync("Escape");
+        await Assertions.Expect(_page.Locator(".quickfind")).ToHaveCountAsync(0);
+    }
+
+    [Fact]
     public async Task Selects_offer_readable_names()
     {
         var s = await SeedAsync();

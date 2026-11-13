@@ -66,6 +66,16 @@ function leaveSearch(event) {
 }
 
 function onKeyDown(event) {
+    // Quick-find works from anywhere, even a field, apart from over a dialog, which has the keyboard.
+    if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        if (!document.querySelector('.mud-dialog-container')) {
+            layout?.invokeMethodAsync('OnHotkey', 'quickfind');
+        }
+
+        return;
+    }
+
     if (leaveSearch(event)) {
         return;
     }
@@ -145,6 +155,24 @@ export function uninstall() {
 // Brings what the keyboard just chose into view, such as a table row.
 export function scrollIntoView(selector) {
     document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
+}
+
+// A dialog's own focus handling, or a page's autofocus, can take focus back just after it opens, so keep asking for
+// about a second, and stop as soon as the person has typed something.
+export function focusWhenReady(selector) {
+    let tries = 0;
+    const attempt = () => {
+        const target = document.querySelector(selector);
+        if (target && target.value === '' && document.activeElement !== target) {
+            target.focus();
+        }
+
+        if (++tries < 20 && (!target || target.value === '')) {
+            setTimeout(attempt, 50);
+        }
+    };
+
+    attempt();
 }
 
 export function register(dotnet, keys) {
