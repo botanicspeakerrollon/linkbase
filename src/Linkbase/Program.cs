@@ -80,6 +80,12 @@ builder.Services.AddScoped<Linkbase.Core.Extraction.IModelExtractor>(_ =>
     builder.Configuration["Extraction:Fixture"] is { Length: > 0 } fixture
         ? new Linkbase.Core.Extraction.FixtureModelExtractor(Linkbase.Core.RepoPaths.Resolve(fixture))
         : new Linkbase.Core.Extraction.AnthropicModelExtractor(builder.Configuration));
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<Linkbase.Core.Ask.QuestionService>();
+builder.Services.AddScoped<Linkbase.Core.Ask.IQuestionCompiler>(_ =>
+    builder.Configuration["Ask:Fixture"] is { Length: > 0 } fixture
+        ? new Linkbase.Core.Ask.FixtureQuestionCompiler(Linkbase.Core.RepoPaths.Resolve(fixture))
+        : new Linkbase.Core.Ask.AnthropicQuestionCompiler(builder.Configuration));
 foreach (var domain in RegisteredDomains.All)
 {
     domain.AddServices(builder.Services, builder.Configuration);

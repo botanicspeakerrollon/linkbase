@@ -37,6 +37,12 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
         Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
         Services.AddSingleton<CurrentModel>();
+
+        // Explore has a question box. A test that wants one to answer registers its own compiler after this.
+        Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(new Microsoft.Extensions.Configuration.ConfigurationManager());
+        Services.AddSingleton(TimeProvider.System);
+        Services.AddSingleton<Linkbase.Core.Ask.IQuestionCompiler>(new FakeQuestionCompiler(_ => throw new Linkbase.Core.Ask.QuestionFailedException("No compiler in this test.")));
+        Services.AddSingleton<Linkbase.Core.Ask.QuestionService>();
     }
 
     // MudBlazor's services can only be disposed asynchronously, which xUnit does through this interface.

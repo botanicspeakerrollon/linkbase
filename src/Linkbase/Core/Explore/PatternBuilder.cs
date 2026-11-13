@@ -215,6 +215,20 @@ public sealed class PatternBuilder(GraphSchema schema)
         }
     }
 
+    // Shows a pattern that came from elsewhere, such as an answer to a question, so it can be read and edited as if typed.
+    public void Load(GraphPattern pattern)
+    {
+        Clear();
+        foreach (var node in pattern.Nodes)
+        {
+            var state = new PatternNodeState { Label = node.Label };
+            state.Filters.AddRange(node.Filters);
+            _nodes.Add(state);
+        }
+
+        _rels.AddRange(pattern.Rels);
+    }
+
     public void Clear()
     {
         _nodes.Clear();

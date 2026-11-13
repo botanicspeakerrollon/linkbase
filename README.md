@@ -150,7 +150,8 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | `ConnectionStrings:Linkbase` | Postgres connection | `appsettings.Development.local.json` or environment variable |
 | `Anthropic:ApiKey` | Reading text with AI | user secrets or environment variable |
 | `Anthropic:Model` | Model for extraction | `appsettings.json` |
-| `Extraction:Enabled` | Set to `false` to hide every import that sends text to Anthropic | `appsettings.json` or environment variable |
+| `Extraction:Enabled` | Set to `false` to hide every import, and Explore's Ask box, that sends text to Anthropic | `appsettings.json` or environment variable |
+| `Ask:Fixture` | Canned answer to every question in Explore's Ask box, as a JSON pattern, instead of calling the API | environment variable |
 | `Extraction:Fixture` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
 
 Environment variables use a double underscore, for example `ConnectionStrings__Linkbase`. See

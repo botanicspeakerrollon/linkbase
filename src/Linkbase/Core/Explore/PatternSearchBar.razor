@@ -123,6 +123,15 @@
 
     public async Task FocusAsync() => await _input.FocusAsync();
 
+    // Puts a pattern in the bar without running it, so an answer to a question can be learned from and edited.
+    public void ShowPattern(GraphPattern pattern)
+    {
+        _builder?.Load(pattern);
+        _text = "";
+        _open = false;
+        StateHasChanged();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (AutoFocus && !_autoFocused && _builder is not null)
