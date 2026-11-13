@@ -8,13 +8,20 @@ what a model is, is in [models](models.md).
 ```
 src/Linkbase/
   Program.cs            Services, middleware, health probes, the /model/{key} switch, command-line commands
-  Components/           App shell and layout (MainLayout, theme, hotkeys help)
+  Components/           App shell and layout (MainLayout, theme, Quick-find, hotkeys help) and the guide's frame (Guide/)
   Core/                 Generic. Knows no domain
     Models/             ModelCatalog (configured models), CurrentModel (this circuit's model), ModelFile, ModelLoader
     Graph/              GraphRepository and GraphPattern: the graph_nodes / graph_edges views and pattern search
-    Explore/            The Explore page, pattern search bar, table, export, label styles
-    Records/            Generated list, record and edit pages, RecordRepository, RecordHooks, ExternalRefRepository
-    CsvImport/          CSV upload and column mapping
+    Explore/            The Explore page, pattern search bar, Ask box, table, export, label styles
+    Ask/                Plain-English questions: the compiler, PatternChecker (checks the answer), QuestionService
+    Records/            Generated list, record and edit pages, RecordRepository (reads, writes, merge, hierarchy), RecordHooks, ExternalRefRepository
+    History/            ChangeRecorder (writes the audit trail), HistoryRepository (reads it), ChangeReverter
+    Views/              Saved views and the state a page keeps in its address (ViewState)
+    Paths/, Timeline/   Find a path, and the timeline page
+    Cleanup/, Home/     The cleanup page, and what the home page reads
+    Import/             The Import page: one tab for each way in
+    CsvImport/          CSV upload and column mapping, and Start from CSVs
+    Extraction/         Reading text with AI: the model call, the validator, matching to existing records
     Staging/            Stage, review, commit and undo for any import (ImportStagingService)
     IDomainModule.cs    What a domain plugs in
   Data/                 The one LinkbaseDbContext, entities, enums, the single InitialCreate migration
@@ -23,7 +30,7 @@ src/Linkbase/
     Data/               ClimbingRecordHook, GradeRanking, trips (TripBuilder, GenericTripService), LogbookRepository,
                         InsightsRepository
     Import/             UKC and Mountain Project parsers, corrections, GenericAscentImportService and its commands
-    Features/           Pages: Logbook, Insights
+    Features/           Pages: Logbook, Insights, and the climbing guide
   wwwroot/js/           graph.js (draws the graph and reports clicks), hotkeys.js, download.js
 models/                 Model files (JSON plus CSV) for the climbing, demo, consultancy and Swiss rail models
 tests/Linkbase.Tests/   One project: unit, Postgres (Testcontainers), bUnit page and Playwright browser tests

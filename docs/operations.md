@@ -102,6 +102,10 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `Models__<key>__Name`, `__ConnectionString`, `__Domains__0`, `__Order` | The models in the switcher, as in [models](models.md#configuring-models) | One model on the main database |
 | `ConnectionStrings__<name>` | Each other model's database. A secret if it has a password | None |
 | `Anthropic__ApiKey` | Reading text with AI. A secret | None, so text can't be read |
+| `Anthropic__Model` | The model that reads text and answers questions | In `appsettings.json` |
+| `Extraction__Enabled` | `false` hides every import that sends text to Anthropic, and Explore's Ask box | `true` |
+| `Extraction__Fixture`, `Ask__Fixture` | A file of canned results instead of calling the API, for trying the flow with no key. Not for production | None |
+| `Models__<key>__Home__Hide__0` | A home-page panel this model leaves out (`records`, `changes`, `imports`, `growth`) | None |
 | `ASPNETCORE_ENVIRONMENT` | `Development` for plain-text logs and detailed errors | `Production` |
 | `ASPNETCORE_HTTP_PORTS` | The port to listen on | `8080` in the image |
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | Trust `X-Forwarded-Proto` and `-For` from the Route or ingress in front | `true` in the image |

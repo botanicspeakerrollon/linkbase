@@ -1,7 +1,8 @@
 # Audit history plan
 
-Built, apart from the three things listed under [not done](#not-done). This adds an audit trail: what changed, who changed it,
-when, and why. It doesn't let you view the data as it was on a past date. How to use it is in [models](models.md#history).
+Built, apart from the two things listed under [not done](#not-done). This adds an audit trail: what changed, who changed it,
+when, and why. Explore's **As of** control reads it to show the graph on a past day (see [reference](reference.md#as-of)), but
+nothing queries it as a temporal table. How to use it is in [models](models.md#history).
 
 ## Decisions
 
@@ -9,7 +10,7 @@ when, and why. It doesn't let you view the data as it was on a past date. How to
 - **A reason is required for every change.** A model file can make it optional.
 - **Append-only log, written by the repository.** No temporal tables, no triggers, no event sourcing. Current-state
   queries and the graph views stay as they are.
-- **Audit trail only.** No "as of" views.
+- **Audit trail first.** The log is the only record of the past. Explore's As of control rewinds values from it, and nothing else does.
 
 ## Model file settings
 
@@ -101,10 +102,11 @@ old values. A deleted record has no page to show its History on, so reverting a 
 
 ## Not done
 
-- **Reverting more than one record's change.** See [reverting](#reverting) for what works.
+(History in Explore's link details is done: click a link and its history appears under its values.)
+
+- **Reverting more than one record's change, or a deletion from a record page that no longer exists.** See [reverting](#reverting) for what works.
 - **The precise undo rule.** Import undo still decides a record was "edited since" from `updated_at`. A link whose values were
   edited since isn't noticed either, because links have no timestamps.
-- **History in Explore's link details.** Only the record page shows it.
 
 ## Notes on what was built
 

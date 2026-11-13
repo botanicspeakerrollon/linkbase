@@ -48,7 +48,8 @@ dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
 
 The app runs at <http://localhost:5173>. Its home page shows whether the database is reachable and
 up to date. The user guide is in the app, under Guide in the rail (`/guide`), with a page of its own for each domain
-(`/guide/climbing`). A domain adds its page through `IDomainModule.GuideHref`. `docker compose down` keeps your data; adding `-v` deletes it.
+(`/guide/climbing`), written for people using the app, not for people running it. A domain adds its page through
+`IDomainModule.GuideHref`. What the app contains, feature by feature, is in the [reference](docs/reference.md). `docker compose down` keeps your data; adding `-v` deletes it.
 
 ### Tests
 
@@ -168,11 +169,11 @@ src/Linkbase/
   Domains/      RegisteredDomains, and one folder per domain
     Climbing/
       Data/     Repositories and services
-      Features/ One folder per feature: Ascents (the Logbook page), Home, Insights, Admin
+      Features/ One folder per feature: Logbook, Insights, Guide
       Import/   Parsers, corrections, trip rules and admin commands
 tests/Linkbase.Tests/
 data/samples/   Your export files (git-ignored)
-docs/           Index in docs/README.md: models, the security roadmap, operations, performance and querying Postgres
+docs/           Index in docs/README.md: the reference, models, the security roadmap, operations, performance and querying Postgres
 models/         Model files and their CSVs, such as the example consultancy and the demo climbing logbook
 scripts/        Local setup, backup, restore and recovery rehearsal
 backups/        Database backups (git-ignored)

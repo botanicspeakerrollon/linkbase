@@ -44,7 +44,28 @@ public class GuidePageTests(PostgresFixture fixture) : UiTestBase(fixture), ICla
         var text = Text(RenderPage<UserGuide>());
 
         Assert.Contains("Some types are arranged in levels", text);
-        Assert.Contains("form a hierarchy", text);
+    }
+
+    [Fact]
+    public void The_general_guide_covers_asking_quick_find_history_and_updating_on_import()
+    {
+        var text = Text(RenderPage<UserGuide>());
+
+        Assert.Contains("ask in plain English", text);
+        Assert.Contains("Quick-find", text);
+        Assert.Contains("Revert", text);
+        Assert.Contains("Update records that are already here", text);
+    }
+
+    [Fact]
+    public void The_general_guide_leaves_out_settings_commands_and_file_paths()
+    {
+        var text = Text(RenderPage<UserGuide>());
+
+        foreach (var technical in new[] { "Extraction:Enabled", "Models:", "docs/", "README", "dotnet ", "ApiKey" })
+        {
+            Assert.DoesNotContain(technical, text);
+        }
     }
 
     [Fact]

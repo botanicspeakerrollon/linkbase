@@ -6,9 +6,10 @@ these companies lack is the skill to use one. Market claims are unresearched, an
 
 ## Where it stands
 
-Built: the generic store and model files ([models](models.md)), generated list and record pages, Explore with Totals, CSV
-import and AI text reading with review and undo, the audit history, the climbing domain, CI, the container image, and
-performance checked on a large sample ([performance](performance.md)). Whether climbing should move into the generic store is
+Built: the generic store and model files ([models](models.md)), generated list and record pages, Explore with Totals, saved
+views, Quick-find and plain-English questions, CSV import (also from several files at once) and AI text reading with review and
+undo, the audit history with revert, Home, Timeline and Cleanup, the climbing domain, CI, the container image, and performance
+checked on a large sample ([performance](performance.md)). What each part does is in the [reference](reference.md). Whether climbing should move into the generic store is
 argued in [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md).
 
 Settled, and not to reopen without a reason:
@@ -25,8 +26,8 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
 ## The order
 
 1. ~~**Saved views and permalinks.**~~ Done: Explore and record lists keep their state in the address (`?v=`), a named view is that state saved (`saved_view`), and pinned views show on Home. Not yet: saving a Totals query apart from its search, or a link that opens a view as read-only for someone else, which waits for sign-in.
-2. **Quick-find.** Ctrl+K jumps to any record, type or page and runs actions such as adding an ascent. It is the one feature that
-   makes the whole app drivable from the keyboard.
+2. ~~**Quick-find.**~~ Done: Ctrl+K jumps to a record, type or page, or starts adding a record, from any page and from inside a
+   field (`QuickFindDialog`, `QuickFindItems`). Not yet: actions beyond adding, such as logging an ascent with the route chosen.
 3. **Plain-English questions.** *Built: the Ask box on Explore (`Core/Ask`), key A. It sends only the question and the model's type and field names, and `PatternChecker` refuses anything outside the model or not in the question. Saving an answer is the existing saved views.* A box that takes "routes I climbed in Spain above 7a" and compiles it to a search pattern. The
    rules from reading text apply: the model's answer is untrusted, so the result is a pattern checked against the model's types,
    fields and relationships, never SQL. Show the pattern beside the answer so people can learn it and edit it. The large piece

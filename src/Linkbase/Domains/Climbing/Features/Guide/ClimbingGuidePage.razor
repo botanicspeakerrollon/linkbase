@@ -77,8 +77,8 @@
 
         <GuideSection Id="web" Title="Adding crags and routes from the web" Icon="@Icons.Material.Outlined.CloudDownload">
             <p>
-                The <em>Read text</em> tab of the Import page turns an article or a list into crags and routes, with you in control. It needs an Anthropic API key
-                (see the README); Claude only reads the text and suggests facts. It works for any model and is described in the general guide.
+                The <em>Read text</em> tab of the Import page turns an article or a list into crags and routes, with you in control. Claude only reads the text and
+                suggests facts. It needs your administrator to have set it up, and is described in the general guide.
             </p>
             <ol class="guide-list">
                 <li><strong>Give it the text.</strong> Paste it, which is the most reliable way and the right one for sites that block fetching or forbid scraping. Or fetch a page by address, if the site allows it.</li>
@@ -96,10 +96,10 @@
 
         <GuideSection Id="files" Title="Loading your existing logbook" Icon="@Icons.Material.Filled.UploadFile">
             <p>
-                Existing history comes from a UKC export and Mountain Project ticks. These are loaded from the command line, not the web page,
-                so they are easy to repeat. Re-importing is safe: rows already imported are recognised and skipped.
+                Existing history comes from a UKC export and Mountain Project ticks. They are loaded all at once from the export files by whoever looks after
+                the app, not from a page, so they are easy to repeat. Loading them again is safe: rows already imported are recognised and skipped.
             </p>
-            <p>The exact commands are in the README under <em>Importing existing data</em>. Each file is one import batch, so it can be undone.</p>
+            <p>Each file is one import, so it shows under Recent imports and can be undone like any other.</p>
         </GuideSection>
 
         <GuideSection Id="trips" Title="Trips, and why they can't be edited" Icon="@Icons.Material.Filled.Flight">
@@ -107,7 +107,7 @@
                 Trips are worked out from your ascents and rebuilt whenever an ascent's date or country changes. Because of that, any hand edit to a trip
                 would be lost at the next rebuild, so trip pages are read-only. To change a trip, change the ascents.
             </p>
-            <p>Some trips span more than one country. Those merges come from a corrections file, which you keep alongside your data.</p>
+            <p>Some trips span more than one country, so a few are merged by hand-kept corrections. If one looks wrong, ask whoever looks after the app to add a correction.</p>
         </GuideSection>
 
         <GuideSection Id="shortcuts" Title="Shortcuts that help here" Icon="@Icons.Material.Filled.Keyboard">

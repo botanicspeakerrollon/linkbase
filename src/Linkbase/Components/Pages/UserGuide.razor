@@ -30,32 +30,32 @@
             <a class="guide-card" href="/guide#explore">
                 <MudIcon Icon="@Icons.Material.Filled.Hub" Color="Color.Primary" />
                 <strong>Explore without queries</strong>
-                <span>Build a search by choosing from suggestions, then grow the graph one click at a time.</span>
+                <span>Build a search by choosing from suggestions, or just ask in plain English. Then grow the graph one click at a time.</span>
             </a>
             <a class="guide-card" href="/guide#records">
                 <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" />
                 <strong>Edit what you find</strong>
-                <span>Every type gets a list and a record page where you change values and add or remove links.</span>
+                <span>Every type gets a list and a record page where you change values and add or remove links, and say why.</span>
             </a>
             <a class="guide-card" href="/guide#import">
                 <MudIcon Icon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" />
                 <strong>Import data</strong>
-                <span>Bring in a CSV file or read text with AI, review before anything is written, and undo an import later.</span>
+                <span>Bring in CSV files or read text with AI, look through it before anything is written, and undo it later.</span>
             </a>
-            <a class="guide-card" href="/guide#models">
-                <MudIcon Icon="@Icons.Material.Filled.Layers" Color="Color.Primary" />
-                <strong>Many models, one app</strong>
-                <span>Each model keeps its own database. The rail switches between them.</span>
+            <a class="guide-card" href="/guide#history">
+                <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Primary" />
+                <strong>Nothing is lost</strong>
+                <span>Every change is kept with its reason. See what changed, go back to how things were, or put an edit back.</span>
+            </a>
+            <a class="guide-card" href="/guide#around">
+                <MudIcon Icon="@Icons.Material.Filled.Search" Color="Color.Primary" />
+                <strong>Jump anywhere</strong>
+                <span>Press Ctrl+K to find a record or page, or to start adding one.</span>
             </a>
             <a class="guide-card" href="/guide#keyboard">
                 <MudIcon Icon="@Icons.Material.Filled.Keyboard" Color="Color.Primary" />
                 <strong>Keyboard first</strong>
                 <span>Search, move around, expand and clear without touching the mouse. Press ? anywhere.</span>
-            </a>
-            <a class="guide-card" href="/guide#yours">
-                <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
-                <strong>Your data stays yours</strong>
-                <span>Plain Postgres on your own machine, and exports to CSV, JSON and PNG whenever you like.</span>
             </a>
         </div>
 
@@ -79,7 +79,8 @@
             </p>
             <p>
                 That is a graph, and it answers questions a spreadsheet makes awkward. Which projects need a skill nobody on the team has?
-                Who worked with whom? What sits two steps away from this one thing? You ask by clicking, not by writing queries.
+                Who worked with whom? What sits two steps away from this one thing? You ask by clicking, or by typing a question, and never
+                by writing a query.
             </p>
             <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
                 <thead><tr><th>Word</th><th>Means</th><th>Example</th></tr></thead>
@@ -88,17 +89,25 @@
                     <tr><td>Record, or node</td><td>One thing of a type, with a name and fields</td><td>A person called Ada</td></tr>
                     <tr><td>Field</td><td>A value on a record: text, number, date, yes/no, a choice or a list</td><td>joined = 2021-03-01</td></tr>
                     <tr><td>Relationship</td><td>A named way two types can be linked</td><td>WORKS_ON, from Person to Project</td></tr>
-                    <tr><td>Link, or edge</td><td>One actual connection between two records</td><td>Ada WORKS_ON Atlas</td></tr>
-                    <tr><td>Model</td><td>A complete set of types, records and links, in its own database</td><td>The consultancy, or the rail network</td></tr>
+                    <tr><td>Link, or edge</td><td>One actual connection between two records. It can carry values of its own</td><td>Ada WORKS_ON Atlas, as Lead, 3 days a week</td></tr>
+                    <tr><td>Model</td><td>A complete set of types, records and links, kept apart from other models</td><td>The consultancy, or the rail network</td></tr>
                 </tbody>
             </MudSimpleTable>
             <MudAlert Severity="Severity.Info" Dense="true">The Home page lists what is in the current model: how many records of each type, and every relationship with its number of links.</MudAlert>
         </GuideSection>
 
+        <GuideSection Id="around" Title="Getting around" Icon="@Icons.Material.Filled.Navigation">
+            <ul class="guide-list">
+                <li><strong>The rail</strong> on the left has Home, Explore, a list for each type of record, Import, Timeline, Cleanup and this guide. Hover over it to read the names. When there is more than one model, the name at the top switches between them.</li>
+                <li><strong>Quick-find</strong> is <kbd>Ctrl</kbd> <kbd>K</kbd>, from any page, even while typing in a box. Type part of a name to jump to that record, or the name of a page, or <em>Add</em> and a type to start a new record. <kbd>↑</kbd> <kbd>↓</kbd> choose and <kbd>Enter</kbd> goes.</li>
+                <li><strong>Every page has an address you can share.</strong> Explore and the record lists keep their state in the address bar, so copying it, or pressing <em>Copy link</em>, opens the same view for anyone who can use this model. Back leaves the page rather than undoing each click.</li>
+            </ul>
+        </GuideSection>
+
         <GuideSection Id="explore" Title="Exploring the graph" Icon="@Icons.Material.Filled.Hub">
             <p>Explore is the heart of the app. Open it from the rail, or press <kbd>g</kbd> then <kbd>e</kbd> anywhere.</p>
 
-            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">1. Build a search by choosing</MudText>
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">1. Start with a search</MudText>
             <p>
                 The search box at the top builds a phrase one step at a time, and what it suggests depends on the step you are on.
                 Start with a type, then add conditions to it, or follow a relationship to the next type.
@@ -117,6 +126,18 @@
                 <li>Type <code>graph</code> to see the model itself: every type, and how they are linked. Click a type there, then <em>Show all</em>, to bring in its records.</li>
             </ul>
 
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">Or ask in plain English</MudText>
+            <p>
+                Unless your administrator has turned it off, the <em>Ask</em> box under the search bar takes a question such as
+                <em>people who work on active projects</em> and turns it into a search. It needs the same set-up as Read text. Press <kbd>a</kbd> to jump to it.
+            </p>
+            <ul class="guide-list">
+                <li>The answer appears <strong>in the search bar</strong>, as steps you can read and change, so you see exactly what was searched for and learn how to write it yourself.</li>
+                <li>It only ever uses the types, fields and relationships your model really has. If a question does not fit, you are told, and nothing is searched.</li>
+                <li>Only your question and the names of the model's types and fields are sent to be read. None of your records or values are.</li>
+                <li>Press <kbd>Esc</kbd> to leave the box without asking.</li>
+            </ul>
+
             <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">2. Grow the graph from what you find</MudText>
             <ul class="guide-list">
                 <li><strong>Click</strong> a node for its details in the panel on the right.</li>
@@ -124,6 +145,7 @@
                 <li><strong>Double-click</strong> expands everything linked to it. At most 100 are added at a time, and <em>Show more</em> brings in the rest.</li>
                 <li><strong>Nodes you already have never move</strong> when others are added, so you keep your bearings. Drag a node and the ones linked near it follow, like a spring.</li>
                 <li>Under <em>When expanding, only show</em> in the panel, limit expansion to chosen relationships or to records whose property matches.</li>
+                <li>Switch on <em>Show values on links</em> to see what a link carries, such as <code>WORKS_ON · Lead · 3</code>.</li>
             </ul>
 
             <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">3. Read it as a graph or as a table</MudText>
@@ -131,12 +153,14 @@
                 Press <kbd>t</kbd> to swap the picture for a table of the same nodes. The table is the better way to scan values or sort
                 through a lot of records, and selecting a row selects the node, so the two stay in step.
             </p>
+            <p>
+                Press <kbd>s</kbd> for <em>Totals</em>: the count, sum, smallest, largest and average of the number fields across everything your search found.
+            </p>
 
             <MudText Typo="Typo.h6" HtmlTag="h3" Class="guide-sub">4. Keep and share what you built</MudText>
             <ul class="guide-list">
                 <li><strong>Saved scenes</strong> remember the nodes on the canvas, and where you put them, under a name.</li>
                 <li><strong>Saved views</strong> (<kbd>v</kbd>) remember a search, the canvas, the table and the totals under a name, and any list of records with its search and filters. Pin one to put it on Home.</li>
-                <li><strong>Every page has an address you can share.</strong> Explore and the record lists keep their state in the address bar, so <em>Copy link</em>, or just copying the address, opens the same view for anyone with access to this model. Back leaves the page rather than undoing each click.</li>
                 <li><strong>Export</strong> the canvas as nodes (CSV), links (CSV), nodes and links together (JSON) or a picture (PNG).</li>
             </ul>
 
@@ -145,15 +169,15 @@
                 <li><em>Find a path</em> (<kbd>w</kbd>) asks how the selected record is connected to another. It finds the shortest chain of links, in either direction, and <em>Show on graph</em> draws it. A very busy record can make the search skip part of the graph, and it says so.</li>
                 <li><em>What changed nearby</em> (<kbd>d</kbd>) lists the edits made since a date to the record, to the records it is linked to and to their links.</li>
                 <li>Click a link and its history appears under its values: when it was made, edited or removed, and why.</li>
-                <li><em>As of</em> in the panel hides the records and links that did not exist on a day you choose, and shows the others with the values they had. Drag the slider or pick a date. It uses the history, so a record deleted since cannot be shown, and a link added before the history was kept looks as if it was always there.</li>
+                <li><em>As of</em> in the panel hides the records and links that did not exist on a day you choose, and shows the others with the values they had. Drag the slider or pick a date. A record deleted since cannot be shown, and a link added before changes were being kept looks as if it was always there.</li>
             </ul>
         </GuideSection>
 
         <GuideSection Id="everyday" Title="Home, timeline and cleanup" Icon="@Icons.Material.Outlined.CleaningServices">
             <ul class="guide-list">
-                <li><strong>Home</strong> shows what was added or edited lately, the latest changes and imports, and how many records were added each month. A model can leave panels out with <code>Models:&lt;key&gt;:Home:Hide</code> in its configuration, using <code>records</code>, <code>changes</code>, <code>imports</code> or <code>growth</code>.</li>
+                <li><strong>Home</strong> shows your pinned views, what is in the model, what was added or edited lately, the latest changes and imports, and how many records were added each month. A review waiting to be committed has a link there.</li>
                 <li><strong>Timeline</strong> lays the records of a type out by one of its dates, newest first, with a bar for each month. Click a month to look closer.</li>
-                <li><strong>Cleanup</strong> finds records whose names match apart from capitals and spacing, records with no links, and records missing a required value. Types a module derives, such as trips, are left out.</li>
+                <li><strong>Cleanup</strong> finds records whose names match apart from capitals and spacing, records with no links, and records missing a required value. Records the app works out for itself, such as trips, are left out.</li>
                 <li>To <strong>merge</strong> duplicates, choose the record to keep and press <em>Merge</em>. It keeps its own values, gains any it lacked, and takes over the others' links and ids. The others are deleted, and the history says what went where. If the merged record would break a limit, such as being in two teams, nothing changes and you are told why.</li>
             </ul>
         </GuideSection>
@@ -161,24 +185,39 @@
         <GuideSection Id="records" Title="Records and links" Icon="@Icons.Material.Filled.Edit">
             <p>
                 Each type in the model gets its own entry in the rail. Its page lists the records, with a search that matches any part of a name
-                or a value, and an <em>Add</em> button for a new one.
+                or a value, filters for its fields, and an <em>Add</em> button for a new one. Click a heading to sort by it.
             </p>
             <ul class="guide-list">
-                <li>Open a record to see every field and every link, grouped by relationship. <em>Edit</em> changes the fields.</li>
-                <li><em>Add link</em> joins it to another record. Only relationships the model defines are offered.</li>
+                <li>Open a record to see every field and every link, grouped by relationship. <em>Edit</em> changes the fields. A short note beside a field says what it is for.</li>
+                <li><em>Add link</em> joins it to another record. Only relationships the model defines are offered, and some carry values of their own, such as a role, which you fill in as you link.</li>
+                <li>A new record can link, or create, the records it needs as it is made: a <em>New</em> button beside a required link opens the same form for that record, and it can do the same in turn. Nothing is saved until you save the outer form.</li>
                 <li>Some types are arranged in <strong>levels</strong>, such as countries, regions and areas. A <em>Parent</em> box on the new record form chooses what it is in. It can be left empty for a record at the top level, and is needed below it. You are told if the parent is the wrong level, if the record is already in something, or if a link would go round in a circle. To move a record, remove its link to the old parent, then add a link to the new one.</li>
+                <li>A relationship may limit how many links a record can have, such as one team per person. You are told when a link would go over.</li>
                 <li><em>Open and edit</em> in Explore jumps straight here from any node.</li>
-                <li>Fields marked <em>kept by</em> something are worked out by a domain module, so there is no box to type in.</li>
+                <li>Fields marked <em>kept by</em> something are worked out by the app, so there is no box to type in.</li>
             </ul>
             <MudAlert Severity="Severity.Warning" Dense="true">
-                A record that still has links cannot be deleted. Remove its links first. Deleting asks you to confirm and cannot be undone.
+                A record that still has links cannot be deleted. Remove its links first. Deleting asks you to confirm.
             </MudAlert>
+        </GuideSection>
+
+        <GuideSection Id="history" Title="Reasons, history and going back" Icon="@Icons.Material.Filled.History">
+            <p>
+                The app keeps a record of every change: what changed, when, and why. You never switch it on, and it takes no extra steps beyond one line of explanation.
+            </p>
+            <ul class="guide-list">
+                <li>When you save, delete or link something, you are asked for a <strong>reason</strong>: a line in your own words. You can also say where the information came from, such as a web address. A model can make the reason optional.</li>
+                <li>A record's page lists its <strong>history</strong>, newest first: each edit with the old and new value, when it was made and why. A record that came from an import says so at the start.</li>
+                <li><strong>Revert</strong> beside an edit puts it back, as an edit of its own with its own entry. It only goes ahead if nothing has changed since: if the value was edited again, the link has gone or the record has moved on, you are told, and nothing happens. It can undo a field edit, a link added, removed or edited, a record you created, and a record you deleted, which returns with its values and the links it needs.</li>
+                <li>To go back further, use <em>As of</em> in Explore to see the whole graph on an earlier day, or <em>What changed nearby</em> to see what has happened around one record.</li>
+            </ul>
+            <MudAlert Severity="Severity.Info" Dense="true">An import, or a change the app made by itself, cannot be reverted from a record page. Undo an import from the Import page.</MudAlert>
         </GuideSection>
 
         <GuideSection Id="import" Title="Importing data" Icon="@Icons.Material.Filled.UploadFile">
             <p>
                 <em>Import</em> in the rail is one page with a tab for each way of bringing data in: <strong>CSV file</strong>,
-                <strong>Read text</strong>, and any a domain adds.
+                <strong>Start from CSVs</strong>, <strong>Read text</strong>, and any others your model adds.
             </p>
             <MudText Typo="Typo.h6" HtmlTag="h3" Class="mt-3">CSV file</MudText>
             <p>
@@ -186,41 +225,53 @@
                 or <strong>links between records already here</strong>, so import the records first.
             </p>
             <ol class="guide-list">
-                <li><strong>Choose a file.</strong> You see a preview of its columns and a few sample values.</li>
+                <li><strong>Choose a file.</strong> You see a preview of its columns and a few sample values, and the app guesses what it is from the column names and your existing types.</li>
                 <li><strong>Say what it is.</strong> Pick an existing type or name a new one, then choose the key column that identifies each row, the name column, and which columns become fields. For links, pick the type at each end, the column holding each end's key, and the relationship.</li>
-                <li><strong>Import.</strong> You are told how many records are new and how many are already here. Rows already here are left as they are, so importing the same file twice is safe.</li>
+                <li><strong>Check.</strong> You are told how many rows would be added and why any would be skipped, and nothing changes yet. Fix what it points out.</li>
+                <li><strong>Import.</strong> Records already here are left as they are, so importing the same file twice is safe.</li>
             </ol>
             <p>
-                <em>Review first</em> stages the rows instead of writing them. You look through what would be added, leave out what you do not
-                want, and commit when you are happy. Recent imports are listed below the form, and an import can be undone.
+                Tick <em>Update records that are already here</em> to let the file change them instead: a record with the same key takes the file's values
+                where they differ. An empty cell never wipes a value. The review lists each change as <code>city: Bern → Zurich</code>.
+            </p>
+            <p>
+                <em>Review first</em> stages the rows instead of writing them. You look through what would be added or changed, untick what you do not
+                want, and commit when you are happy, or discard the lot. A review waits for you, so you can come back to it from Recent imports.
+            </p>
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="mt-3">Start from CSVs</MudText>
+            <p>
+                Starting a new model with no description of it? Choose all your files at once. Each file becomes a type named from the file
+                (<em>clients.csv</em> is <em>Client</em>), a column that holds another file's type, such as <em>client_id</em>, becomes a link, and a file of
+                two such columns is links between them. Correct anything it guessed, press <em>Check</em>, then <em>Create the model</em>.
+                Each file is an import of its own that you can undo.
             </p>
             <MudText Typo="Typo.h6" HtmlTag="h3" Class="mt-3">Read text</MudText>
             <p>
                 Paste text, or fetch a page if the site allows it, and Claude looks for records and links of the types in the current model.
-                Only what the text actually says is kept: a name or value that is not in it, or is longer than 200 characters, is dropped and
+                Only what the text actually says is kept: a name or value that is not in it is dropped and
                 listed in the review's notes. Records already here are left as they are but can still be linked to. Everything is staged
-                for review first, and can be undone like a CSV import.
+                for review first.
             </p>
             <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
-                The text is sent to Anthropic to be read, and it needs an Anthropic API key (see the README). An administrator can turn it off
-                with <code>Extraction:Enabled</code>.
+                The text is sent to Anthropic to be read, so it only works once your administrator has set it up, and they can turn it off. Your own records are never sent.
             </MudAlert>
+            <MudText Typo="Typo.h6" HtmlTag="h3" Class="mt-3">Undoing an import</MudText>
+            <p>
+                <em>Recent imports</em> lists every import with an <em>Undo</em>. It removes what the import added and puts back what it changed.
+                Anything you have edited, linked to or relied on since stays, and is listed, so nothing you did afterwards is lost. Once you have dealt
+                with those, undo again.
+            </p>
         </GuideSection>
 
         <GuideSection Id="models" Title="Working with models" Icon="@Icons.Material.Filled.Layers">
             <p>
-                A model is one self-contained set of data. When more than one is configured, the name at the top of the rail becomes a
-                switcher: click it and choose another model. Each has its own database, so they never mix.
+                A model is one self-contained set of data. When more than one is available, the name at the top of the rail becomes a
+                switcher: click it and choose another model. Each is kept apart, so they never mix. What is in each model, and what pages it
+                has, depends on the model: the Home page shows the types, and a model with pages of its own has its own guide.
             </p>
             <p>
-                New models start as a <strong>model file</strong>, a small JSON description of the types, fields and relationships, plus CSV files of data.
-                One command loads it, and Explore works on it straight away. Models that need their own logic, such as climbing with its grades
-                and trips, add pages of their own. The <code>docs/models.md</code> file in the repository has the file format and the steps.
-            </p>
-            <p>
-                A model file can also say that a type's records form a <strong>hierarchy</strong>: which levels there are, and which level may sit in which.
-                Loading, adding and editing records and links, and committing an import then all follow those rules. An import that would break them is
-                stopped when you commit, and the review tells you which links to untick.
+                To start a new model from your own spreadsheets, use <em>Start from CSVs</em> above. If you need something more than that, such
+                as levels, limits or notes on fields, ask whoever looks after the app to set up the model.
             </p>
         </GuideSection>
 
@@ -231,19 +282,20 @@
 
         <GuideSection Id="yours" Title="Your data stays yours" Icon="@Icons.Material.Filled.Lock">
             <ul class="guide-list">
-                <li>Everything is stored in a Postgres database you run, with a database for each model. Exploring, editing and importing a CSV file all happen against that database.</li>
+                <li>Your records and links live in a database of their own, not in a file inside the app. Exploring, editing and importing all happen there.</li>
                 <li>Exports to CSV, JSON and PNG are one click away in Explore, so you can always take your data to another tool.</li>
-                <li>Back-ups and restores are scripts in the repository, and are covered in <code>docs/operations.md</code>.</li>
+                <li>Backing up and restoring are the job of whoever looks after the app.</li>
             </ul>
         </GuideSection>
 
         <GuideSection Id="tips" Title="Tips" Icon="@Icons.Material.Outlined.TipsAndUpdates">
             <ul class="guide-list">
-                <li>Not sure where to start? Type <code>graph</code> in Explore and click a type.</li>
+                <li>Not sure where to start? Type <code>graph</code> in Explore and click a type, or press <kbd>Ctrl</kbd> <kbd>K</kbd> and type a name.</li>
                 <li>Too many nodes? Press <kbd>c</kbd> to clear, or select a node and press <kbd>Delete</kbd> to take just that one off the graph. Expanding a neighbour brings it back.</li>
                 <li>The picture too crowded to read? Switch to the table with <kbd>t</kbd>.</li>
                 <li>Press <kbd>f</kbd> to fit the whole graph to the screen.</li>
-                <li>Found something worth keeping? Save it as a scene before you clear the canvas.</li>
+                <li>Found something worth keeping? Save it as a view with <kbd>v</kbd> and pin it to Home.</li>
+                <li>Made a mistake? Open the record, find the edit in its history and press Revert.</li>
             </ul>
         </GuideSection>
     </ChildContent>
@@ -253,9 +305,11 @@
     private static readonly IReadOnlyList<(string Id, string Title)> Contents =
     [
         ("idea", "The idea"),
+        ("around", "Getting around"),
         ("explore", "Exploring the graph"),
         ("everyday", "Home, timeline and cleanup"),
         ("records", "Records and links"),
+        ("history", "Reasons, history and going back"),
         ("import", "Importing data"),
         ("models", "Working with models"),
         ("keyboard", "Keyboard shortcuts"),
