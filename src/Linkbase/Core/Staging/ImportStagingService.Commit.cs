@@ -148,7 +148,7 @@ public sealed partial class ImportStagingService
         {
             var logged = new List<PendingChange>
             {
-                new(ChangeEntityKind.ImportBatch, batchId.ToString(), ChangeOp.Create, NewValue: JsonSerializer.Serialize(new { records, links })),
+                new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create, NewValue: JsonSerializer.Serialize(new { records, links })),
             };
             logged.AddRange(newTypes.Select(t => new PendingChange(ChangeEntityKind.Definition, $"type:{t}", ChangeOp.Create)));
             logged.AddRange(newFields.Select(f => new PendingChange(ChangeEntityKind.Definition, $"field:{f}", ChangeOp.Create)));

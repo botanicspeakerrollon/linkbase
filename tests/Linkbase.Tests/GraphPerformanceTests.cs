@@ -109,7 +109,7 @@ public class GraphPerformanceTests
         var filter = (string key, FilterOperator op, string value) => new PatternFilter(key, op, value);
         lines.Add(await MeasureAsync("Keystroke: suggestions for \"Zür\"", async token => (await graph.MatchPropertiesAsync(null, "Zür", token)).Count));
         lines.Add(await MeasureAsync("Keystroke: suggestions for just \"Zü\"", async token => (await graph.MatchPropertiesAsync(null, "Zü", token)).Count));
-        lines.Add(await MeasureAsync("Keystroke: values of a property", async token => (await graph.PropertyValuesAsync("Stop", "platform", "1", token)).Count));
+        lines.Add(await MeasureAsync("Keystroke: values of a property", async token => (await graph.PropertyValuesAsync("Stop", "platform", "1", cancellationToken: token)).Count));
         lines.Add(await MeasureAsync("Search: first 100 of a type", token => Pattern(new GraphPattern([new PatternNode("Line", [])], []), token)));
         lines.Add(await MeasureAsync("Search: name contains, within a type", token => Pattern(new GraphPattern([new PatternNode("Stop", [filter("name", FilterOperator.Contains, "Zürich")])], []), token)));
         lines.Add(await MeasureAsync("Search: free text, everything", token => Pattern(new GraphPattern([new PatternNode(null, [filter(PatternFilter.AnyField, FilterOperator.Contains, "Zürich")])], []), token)));

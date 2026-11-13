@@ -388,8 +388,8 @@ public sealed class GenericAscentImportService(IDbContextFactory<LinkbaseDbConte
             list.Add(id);
         }
 
-        private static JsonNode? Text(string? value) => string.IsNullOrEmpty(value) ? null : JsonValue.Create(value);
+        private static JsonValue? Text(string? value) => string.IsNullOrEmpty(value) ? null : JsonValue.Create(value);
 
-        private static JsonNode Choice<T>(T value) where T : struct, Enum => JsonValue.Create(SnakeCaseEnumConverter<T>.ToStore(value))!;
+        private static JsonValue Choice<T>(T value) where T : struct, Enum => JsonValue.Create(SnakeCaseEnumConverter<T>.ToStore(value))!;
     }
 }

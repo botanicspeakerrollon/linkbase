@@ -22,7 +22,7 @@ public static class GraphStyle
     // Types with no style of their own get one of these, always the same one for the same type.
     private static readonly string[] Palette = ["#0f766e", "#b45309", "#4338ca", "#be123c", "#4d7c0f", "#a21caf", "#0369a1", "#9f1239"];
 
-    private static readonly IReadOnlyDictionary<string, LabelStyle> Known = RegisteredDomains.All.SelectMany(d => d.LabelStyles).Where(s => s.Kind is null).ToDictionary(s => s.Label);
+    private static readonly Dictionary<string, LabelStyle> Known = RegisteredDomains.All.SelectMany(d => d.LabelStyles).Where(s => s.Kind is null).ToDictionary(s => s.Label);
 
     private static readonly IReadOnlyList<LabelStyle> KindStyles = RegisteredDomains.All.SelectMany(d => d.LabelStyles).Where(s => s.Kind is not null).ToList();
 

@@ -78,10 +78,10 @@ public sealed class AnthropicModelExtractor(IConfiguration configuration, HttpCl
         prompt.AppendLine("The model has these types of record:");
         foreach (var type in schema.Types)
         {
-            prompt.AppendLine($"- {type.Name}. Its fields: {(type.Fields.Count == 0 ? "none" : string.Join("; ", type.Fields.Select(Describe)))}.");
+            prompt.AppendLine(System.Globalization.CultureInfo.InvariantCulture, $"- {type.Name}. Its fields: {(type.Fields.Count == 0 ? "none" : string.Join("; ", type.Fields.Select(Describe)))}.");
             foreach (var required in type.RequiredLinks)
             {
-                prompt.AppendLine($"  Every {type.Name} must have a {type.Name} {required.RelType} {required.OtherType} link, so leave out one the text gives none for.");
+                prompt.AppendLine(System.Globalization.CultureInfo.InvariantCulture, $"  Every {type.Name} must have a {type.Name} {required.RelType} {required.OtherType} link, so leave out one the text gives none for.");
             }
         }
 

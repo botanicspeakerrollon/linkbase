@@ -79,7 +79,7 @@ public static class MountainProjectParser
     {
         var parts = rating.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var v = parts.FirstOrDefault(p => p.StartsWith('V'));
-        var yds = parts.FirstOrDefault(p => p.StartsWith("5."));
+        var yds = parts.FirstOrDefault(p => p.StartsWith("5.", StringComparison.Ordinal));
         var grade = isBoulder ? v ?? yds : yds ?? v;
         var protection = parts.FirstOrDefault(ProtectionRatings.Contains);
         return grade is null ? null : protection is null ? grade : $"{grade} {protection}";

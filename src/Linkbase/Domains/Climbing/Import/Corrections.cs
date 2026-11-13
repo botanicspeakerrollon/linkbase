@@ -17,8 +17,10 @@ public sealed record Corrections(
     IReadOnlyList<MountainProjectPartners> MountainProjectPartners,
     IReadOnlyList<TripMerge> TripMerges)
 {
+    private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web);
+
     public static Corrections Load(string path) =>
-        JsonSerializer.Deserialize<Corrections>(File.ReadAllText(path), new JsonSerializerOptions(JsonSerializerDefaults.Web))
+        JsonSerializer.Deserialize<Corrections>(File.ReadAllText(path), Options)
         ?? throw new FormatException($"{path} is empty.");
 
     public ParsedAscent Apply(ParsedAscent ascent)
