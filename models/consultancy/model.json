@@ -4,13 +4,24 @@
   "types": [
     {
       "name": "Person", "color": "#c2410c", "icon": "Person",
-      "source": { "file": "people.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "title" }, { "key": "joined", "type": "date" }, { "key": "skills", "type": "list" } ]
+      // The name is made from the two name fields, so nobody types one. The fields show together under "Name".
+      "nameTemplate": "{name_first} {name_last}",
+      "source": { "file": "people.csv", "key": "id" },
+      "fields": [
+        { "key": "name_first", "group": "Name", "description": "What they are called day to day." },
+        { "key": "name_last", "group": "Name", "description": "Leave empty for a single name." },
+        { "key": "title", "group": "Role", "description": "Their job title, not their grade." },
+        { "key": "joined", "type": "date", "group": "Role", "description": "The day they started." },
+        // Several values: split by | in the CSV, one per line on a form.
+        { "key": "skills", "multiple": true, "description": "Things they could lead a workshop on." },
+        { "key": "working_language", "type": "choice", "options": [ "English", "French", "German", "Czech", "Japanese" ], "multiple": true, "description": "Languages they can work in." },
+        { "key": "certified_on", "type": "date", "multiple": true, "description": "Each date they passed an accreditation." }
+      ]
     },
     {
       "name": "Team", "color": "#4338ca", "icon": "Groups",
       "source": { "file": "teams.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "floor", "type": "number" } ]
+      "fields": [ { "key": "floor", "type": "number", "description": "Which floor of the office the team sits on." } ]
     },
     {
       "name": "Client", "color": "#0f766e", "icon": "Business",
@@ -20,18 +31,25 @@
     {
       "name": "Project", "color": "#a16207", "icon": "Assignment",
       "source": { "file": "projects.csv", "key": "id", "name": "name" },
-      "fields": [ { "key": "started", "type": "date" }, { "key": "budget", "type": "number" },
-        { "key": "status", "type": "choice", "options": [ "proposed", "active", "live", "closed" ], "required": true }
+      "fields": [
+        { "key": "started", "type": "date" },
+        { "key": "budget", "type": "number", "description": "In pounds, before VAT." },
+        { "key": "status", "type": "choice", "options": [ "proposed", "active", "live", "closed" ], "required": true, "description": "Where the project is now." }
       ]
     }
   ],
   "relationships": [
-    { "from": "Person", "type": "MEMBER_OF", "to": "Team", "source": { "file": "people.csv", "fromColumn": "id", "toColumn": "team" } },
-    { "from": "Project", "type": "FOR", "to": "Client", "source": { "file": "projects.csv", "fromColumn": "id", "toColumn": "client" } },
+    // Nobody is in two teams. (Add "required": true to make it exactly one, though then people can't be imported before their teams.)
+    { "from": "Person", "type": "MEMBER_OF", "to": "Team", "max": 1, "source": { "file": "people.csv", "fromColumn": "id", "toColumn": "team" } },
+    // A project is for at most one client.
+    { "from": "Project", "type": "FOR", "to": "Client", "max": 1, "source": { "file": "projects.csv", "fromColumn": "id", "toColumn": "client" } },
     {
       "from": "Person", "type": "WORKS_ON", "to": "Project",
       "source": { "file": "assignments.csv", "fromColumn": "person", "toColumn": "project" },
-      "fields": [ { "key": "role" }, { "key": "days_a_week", "type": "number" } ]
+      "fields": [
+        { "key": "role", "description": "What they do on this project." },
+        { "key": "days_a_week", "type": "number", "description": "Days a week they spend on it." }
+      ]
     }
   ]
 }

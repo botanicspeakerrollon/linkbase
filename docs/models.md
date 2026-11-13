@@ -109,6 +109,9 @@ JSON, with comments allowed. Paths are relative to the model file.
 In Explore, a filter on a list matches when any of its values does, so `skills = postgres` finds everyone with Postgres
 among their skills.
 
+The example consultancy (`models/consultancy/model.json`) shows `description`, `group`, `multiple`, `nameTemplate` and `max` in use: a
+person's name is made from two grouped fields, and a person is in at most one team.
+
 A row without a value for a required field stops the load, and so does a record left without a required relationship's
 link, once every link is in. Both say which rows or records.
 
@@ -128,6 +131,7 @@ be checked), and the record's page shows its history, newest first.
 
 - `record: false` keeps no history. It can't be combined with `requireReason: true`, so the load says so.
 - `requireReason: false` makes the reason box optional. A reason given is still kept.
+- `sourceKinds` lists the kinds of source a change can name, such as `["Internet", "Jira", "SharePoint"]`. A change can carry a source: its kind, an id (a web address or whatever identifies it there) and a brief comment. `Internet` alone if left out.
 - The settings are saved with the model each time it is loaded, so a file that leaves `history` out turns both back on.
 - Turning history off keeps what was already recorded, and so does a reload.
 - An import is one entry for the whole batch, with its source. Its records show "Added by import" at the start of their
