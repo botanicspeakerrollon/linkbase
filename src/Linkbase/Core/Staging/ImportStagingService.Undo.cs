@@ -101,7 +101,7 @@ public sealed partial class ImportStagingService
         if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
         {
             changeSet = await ChangeRecorder.WriteAsync(db, JustificationKind.Import, new ChangeReason($"Import #{batchId} undone", batch.SourceUrl),
-                [new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(), ChangeOp.Delete,
+                [new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Delete,
                     OldValue: JsonSerializer.Serialize(new { records = recordsRemoved, links = linksRemoved, kept = kept.Count }))],
                 importBatchId: batchId, cancellationToken: cancellationToken);
         }

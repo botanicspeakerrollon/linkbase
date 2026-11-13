@@ -90,7 +90,8 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable, IC
         {
             ["grade"] = "E2 5c",
             ["grade_system"] = "uk_trad",
-        }) { Links = [new NewLink("AT", crag)] });
+        })
+        { Links = [new NewLink("AT", crag)] });
 
         Assert.Equal(Rank(GradeSystem.UkTrad, "E2 5c"), (await records.GetAsync("Route", key))!.Values["grade_rank"]);
 
@@ -130,7 +131,10 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable, IC
         await records.UpdateAsync(route, new RecordInput("La Bleue Renamed", new Dictionary<string, string?> { ["grade"] = "6a+", ["grade_system"] = "french" }));
         await records.UpdateAsync("ascent:" + key, new RecordInput("Ascent", new Dictionary<string, string?>
         {
-            ["date"] = "2019-01-05", ["date_precision"] = "day", ["style"] = "lead", ["source"] = "manual",
+            ["date"] = "2019-01-05",
+            ["date_precision"] = "day",
+            ["style"] = "lead",
+            ["source"] = "manual",
         }));
 
         string now;

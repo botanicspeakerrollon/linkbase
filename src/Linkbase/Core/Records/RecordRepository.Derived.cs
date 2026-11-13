@@ -9,6 +9,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
+
 public sealed partial class RecordRepository
 {
     // Replaces every record of a type a domain module derives, and every link to them, in one transaction. Only the
@@ -108,7 +109,10 @@ public sealed partial class RecordRepository
         db.Nodes.AddRange(nodes);
         db.NodeLinks.AddRange(links.Distinct().Select(l => new NodeLink
         {
-            SourceId = l.SourceId, RelType = l.RelType, TargetId = l.TargetId, Props = l.Props?.ToJsonString() ?? "{}",
+            SourceId = l.SourceId,
+            RelType = l.RelType,
+            TargetId = l.TargetId,
+            Props = l.Props?.ToJsonString() ?? "{}",
         }));
         await db.SaveChangesAsync(cancellationToken);
         foreach (var group in links.Distinct().GroupBy(l => (From: types[l.SourceId], l.RelType, To: types[l.TargetId])))

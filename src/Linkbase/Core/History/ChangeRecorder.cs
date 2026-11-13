@@ -128,7 +128,8 @@ public static class ChangeRecorder
             """
             INSERT INTO change (change_set_id, entity_kind, entity_id, op, field_key, rel_type, related_id, old_value, new_value)
             SELECT @set, k, e, o, f, r, x, ov, nv FROM unnest(@kinds, @entities, @ops, @fields, @rels, @related, @olds, @news) AS t(k, e, o, f, r, x, ov, nv)
-            """, connection, transaction) { CommandTimeout = 0 };
+            """, connection, transaction)
+        { CommandTimeout = 0 };
         insert.Parameters.Add(new NpgsqlParameter("set", NpgsqlDbType.Bigint) { Value = changeSetId });
         Add(insert, "kinds", changes.Select(c => SnakeCaseEnumConverter<ChangeEntityKind>.ToStore(c.Kind)));
         Add(insert, "entities", changes.Select(c => c.EntityId));

@@ -129,7 +129,8 @@ public static class HierarchyChecks
                 SELECT p, key, row_number() OVER (PARTITION BY p ORDER BY key) AS n FROM problem
             ) numbered WHERE n <= @examples
             ORDER BY p, key
-            """, connection, transaction) { CommandTimeout = 0 };
+            """, connection, transaction)
+        { CommandTimeout = 0 };
         command.Parameters.Add(new NpgsqlParameter("levels", NpgsqlDbType.Text) { Value = rules.LevelsJson() });
         command.Parameters.Add(new NpgsqlParameter("field", NpgsqlDbType.Text) { Value = rules.FieldKey });
         command.Parameters.Add(new NpgsqlParameter("type", NpgsqlDbType.Text) { Value = rules.TypeName });

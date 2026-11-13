@@ -1,0 +1,29 @@
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,razor,js,json,yml,yaml,csproj,props}]
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,csproj,props}]
+indent_size = 2
+
+[*.cs]
+# Analyzers that are off by default but catch real bugs here. Warnings are errors (Directory.Build.props).
+dotnet_diagnostic.CA1305.severity = warning  # culture-dependent formatting and parsing
+dotnet_diagnostic.CA1310.severity = warning  # culture-dependent string comparison
+dotnet_diagnostic.CA1068.severity = warning  # CancellationToken goes last
+dotnet_diagnostic.CA1869.severity = warning  # cache JsonSerializerOptions
+dotnet_diagnostic.CA1859.severity = warning  # use concrete types where possible
+
+[**/Data/Migrations/**.cs]
+generated_code = true
+
+[tests/**.cs]
+# Tests run on one machine with made-up data, so culture and option caching don't matter.
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1869.severity = none

@@ -8,6 +8,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
+
 public sealed partial class RecordRepository
 {
     public async Task<IReadOnlyList<RecordType>> TypesAsync(CancellationToken cancellationToken = default)

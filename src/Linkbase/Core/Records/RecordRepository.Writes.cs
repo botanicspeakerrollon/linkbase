@@ -9,6 +9,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
+
 public sealed partial class RecordRepository
 {
     // The key is made from the name when none is given, and can't change afterwards, because the record's id is made from it.

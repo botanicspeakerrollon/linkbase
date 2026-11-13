@@ -94,8 +94,8 @@ public static partial class GraphPatternSql
             }
 
             var (near, far) = rel.Outgoing ? ("source_id", "target_id") : ("target_id", "source_id");
-            from.Append($" JOIN graph_edges e{i} ON e{i}.{near} = n{i}.node_id AND e{i}.rel_type = {Add(rel.RelType, NpgsqlDbType.Text)}");
-            from.Append($" JOIN graph_nodes n{i + 1} ON n{i + 1}.node_id = e{i}.{far}");
+            from.Append(System.Globalization.CultureInfo.InvariantCulture, $" JOIN graph_edges e{i} ON e{i}.{near} = n{i}.node_id AND e{i}.rel_type = {Add(rel.RelType, NpgsqlDbType.Text)}");
+            from.Append(System.Globalization.CultureInfo.InvariantCulture, $" JOIN graph_nodes n{i + 1} ON n{i + 1}.node_id = e{i}.{far}");
         }
 
         for (var i = 0; i < pattern.Nodes.Count; i++)

@@ -8,6 +8,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 namespace Linkbase.Core.Records;
+
 public sealed partial class RecordRepository
 {
     // Lets the modules' hooks set the fields they keep.
@@ -24,7 +25,7 @@ public sealed partial class RecordRepository
     }
 
     // Keeps the relationship's count, which the home page and the graph model show, in step with its links.
-    private static Task CountAsync(LinkbaseDbContext db, string sourceType, string relType, string targetType, int change, CancellationToken cancellationToken) =>
+    private static Task<int> CountAsync(LinkbaseDbContext db, string sourceType, string relType, string targetType, int change, CancellationToken cancellationToken) =>
         db.LinkDefinitions
             .Where(d => d.SourceType == sourceType && d.RelType == relType && d.TargetType == targetType)
             .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links + change), cancellationToken);
@@ -76,7 +77,7 @@ public sealed partial class RecordRepository
     }
 
     // One value as its field's type (a several-valued field's type is its values').
-    private static JsonNode? Single(RecordField field, string text) => field.ElementType switch
+    private static JsonValue? Single(RecordField field, string text) => field.ElementType switch
     {
         FieldType.Number => decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
             ? JsonValue.Create(number)

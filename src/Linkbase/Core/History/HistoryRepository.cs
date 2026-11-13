@@ -38,7 +38,13 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
             .Take(PageSize)
             .Select(s => new
             {
-                s.Id, s.CreatedAt, s.Justification.Kind, s.Justification.Note, s.Justification.SourceUrl, s.Justification.ImportBatchId, s.CauseChangeSetId,
+                s.Id,
+                s.CreatedAt,
+                s.Justification.Kind,
+                s.Justification.Note,
+                s.Justification.SourceUrl,
+                s.Justification.ImportBatchId,
+                s.CauseChangeSetId,
             })
             .ToListAsync(cancellationToken);
         var ids = entries.Select(e => e.Id).ToList();

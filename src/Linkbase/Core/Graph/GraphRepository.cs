@@ -11,7 +11,7 @@ public sealed record GraphProperty(string Key, string Value);
 
 public sealed record GraphNode(string Id, string Label, string Name, IReadOnlyList<GraphProperty> Properties)
 {
-    public long EntityId => long.Parse(Id[(Id.IndexOf(':') + 1)..]);
+    public long EntityId => long.Parse(Id[(Id.IndexOf(':') + 1)..], System.Globalization.CultureInfo.InvariantCulture);
 
     public string? Property(string key) => Properties.FirstOrDefault(p => p.Key == key)?.Value;
 
@@ -291,7 +291,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     // Values of one property, for suggestions once a filter's operator is chosen. A list's values come one at a time.
     // Only a list looks inside arrays, because doing so for every property made each keystroke five times slower on swiss_rail.
     public async Task<IReadOnlyList<string>> PropertyValuesAsync(
-        string? label, string key, string? text, CancellationToken cancellationToken = default, bool list = false)
+        string? label, string key, string? text, bool list = false, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var pattern = string.IsNullOrWhiteSpace(text) ? "%" : $"%{EscapeLike(text.Trim())}%";
@@ -377,7 +377,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     }
 
     // A link's attributes as text, or null when it has none.
-    private static IReadOnlyDictionary<string, string>? EdgeValues(string props) =>
+    private static Dictionary<string, string>? EdgeValues(string props) =>
         props.Length <= 2 ? null : Records.RecordRepository.Values(props) is { Count: > 0 } values ? values : null;
 
     public async Task<IReadOnlyList<string>> SceneNamesAsync(CancellationToken cancellationToken = default)

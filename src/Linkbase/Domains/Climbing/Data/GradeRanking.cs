@@ -50,7 +50,7 @@ public static partial class GradeRanking
 
         var technical = parts.Length > 1 ? TechnicalGrade().Match(parts[1]) : Match.Empty;
         return technical.Success
-            ? rank + (int.Parse(technical.Groups[1].Value) * 3 + (technical.Groups[2].Value[0] - 'a')) / 100.0
+            ? rank + (int.Parse(technical.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) * 3 + (technical.Groups[2].Value[0] - 'a')) / 100.0
             : rank;
     }
 
@@ -64,7 +64,7 @@ public static partial class GradeRanking
 
         var letter = match.Groups[2].Success ? char.ToLowerInvariant(match.Groups[2].Value[0]) - 'a' : 0;
         var plus = match.Groups[3].Success ? 0.5 : 0;
-        return int.Parse(match.Groups[1].Value) * 10 + letter * 2 + plus;
+        return int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) * 10 + letter * 2 + plus;
     }
 
     // 5.10a < 5.10b. 5.10- means a or b, plain 5.10 is mid-range, and 5.10+ means c or d.
@@ -77,7 +77,7 @@ public static partial class GradeRanking
             return null;
         }
 
-        var number = int.Parse(match.Groups[1].Value) * 10;
+        var number = int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) * 10;
         var suffix = match.Groups[2].Value;
         double offset = suffix switch
         {
@@ -97,7 +97,7 @@ public static partial class GradeRanking
         }
 
         var suffix = match.Groups[2].Value;
-        return int.Parse(match.Groups[1].Value) + (suffix == "+" ? 0.25 : suffix == "-" ? -0.25 : 0);
+        return int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) + (suffix == "+" ? 0.25 : suffix == "-" ? -0.25 : 0);
     }
 
     private static double? RankUiaa(string grade)
