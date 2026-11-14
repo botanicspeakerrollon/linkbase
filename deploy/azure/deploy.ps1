@@ -18,6 +18,10 @@
   Deploys without an Anthropic key. Read text and Ask are then switched off.
 .PARAMETER ReplaceAnthropicKey
   Asks for the key again, even if the vault already holds one.
+.PARAMETER ResetModel
+  Drops the named example databases (climbing_demo, consultancy, linkbase_code, archimate) before the app starts, so the new
+  app's `model setup` creates them again and loads the current example data. Anything people changed in them is lost. Use it
+  when a model's example file has changed, because setup never loads over a database that already has data.
 #>
 [CmdletBinding()]
 param(
@@ -26,7 +30,9 @@ param(
     [string[]] $AllowedCidr,
     [switch] $AllowAnyone,
     [switch] $NoAnthropic,
-    [switch] $ReplaceAnthropicKey
+    [switch] $ReplaceAnthropicKey,
+    [ValidateSet('climbing_demo', 'consultancy', 'linkbase_code', 'archimate')]
+    [string[]] $ResetModel
 )
 
 $ErrorActionPreference = 'Stop'
@@ -198,6 +204,22 @@ try {
         & docker push "${image}:$tag"
         if ($LASTEXITCODE -ne 0) { throw 'docker push failed.' }
     } finally { Pop-Location }
+
+    if ($ResetModel) {
+        # Management-plane calls, so no firewall opening is needed. The running app holds connections, so its revisions are
+        # switched off first. Step 4 then makes a fresh revision, whose setup step recreates and reloads the databases.
+        $server = $dbHost.Split('.')[0]
+        $appName = Invoke-Az containerapp list --resource-group $ResourceGroup --query '[0].name' --output tsv
+        if ($appName) {
+            foreach ($revision in @((Invoke-Az containerapp revision list --name $appName --resource-group $ResourceGroup --query '[].name' --output tsv) -split "`n" | Where-Object { $_.Trim() })) {
+                Invoke-Az containerapp revision deactivate --name $appName --resource-group $ResourceGroup --revision $revision.Trim() --output none
+            }
+        }
+        foreach ($database in $ResetModel) {
+            Write-Host "  dropping database $database (it is reloaded when the app starts)..."
+            Invoke-Az postgres flexible-server db delete --resource-group $ResourceGroup --server-name $server --database-name $database --yes --output none
+        }
+    }
 
     Write-Host "`n4/4  The app..."
     $app = Invoke-Deployment $true $tag

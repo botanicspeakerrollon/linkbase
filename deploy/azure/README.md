@@ -78,7 +78,11 @@ resources carry. Changing the name makes the next deploy create a new Container 
 - `pg_trgm`, which the migrations need, is allowed through the server's `azure.extensions` setting by `main.bicep`.
 - Each start of the app runs `model setup` first, in an init container: it creates missing databases and loads example data
   only into an empty model, so restarts don't reset what people changed.
-- To reset the demo, delete the databases (or the Postgres server and run the script again).
+- Setup never loads over a model that already has data, so a changed example file (such as the ArchiMate model growing from
+  its small hand-written form to the large generated one) does not reach a deployed demo by itself. Run
+  `./deploy/azure/deploy.ps1 -ResetModel archimate` to drop that database and have the new app load the current file (the
+  large model takes several minutes). Anything people changed in it is lost.
+- To reset the whole demo, delete the databases (or the Postgres server and run the script again).
 - `main.bicep` and `deploy.ps1` compile cleanly with `az bicep build` but haven't been run against a real subscription yet: expect to fix a detail or two the first time.
 - **Region.** Blazor Server sends every keystroke and click to the server and waits for the reply, so the app feels slow to
   anyone far from it (about 280 ms a round trip between New Zealand and the UK). Pick the region nearest the people using
