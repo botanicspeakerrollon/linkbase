@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject LabelRepository Labels
 @using Linkbase.Core.Views
 @using Microsoft.JSInterop
 
@@ -26,6 +27,13 @@ else if (_type is not null)
                        title="Save this search and these filters under a name, or open a saved view">Views</MudButton>
             <MudIconButton OnClick="CopyLinkAsync" Icon="@Icons.Material.Filled.Link" Disabled="@(CurrentState().IsEmpty)"
                            aria-label="Copy link to this view" title="Copy a link that opens this list as it is now" />
+            @if (_security is not null && _type.Owner is null)
+            {
+                <MudButton OnClick="LabelSelectedAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Lock"
+                           Disabled="@(_selected.Count == 0)" title="Set who can see the ticked records">Label (@_selected.Count)…</MudButton>
+                <MudButton OnClick="LabelAllAsync" Variant="Variant.Text" Disabled="@(_total == 0)"
+                           title="Set who can see every record this list matches, across all pages">Label all @_total…</MudButton>
+            }
             @if (_type.Owner is null)
             {
                 <MudButton OnClick="AddAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Add @Type</MudButton>
@@ -43,8 +51,12 @@ else if (_type is not null)
                   Clearable="true" Class="mb-3" Style="max-width: 32rem" />
     <RecordFilterBar Type="_type" Filters="_filters" FiltersChanged="FilterAsync" />
 
-    <MudDataGrid @ref="_grid" T="RecordRow" ServerData="LoadAsync" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.None">
+    <MudDataGrid @ref="_grid" T="RecordRow" ServerData="LoadAsync" MultiSelection="@(_security is not null)" SelectedItems="_selected" SelectedItemsChanged="SelectedChanged" Dense="true" Hover="true" RowsPerPage="50" Filterable="false" SortMode="SortMode.None">
         <Columns>
+            @if (_security is not null)
+            {
+                <SelectColumn T="RecordRow" />
+            }
             <PropertyColumn Property="x => x.Name" Sortable="false">
                 <HeaderTemplate>@SortHeader("name", "Name")</HeaderTemplate>
                 <CellTemplate>
@@ -117,6 +129,7 @@ else if (_type is not null)
             _loadedType = Type;
             _type = await Records.TypeAsync(Type);
             _history = await Records.HistorySettingsAsync();
+            _security = await Labels.SettingsAsync() is { Enabled: true } enabled ? enabled : null;
             _missing = _type is null;
             _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
         }
@@ -202,11 +215,59 @@ else if (_type is not null)
         }
     }
 
+    // Set only when the model uses security, which is what adds the selection column and the Label buttons.
+    private ModelSecurity? _security;
+    private HashSet<RecordRow> _selected = [];
+    private int _total;
+
+    private void SelectedChanged(HashSet<RecordRow> items) => _selected = items;
+
+    private Task LabelSelectedAsync() => LabelAsync(_selected.Select(r => r.Id).ToList());
+
+    // Every record the list matches, however many pages that is.
+    private async Task LabelAllAsync()
+    {
+        var ids = new List<string>();
+        const int size = 500;
+        for (var page = 0; ids.Count < _total; page++)
+        {
+            var rows = (await Records.ListAsync(Type, _search, _sort, _filters, page, size)).Rows;
+            if (rows.Count == 0)
+            {
+                break;
+            }
+
+            ids.AddRange(rows.Select(r => r.Id));
+        }
+
+        await LabelAsync(ids);
+    }
+
+    private async Task LabelAsync(IReadOnlyList<string> ids)
+    {
+        if (ids.Count == 0 || _security is null)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<LabelDialog>
+        {
+            { d => d.NodeIds, ids }, { d => d.Security, _security }, { d => d.History, _history },
+        };
+        var dialog = await Dialogs.ShowAsync<LabelDialog>($"Label {ids.Count} {Type} record{(ids.Count == 1 ? "" : "s")}", parameters);
+        if (await dialog.Result is { Canceled: false })
+        {
+            _selected = [];
+            await _grid!.ReloadServerData();
+        }
+    }
+
     private async Task<GridData<RecordRow>> LoadAsync(GridState<RecordRow> state, CancellationToken cancellationToken)
     {
         try
         {
             var page = await Records.ListAsync(Type, _search, _sort, _filters, state.Page, state.PageSize, cancellationToken);
+            _total = page.Total;
             return new GridData<RecordRow> { Items = page.Rows, TotalItems = page.Total };
         }
         catch (LinkbaseValidationException ex)

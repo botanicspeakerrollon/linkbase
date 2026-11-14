@@ -258,6 +258,11 @@ A record type says how its records are labelled, and a CSV can override it per r
 - `source.label` names the CSV columns holding each part. Set columns list values separated by `|`. A blank cell takes the
   type's default; the type's `label` is the default for rows that say nothing (`level`, `anyOf` and `allOf`).
 - A relationship has the same two keys, for the labels of its links.
+- In the app, a record's page shows its label and a **Label…** button. A list has tick boxes with **Label (n)…** for the
+  ticked rows and **Label all n…** for every row the search and filters match. Each part can be left as it is, replaced,
+  added to or removed from, so a bulk change touches only what it names, and it is one change in the history with one reason.
+  The model editor's **Security** tab shows the parts and where grants come from; it is read-only, because the model file
+  is where they are set.
 - Loading stops, naming the value, if a label isn't one of the model's values, or if a label is given in a model with no
   `security` section.
 - Reloading a model rebuilds its records, so labels come from the model and CSVs, not from hand edits.

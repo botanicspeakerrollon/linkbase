@@ -1,5 +1,6 @@
 using Linkbase.Core.Explore;
 using Linkbase.Core.History;
+using Linkbase.Core.Security;
 using Linkbase.Data;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -9,16 +10,18 @@ namespace Linkbase.Core.Models;
 
 public sealed partial class ModelEditorPage : ComponentBase
 {
-    private static readonly string[] Hotkeys = ["t", "r"];
+    private static readonly string[] Hotkeys = ["t", "r", "s"];
 
     private ModelOutline? _outline;
     private HistorySettings _history = HistorySettings.Default;
+    private ModelSecurity? _security;
     private int _tab;
     private readonly Dictionary<string, long> _counts = [];
 
     protected override async Task OnInitializedAsync()
     {
         _history = await Records.HistorySettingsAsync();
+        _security = await Labels.SettingsAsync() is { Enabled: true } enabled ? enabled : null;
         await LoadAsync();
     }
 
@@ -62,10 +65,24 @@ public sealed partial class ModelEditorPage : ComponentBase
             case "r":
                 await ChooseTabAsync(1);
                 break;
+            case "s" when _security is not null:
+                await ChooseTabAsync(2);
+                break;
         }
 
         await InvokeAsync(StateHasChanged);
     }
+
+    private static string KindText(string key) => key switch
+    {
+        ModelSecurity.LevelKey => "Ordered level: a viewer needs at least the record's value",
+        ModelSecurity.AnyOfKey => "Set: a viewer needs any one of the record's values",
+        _ => "Set: a viewer needs every one of the record's values",
+    };
+
+    private static string SourceText(SecurityPart part) => part.Source is { } source
+        ? source.Type == GrantSourceType.Config ? "the model file's users" : $"{source.Type}, cached for {source.CacheFor.TotalSeconds:0} s"
+        : "the model file's users";
 
     // ---- Types
 

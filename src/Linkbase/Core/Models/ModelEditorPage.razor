@@ -3,6 +3,7 @@
 @inject Linkbase.Core.Records.RecordRepository Records
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
+@inject Linkbase.Core.Security.LabelRepository Labels
 
 <PageTitle>Model</PageTitle>
 <PageHotkeys Keys="Hotkeys" OnKey="OnHotkeyAsync" />
@@ -154,5 +155,28 @@ else
                 </MudPaper>
             }
         </MudTabPanel>
+        @if (_security is not null)
+        {
+            <MudTabPanel Text="Security (s)">
+                <MudText Typo="Typo.body2" Class="mb-3" Style="color: var(--mud-palette-text-secondary)">
+                    How this model labels its records and who may see them. It's set in the model file, so this page shows it and
+                    doesn't change it. Label records from their page, or tick several in a list.
+                </MudText>
+                <MudSimpleTable Dense="true" Elevation="1">
+                    <thead><tr><th>Part</th><th>Kind</th><th>Values</th><th>Grants come from</th></tr></thead>
+                    <tbody>
+                        @foreach (var (key, part) in _security.Parts)
+                        {
+                            <tr>
+                                <td>@part.Name</td>
+                                <td>@KindText(key)</td>
+                                <td>@(part.Values is { Count: > 0 } ? string.Join(key == Linkbase.Core.Security.ModelSecurity.LevelKey ? " < " : ", ", part.Values) : "any")</td>
+                                <td>@SourceText(part)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudTabPanel>
+        }
     </MudTabs>
 }

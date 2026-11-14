@@ -1,0 +1,67 @@
+using Bunit;
+using Linkbase.Core;
+using Linkbase.Core.Records;
+using Linkbase.Core.Security;
+using Linkbase.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Linkbase.Tests;
+
+// Labelling from the pages: the record page's Label… button and the list's bulk buttons, on the consultancy model, which labels
+// its records. Who can see what is the database's job and is tried in the security tests.
+[Trait("Category", "Database")]
+public sealed class LabelUiTests(PostgresFixture fixture) : UiTestBase(fixture), IClassFixture<PostgresFixture>
+{
+    private async Task<ModelFactory> ConsultancyAsync()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
+        Services.AddSingleton<RecordRepository>();
+        Services.AddSingleton<ExternalRefRepository>();
+        Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
+        Services.AddSingleton<LabelRepository>();
+        return factory;
+    }
+
+    [Fact]
+    public async Task A_record_shows_its_label_in_the_models_own_names()
+    {
+        var factory = await ConsultancyAsync();
+        var security = (await new LabelRepository(factory).SettingsAsync())!;
+
+        var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Project").Add(x => x.Key, "pr2"));
+
+        Sees(cut, "Label…");
+        Sees(cut, $"{security.Level!.Name}: internal");
+        Sees(cut, "Harbourline");
+    }
+
+    [Fact]
+    public async Task Labelling_a_record_from_its_page_changes_the_label_and_says_so()
+    {
+        var factory = await ConsultancyAsync();
+        var labels = new LabelRepository(factory);
+        var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Project").Add(x => x.Key, "pr2"));
+        Press(cut, "Label…");
+
+        // The dialog starts from what the record has, so applying it unchanged changes nothing.
+        Dialogs.WaitForAssertion(() => Assert.Contains("Set who can see this record", Dialogs.Markup));
+        Type(Dialogs, "Reason", "Checking");
+        Press(Dialogs, "Apply");
+        Told("Nothing needed changing.");
+        Assert.Equal("internal", (await labels.GetNodeAsync("project:pr2"))!.Level);
+    }
+
+    [Fact]
+    public async Task The_list_offers_bulk_labelling_only_where_the_model_has_security()
+    {
+        await ConsultancyAsync();
+
+        var cut = RenderPage<RecordListPage>(p => p.Add(x => x.Type, "Project"));
+
+        Sees(cut, "Label (0)…");
+        cut.WaitForAssertion(() => Assert.True(cut.FindAll("input[type=checkbox]").Count > 1));
+    }
+}

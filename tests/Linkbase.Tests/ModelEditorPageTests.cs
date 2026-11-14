@@ -46,6 +46,18 @@ public sealed class ModelEditorPageTests(PostgresFixture fixture) : UiTestBase(f
     }
 
     [Fact]
+    public async Task Security_tab_shows_the_models_parts_and_where_grants_come_from()
+    {
+        var cut = await OpenAsync();
+
+        OpenTab(cut, "Security (s)");
+
+        Sees(cut, "set in the model file");
+        Sees(cut, "Ordered level");
+        Sees(cut, "the model file's users");
+    }
+
+    [Fact]
     public async Task Relationships_tab_shows_every_relationship_with_its_values()
     {
         var cut = await OpenAsync();

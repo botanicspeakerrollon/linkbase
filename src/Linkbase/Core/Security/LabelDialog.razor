@@ -1,0 +1,155 @@
+@inject LabelRepository Labels
+@inject ISnackbar Snackbar
+
+@* Sets the label on one record or many. For many, each part starts as "Leave as it is", so a bulk change touches only what
+   it's asked to. Enter in the reason box applies it. *@
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-3">@Summary</MudText>
+        <MudForm @ref="_form">
+            @if (Security.Level is { } level)
+            {
+                <MudSelect T="string" @bind-Value="_level" Label="@level.Name" Clearable="true" Placeholder="Leave as it is"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" AutoFocus="true">
+                    @foreach (var value in level.Values ?? [])
+                    {
+                        <MudSelectItem T="string" Value="@value">@value</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+
+            @foreach (var set in Sets())
+            {
+                var state = _sets[set.Key];
+                <div class="d-flex" style="gap: 8px">
+                    <MudSelect T="SetMode" @bind-Value="state.Mode" Label="@($"{set.Part.Name}: change")" Style="flex: 0 0 11rem"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" ToStringFunc="ModeText">
+                        @foreach (var mode in Enum.GetValues<SetMode>())
+                        {
+                            <MudSelectItem T="SetMode" Value="@mode">@ModeText(mode)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    @if (set.Part.Values is { Count: > 0 } known)
+                    {
+                        <MudSelect T="string" MultiSelection="true" @bind-SelectedValues="state.Chosen" Label="@set.Part.Name"
+                                   Disabled="@(state.Mode == SetMode.Leave)" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var value in known)
+                            {
+                                <MudSelectItem T="string" Value="@value">@value</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        <MudTextField T="string" @bind-Value="state.Text" Label="@set.Part.Name" Immediate="true"
+                                      Disabled="@(state.Mode == SetMode.Leave)" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                      HelperText="Separate values with commas." />
+                    }
+                </div>
+            }
+
+            <ReasonInput Draft="_draft" Settings="History" OnSubmit="ApplyAsync" />
+        </MudForm>
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">@_error</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="ApplyAsync" Color="Color.Primary" Variant="Variant.Filled">Apply</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<string> NodeIds { get; set; } = [];
+    [Parameter, EditorRequired] public ModelSecurity Security { get; set; } = null!;
+
+    // The label of the one record being edited. Left out for several, which start from "Leave as it is".
+    [Parameter] public LabelValue? Current { get; set; }
+    [Parameter] public HistorySettings History { get; set; } = HistorySettings.Default;
+
+    public enum SetMode { Leave, Replace, Add, Remove }
+
+    private sealed class SetState
+    {
+        public SetMode Mode { get; set; }
+        public IReadOnlyCollection<string> Chosen { get; set; } = [];
+        public string? Text { get; set; }
+    }
+
+    private MudForm? _form;
+    private string? _level;
+    private string? _error;
+    private readonly ReasonDraft _draft = new();
+    private readonly Dictionary<string, SetState> _sets = [];
+
+    private string Summary => NodeIds.Count == 1
+        ? "Set who can see this record."
+        : $"Set who can see these {NodeIds.Count} records. Anything left as it is stays as it is.";
+
+    private IEnumerable<(string Key, SecurityPart Part)> Sets() =>
+        Security.Parts.Where(p => p.Key != ModelSecurity.LevelKey);
+
+    protected override void OnInitialized()
+    {
+        _level = Current?.Level;
+        foreach (var (key, part) in Sets())
+        {
+            var values = Current is null ? [] : key == ModelSecurity.AnyOfKey ? Current.AnyOf : Current.AllOf;
+            _sets[key] = new SetState
+            {
+                Mode = Current is null ? SetMode.Leave : SetMode.Replace,
+                Chosen = values.ToList(),
+                Text = string.Join(", ", values),
+            };
+        }
+    }
+
+    private static string ModeText(SetMode mode) => mode switch
+    {
+        SetMode.Leave => "Leave as it is",
+        SetMode.Replace => "Replace with",
+        SetMode.Add => "Add",
+        _ => "Remove",
+    };
+
+    private SetEdit? EditOf(string key, SecurityPart part)
+    {
+        var state = _sets[key];
+        if (state.Mode == SetMode.Leave)
+        {
+            return null;
+        }
+
+        var values = part.Values is { Count: > 0 }
+            ? state.Chosen.ToList()
+            : (state.Text ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).ToList();
+        return new SetEdit(state.Mode switch { SetMode.Add => SetEditMode.Add, SetMode.Remove => SetEditMode.Remove, _ => SetEditMode.Replace }, values);
+    }
+
+    private async Task ApplyAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        var edit = new LabelEdit(
+            string.IsNullOrEmpty(_level) ? null : _level,
+            Security.AnyOf is { } any ? EditOf(ModelSecurity.AnyOfKey, any) : null,
+            Security.AllOf is { } all ? EditOf(ModelSecurity.AllOfKey, all) : null);
+        try
+        {
+            var changed = await Labels.EditNodesAsync(NodeIds, edit, _draft.ToReason());
+            Snackbar.Add(changed == 0 ? "Nothing needed changing." : $"Labelled {changed} record{(changed == 1 ? "" : "s")}.", Severity.Success);
+            Instance.Close(DialogResult.Ok(changed));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}

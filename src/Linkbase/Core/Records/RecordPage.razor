@@ -4,6 +4,7 @@
 @inject IDialogService Dialogs
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject LabelRepository Labels
 
 @* One record, its values and its links, generated from the model's definition. *@
 <PageTitle>@(_record?.Name ?? Type)</PageTitle>
@@ -23,6 +24,11 @@ else if (_record is not null && _type is not null)
         @if (_type.Owner is null)
         {
             <MudStack Row="true">
+                @if (_security is not null)
+                {
+                    <MudButton OnClick="LabelAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Lock"
+                               title="Set who can see this record">Label…</MudButton>
+                }
                 <MudButton OnClick="EditAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Edit">Edit</MudButton>
                 <MudButton OnClick="DeleteAsync" Variant="Variant.Text" Color="Color.Error">Delete</MudButton>
             </MudStack>
@@ -32,6 +38,11 @@ else if (_record is not null && _type is not null)
     @if (_type.Owner is not null)
     {
         <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">@RecordListPage.DerivedNote(_type)</MudAlert>
+    }
+
+    @if (_security is not null && _label is not null)
+    {
+        <MudText Typo="Typo.body2" Class="mb-2 record-label">@LabelText()</MudText>
     }
 
     <MudSimpleTable Dense="true" Elevation="1" Class="mb-6 record-values">
@@ -165,7 +176,45 @@ else if (_record is not null && _type is not null)
     // Types a module derives. Links to them are its own, so they can't be removed here.
     private HashSet<string> _derived = [];
 
+    // Set only when the model uses security. The record's label, in the model's own names.
+    private ModelSecurity? _security;
+    private LabelValue? _label;
+
     protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private string LabelText()
+    {
+        var parts = new List<string>();
+        if (_security!.Level is { } level)
+        {
+            parts.Add($"{level.Name}: {_label!.Level ?? "none"}");
+        }
+
+        if (_security.AnyOf is { } any)
+        {
+            parts.Add($"{any.Name}: {(_label!.AnyOf.Count == 0 ? "everyone" : string.Join(", ", _label.AnyOf))}");
+        }
+
+        if (_security.AllOf is { } all)
+        {
+            parts.Add($"{all.Name}: {(_label!.AllOf.Count == 0 ? "none needed" : string.Join(", ", _label.AllOf))}");
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private async Task LabelAsync()
+    {
+        var parameters = new DialogParameters<LabelDialog>
+        {
+            { d => d.NodeIds, new[] { _record!.Id } }, { d => d.Security, _security }, { d => d.Current, _label }, { d => d.History, _history },
+        };
+        var dialog = await Dialogs.ShowAsync<LabelDialog>($"Label {_record.Name}", parameters);
+        if (await dialog.Result is { Canceled: false })
+        {
+            _label = await Labels.GetNodeAsync(_record.Id);
+        }
+    }
 
     private async Task LoadAsync()
     {
@@ -181,6 +230,8 @@ else if (_record is not null && _type is not null)
         }
 
         _style = GraphStyle.For(Type, _type!.Color, _type.Icon);
+        _security = await Labels.SettingsAsync() is { Enabled: true } enabled ? enabled : null;
+        _label = _security is null ? null : await Labels.GetNodeAsync(_record.Id);
         _refs = await Refs.RefsAsync(_record.Id);
         _options = await Records.LinkOptionsAsync(Type);
         _crumbs = [new BreadcrumbItem(Type, GraphStyle.RecordListLink(Type))];

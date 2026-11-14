@@ -300,8 +300,9 @@ Reading: [EXPLAIN](https://www.postgresql.org/docs/16/sql-explain.html), [Using 
 
 Mass labelling is a first-class feature, not an afterthought.
 
-- **By selection**: records chosen in Explore or a list.
-- **By filter**: every record matching a filter or saved view, with a count and a preview before it runs.
+- **By selection**: records ticked in a list (built). Explore is not built.
+- **By filter**: every record a list's search and filters match, with the count on the button (built); a preview before
+  it runs is not.
 - **By import**: a label column in the CSV, or a default label for a batch.
 - **By default**: set the label for a node type or property definition, optionally applying it to existing records.
 - Each runs as one transaction in chunks, through `ChangeRecorder` with a single reason, and reports how many records
@@ -376,7 +377,11 @@ wait for it:
 5. History, `external_ref`, saved views and the other side tables. **Built** as the table under "Other places that repeat
    data" says: history is filtered and masked, link counts are live for restricted viewers, `external_ref` has a policy.
    Not built: a label snapshot per history entry, and per-viewer saved views (they wait for identity).
-6. Label UI, the model editor tab and bulk assignment.
+6. Label UI, the model editor tab and bulk assignment. **Built** for records: a Label… button on a record's page, a
+   selection column with Label (n)… and Label all n… on a list (the second covers every page the search and filters
+   match), and a read-only Security tab in the model editor. All need a model with security, and the dialog is keyboard
+   driven. Not built: labelling links from the UI, labelling from Explore, and a preview before a bulk run; the model
+   editor shows the `security` section but doesn't edit it (that is the model file).
 7. Identity and the user directory.
 
 ## Open questions
