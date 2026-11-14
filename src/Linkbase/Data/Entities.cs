@@ -75,6 +75,18 @@ public class ExternalRef : ImportedEntity
     public string? Url { get; set; }
 }
 
+// A label on one record's one property, on top of the field definition's own. It can only restrict: the value shows only if the
+// record, the definition and this all pass (VisibilityRule.CanSeeProperty). Sparse, and keyed by node id with no foreign key,
+// like external_ref, so code that deletes nodes removes these too (ExternalRefRepository.RemoveForNodesAsync).
+public class NodePropertyLabel
+{
+    public required string NodeId { get; set; }
+    public required string Key { get; set; }
+    public short LabelLevel { get; set; }
+    public string[] LabelAny { get; set; } = ["*"];
+    public string[] LabelAll { get; set; } = [];
+}
+
 public class ImportBatch : ITimestamped
 {
     public long Id { get; set; }

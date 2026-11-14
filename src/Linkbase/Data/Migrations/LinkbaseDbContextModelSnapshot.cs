@@ -816,6 +816,42 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("node_link");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.NodePropertyLabel", b =>
+                {
+                    b.Property<string>("NodeId")
+                        .HasColumnType("text")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
+
+                    b.HasKey("NodeId", "Key")
+                        .HasName("pk_node_property_label");
+
+                    b.ToTable("node_property_label");
+                });
+
             modelBuilder.Entity("Linkbase.Data.NodeType", b =>
                 {
                     b.Property<string>("Name")
