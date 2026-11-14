@@ -32,7 +32,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var touching = db.Changes.AsNoTracking().Where(c =>
-            c.EntityKind == ChangeEntityKind.Link && c.EntityId == sourceId && c.RelatedId == targetId && c.RelType == relType);
+            (c.EntityKind == ChangeEntityKind.Link || c.EntityKind == ChangeEntityKind.Label) && c.EntityId == sourceId && c.RelatedId == targetId && c.RelType == relType);
         var entries = await db.ChangeSets.AsNoTracking()
             .Where(s => touching.Any(c => c.ChangeSetId == s.Id))
             .OrderByDescending(s => s.CreatedAt).ThenByDescending(s => s.Id)
@@ -172,7 +172,8 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var touching = db.Changes.AsNoTracking().Where(c =>
-            (c.EntityKind == ChangeEntityKind.Node && c.EntityId == nodeId)
+            ((c.EntityKind == ChangeEntityKind.Node || c.EntityKind == ChangeEntityKind.Label) && c.RelType == null && c.EntityId == nodeId)
+            || (c.EntityKind == ChangeEntityKind.Label && c.RelType != null && (c.EntityId == nodeId || c.RelatedId == nodeId))
             || (c.EntityKind == ChangeEntityKind.Link && (c.EntityId == nodeId || c.RelatedId == nodeId))
             || (c.EntityKind == ChangeEntityKind.ExternalRef && c.EntityId == nodeId));
         var sets = db.ChangeSets.AsNoTracking().Where(s => touching.Any(c => c.ChangeSetId == s.Id));

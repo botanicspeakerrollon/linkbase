@@ -38,7 +38,7 @@ public sealed class ChangeReverter(IDbContextFactory<LinkbaseDbContext> contextF
         var nodes = changes.Where(c => c.EntityKind == ChangeEntityKind.Node).ToList();
         var links = changes.Where(c => c.EntityKind == ChangeEntityKind.Link).ToList();
         var refs = changes.Where(c => c.EntityKind == ChangeEntityKind.ExternalRef).ToList();
-        if (changes.Count == 0 || changes.Any(c => c.EntityKind is ChangeEntityKind.Definition or ChangeEntityKind.ImportBatch))
+        if (changes.Count == 0 || changes.Any(c => c.EntityKind is ChangeEntityKind.Definition or ChangeEntityKind.ImportBatch or ChangeEntityKind.Label))
         {
             throw new LinkbaseValidationException("This change can't be reverted automatically.");
         }

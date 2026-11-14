@@ -1,6 +1,7 @@
 using System.Globalization;
 using CsvHelper;
 using Linkbase.Core.History;
+using Linkbase.Core.Security;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -183,17 +184,18 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                 : typeSource.Name is null ? key : Column(columns, typeSource.File, typeSource.Name);
             await CheckChoicesAsync(session.Connection, session.Transaction, type.Fields, columns, typeSource.File, session.Token);
             await CheckRequiredAsync(session.Connection, session.Transaction, type.Fields, columns, typeSource.File, $"nullif({key}, '') IS NOT NULL", session.Token);
+            var labels = LoaderLabels.For(model.Security, type.Label, typeSource.Label, c => Column(columns, typeSource.File, c), $"Type '{type.Name}'");
+            await labels.Validate(session.Connection, session.Transaction, session.Token);
             var count = await Guard($"{type.Name} from {typeSource.File}", () => session.RunAsync(
                 $"""
-                INSERT INTO node (id, user_id, type, key, name, props)
+                INSERT INTO node (id, user_id, type, key, name, props{labels.Columns})
                 SELECT lower(@type) || ':' || {key}, @user, @type, {key}, coalesce(nullif({name}, ''), {key}),
-                       {Props(type.Fields, columns, typeSource.File)}
+                       {Props(type.Fields, columns, typeSource.File)}{labels.Select}
                 FROM staging
                 WHERE nullif({key}, '') IS NOT NULL
                 ON CONFLICT (id) DO NOTHING
                 """,
-                ("type", type.Name, NpgsqlDbType.Text),
-                ("user", AppUser.DefaultId, NpgsqlDbType.Bigint)));
+                [("type", type.Name, NpgsqlDbType.Text), ("user", AppUser.DefaultId, NpgsqlDbType.Bigint), .. labels.Parameters]));
             await session.RunAsync("DROP TABLE staging");
             await session.Output.WriteLineAsync($"{type.Name}: {count:N0} from {typeSource.File}");
             nodes += count;
@@ -217,17 +219,17 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             await CheckChoicesAsync(session.Connection, session.Transaction, relationship.Fields, columns, source.File, session.Token);
             await CheckRequiredAsync(session.Connection, session.Transaction, relationship.Fields, columns, source.File,
                 $"nullif({from}, '') IS NOT NULL AND nullif({to}, '') IS NOT NULL", session.Token);
+            var labels = LoaderLabels.For(model.Security, relationship.Label, source.Label, c => Column(columns, source.File, c), $"{relationship.From} {relationship.Type} {relationship.To}");
+            await labels.Validate(session.Connection, session.Transaction, session.Token);
             var count = await Guard($"{relationship.From} {relationship.Type} {relationship.To} from {source.File}", () => session.RunAsync(
                 $"""
-                INSERT INTO node_link (source_id, target_id, rel_type, props)
-                SELECT f.id, t.id, @rel, {Props(relationship.Fields, columns, source.File)}
+                INSERT INTO node_link (source_id, target_id, rel_type, props{labels.Columns})
+                SELECT f.id, t.id, @rel, {Props(relationship.Fields, columns, source.File)}{labels.Select}
                 FROM staging
                 JOIN node f ON f.id = lower(@from) || ':' || {from}
                 JOIN node t ON t.id = lower(@to) || ':' || {to}
                 """,
-                ("rel", relationship.Type, NpgsqlDbType.Text),
-                ("from", relationship.From, NpgsqlDbType.Text),
-                ("to", relationship.To, NpgsqlDbType.Text)));
+                [("rel", relationship.Type, NpgsqlDbType.Text), ("from", relationship.From, NpgsqlDbType.Text), ("to", relationship.To, NpgsqlDbType.Text), .. labels.Parameters]));
             await session.RunAsync("DROP TABLE staging");
             await session.RunAsync(
                 "UPDATE link_definition SET links = links + @count WHERE source_type = @from AND rel_type = @rel AND target_type = @to",
@@ -274,13 +276,14 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
         // key to the records they describe. It adds one entry for the load itself.
         await session.RunAsync(
             """
-            INSERT INTO model_setting (id, record_history, require_reason, source_kinds) VALUES (1, @record, @reason, @kinds)
+            INSERT INTO model_setting (id, record_history, require_reason, source_kinds, security) VALUES (1, @record, @reason, @kinds, @security)
             ON CONFLICT (id) DO UPDATE SET record_history = excluded.record_history, require_reason = excluded.require_reason,
-                source_kinds = excluded.source_kinds
+                source_kinds = excluded.source_kinds, security = excluded.security
             """,
             ("record", model.RecordHistory, NpgsqlDbType.Boolean),
             ("reason", model.RequireReason, NpgsqlDbType.Boolean),
-            ("kinds", model.SourceKinds, NpgsqlDbType.Array | NpgsqlDbType.Text));
+            ("kinds", model.SourceKinds, NpgsqlDbType.Array | NpgsqlDbType.Text),
+            ("security", (object?)LabelCodec.ToJson(model.Security) ?? DBNull.Value, NpgsqlDbType.Jsonb));
         if (model.RecordHistory)
         {
             var summary = System.Text.Json.JsonSerializer.Serialize(new { types = model.Types.Count, records = nodes, links });

@@ -123,6 +123,9 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
         {
             node.HasOne(n => n.NodeType).WithMany().HasForeignKey(n => n.Type);
             node.Property(n => n.Props).HasColumnType("jsonb");
+            node.Property(n => n.LabelLevel).HasDefaultValue((short)0);
+            node.Property(n => n.LabelAny).HasDefaultValueSql("'{*}'");
+            node.Property(n => n.LabelAll).HasDefaultValueSql("'{}'");
             node.Property(n => n.SearchText).HasComputedColumnSql("graph_search_text(name, props)", stored: true);
             node.HasIndex(n => new { n.Type, n.Key }).IsUnique();
 
@@ -137,6 +140,9 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             link.HasOne(l => l.Source).WithMany().HasForeignKey(l => l.SourceId);
             link.HasOne(l => l.Target).WithMany().HasForeignKey(l => l.TargetId);
             link.Property(l => l.Props).HasColumnType("jsonb").HasDefaultValueSql("'{}'");
+            link.Property(l => l.LabelLevel).HasDefaultValue((short)0);
+            link.Property(l => l.LabelAny).HasDefaultValueSql("'{*}'");
+            link.Property(l => l.LabelAll).HasDefaultValueSql("'{}'");
         });
 
         modelBuilder.Entity<StagedItem>(item =>
@@ -154,6 +160,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             setting.Property(s => s.RecordHistory).HasDefaultValue(true);
             setting.Property(s => s.RequireReason).HasDefaultValue(true);
             setting.Property(s => s.SourceKinds).HasDefaultValueSql("'{}'");
+            setting.Property(s => s.Security).HasColumnType("jsonb");
             setting.ToTable(t => t.HasCheckConstraint("ck_model_setting_one_row", "id = 1"));
         });
 

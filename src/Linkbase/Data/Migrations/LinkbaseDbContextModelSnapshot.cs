@@ -603,6 +603,10 @@ namespace Linkbase.Data.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("require_reason");
 
+                    b.Property<string>("Security")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("security");
+
                     b.PrimitiveCollection<string[]>("SourceKinds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -639,6 +643,26 @@ namespace Linkbase.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("key");
+
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -714,6 +738,26 @@ namespace Linkbase.Data.Migrations
                     b.Property<long?>("ImportBatchId")
                         .HasColumnType("bigint")
                         .HasColumnName("import_batch_id");
+
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
 
                     b.Property<string>("Props")
                         .IsRequired()

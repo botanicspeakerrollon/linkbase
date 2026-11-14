@@ -93,6 +93,9 @@ Every record in the model.
 | `import_batch_id` | bigint | nullable; FK to `import_batch.id` |
 | `created_at` | timestamptz | default `now()` |
 | `updated_at` | timestamptz | default `now()`; equals `created_at` until edited |
+| `label_level` | smallint | default 0; position in the model's level list, 0 lowest |
+| `label_any` | text[] | default `{*}`; the any-of set, `*` meaning unrestricted |
+| `label_all` | text[] | default empty; the all-of set |
 
 ### `node_link`
 A directed relationship between two nodes.
@@ -105,6 +108,9 @@ A directed relationship between two nodes.
 | `target_id` | text | FK to `node.id` |
 | `props` | jsonb | default `{}` |
 | `import_batch_id` | bigint | nullable; FK to `import_batch.id` |
+| `label_level` | smallint | default 0; position in the model's level list, 0 lowest |
+| `label_any` | text[] | default `{*}`; the any-of set, `*` meaning unrestricted |
+| `label_all` | text[] | default empty; the all-of set |
 
 ### `external_ref`
 Where a node came from in another system. It points at a node by `node_id` but has no foreign key, so code that
@@ -193,6 +199,7 @@ The model's history settings, from its model file. At most one row (`id = 1`); n
 | `record_history` | boolean | default `true`. Whether changes are logged |
 | `require_reason` | boolean | default `true`. Whether a person has to give a reason |
 | `source_kinds` | text[] | default empty. The kinds of source a change can name; empty means just `Internet` |
+| `security` | jsonb | nullable. The model's `security` section, null when it uses none |
 
 ### `justification`
 The why of a change set. `note` is a brief paraphrase, never text copied from a source.

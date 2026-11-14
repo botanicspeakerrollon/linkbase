@@ -67,6 +67,7 @@ builder.Services.AddScoped<ModelEditor>();
 builder.Services.AddScoped<RecordHooks>();
 builder.Services.AddScoped<RecordRepository>();
 builder.Services.AddScoped<Linkbase.Core.History.HistoryRepository>();
+builder.Services.AddScoped<Linkbase.Core.Security.LabelRepository>();
 builder.Services.AddScoped<Linkbase.Core.History.ChangeReverter>();
 builder.Services.AddScoped<ExternalRefRepository>();
 builder.Services.AddScoped<Linkbase.Core.Home.HomeRepository>();

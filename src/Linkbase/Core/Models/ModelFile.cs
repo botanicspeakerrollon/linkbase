@@ -109,6 +109,7 @@ public sealed partial class ModelFile
             ValidateFields($"Type '{type.Name}'", type.Fields, problems);
             ValidateTemplate(type, problems);
             ValidateOwner($"Type '{type.Name}'", type.Owner, problems);
+            ValidateLabel($"Type '{type.Name}'", type.Label, type.Source?.Label, problems);
             foreach (var field in type.Fields)
             {
                 ValidateOwner($"Field '{field.Key}' of type '{type.Name}'", field.Owner, problems);
@@ -135,6 +136,7 @@ public sealed partial class ModelFile
             }
 
             ValidateFields(what, relationship.Fields, problems);
+            ValidateLabel(what, relationship.Label, relationship.Source?.Label, problems);
             foreach (var field in relationship.Fields.Where(f => f.Owner is not null))
             {
                 problems.Add($"{what}'s field '{field.Key}' has an owner, which only a type's fields can have.");
@@ -167,6 +169,23 @@ public sealed partial class ModelFile
         {
             throw new LinkbaseValidationException(string.Join(Environment.NewLine, problems));
         }
+    }
+
+    // A label, or a CSV column for one, only means something if the model has security, and has to use that model's own values.
+    private void ValidateLabel(string what, ModelLabel? label, ModelLabelColumns? columns, List<string> problems)
+    {
+        if (label is null && columns is null)
+        {
+            return;
+        }
+
+        if (Security is not { Enabled: true })
+        {
+            problems.Add($"{what} has a label, but the model has no security section.");
+            return;
+        }
+
+        Security.ValidateLabel(what, label, columns, problems);
     }
 
     // The levels have to cover the `by` field's options exactly, with somewhere for the tree to start, and the parent
@@ -384,6 +403,9 @@ public sealed class ModelType
     public ModelTypeSource? Source { get; init; }
     public IReadOnlyList<ModelField> Fields { get; init; } = [];
 
+    // Who may see this type's records, unless a column of its CSV file says otherwise. Needs the model's security section.
+    public ModelLabel? Label { get; init; }
+
     // The domain module that derives this type's records, such as Climbing for trips. Only it writes them.
     public string? Owner { get; init; }
 
@@ -434,6 +456,9 @@ public sealed class ModelTypeSource
 
     // The column to show as the node's name. The key, if left out or empty.
     public string? Name { get; init; }
+
+    // The columns holding each record's label. A blank cell takes the type's label. Needs the model's security section.
+    public ModelLabelColumns? Label { get; init; }
 }
 
 public sealed class ModelField
@@ -478,6 +503,9 @@ public sealed class ModelRelationship
     public ModelRelationshipSource? Source { get; init; }
     public IReadOnlyList<ModelField> Fields { get; init; } = [];
 
+    // Who may see this relationship's links, unless a column of its CSV file says otherwise. Needs the model's security section.
+    public ModelLabel? Label { get; init; }
+
     // Every record of the From type needs at least one of these links, such as an ascent's route.
     public bool Required { get; init; }
 
@@ -492,6 +520,9 @@ public sealed class ModelRelationshipSource
     // The columns holding the keys of the two ends.
     public required string FromColumn { get; init; }
     public required string ToColumn { get; init; }
+
+    // The columns holding each link's label. A blank cell takes the relationship's label.
+    public ModelLabelColumns? Label { get; init; }
 }
 
 // The model file's history settings: record is whether changes are logged, requireReason whether a change can't be saved

@@ -187,8 +187,9 @@ See [audit-history-plan](history/audit-history-plan.md) for the design.
 ### Security
 
 A model can say who may see what. Nothing in the app enforces it yet: this is the part of the
-[design](security-design.md) that is built so far, which is the model file's section, the rule, and where people's grants
-come from. A model with no `security` section behaves exactly as it always has.
+[design](security-design.md) that is built so far, which is the model file's section, the rule, where people's grants
+come from, and the labels themselves (stored, loaded from CSV, changeable in bulk). A model with no `security` section
+behaves exactly as it always has.
 
 A model chooses which of three **kinds** of part it uses, and names each in its own words. Any one is optional.
 
@@ -236,10 +237,39 @@ visible only if its own label and both its records pass.
 - Names of parts are 1 to 40 characters and unique within the model. `https` is required for a directory, except `http` for
   a directory on the same machine. The load stops with every problem listed if any of this is wrong.
 
+#### Labels
+
+Every node and link carries a label: `label_level` (the level's position, 0 being the lowest), `label_any` and `label_all`.
+The defaults are the lowest level, no restriction (stored as `'*'`) and no requirement, so existing data is public. A model
+that uses security also keeps its `security` section in the database (`model_setting.security`), so the app can validate edits.
+
+A record type says how its records are labelled, and a CSV can override it per row:
+
+```json
+"types": {
+  "project": {
+    "source": { "file": "projects.csv", "key": "id", "name": "name",
+                "label": { "level": "sensitivity", "anyOf": "practice", "allOf": "nda" } },
+    "label": { "level": "internal" }
+  }
+}
+```
+
+- `source.label` names the CSV columns holding each part. Set columns list values separated by `|`. A blank cell takes the
+  type's default; the type's `label` is the default for rows that say nothing (`level`, `anyOf` and `allOf`).
+- A relationship has the same two keys, for the labels of its links.
+- Loading stops, naming the value, if a label isn't one of the model's values, or if a label is given in a model with no
+  `security` section.
+- Reloading a model rebuilds its records, so labels come from the model and CSVs, not from hand edits.
+
+`LabelRepository` changes labels in bulk: by node or link ids, setting a level or replacing, adding to or removing from a set.
+A batch is one transaction and one history change set (needing a reason where the model asks for one). Items the edit leaves as
+they were aren't counted or logged. Label changes can't be reverted from history yet.
+
 #### Security in the consultancy example
 
 [`models/consultancy`](../models/consultancy/model.json) uses all three parts. Its project budgets and each client's work are
-commercially sensitive, so the labels below are the kind of thing it would carry. Its made-up people hold:
+commercially sensitive, so each project in `projects.csv` carries a label. Its made-up people hold:
 
 | Person | Sensitivity | Practice | NDA |
 | --- | --- | --- | --- |
@@ -248,14 +278,16 @@ commercially sensitive, so the labels below are the kind of thing it would carry
 | `chloe.marsh` | internal | Engineering | Harbourline, Greenleaf |
 | `guest` | public | none | none |
 
-| An item that needs | sam | ava | chloe | guest | someone not listed |
-| --- | --- | --- | --- | --- | --- |
-| Project budgets: confidential | yes | no | no | no | no |
-| Booking redesign: internal, Design or Delivery, Harbourline NDA | yes | yes | no (not Design or Delivery) | no | no |
-| A project for two clients: internal, Harbourline and Greenleaf NDAs | yes | no (no Greenleaf) | yes | no | no |
-| Timetable app: public | yes | yes | yes | yes | no |
+| Project | Label | sam | ava | chloe | guest | someone not listed |
+| --- | --- | --- | --- | --- | --- | --- |
+| pr1 Timetable app | public | yes | yes | yes | yes | no |
+| pr2 Booking redesign | internal, Design or Delivery, Harbourline | yes | yes | no | no | no |
+| pr3 Stock forecasting | internal (the default), Greenleaf | yes | no | yes | no | no |
+| pr4 Patient portal | confidential, Engineering or Delivery, Copperfield | yes | no | no | no | no |
+| pr5 Repairs tracker | internal, Northgate | yes | no | no | no | no |
 
-These rows are checked by `SecurityRuleTests`. The person not listed holds nothing, so sees nothing, even what is public.
+`SecurityLabelsTests` loads these labels and checks who would see what. The person not listed holds nothing, so sees nothing,
+even what is public.
 
 ### Owned by a module
 
