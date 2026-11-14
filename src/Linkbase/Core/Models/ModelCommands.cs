@@ -7,9 +7,12 @@ namespace Linkbase.Core.Models;
 //   dotnet run --project src/Linkbase -- model migrate               Apply migrations to every model's database
 //   dotnet run --project src/Linkbase -- model setup                 Create, migrate and fill the models that name a Seed file
 //   dotnet run --project src/Linkbase -- model load <file> [model]   Load a model file into a model, the first by default
+//   dotnet run --project src/Linkbase -- model security on|off [model]   Turn row security on or off, as the database owner
 public sealed class ModelCommands(IServiceProvider services, TextWriter output)
 {
-    public static bool IsCommand(string[] args) => args is ["model", "list"] or ["model", "migrate"] or ["model", "setup"] or ["model", "load", _] or ["model", "load", _, _];
+    public static bool IsCommand(string[] args) =>
+        args is ["model", "list"] or ["model", "migrate"] or ["model", "setup"] or ["model", "load", _] or ["model", "load", _, _]
+            or ["model", "security", "on" or "off"] or ["model", "security", "on" or "off", _];
 
     public async Task<int> RunAsync(string[] args)
     {
@@ -39,6 +42,30 @@ public sealed class ModelCommands(IServiceProvider services, TextWriter output)
                         await output.WriteLineAsync($"{model.Name}: {(pending == 0 ? "up to date" : $"applied {pending}")}");
                     }
 
+                    return 0;
+
+                case ["model", "security", var onOff, ..]:
+                    var secured = args.Length > 3 ? catalog.Find(args[3]) ?? throw new LinkbaseValidationException($"There's no model '{args[3]}'. Run: model list") : catalog.Default;
+                    // A context of our own, not the factory's: this has to run as the owner, with no viewer applied.
+                    await using (var owner = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(catalog.ConnectionString(secured)).Options))
+                    {
+                        if (onOff == "on")
+                        {
+                            var section = await owner.ModelSettings.Select(s => s.Security).FirstOrDefaultAsync();
+                            if (section is null || !(Security.LabelCodec.FromJson(section)?.Enabled ?? false))
+                            {
+                                throw new LinkbaseValidationException($"{secured.Name} has no security section in its model file. Add one and load it first.");
+                            }
+
+                            await Security.RowSecurity.EnableAsync(owner);
+                        }
+                        else
+                        {
+                            await Security.RowSecurity.DisableAsync(owner);
+                        }
+                    }
+
+                    await output.WriteLineAsync($"{secured.Name}: row security {onOff}");
                     return 0;
 
                 default:

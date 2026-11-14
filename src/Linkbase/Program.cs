@@ -44,6 +44,9 @@ builder.Services.AddHttpLogging(options =>
 // Each model has its own database, and the factory connects to whichever model is current.
 builder.Services.AddSingleton<ModelCatalog>();
 builder.Services.AddScoped<CurrentModel>();
+builder.Services.AddSingleton<Linkbase.Core.Security.RowSecurityState>();
+builder.Services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>();
+builder.Services.AddSingleton<Linkbase.Core.Security.IViewerResolver, Linkbase.Core.Security.ConfiguredViewerResolver>();
 builder.Services.AddScoped<IDbContextFactory<LinkbaseDbContext>, ModelDbContextFactory>();
 
 // Data Protection signs cookies and anti-forgery tokens. Its keys live in the default model's database, so they survive

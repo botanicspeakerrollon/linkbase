@@ -1,6 +1,9 @@
 # Security design: labels and row-level security
 
-Nothing here is implemented. This is the design for the visibility rules that [security-roadmap](security-roadmap.md)
+Status: the viewer, rule, grant sources, label columns and row policies are built (see "Build order"); property masking,
+the side tables, the UI and sign-in are not. Turn row security on for a model with
+`dotnet run --project src/Linkbase -- model security on [model]` (and `off`), run as the database owner. Until sign-in exists the
+viewer is the user named by the `Security:User` setting (nobody if unset, who sees nothing). This is the design for the visibility rules that [security-roadmap](security-roadmap.md)
 left open. It replaces that roadmap's step 4 ("consider row-level security later"): the rules below are enforced by the
 database for rows, and by one field policy for property values.
 
@@ -69,15 +72,18 @@ can't bypass them and a missing `Where` in a repository can't leak.
   `label_any text[] not null default '{*}'` and `label_all text[] not null default '{}'`. They are constants with defaults,
   so adding them is instant and costs nothing in a model that never uses them. A level's value maps to its rank (its position in the
   part's list); a part the model doesn't use keeps its default and is never checked. This also keeps to the rule that sensitive data lives in typed columns.
-- **Two database roles.** The owner role runs migrations, backups and restores, and bypasses the policies. The application
-  connects as a separate role with no `BYPASSRLS`, and the tables use `FORCE ROW LEVEL SECURITY` so the owner is bound too
-  when the app happens to use it. Superusers always bypass, so the app must never connect as one.
+- **Two database roles.** The owner role runs migrations, backups and restores, and bypasses the policies. Queries made for
+  a person run as `linkbase_app`, a plain role with no `BYPASSRLS`: the connection interceptor issues `SET ROLE linkbase_app`
+  when it opens a connection, and the pool's reset undoes it. The tables use `ENABLE`, not `FORCE`, so the owner is not bound.
+  (The first plan was `FORCE` plus a separate login; `SET ROLE` replaced it because one connection string, one pool and one
+  set of migrations is much simpler. The cost is that code able to run arbitrary SQL could `RESET ROLE`; see "What this does
+  not protect against".) Superusers always bypass, so the app must never connect as one.
 - **Who is asking.** A connection interceptor on the one `IDbContextFactory` sets three session variables
   (`linkbase.level`, `linkbase.any`, `linkbase.all`) when a connection is opened, and Npgsql's pool reset clears
   them when it's returned. If the variables are unset, the policy returns no rows. Every context comes from the factory
   (an existing rule), so every query is covered, including raw SQL.
-- **The policy** is one SQL function used by every policy, written so the planner evaluates the session settings once per
-  statement and can use GIN indexes on the arrays (`label_any && …`, `label_all <@ …`).
+- **The policy** is the same expression written out in each policy, so the planner evaluates the session settings once per
+  statement. It is not wrapped in a function, because Postgres can't inline one and it measured twelve times slower.
 - **Links** need the endpoints' visibility. The policy checks the two end nodes by primary key. This is the part to
   measure first on the large sample.
 - **Graph views** (`graph_nodes`, `graph_edges`, the `climbing_*` views) become `security_invoker` views (Postgres 15+; the
@@ -187,21 +193,19 @@ Reading: [Customized Options](https://www.postgresql.org/docs/16/runtime-config-
 ### The policy
 
 ```sql
-create function linkbase_sec.can_see(cls int, depts text[], projs text[]) returns boolean
-  language sql stable as $$
-    select cls <= (select linkbase_sec.viewer_level())
-       and depts && (select linkbase_sec.viewer_any())   -- any of
-       and projs <@ (select linkbase_sec.viewer_all())      -- all of
-  $$;
-
 alter table node enable row level security;
-alter table node force row level security;
 
-create policy node_label on node
+create policy linkbase_node on node
   for all to linkbase_app
-  using      (linkbase_sec.can_see(label_level, label_any, label_all))
-  with check (linkbase_sec.can_see(label_level, label_any, label_all));
+  using (label_level <= (select linkbase_sec.viewer_level())
+         and label_any && (select linkbase_sec.viewer_any())     -- any of
+         and label_all <@ (select linkbase_sec.viewer_all()))    -- all of
+  with check (...the same...);
 ```
+
+The expression is repeated in `node_link`'s policy rather than shared through a function. A SQL function that contains
+sub-selects isn't inlined by the planner, so `current_setting` ran for every row; written inline, the `(select …)` parts become
+InitPlans. A part the model doesn't use gets values that always pass (level 32767, and `*` in the viewer's any-of set).
 
 Points to know:
 
@@ -214,9 +218,10 @@ Points to know:
 - `(select …)` around each helper makes the planner evaluate it **once per statement** (an InitPlan) instead of once per row.
   `stable` is the right volatility: constant within a statement, not constant forever. Check with `EXPLAIN` that the helpers
   appear as `InitPlan` and not under the scan.
-- Indexes for the array tests are GIN indexes (`create index … using gin (label_any)`); the built-in `array_ops` operator
-  class supports `&&`, `<@`, `@>` and `=`. A GIN index is only worth having when the policy is selective, so create them only
-  when security is turned on, never when it is off.
+- **No GIN indexes.** GIN (`array_ops`) supports `&&`, `<@`, `@>` and `=`, so we tried them. On the Swiss sample every row is
+  `{*}`, so the index isn't selective, and the planner used it as a bitmap scan of all 3.6 million rows, making a viewer who
+  sees everything 3 to 30 times slower than the owner. Without them the overhead is about 1.5 to 3 times. Revisit only if a
+  real model has few visible rows among very many, and measure first.
 - **Leakproof.** To stop a user's own filter from leaking hidden rows (for example an expression that raises an error on a
   hidden row), Postgres evaluates policy conditions first, and lets a user condition run earlier only if its functions are
   marked `LEAKPROOF` (plain comparisons on built-in types are). Our helpers don't need to be leakproof; user-supplied
@@ -231,7 +236,7 @@ Reading: [Array Functions and Operators](https://www.postgresql.org/docs/16/func
 
 ### Links, views and the dependent tables
 
-- **Links.** `node_link`'s policy is its own `can_see(...)` **and** an `exists` on each end node by primary key. Because
+- **Links.** `node_link`'s policy is its own label test **and** an `exists` on each end node by primary key. Because
   `node` has a policy too, those subqueries are filtered automatically; the design depends on that, and a test pins it.
 - **Views.** A view normally runs with its owner's rights, so a view owned by the owner role would **bypass** the policies.
   `create view graph_nodes with (security_invoker = true) as …` (or `alter view … set (security_invoker = true)`) makes the
@@ -239,7 +244,7 @@ Reading: [Array Functions and Operators](https://www.postgresql.org/docs/16/func
   `climbing_*` views, and the coverage test checks `pg_class.reloptions` for it.
 - **Dependent tables.** `external_ref` and the other side tables get a policy of the form
   `exists (select 1 from node n where n.id = node_id)`; the exists is itself filtered by `node`'s policy.
-- **Toggling.** Turning security on creates the policies, the GIN indexes and the helper functions, then enables RLS, in
+- **Toggling.** Turning security on creates the role, the helper functions, grants and policies, then enables RLS, in
   one migration-style script (so a failed step can't leave RLS enabled with no policy, which would hide everything). Turning
   it off drops them in the reverse order. `pg_policies` and `pg_class.relrowsecurity` show the current state.
 
@@ -250,16 +255,17 @@ Reading: [CREATE VIEW](https://www.postgresql.org/docs/16/sql-createview.html) (
 ### Measuring it
 
 Use `EXPLAIN (ANALYZE, BUFFERS)` on the `swiss_rail` sample with security on and off, and with several viewers (all-seeing,
-narrow, none). Look for: helpers as `InitPlan`, the GIN index in a `Bitmap Index Scan`, and `graph_nodes … order by … limit`
+narrow, none). Look for: helpers as `InitPlan`, no per-row `SubPlan` for the settings, and `graph_nodes … order by … limit`
 still reaching its rows without walking the graph. See [performance](performance.md).
 Reading: [EXPLAIN](https://www.postgresql.org/docs/16/sql-explain.html), [Using EXPLAIN](https://www.postgresql.org/docs/16/using-explain.html).
 
 ### What this does not protect against
 
-- **The app role can set its own session variables.** Anything that can run arbitrary SQL as the app role could set
-  `linkbase.level` itself. Raw SQL stays parameterised (`FromSql`, never string concatenation), and the app role has no
-  rights beyond the tables it needs. The stricter alternative, one database role per user with `SET ROLE`, was rejected: it
-  doesn't fit pooling or a large user list. It is worth revisiting if the threat model includes SQL injection.
+- **The app role can set its own session variables, and the connection can `RESET ROLE`.** Anything that can run arbitrary
+  SQL on the connection could set `linkbase.level` itself or drop back to the owner. Raw SQL stays parameterised (`FromSql`,
+  never string concatenation), and `linkbase_app` has no rights beyond the tables it needs. The stricter alternative, a
+  separate login for the app plus `FORCE ROW LEVEL SECURITY`, closes the `RESET ROLE` hole; it is worth revisiting if the
+  threat model includes SQL injection.
 - **The database owner and anyone with `BYPASSRLS` or superuser rights** see everything, including backups.
 - **Timing and plan side channels** are not addressed.
 - Masked property values are protected by application code, not by the database. That is why the field policy has its own
@@ -343,7 +349,9 @@ wait for it:
    oracle). **Built.**
 2. Label columns, the model `security` setting, labels from CSV and bulk label edits. **Built.** Not yet: merging records
    (Cleanup) doesn't carry labels, and nobody is checked for permission to label.
-3. Row policies, the roles, the connection interceptor, `security_invoker` views, and the performance run.
+3. Row policies, the roles, the connection interceptor, `security_invoker` views, and the performance run. **Built**, for
+   the generic store (`node`, `node_link`, `external_ref`, `graph_nodes`, `graph_edges`). The climbing domain's own tables
+   and `climbing_*` views are not covered, so climbing should not turn security on yet.
 4. `FieldPolicy`, the property label tables, masking in DTOs, and search.
 5. History, `external_ref`, saved views and the other side tables.
 6. Label UI, the model editor tab and bulk assignment.

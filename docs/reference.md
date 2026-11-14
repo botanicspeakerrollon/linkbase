@@ -387,6 +387,7 @@ themselves and are not checked against hierarchy rules. Phone-width Logbook and 
 | `model list` | Lists the configured models |
 | `model migrate` | Applies migrations to every configured model's database, including the real one |
 | `model load <file> [model]` | Loads a model file, replacing everything generic in that model in one transaction |
+| `model security on\|off [model]` | Turns row security on or off, as the database owner. `on` needs a `security` section |
 | `climbing import <model> ukc\|mp\|all [--fresh] [--same-database]` | Loads the export files, one batch each, and rebuilds trips |
 
 Migrations are never part of start-up.

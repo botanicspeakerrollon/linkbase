@@ -407,6 +407,7 @@ The choice is kept in a cookie for a year, and switching reloads the page. `/mod
 | `model list` | Lists the configured models |
 | `model migrate` | Applies migrations to every configured model's database, **including your real one** |
 | `model load <file> [model]` | Loads a model file into a model, the first one if none is named |
+| `model security on\|off [model]` | Turns Postgres row security on or off for a model that has a `security` section (see [security-design](security-design.md)) |
 | `climbing import <model> ukc\|mp\|all [--fresh] [--same-database]` | Loads the UKC and Mountain Project exports into `<model>`, one undoable batch per file, and rebuilds the trips. `--fresh` first reloads the model file, which empties the model's records, and needs `--same-database` for the climbing model's own database |
 
 Run them with `dotnet run --project src/Linkbase --launch-profile http -- <command>`. The launch profile matters: without it,

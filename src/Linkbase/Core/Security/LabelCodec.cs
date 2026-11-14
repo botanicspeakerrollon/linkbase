@@ -14,6 +14,9 @@ public static class LabelCodec
 
     public static string[] AnyColumn(Label label) => label.AnyOf.Count == 0 ? [Everyone] : [.. label.AnyOf.Order(StringComparer.Ordinal)];
 
+    // A Postgres text[] literal. Values can't contain quotes, braces, commas or backslashes (ModelSecurity.IsValidValue).
+    public static string ToArrayLiteral(IEnumerable<string> values) => "{" + string.Join(",", values.Distinct().Select(v => $"\"{v}\"")) + "}";
+
     public static string[] AllColumn(Label label) => [.. label.AllOf.Order(StringComparer.Ordinal)];
 
     // The model's security section as it's kept in model_setting.security.
