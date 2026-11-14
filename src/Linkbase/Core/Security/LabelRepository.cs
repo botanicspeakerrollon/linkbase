@@ -159,8 +159,11 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
         {
             db.NodePropertyLabels.Add(new NodePropertyLabel
             {
-                NodeId = nodeId, Key = key, LabelLevel = (short)after.Level,
-                LabelAny = LabelCodec.AnyColumn(after), LabelAll = LabelCodec.AllColumn(after),
+                NodeId = nodeId,
+                Key = key,
+                LabelLevel = (short)after.Level,
+                LabelAny = LabelCodec.AnyColumn(after),
+                LabelAll = LabelCodec.AllColumn(after),
             });
         }
         else
