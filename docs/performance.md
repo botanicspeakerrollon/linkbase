@@ -180,23 +180,24 @@ who sees about 80% of nodes. Parallel query was off for every run, because the c
 
 | What | Owner | Wide viewer | Narrow viewer |
 | --- | --- | --- | --- |
-| Node counts by type | 422 | 1,830 | 1,491 |
-| Name contains, within a type | 50 | 46 | 36 |
+| Node counts by type | 422 | 2,700 | 2,050 |
+| Name contains, within a type | 50 | 75 | 57 |
 | Free text, first 100 | 22 | 1 | 1 |
 | Expand a hub stop, first 100 links | 0 | 1 | 1 |
 | Links of that stop, counted | 0 | 1 | 1 |
-| **First 100 of a type, by name** | **1** | **1,256** | **1,033** |
+| **First 100 of a type, by name** | **1** | **0.7** | **0.9** |
 
 Expanding, counting a stop's links and searching are unaffected, because they follow indexes and the policy is a cheap filter.
 Two things are not fine for a restricted viewer:
 
-- **First 100 of a type, by name** goes from 1 ms to about 1 s. The policy compares the label columns with the viewer's
-  settings as query parameters, so the planner can't estimate how many rows pass, guesses too few, and chooses to read the whole
-  table and sort it. Forcing the index (`enable_seqscan` and `enable_sort` off) gives 0.4 ms with the same results, so the fix is to
-  steer the plan (a query shape that finds its rows first, as `CLAUDE.md` says for sorted views, or an index that includes the
-  label columns), not to change the rules. Not done yet.
-- **Node counts** are 3 to 4 times slower, since the count has to test every row. It's a full scan either way, and the unrestricted
-  figure comes from a cheaper path.
+- **First 100 of a type, by name** went from 1 ms to about 1 s (7 s cold) with the first version of the policy. It wrapped the
+  viewer's settings in `(select ...)`, which hides them from the planner; it guessed almost no row passed, and chose to read the
+  whole table and sort it. The node policy is now unwrapped, so the planner reads the settings while planning. Measured again
+  the same way: 0.5 to 1 ms for both viewers, using the index. Databases that already have security on get the new policy
+  when security is switched on again (`model security on`).
+- **Node counts** are 3 to 6 times slower (about 2 to 2.7 s after the change, up from 1.5 to 1.8 s), since the count has to test
+  every row, now reading the settings for each. It's a full scan either way, and the unrestricted figure comes from a cheaper path.
+  Name-contains in a type went from about 36 to about 57 ms for the same reason.
 
 Not covered: the app's own queries with a viewer (these are the views' shapes by hand, not `GraphRepository`), several users
 at once, writes, and hidden fields (those are masked in code, so they cost nothing in the database). The labels on links are

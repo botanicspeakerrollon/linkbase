@@ -215,15 +215,15 @@ alter table node enable row level security;
 
 create policy linkbase_node on node
   for all to linkbase_app
-  using (label_level <= (select linkbase_sec.viewer_level())
-         and label_any && (select linkbase_sec.viewer_any())     -- any of
-         and label_all <@ (select linkbase_sec.viewer_all()))    -- all of
+  using (label_level <= linkbase_sec.viewer_level()
+         and label_any && linkbase_sec.viewer_any()     -- any of
+         and label_all <@ linkbase_sec.viewer_all())    -- all of
   with check (...the same...);
 ```
 
-The expression is repeated in `node_link`'s policy rather than shared through a function. A SQL function that contains
-sub-selects isn't inlined by the planner, so `current_setting` ran for every row; written inline, the `(select …)` parts become
-InitPlans. A part the model doesn't use gets values that always pass (level 32767, and `*` in the viewer's any-of set).
+`node_link`'s policy is the same test with each helper wrapped as `(select linkbase_sec.viewer_level())`, plus checks that both
+ends are visible. The expression is repeated in each policy rather than shared through a function: a SQL function that contains
+sub-selects isn't inlined by the planner, so `current_setting` ran for every row. A part the model doesn't use gets values that always pass (level 32767, and `*` in the viewer's any-of set).
 
 Points to know:
 
@@ -233,9 +233,13 @@ Points to know:
   avoids a special case: an unrestricted item stores the sentinel `{'*'}` (the column's default), and every viewer's any-of set always includes
   `'*'`. The model layer hides this; the database sees only plain overlap, which a GIN index can serve. The alternative,
   `cardinality(label_any) = 0 or …`, defeats the index.
-- `(select …)` around each helper makes the planner evaluate it **once per statement** (an InitPlan) instead of once per row.
-  `stable` is the right volatility: constant within a statement, not constant forever. Check with `EXPLAIN` that the helpers
-  appear as `InitPlan` and not under the scan.
+- `(select …)` around a helper makes the planner evaluate it **once per statement** (an InitPlan) instead of once per row, but
+  it also hides the value from the planner's estimates. The link policy wraps, because links are reached through indexes on
+  their ends and the estimate doesn't matter. The node policy does not: wrapped, the planner guessed almost no rows passed, and
+  "first 100 of a type, by name" read and sorted the whole table (about a second, 7 s cold, on 3.6M nodes). Unwrapped, the
+  planner reads the `stable` helper's value while planning, estimates correctly and walks the `(type, name, key)` index (under
+  a millisecond). The price is that full scans evaluate `current_setting` per row, about a quarter slower for counts
+  (`docs/performance.md`). `stable` is the right volatility: constant within a statement, not constant forever.
 - **No GIN indexes.** GIN (`array_ops`) supports `&&`, `<@`, `@>` and `=`, so we tried them. On the Swiss sample every row is
   `{*}`, so the index isn't selective, and the planner used it as a bitmap scan of all 3.6 million rows, making a viewer who
   sees everything 3 to 30 times slower than the owner. Without them the overhead is about 1.5 to 3 times. Revisit only if a

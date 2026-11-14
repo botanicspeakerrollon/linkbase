@@ -42,7 +42,8 @@ public static class RowSecurity
     private static string Escape(string sql) => sql.Replace("{", "{{").Replace("}", "}}");
 
     // The helper functions read the viewer from session settings. Wrapped in (select ...) they are evaluated once per
-    // statement, not per row. The test is written out in each policy: wrapped in a function of its own, Postgres can't inline
+    // statement, not per row, which suits the link table (big, reached through indexes on its ends, where the planner's guess
+    // doesn't matter). The node policy is left unwrapped, so the planner can see the viewer. The test is written out in each policy: wrapped in a function of its own, Postgres can't inline
     // it, and it measured twelve times slower because the settings were read for every row. There are no GIN indexes on the
     // label arrays: with most rows unrestricted they aren't selective, and the planner scanned them whole (docs/performance.md).
     private static readonly string EnableScript = $$"""
@@ -68,10 +69,13 @@ public static class RowSecurity
         alter default privileges in schema public grant select, insert, update, delete on tables to {{AppRole}};
         alter default privileges in schema public grant usage, select on sequences to {{AppRole}};
 
+        -- Not wrapped in (select ...), unlike the link policy below: the planner reads a stable function's value while planning,
+        -- so it knows how many rows pass and walks the (type, name) index for "first 100". Wrapped, the value is hidden, the
+        -- planner guesses almost nothing passes, and it sorts the whole table instead (a second, not a millisecond).
         drop policy if exists linkbase_node on node;
         create policy linkbase_node on node for all to {{AppRole}}
-          using (label_level <= (select linkbase_sec.viewer_level()) and label_any && (select linkbase_sec.viewer_any()) and label_all <@ (select linkbase_sec.viewer_all()))
-          with check (label_level <= (select linkbase_sec.viewer_level()) and label_any && (select linkbase_sec.viewer_any()) and label_all <@ (select linkbase_sec.viewer_all()));
+          using (label_level <= linkbase_sec.viewer_level() and label_any && linkbase_sec.viewer_any() and label_all <@ linkbase_sec.viewer_all())
+          with check (label_level <= linkbase_sec.viewer_level() and label_any && linkbase_sec.viewer_any() and label_all <@ linkbase_sec.viewer_all());
 
         -- A link shows only if its own label passes and both its records are visible (node's policy filters the subqueries).
         drop policy if exists linkbase_node_link on node_link;
