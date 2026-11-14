@@ -54,6 +54,28 @@ public sealed class LabelUiTests(PostgresFixture fixture) : UiTestBase(fixture),
         Assert.Equal("internal", (await labels.GetNodeAsync("project:pr2"))!.Level);
     }
 
+    private sealed class OneViewer(string user) : IViewerResolver
+    {
+        public async ValueTask<Viewer> ResolveAsync(ModelSecurity security, CancellationToken cancellationToken = default) =>
+            await ViewerDirectory.Create(security).ResolveAsync(user, cancellationToken);
+    }
+
+    [Fact]
+    public async Task The_label_dialog_offers_only_what_the_person_holds()
+    {
+        await ConsultancyAsync();
+        Services.AddSingleton<IViewerResolver>(new OneViewer("ava.lindqvist"));
+        var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Project").Add(x => x.Key, "pr2"));
+        Press(cut, "Label…");
+        Dialogs.WaitForAssertion(() => Assert.Contains("Set who can see this record", Dialogs.Markup));
+
+        // Ava holds Harbourline but not Northgate, and is "internal", so can't pick "confidential".
+        Dialogs.FindAll(".mud-input-control").First(c => c.QuerySelector("label")?.TextContent.Trim() == "NDA").MouseDown();
+        Dialogs.WaitForAssertion(() => Assert.Contains("Harbourline", Popovers.Markup));
+        Assert.DoesNotContain("Northgate", Popovers.Markup);
+        Assert.DoesNotContain("confidential", Dialogs.Markup);
+    }
+
     [Fact]
     public async Task The_list_offers_bulk_labelling_only_where_the_model_has_security()
     {

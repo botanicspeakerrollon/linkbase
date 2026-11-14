@@ -35,6 +35,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<Linkbase.Core.History.ChangeReverter>();
         Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
         Services.AddSingleton<Linkbase.Core.Security.LabelRepository>();
+        Services.AddSingleton<Linkbase.Core.Security.IViewerResolver, EveryoneHoldsEverything>();
         AddEverydayRepositories();
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
         Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
@@ -276,4 +277,14 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(respond());
     }
+}
+
+// The viewer in page tests unless one says otherwise: holds every level and value, so no label option is hidden.
+public sealed class EveryoneHoldsEverything : Linkbase.Core.Security.IViewerResolver
+{
+    public ValueTask<Linkbase.Core.Security.Viewer> ResolveAsync(Linkbase.Core.Security.ModelSecurity security, CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult(new Linkbase.Core.Security.Viewer(
+            int.MaxValue,
+            security.AnyOf?.Values ?? [],
+            security.AllOf?.Values ?? []));
 }

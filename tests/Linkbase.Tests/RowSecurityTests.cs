@@ -131,6 +131,21 @@ public sealed class RowSecurityTests(PostgresFixture fixture) : IClassFixture<Po
     }
 
     [Fact]
+    public async Task Labelling_a_record_with_an_NDA_you_do_not_hold_says_so_instead_of_crashing()
+    {
+        var setup = await ConsultancyAsync();
+        var ava = new LabelRepository(setup.For("ava.lindqvist"));
+        var northgate = new LabelEdit(AllOf: new SetEdit(SetEditMode.Add, ["Northgate"]));
+
+        var failure = await Assert.ThrowsAsync<LinkbaseValidationException>(() => ava.EditNodesAsync(["project:pr1"], northgate, null));
+        Assert.Contains("values you hold", failure.Message);
+
+        // The same person can add one they do hold, and the refused change left nothing behind.
+        Assert.Equal(1, await ava.EditNodesAsync(["project:pr1"], new LabelEdit(AllOf: new SetEdit(SetEditMode.Add, ["Harbourline"])), null));
+        Assert.DoesNotContain("Northgate", (await ava.GetNodeAsync("project:pr1"))!.AllOf);
+    }
+
+    [Fact]
     public async Task Where_a_record_came_from_is_visible_only_with_the_record()
     {
         var setup = await ConsultancyAsync();

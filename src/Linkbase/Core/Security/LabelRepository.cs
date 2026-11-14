@@ -51,6 +51,25 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
     // Applies the edit to each node. Returns how many changed; a node the edit leaves as it was isn't counted or logged.
     public async Task<int> EditNodesAsync(IReadOnlyCollection<string> nodeIds, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken = default)
     {
+        try
+        {
+            return await EditNodesCoreAsync(nodeIds, edit, reason, cancellationToken);
+        }
+        catch (Exception ex) when (IsRowSecurityRefusal(ex))
+        {
+            throw new LinkbaseValidationException(RefusedMessage);
+        }
+    }
+
+    // The database refuses a label the viewer couldn't see, or a record they can't see. Said as a message, not left as a crash.
+    private const string RefusedMessage = "You can't set that label: a label may only use values you hold yourself, and you may only change records you can see.";
+
+    private static bool IsRowSecurityRefusal(Exception ex) =>
+        (ex as DbUpdateException)?.InnerException is Npgsql.PostgresException { SqlState: Npgsql.PostgresErrorCodes.InsufficientPrivilege }
+        || ex is Npgsql.PostgresException { SqlState: Npgsql.PostgresErrorCodes.InsufficientPrivilege };
+
+    private async Task<int> EditNodesCoreAsync(IReadOnlyCollection<string> nodeIds, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken)
+    {
         var (security, history, checkedReason) = await PrepareAsync(edit, reason, cancellationToken);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -90,6 +109,18 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
 
     // The same for links, by their ids.
     public async Task<int> EditLinksAsync(IReadOnlyCollection<long> linkIds, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await EditLinksCoreAsync(linkIds, edit, reason, cancellationToken);
+        }
+        catch (Exception ex) when (IsRowSecurityRefusal(ex))
+        {
+            throw new LinkbaseValidationException(RefusedMessage);
+        }
+    }
+
+    private async Task<int> EditLinksCoreAsync(IReadOnlyCollection<long> linkIds, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken)
     {
         var (security, history, checkedReason) = await PrepareAsync(edit, reason, cancellationToken);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);

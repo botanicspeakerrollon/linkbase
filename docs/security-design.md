@@ -299,6 +299,10 @@ Reading: [EXPLAIN](https://www.postgresql.org/docs/16/sql-explain.html), [Using 
 - Changing labels needs a `label-admin` permission. A user can only assign a label they themselves pass, so no one can
   create or relabel something beyond their own clearance. Lowering a classification, or removing a department or project,
   needs a reason and is recorded through `ChangeRecorder` like any other edit.
+- The label dialog (record page and list) offers only the levels and values the person holds, plus whatever the record
+  already carries so an edit never silently drops one. The database policy is the real check: if a label is refused anyway
+  (a stale page, say), `LabelRepository` reports it as a validation message rather than letting the error crash the page.
+  The `label-admin` permission itself is not checked yet.
 - A relabel is an edit, so it sets `updated_at`. Import undo therefore keeps a record that has been relabelled since import.
 
 ### Bulk assignment

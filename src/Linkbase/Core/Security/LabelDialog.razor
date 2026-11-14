@@ -1,4 +1,5 @@
 @inject LabelRepository Labels
+@inject IViewerResolver Viewers
 @inject ISnackbar Snackbar
 
 @* Sets the label on one record or many. For many, each part starts as "Leave as it is", so a bulk change touches only what
@@ -11,7 +12,7 @@
             {
                 <MudSelect T="string" @bind-Value="_level" Label="@level.Name" Clearable="true" Placeholder="Leave as it is"
                            Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" AutoFocus="true">
-                    @foreach (var value in level.Values ?? [])
+                    @foreach (var value in LevelOptions(level))
                     {
                         <MudSelectItem T="string" Value="@value">@value</MudSelectItem>
                     }
@@ -33,7 +34,7 @@
                     {
                         <MudSelect T="string" MultiSelection="true" @bind-SelectedValues="state.Chosen" Label="@set.Part.Name"
                                    Disabled="@(state.Mode == SetMode.Leave)" Variant="Variant.Outlined" Margin="Margin.Dense">
-                            @foreach (var value in known)
+                            @foreach (var value in SetOptions(set.Key, known))
                             {
                                 <MudSelectItem T="string" Value="@value">@value</MudSelectItem>
                             }
@@ -92,8 +93,23 @@
     private IEnumerable<(string Key, SecurityPart Part)> Sets() =>
         Security.Parts.Where(p => p.Key != ModelSecurity.LevelKey);
 
-    protected override void OnInitialized()
+    // Who is changing the label. Only values this person holds are offered, because the database refuses a label its author
+    // couldn't see, so anything else would fail on Apply. Null when row security is off, which offers everything.
+    private Viewer? _viewer;
+
+    private IEnumerable<string> LevelOptions(SecurityPart level) =>
+        (level.Values ?? []).Where((_, i) => _viewer is null || i <= _viewer.Level || level.Values![i] == Current?.Level);
+
+    private IEnumerable<string> SetOptions(string key, IReadOnlyList<string> known)
     {
+        var current = Current is null ? [] : key == ModelSecurity.AnyOfKey ? Current.AnyOf : Current.AllOf;
+        var held = key == ModelSecurity.AnyOfKey ? _viewer?.AnyOf : _viewer?.AllOf;
+        return known.Where(v => held is null || held.Contains(v) || current.Contains(v));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _viewer = Security.Enabled ? await Viewers.ResolveAsync(Security) : null;
         _level = Current?.Level;
         foreach (var (key, part) in Sets())
         {
