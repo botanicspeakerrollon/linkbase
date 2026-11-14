@@ -97,7 +97,11 @@ public sealed record DerivedLink(string SourceId, string RelType, string TargetI
 
 // Values are shown as text: numbers as written, dates as yyyy-MM-dd, booleans as true or false, and a list's values one
 // per line.
-public sealed record RecordRow(string Id, string Key, string Name, IReadOnlyDictionary<string, string> Values);
+public sealed record RecordRow(string Id, string Key, string Name, IReadOnlyDictionary<string, string> Values)
+{
+    // Fields the viewer isn't allowed to see. Their values aren't here, and pages show a mask in their place.
+    public IReadOnlySet<string> Masked { get; init; } = new HashSet<string>();
+}
 
 public sealed record RecordRows(int Total, IReadOnlyList<RecordRow> Rows);
 
@@ -111,7 +115,11 @@ public sealed record RecordFilter(string Field, FilterOp Op, string Value);
 public sealed record RecordSort(string Field, bool Descending = false);
 
 public sealed record RecordDetail(
-    string Id, string Type, string Key, string Name, IReadOnlyDictionary<string, string> Values, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
+    string Id, string Type, string Key, string Name, IReadOnlyDictionary<string, string> Values, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt)
+{
+    // Fields the viewer isn't allowed to see. Their values aren't in Values, and pages show a mask in their place.
+    public IReadOnlySet<string> Masked { get; init; } = new HashSet<string>();
+}
 
 // What a form sends: the name, and each field's value as typed, empty for none. A new record also brings its links, at
 // least those its type requires.

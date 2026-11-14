@@ -77,6 +77,12 @@ public class FieldDefinition
 
     // The field holds several values of its Type, stored as a JSON array. A List always does.
     public bool Multiple { get; set; }
+
+    // Who may see this field's value on any record that has it, in the same three parts as a record's label. A viewer who can see
+    // the record but doesn't pass this sees the field masked. The defaults ask for nothing. See docs/security-design.md.
+    public short LabelLevel { get; set; }
+    public string[] LabelAny { get; set; } = [Linkbase.Core.Security.LabelCodec.Everyone];
+    public string[] LabelAll { get; set; } = [];
 }
 
 // A relationship that may exist between two types, such as Service CALLS_AT Stop.

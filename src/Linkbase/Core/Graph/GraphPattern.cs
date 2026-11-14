@@ -54,6 +54,10 @@ public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IRe
 
     // The values each relationship's links can carry. Empty for a relationship with none.
     public IReadOnlyList<GraphLinkPropertyInfo> LinkProperties { get; init; } = [];
+
+    // Property keys the viewer may not see on some type. Free text must not match them (docs/security-design.md, "Properties").
+    // Empty unless a model labels fields and row security is on, which leaves the search as it was.
+    public IReadOnlyList<string> HiddenKeys { get; init; } = [];
 }
 
 public sealed record GraphTypeInfo(string Label, string? Color, string? Icon);
@@ -231,7 +235,7 @@ public static partial class GraphPatternSql
     {
         if (filter.Key == PatternFilter.AnyField)
         {
-            return AnyFieldSql(index, filter, add);
+            return AnyFieldSql(index, filter, schema, add);
         }
 
         var type = ValueType(schema, label, filter.Key)
@@ -288,7 +292,7 @@ public static partial class GraphPatternSql
     }
 
     // Some types take their name from another node, so they match on their own properties rather than flooding every search.
-    private static string AnyFieldSql(int index, PatternFilter filter, Func<object, NpgsqlDbType, string> add)
+    private static string AnyFieldSql(int index, PatternFilter filter, GraphSchema schema, Func<object, NpgsqlDbType, string> add)
     {
         var node = $"n{index}";
         var like = add($"%{EscapeLike(filter.Value)}%", NpgsqlDbType.Text);
@@ -299,6 +303,14 @@ public static partial class GraphPatternSql
         // every one of them. Those match only where the text is in their own values: graph_search_text with an empty name. Both
         // arms start with search_text ILIKE, so the trigram index still finds the rows and the second check only trims them.
         // % is a near miss on the name, up to pg_trgm's similarity threshold. Unlike similarity(), it can use an index.
+        // A viewer with hidden fields can't use search_text, which holds those values: they search what they can see instead, which
+        // is slower, and the stored column and its index serve everyone else.
+        if (schema.HiddenKeys.Count > 0)
+        {
+            var hidden = add(schema.HiddenKeys.ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text);
+            return $"((graph_search_text({node}.name, {node}.props - {hidden}) ILIKE {like} AND ({node}.label <> ALL({borrowed}) OR graph_search_text('', {node}.props - {hidden}) ILIKE {like})) OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
+        }
+
         return $"(({node}.search_text ILIKE {like} AND ({node}.label <> ALL({borrowed}) OR graph_search_text('', {node}.props) ILIKE {like})) OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
     }
 

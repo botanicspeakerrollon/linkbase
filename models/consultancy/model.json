@@ -35,7 +35,8 @@
       "label": { "level": "internal" },
       "fields": [
         { "key": "started", "type": "date" },
-        { "key": "budget", "type": "number", "description": "In pounds, before VAT." },
+        // Whoever may see a project may not see what it costs: a viewer below "confidential" sees this masked.
+        { "key": "budget", "type": "number", "description": "In pounds, before VAT.", "label": { "level": "confidential" } },
         { "key": "status", "type": "choice", "options": [ "proposed", "active", "live", "closed" ], "required": true, "description": "Where the project is now." }
       ]
     }

@@ -94,6 +94,30 @@ public sealed partial class RecordRepository
         _ => JsonValue.Create(text),
     };
 
+    // The values without the keys the viewer can't see.
+    internal static Dictionary<string, string> Values(string props, IReadOnlySet<string> hidden)
+    {
+        var values = Values(props);
+        foreach (var key in hidden)
+        {
+            values.Remove(key);
+        }
+
+        return values;
+    }
+
+    // Which of the hidden keys the record has a value for, so that a mask shows only where something is hidden.
+    internal static HashSet<string> Present(string props, IReadOnlySet<string> hidden)
+    {
+        if (hidden.Count == 0)
+        {
+            return [];
+        }
+
+        using var document = JsonDocument.Parse(props);
+        return document.RootElement.EnumerateObject().Select(p => p.Name).Where(hidden.Contains).ToHashSet();
+    }
+
     internal static Dictionary<string, string> Values(string props)
     {
         using var document = JsonDocument.Parse(props);

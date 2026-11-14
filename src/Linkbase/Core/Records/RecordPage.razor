@@ -55,7 +55,7 @@ else if (_record is not null && _type is not null)
                         }
                     </th>
                     <td>
-                        @RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key))
+                        @(_record.Masked.Contains(field.Key) ? RecordListPage.MaskText : RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key)))
                         @if (field.Owner is not null && _type.Owner is null)
                         {
                             <MudText Typo="Typo.caption" Inline="true" Class="ml-2" Style="color: var(--mud-palette-text-secondary)">kept by @field.Owner</MudText>

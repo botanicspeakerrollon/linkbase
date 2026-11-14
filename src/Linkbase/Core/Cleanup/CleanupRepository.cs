@@ -19,7 +19,7 @@ public sealed record CleanupList<T>(IReadOnlyList<T> Items, bool More);
 
 // Finds records worth a second look. Import review protects the way in; this is for what is already there. It only looks at
 // types people keep: a module's derived records are rebuilt from the others, so tidying them by hand would not last.
-public sealed class CleanupRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
+public sealed class CleanupRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, Security.FieldPolicy? fieldPolicy = null)
 {
     public const int GroupLimit = 50;
     public const int ItemLimit = 200;
@@ -85,11 +85,15 @@ public sealed class CleanupRepository(IDbContextFactory<LinkbaseDbContext> conte
         var user = AppUser.DefaultId;
         var issues = new List<CleanupIssue>();
 
-        var fields = await db.FieldDefinitions.AsNoTracking()
+        // A field the viewer can't see isn't reported, because saying a record lacks it would say it has no value.
+        var hidden = fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        var fields = (await db.FieldDefinitions.AsNoTracking()
             .Where(f => f.Required && f.Owner == null && kept.Contains(f.NodeTypeName))
             .OrderBy(f => f.NodeTypeName).ThenBy(f => f.Id)
             .Select(f => new { f.NodeTypeName, f.Key })
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken))
+            .Where(f => !hidden.IsHidden(f.NodeTypeName, f.Key))
+            .ToList();
         foreach (var field in fields)
         {
             var limit = ItemLimit + 1 - issues.Count;

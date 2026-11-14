@@ -58,8 +58,16 @@ public sealed record GraphNeighbours(IReadOnlyList<GraphNode> Nodes, int Remaini
 public sealed record Subgraph(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
 
-public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
+public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, Security.FieldPolicy? fieldPolicy = null)
 {
+    // A type and key joined, to test against in SQL: n.label || chr(31) || key <> ALL(pairs).
+    private const char PairSeparator = '\u001f';
+
+    private async ValueTask<Security.HiddenFields> HiddenAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
+        fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+
+    private static string[] Pairs(Security.HiddenFields hidden) => hidden.Pairs(PairSeparator);
+
     private const double SearchSimilarity = 0.3;
     private const int SearchLimit = 20;
     private const int MatchLimit = 12;
@@ -76,6 +84,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         }
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var hidden = await HiddenAsync(db, cancellationToken);
         var term = text.Trim();
         var pattern = $"%{term}%";
         var query = db.GraphNodes.AsNoTracking().Where(n => n.UserId == AppUser.DefaultId);
@@ -93,7 +102,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .Select(n => new { n.NodeId, n.Label, n.Name, n.Props })
             .ToListAsync(cancellationToken);
 
-        return rows.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props)).ToList();
+        return rows.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props, hidden)).ToList();
     }
 
     // The one neighbourhood query: everything linked to a node, in either direction. Property filters only
@@ -107,6 +116,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     {
         var schema = filter.Properties.Count > 0 ? await SchemaAsync(cancellationToken) : null;
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var hidden = await HiddenAsync(db, cancellationToken);
 
         var parameters = new List<NpgsqlParameter>();
         string Add(object value, NpgsqlDbType type)
@@ -119,6 +129,11 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         var conditions = schema is null ? "TRUE" : GraphPatternSql.PropertyFiltersSql(filter.Properties, schema, Add);
         var node = Add(nodeId, NpgsqlDbType.Text);
         var relTypes = Add(filter.RelTypes is { Count: > 0 } ? filter.RelTypes.ToArray() : DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text);
+
+        // Sorting by a date the viewer can't see would show its order, so for them it sorts by nothing.
+        var dateOrder = hidden.AnyType.Contains("date")
+            ? $"CASE WHEN label || chr(31) || 'date' = ANY({Add(Pairs(hidden), NpgsqlDbType.Array | NpgsqlDbType.Text)}) THEN NULL ELSE props->>'date' END"
+            : "props->>'date'";
 
         // Materialized so the sort happens after the neighbours are found. Otherwise, with an index on label, the
         // planner walks every node in the graph in label order, hoping to reach the limit early: over 2 minutes on
@@ -141,14 +156,14 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             SELECT node_id AS "NodeId", label AS "Label", name AS "Name", props::text AS "Props",
                    count(*) OVER () AS "Total"
             FROM found
-            ORDER BY label, props->>'date' DESC NULLS LAST, name
+            ORDER BY label, {dateOrder} DESC NULLS LAST, name
             LIMIT {Add(limit, NpgsqlDbType.Integer)}
             """;
         var rows = await db.Database.SqlQueryRaw<NeighbourRow>(sql, parameters.Cast<object>().ToArray()).ToListAsync(cancellationToken);
 
         var total = rows.Count > 0 ? (int)rows[0].Total : 0;
         return new GraphNeighbours(
-            rows.Select(r => ToNode(r.NodeId, r.Label, r.Name, r.Props)).ToList(),
+            rows.Select(r => ToNode(r.NodeId, r.Label, r.Name, r.Props, hidden)).ToList(),
             total - rows.Count);
     }
 
@@ -200,9 +215,12 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             ORDER BY 1, 2
             """).ToListAsync(cancellationToken);
 
+        // A property the viewer can't see isn't offered, and a filter on it fails as an unknown property does.
+        var hidden = await HiddenAsync(db, cancellationToken);
         var infos = labels.Select(label => new GraphPropertyInfo(label, "name", GraphValueType.Text)).ToList();
-        infos.AddRange(defined.SelectMany(t => t.Fields.Select(f => new GraphPropertyInfo(t.Name, f.Key, TypeOf(f.Type)) { Options = f.Options ?? [] })));
-        infos.AddRange(properties.Select(p => new GraphPropertyInfo(p.Label, p.Key, TypeOf(p.Key, p.JsonType))));
+        infos.AddRange(defined.SelectMany(t => t.Fields.Where(f => !hidden.IsHidden(t.Name, f.Key))
+            .Select(f => new GraphPropertyInfo(t.Name, f.Key, TypeOf(f.Type)) { Options = f.Options ?? [] })));
+        infos.AddRange(properties.Where(p => !hidden.IsHidden(p.Label, p.Key)).Select(p => new GraphPropertyInfo(p.Label, p.Key, TypeOf(p.Key, p.JsonType))));
 
         // The same relationship name is rarely reused between different type pairs; where it is, the first pair's
         // definition of a shared key wins, the same loose way a node property's label already is when unspecified.
@@ -219,6 +237,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         {
             Types = defined.Select(t => new GraphTypeInfo(t.Name, t.Color, t.Icon)).ToList(),
             LinkProperties = linkInfos,
+            HiddenKeys = hidden.AnyType.ToList(),
         };
     }
 
@@ -270,6 +289,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         var term = text.Trim();
         var pattern = $"%{EscapeLike(term)}%";
         var labelParameter = new NpgsqlParameter("label", NpgsqlDbType.Text) { Value = (object?)label ?? DBNull.Value };
+        var pairs = Pairs(await HiddenAsync(db, cancellationToken));
 
         var rows = await db.Database.SqlQuery<MatchRow>(
             $"""
@@ -288,6 +308,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
                 WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
                   AND n.search_text ILIKE {pattern}
                   AND kv.key <> ALL({RegisteredDomains.LongTextProperties})
+                  AND n.label || chr(31) || kv.key <> ALL({pairs})
                   AND item.value ILIKE {pattern}
             ) m
             ORDER BY m."Score" DESC, m."Label", m."Value"
@@ -305,6 +326,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var pattern = string.IsNullOrWhiteSpace(text) ? "%" : $"%{EscapeLike(text.Trim())}%";
         var labelParameter = new NpgsqlParameter("label", NpgsqlDbType.Text) { Value = (object?)label ?? DBNull.Value };
+        var pairs = Pairs(await HiddenAsync(db, cancellationToken));
 
         if (list)
         {
@@ -314,6 +336,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
                 FROM graph_nodes n,
                      jsonb_array_elements_text(CASE jsonb_typeof(n.props->{key}) WHEN 'array' THEN n.props->{key} ELSE jsonb_build_array(n.props->{key}) END) item(value)
                 WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
+                  AND n.label || chr(31) || {key} <> ALL({pairs})
                   AND item.value ILIKE {pattern}
                 ORDER BY 1
                 LIMIT {MatchLimit}
@@ -326,7 +349,8 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             FROM (
                 SELECT CASE WHEN {key} = 'name' THEN n.name ELSE n.props->>{key} END AS "Value"
                 FROM graph_nodes n
-                WHERE {labelParameter} IS NULL OR n.label = {labelParameter}
+                WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
+                  AND ({key} = 'name' OR n.label || chr(31) || {key} <> ALL({pairs}))
             ) v
             WHERE v."Value" ILIKE {pattern}
             ORDER BY v."Value"
@@ -384,6 +408,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
+        var hidden = await HiddenAsync(db, cancellationToken);
         var nodes = await db.GraphNodes.AsNoTracking()
             .Where(n => n.UserId == AppUser.DefaultId && nodeIds.Contains(n.NodeId))
             .Select(n => new { n.NodeId, n.Label, n.Name, n.Props })
@@ -394,7 +419,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .ToListAsync(cancellationToken);
 
         return new Subgraph(
-            nodes.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props)).ToList(),
+            nodes.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props, hidden)).ToList(),
             edges.Select(e => new GraphEdge(e.SourceId, e.TargetId, e.RelType) { Values = EdgeValues(e.Props) }).ToList());
     }
 
@@ -402,12 +427,18 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     private static Dictionary<string, string>? EdgeValues(string props) =>
         props.Length <= 2 ? null : Records.RecordRepository.Values(props) is { Count: > 0 } values ? values : null;
 
-    private static GraphNode ToNode(string id, string label, string name, string props)
+    private static GraphNode ToNode(string id, string label, string name, string props, Security.HiddenFields hidden)
     {
+        var skip = hidden.For(label);
         using var json = JsonDocument.Parse(props);
         var properties = new List<GraphProperty>();
         foreach (var property in json.RootElement.EnumerateObject())
         {
+            if (skip.Contains(property.Name))
+            {
+                continue;
+            }
+
             var value = property.Value.ValueKind switch
             {
                 JsonValueKind.Null => null,

@@ -233,6 +233,26 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("key");
 
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
+
                     b.Property<bool>("Multiple")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")

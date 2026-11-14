@@ -113,6 +113,7 @@ public sealed partial class ModelFile
             foreach (var field in type.Fields)
             {
                 ValidateOwner($"Field '{field.Key}' of type '{type.Name}'", field.Owner, problems);
+                ValidateLabel($"Field '{field.Key}' of type '{type.Name}'", field.Label, null, problems);
             }
         }
 
@@ -140,6 +141,11 @@ public sealed partial class ModelFile
             foreach (var field in relationship.Fields.Where(f => f.Owner is not null))
             {
                 problems.Add($"{what}'s field '{field.Key}' has an owner, which only a type's fields can have.");
+            }
+
+            foreach (var field in relationship.Fields.Where(f => f.Label is not null))
+            {
+                problems.Add($"{what}'s field '{field.Key}' has a label, which only a type's fields can have.");
             }
 
             foreach (var field in relationship.Fields.Where(f => f.Group is not null))
@@ -305,6 +311,10 @@ public sealed partial class ModelFile
             if (field is null)
             {
                 problems.Add($"{what} uses {{{token}}}, which isn't a field of the type.");
+            }
+            else if (field.Label is not null)
+            {
+                problems.Add($"{what} uses {{{token}}}, which has a label, so the name would show its value to people who can't see it.");
             }
             else if (field.IsMany || field.Owner is not null)
             {
@@ -487,6 +497,9 @@ public sealed class ModelField
 
     // Several values of the type, such as a list of dates. A list is the same as this on a text field.
     public bool Multiple { get; init; }
+
+    // Who may see this field's value. A type's fields only. Anything left out asks for nothing, so the record's own label rules.
+    public ModelLabel? Label { get; init; }
 
     [JsonIgnore] public bool IsMany => Multiple || Type == FieldType.List;
 
