@@ -105,6 +105,29 @@ h1:focus {
     text-align: left;
 }
 
+/* A group of fields from a model file: a heading band, with its fields indented beneath it. Used on the record page, the
+   form and Explore's panel. */
+.group-heading {
+    padding-top: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mud-palette-primary);
+    background: transparent;
+    border-bottom: 1px solid var(--mud-palette-primary);
+}
+
+.group-heading-text {
+    color: var(--mud-palette-primary);
+    letter-spacing: 0.08em;
+}
+
+.in-group {
+    padding-left: 1.25rem !important;
+}
+
 .home-links {
     max-width: 44rem;
 }

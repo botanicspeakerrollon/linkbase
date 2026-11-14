@@ -52,13 +52,13 @@ else if (_record is not null && _type is not null)
             {
                 @if (section.Group is not null)
                 {
-                    <tr><th scope="colgroup" colspan="2" class="record-group">@section.Group</th></tr>
+                    <tr><th scope="colgroup" colspan="2" class="group-heading">@section.Group</th></tr>
                 }
 
                 @foreach (var field in section.Fields)
                 {
                 <tr>
-                    <th scope="row">
+                    <th scope="row" class="@(section.Group is null ? "" : "in-group")">
                         @RecordRepository.Title(field.Key)
                         @if (field.Description is not null)
                         {

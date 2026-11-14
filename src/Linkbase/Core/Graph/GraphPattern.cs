@@ -20,9 +20,12 @@ public sealed record GraphPropertyInfo(string Label, string Key, GraphValueType 
     // A choice field's values, in the order to offer them. Empty for every other type.
     public IReadOnlyList<string> Options { get; init; } = [];
 
+    // The heading the model file puts the field under, so Explore can show it with the others in its group.
+    public string? Group { get; init; }
+
     // Records compare lists by reference, so compare the options by value.
     public bool Equals(GraphPropertyInfo? other) =>
-        other is not null && Label == other.Label && Key == other.Key && Type == other.Type && Options.SequenceEqual(other.Options);
+        other is not null && Label == other.Label && Key == other.Key && Type == other.Type && Group == other.Group && Options.SequenceEqual(other.Options);
 
     public override int GetHashCode() => HashCode.Combine(Label, Key, Type, Options.Count);
 }

@@ -139,9 +139,17 @@
             {
                 <MudSimpleTable Dense="true" Elevation="0" Class="mb-3">
                     <tbody>
-                        @foreach (var property in ShownProperties(node))
+                        @foreach (var section in PropertySection.Of(node.Label, ShownProperties(node), _schema))
                         {
-                            <tr><td style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">@GraphStyle.PropertyTitle(property.Key)</td><td>@property.Value</td></tr>
+                            @if (section.Group is not null)
+                            {
+                                <tr><th colspan="2" scope="colgroup" class="group-heading">@section.Group</th></tr>
+                            }
+
+                            @foreach (var property in section.Properties)
+                            {
+                                <tr><td class="@(section.Group is null ? "" : "in-group")" style="white-space: nowrap; vertical-align: top; color: var(--mud-palette-text-secondary)">@GraphStyle.PropertyTitle(property.Key)</td><td>@property.Value</td></tr>
+                            }
                         }
                     </tbody>
                 </MudSimpleTable>

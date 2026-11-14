@@ -6,7 +6,8 @@
 {
     @if (section.Group is not null)
     {
-        <MudText Typo="Typo.subtitle2" Class="mt-2">@section.Group</MudText>
+        <MudText Typo="Typo.overline" Class="group-heading-text mt-3">@section.Group</MudText>
+        <MudDivider />
     }
 
     @foreach (var field in section.Fields)
