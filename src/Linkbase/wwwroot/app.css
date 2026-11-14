@@ -750,6 +750,31 @@ html:has(.explore) {
     background: transparent;
 }
 
+/* The ranking from a question: a sentence with its three choices inside it. */
+.pattern-rank {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.32);
+}
+
+.pattern-rank select {
+    font: inherit;
+    color: inherit;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-radius: 4px;
+    padding: 1px 4px;
+}
+
+.pattern-rank select option {
+    color: #000;
+}
+
 .pattern-rel {
     position: relative;
     padding: 2px 8px;

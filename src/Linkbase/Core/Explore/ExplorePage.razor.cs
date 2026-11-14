@@ -420,6 +420,8 @@ public partial class ExplorePage
     }
 
     // What the ranking counts, named from the pattern: the type at that position, or "records" for any.
+    private string RankSentence => _lastPattern is null ? "" : PatternRankText.Describe(_lastPattern);
+
     private string RankCounted => _lastPattern?.Rank is { } rank && _lastPattern.Nodes[rank.Count].Label is { } label ? label : "record";
 
     private string RankGrouped => _lastPattern?.Rank is { } rank && _lastPattern.Nodes[rank.Group].Label is { } label ? label : "record";

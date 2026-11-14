@@ -32,6 +32,89 @@ public class PatternBuilderTests
     private static PatternSuggestion Pick(PatternBuilder builder, string text, string suggestion) =>
         builder.Suggest(text, [], []).First(s => s.Text == suggestion);
 
+    private static GraphPattern RankedChain() => new(
+        [new PatternNode("Ascent", []), new PatternNode("Route", []), new PatternNode("Crag", [])],
+        [new PatternRel("OF", true), new PatternRel("AT", true)])
+    {
+        Rank = new PatternRank(2, 0, 5),
+    };
+
+    [Fact]
+    public void A_loaded_ranking_is_kept_when_the_phrase_is_edited_and_run()
+    {
+        var builder = New();
+        builder.Load(RankedChain());
+        builder.Apply(Pick(builder, "", "IN → Country"));
+
+        Assert.Equal(new PatternRank(2, 0, 5), builder.ToPattern()!.Rank);
+    }
+
+    [Fact]
+    public void A_plain_search_has_no_ranking()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "", "Crag"));
+        Assert.Null(builder.Rank);
+        Assert.Null(builder.ToPattern()!.Rank);
+    }
+
+    [Fact]
+    public void Removing_a_step_the_ranking_points_at_drops_it()
+    {
+        var builder = New();
+        builder.Load(RankedChain());
+        builder.RemoveLast();
+
+        Assert.Null(builder.Rank);
+        Assert.Equal(2, builder.ToPattern()!.Nodes.Count);
+    }
+
+    [Fact]
+    public void Clearing_drops_the_ranking()
+    {
+        var builder = New();
+        builder.Load(RankedChain());
+        builder.Clear();
+        Assert.Null(builder.Rank);
+    }
+
+    [Fact]
+    public void The_ranking_can_be_changed_and_never_points_both_ends_at_one_step()
+    {
+        var builder = New();
+        builder.Load(RankedChain());
+
+        builder.SetRankTop(3);
+        builder.SetRankGroup(1);
+        Assert.Equal(new PatternRank(1, 0, 3), builder.Rank);
+
+        builder.SetRankCount(1);
+        Assert.Equal(new PatternRank(0, 1, 3), builder.Rank);
+
+        builder.RemoveRank();
+        Assert.Null(builder.Rank);
+    }
+
+    [Fact]
+    public void Steps_are_named_by_type_and_numbered_only_when_a_type_repeats()
+    {
+        var builder = New();
+        builder.Load(new GraphPattern([new PatternNode("Crag", []), new PatternNode("Crag", []), new PatternNode(null, [])],
+            [new PatternRel("IN", true), new PatternRel("IN", true)]));
+        Assert.Equal(["Crag (step 1)", "Crag (step 2)", "Anything"], builder.StepNames);
+    }
+
+    [Fact]
+    public void A_ranking_is_described_in_plain_words()
+    {
+        var text = PatternRankText.Describe(RankedChain());
+        Assert.StartsWith("The 5 Crag records that reach the most different Ascent records, by way of Route.", text);
+
+        var one = RankedChain() with { Rank = new PatternRank(2, 1, 1) };
+        Assert.StartsWith("The Crag record that reaches the most different Route records, directly.", PatternRankText.Describe(one));
+        Assert.Equal("", PatternRankText.Describe(new GraphPattern([new PatternNode("Crag", [])], [])));
+    }
+
     [Fact]
     public void Typing_c_offers_the_crag_and_country_labels()
     {
