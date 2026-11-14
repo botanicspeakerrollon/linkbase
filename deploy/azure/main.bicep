@@ -142,7 +142,7 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
-resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
+resource appEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: '${baseName}-env'
   location: location
   properties: {
@@ -156,13 +156,14 @@ resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-var secretVaultUri = vault.properties.vaultUri
+var secretVaultUri = 'https://${vault.name}${az.environment().suffixes.keyvaultDns}/'
+var databaseSecrets = [for db in databases: {
+  name: db.secret
+  keyVaultUrl: '${secretVaultUri}secrets/${db.secret}'
+  identity: identity.id
+}]
 var appSecrets = concat(
-  [for db in databases: {
-    name: db.secret
-    keyVaultUrl: '${secretVaultUri}secrets/${db.secret}'
-    identity: identity.id
-  }],
+  databaseSecrets,
   extractionEnabled ? [
     {
       name: 'anthropic-api-key'
@@ -172,15 +173,16 @@ var appSecrets = concat(
   ] : []
 )
 
+var databaseEnv = [for db in databases: {
+  name: 'ConnectionStrings__${db.setting}'
+  secretRef: db.secret
+}]
 var appEnv = concat(
   [
     { name: 'ASPNETCORE_ENVIRONMENT', value: 'Demo' }
     { name: 'Extraction__Enabled', value: string(extractionEnabled) }
   ],
-  [for db in databases: {
-    name: 'ConnectionStrings__${db.setting}'
-    secretRef: db.secret
-  }],
+  databaseEnv,
   extractionEnabled ? [
     { name: 'Anthropic__ApiKey', secretRef: 'anthropic-api-key' }
   ] : []
@@ -200,7 +202,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
     userAssignedIdentities: { '${identity.id}': {} }
   }
   properties: {
-    managedEnvironmentId: environment.id
+    managedEnvironmentId: appEnvironment.id
     configuration: {
       // Blazor Server holds each browser's session in one process, so a single replica needs no sticky sessions.
       activeRevisionsMode: 'Single'

@@ -67,4 +67,4 @@ step creates an app registration in your tenant, so the script doesn't do it for
 - Each start of the app runs `model setup` first, in an init container: it creates missing databases and loads example data
   only into an empty model, so restarts don't reset what people changed.
 - To reset the demo, delete the databases (or the Postgres server and run the script again).
-- `main.bicep` and `deploy.ps1` haven't been run against a real subscription yet: expect to fix a detail or two the first time.
+- `main.bicep` and `deploy.ps1` compile cleanly with `az bicep build` but haven't been run against a real subscription yet: expect to fix a detail or two the first time.
