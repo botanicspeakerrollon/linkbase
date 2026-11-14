@@ -141,6 +141,11 @@ A viewer with hidden fields searches `graph_search_text(name, props - hidden)`, 
 index can't serve, so free text for them scans. Everyone else, and every model without field labels, uses the index as before. It
 hasn't been measured on the large sample.
 
+With row security on, the relationship counts in Explore's model view are counted live through the policies
+(`GraphRepository.ConnectionCountsAsync`) instead of read from `link_definition.links`, because the kept totals include links
+the viewer can't see. That is a grouped count over every link, joined to both ends, so on tens of millions of links it will be
+slow. Not measured on the large sample; if it hurts, cache it per viewer shape for a few minutes.
+
 ## What this does and doesn't show
 
 - **Fine at this size:** expanding, drawing and searching. Expanding and drawing follow indexes, so they barely changed with

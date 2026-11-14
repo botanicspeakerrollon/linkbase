@@ -9,10 +9,24 @@ public sealed class HiddenFields
 {
     public static HiddenFields None { get; } = new(new Dictionary<string, IReadOnlySet<string>>());
 
+    // Row security is on but this viewer has no hidden fields. Readers that must also filter by what the viewer can see
+    // (history) check Secured; None means security is off and they change nothing.
+    public static HiddenFields Open { get; } = new(new Dictionary<string, IReadOnlySet<string>>(), secured: true);
+
     private static readonly IReadOnlySet<string> NoKeys = new HashSet<string>();
     private readonly IReadOnlyDictionary<string, IReadOnlySet<string>> _byType;
 
-    public HiddenFields(IReadOnlyDictionary<string, IReadOnlySet<string>> byType) => _byType = byType;
+    public HiddenFields(IReadOnlyDictionary<string, IReadOnlySet<string>> byType, bool secured = true)
+    {
+        _byType = byType;
+        Secured = secured;
+    }
+
+    private HiddenFields(IReadOnlyDictionary<string, IReadOnlySet<string>> byType) : this(byType, secured: false)
+    {
+    }
+
+    public bool Secured { get; }
 
     public bool Any => _byType.Count > 0;
 
@@ -57,7 +71,7 @@ public sealed class FieldPolicy(RowSecurityState state, IViewerResolver resolver
             .ToListAsync(cancellationToken);
         if (labelled.Count == 0)
         {
-            return HiddenFields.None;
+            return HiddenFields.Open;
         }
 
         var viewer = await resolver.ResolveAsync(security, cancellationToken);
@@ -65,6 +79,6 @@ public sealed class FieldPolicy(RowSecurityState state, IViewerResolver resolver
             .Where(f => !VisibilityRule.CanSee(security, viewer, LabelCodec.ToLabel(f.LabelLevel, f.LabelAny, f.LabelAll)))
             .GroupBy(f => f.NodeTypeName)
             .ToDictionary(g => g.Key, g => (IReadOnlySet<string>)g.Select(f => f.Key).ToHashSet());
-        return hidden.Count == 0 ? HiddenFields.None : new HiddenFields(hidden);
+        return hidden.Count == 0 ? HiddenFields.Open : new HiddenFields(hidden);
     }
 }
