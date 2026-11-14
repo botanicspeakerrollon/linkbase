@@ -46,6 +46,31 @@ public static class RowSecurity
     // doesn't matter). The node policy is left unwrapped, so the planner can see the viewer. The test is written out in each policy: wrapped in a function of its own, Postgres can't inline
     // it, and it measured twelve times slower because the settings were read for every row. There are no GIN indexes on the
     // label arrays: with most rows unrestricted they aren't selective, and the planner scanned them whole (docs/performance.md).
+    // A property's label on one record is visible with its record. Changing or removing one needs the viewer to pass it too, or a
+    // viewer who is kept from a value could lift the restriction. The test is written out, for the same reason as the node policy.
+    // Used by the enable script and by the migration that adds the table to a database that already has security on.
+    public static readonly string PropertyLabelPolicies = $$"""
+        grant select, insert, update, delete on node_property_label to {{AppRole}};
+        drop policy if exists linkbase_npl_select on node_property_label;
+        drop policy if exists linkbase_npl_insert on node_property_label;
+        drop policy if exists linkbase_npl_update on node_property_label;
+        drop policy if exists linkbase_npl_delete on node_property_label;
+        create policy linkbase_npl_select on node_property_label for select to {{AppRole}}
+          using (exists (select 1 from node n where n.id = node_id));
+        create policy linkbase_npl_insert on node_property_label for insert to {{AppRole}}
+          with check (exists (select 1 from node n where n.id = node_id)
+                 and label_level <= linkbase_sec.viewer_level() and label_any && linkbase_sec.viewer_any() and label_all <@ linkbase_sec.viewer_all());
+        create policy linkbase_npl_update on node_property_label for update to {{AppRole}}
+          using (exists (select 1 from node n where n.id = node_id)
+                 and label_level <= linkbase_sec.viewer_level() and label_any && linkbase_sec.viewer_any() and label_all <@ linkbase_sec.viewer_all())
+          with check (exists (select 1 from node n where n.id = node_id)
+                 and label_level <= linkbase_sec.viewer_level() and label_any && linkbase_sec.viewer_any() and label_all <@ linkbase_sec.viewer_all());
+        create policy linkbase_npl_delete on node_property_label for delete to {{AppRole}}
+          using (exists (select 1 from node n where n.id = node_id)
+                 and label_level <= linkbase_sec.viewer_level() and label_any && linkbase_sec.viewer_any() and label_all <@ linkbase_sec.viewer_all());
+        alter table node_property_label enable row level security;
+        """;
+
     private static readonly string EnableScript = $$"""
         create schema if not exists linkbase_sec;
 
@@ -93,6 +118,8 @@ public static class RowSecurity
           using (exists (select 1 from node n where n.id = node_id))
           with check (exists (select 1 from node n where n.id = node_id));
 
+        {{PropertyLabelPolicies}}
+
         alter view graph_nodes set (security_invoker = true);
         alter view graph_edges set (security_invoker = true);
 
@@ -102,6 +129,11 @@ public static class RowSecurity
         """;
 
     private static readonly string DisableScript = """
+        alter table node_property_label disable row level security;
+        drop policy if exists linkbase_npl_select on node_property_label;
+        drop policy if exists linkbase_npl_insert on node_property_label;
+        drop policy if exists linkbase_npl_update on node_property_label;
+        drop policy if exists linkbase_npl_delete on node_property_label;
         alter table external_ref disable row level security;
         alter table node_link disable row level security;
         alter table node disable row level security;

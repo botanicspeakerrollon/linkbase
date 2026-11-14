@@ -69,6 +69,10 @@
 
     // The label of the one record being edited. Left out for several, which start from "Leave as it is".
     [Parameter] public LabelValue? Current { get; set; }
+
+    // Set to label one property of the one record instead of the record itself. The label only restricts: the value shows to
+    // someone who passes the record's label, the field's and this one.
+    [Parameter] public string? PropertyKey { get; set; }
     [Parameter] public HistorySettings History { get; set; } = HistorySettings.Default;
 
     public enum SetMode { Leave, Replace, Add, Remove }
@@ -86,7 +90,9 @@
     private readonly ReasonDraft _draft = new();
     private readonly Dictionary<string, SetState> _sets = [];
 
-    private string Summary => NodeIds.Count == 1
+    private string Summary => PropertyKey is not null
+        ? $"Set who can see {RecordRepository.Title(PropertyKey)} on this record, on top of who can see the record. Replace with nothing to remove the restriction."
+        : NodeIds.Count == 1
         ? "Set who can see this record."
         : $"Set who can see these {NodeIds.Count} records. Anything left as it is stays as it is.";
 
@@ -159,6 +165,14 @@
             Security.AllOf is { } all ? EditOf(ModelSecurity.AllOfKey, all) : null);
         try
         {
+            if (PropertyKey is not null)
+            {
+                var done = await Labels.EditPropertyAsync(NodeIds[0], PropertyKey, edit, _draft.ToReason());
+                Snackbar.Add(done ? "Property label saved." : "Nothing needed changing.", Severity.Success);
+                Instance.Close(DialogResult.Ok(done ? 1 : 0));
+                return;
+            }
+
             var changed = await Labels.EditNodesAsync(NodeIds, edit, _draft.ToReason());
             Snackbar.Add(changed == 0 ? "Nothing needed changing." : $"Labelled {changed} record{(changed == 1 ? "" : "s")}.", Severity.Success);
             Instance.Close(DialogResult.Ok(changed));

@@ -160,6 +160,8 @@
             case ChangeEntityKind.Label:
                 var labelled = change.RelType is null ? "" : (mine ? $"{change.RelType} → {change.OtherName}" : $"{change.OtherName} {change.RelType} →") + ", ";
                 return $"{labelled}{change.FieldKey}: {Show(change.OldValue)} → {Show(change.NewValue)}";
+            case ChangeEntityKind.PropertyLabel:
+                return $"Label on {RecordRepository.Title(change.FieldKey ?? "")}: {Show(change.OldValue)} → {Show(change.NewValue)}";
             case ChangeEntityKind.ExternalRef:
                 return $"Removed the {change.FieldKey} id {change.OldValue}.";
             default:

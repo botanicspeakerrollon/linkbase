@@ -12,6 +12,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
 
     public DbSet<AppUser> Users => Set<AppUser>();
     public DbSet<ExternalRef> ExternalRefs => Set<ExternalRef>();
+    public DbSet<NodePropertyLabel> NodePropertyLabels => Set<NodePropertyLabel>();
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<SavedView> SavedViews => Set<SavedView>();
     public DbSet<NodeType> NodeTypes => Set<NodeType>();
@@ -72,6 +73,14 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             externalRef.Property(r => r.NodeType).HasDefaultValue("");
 
             // No foreign key to node: a model reload truncates node, and that would have to truncate the refs too.
+        });
+
+        modelBuilder.Entity<NodePropertyLabel>(label =>
+        {
+            label.HasKey(l => new { l.NodeId, l.Key });
+            label.Property(l => l.LabelLevel).HasDefaultValue((short)0);
+            label.Property(l => l.LabelAny).HasDefaultValueSql("'{*}'");
+            label.Property(l => l.LabelAll).HasDefaultValueSql("'{}'");
         });
 
         modelBuilder.Entity<ImportBatch>(batch =>

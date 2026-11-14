@@ -158,7 +158,7 @@ public sealed partial class RecordRepository
             ?? throw new LinkbaseValidationException("This record no longer exists.");
         var definition = await TypeAsync(node.Type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {node.Type}.");
         RefuseDerived(definition);
-        definition = Visible(definition, await HiddenAsync(db, cancellationToken));
+        definition = Visible(definition, await (await HiddenAsync(db, cancellationToken)).ForRecordsAsync(db, [id], cancellationToken), id);
 
         var before = Values(node.Props);
         var oldProps = node.Props;

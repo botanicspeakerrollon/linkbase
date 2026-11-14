@@ -53,8 +53,7 @@ model, Anthropic or OpenAI-compatible, that reads text for Read text and Ask.
 Deliberately not required by this version, and not to be treated as a defect:
 
 - A production sign-in scheme (each deployment adds its own; the demo's passwordless picker is not one), roles, and who may
-  label or import (**SEC-1**, **SEC-8**; see [security-design.md](history/security-design.md)). Per-record property labels are not built
-  either (**SEC-3**).
+  label or import (**SEC-1**, **SEC-8**; see [security-design.md](history/security-design.md)).
 - Multiple customers behind one running instance (one instance, one owner, one or more models).
 - A phone-optimised layout for every page.
 - Editing link values, descriptions, groups or `max` through **Start from CSVs** or its editor (model-file only, until the
@@ -236,9 +235,9 @@ security on; a model that doesn't is unaffected (SEC-6).
 | --- | --- | --- | --- |
 | SEC-1 | M | The system shall learn who is using it through one seam (a configured user, the signed-in principal, or the demo picker), and a viewer with no identity shall see nothing of a model that uses levels. | Partial — the seam, `principal` and `demo` exist; no production sign-in scheme ships, each deployment adds its own |
 | SEC-2 | M | Row visibility shall be enforced by the database for every read path, including raw SQL graph queries and free-text search, not only EF LINQ, and shall fail closed when the viewer is unset. | Partial — the generic store (`node`, `node_link`, `external_ref`, the graph views), which holds climbing's records too; Insights reads them as the viewer. The import paths and trips still skip the field policy |
-| SEC-3 | S | Individual fields (e.g. notes, partner identity, precise location) shall be hideable per viewer, independent of record-level visibility, and shown as a mask rather than left out. | Partial — by the field definition's label; per-record overrides are not built |
+| SEC-3 | S | Individual fields (e.g. notes, partner identity, precise location) shall be hideable per viewer, independent of record-level visibility, and shown as a mask rather than left out. | Met — by the field definition's label and per-record overrides (the lock on the record page) |
 | SEC-4 | M | Until a production sign-in scheme is in place, the system shall not be exposed beyond a single trusted operator's own machine or network, except behind something that decides who may open it (DEM-4). | Met (documented constraint, not a software control) |
-| SEC-5 | M | Visibility shall follow a label of classification (at least), department (any of) and project (all of), on nodes, links and properties, and a link shall be visible only if both its ends are. | Partial — nodes, links and field definitions; not per-record property overrides |
+| SEC-5 | M | Visibility shall follow a label of classification (at least), department (any of) and project (all of), on nodes, links and properties, and a link shall be visible only if both its ends are. | Met — nodes, links, field definitions and per-record property overrides |
 | SEC-6 | M | A model with security off shall behave and perform as it does without the feature, and turning security off shall leave every record visible. | Met |
 | SEC-7 | S | Labels shall be assignable in bulk by selection, filter, CSV import and model default. | Partial — for records; links are labelled only by import or default |
 | SEC-8 | S | Only a person permitted to label shall be able to change labels, and import and saved views shall respect the viewer. | Planned — nobody is checked yet |

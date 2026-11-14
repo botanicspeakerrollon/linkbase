@@ -61,6 +61,10 @@ public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IRe
     // Property keys the viewer may not see on some type. Free text must not match them (docs/security-design.md, "Properties").
     // Empty unless a model labels fields and row security is on, which leaves the search as it was.
     public IReadOnlyList<string> HiddenKeys { get; init; } = [];
+
+    // Some record carries a label of its own on a property and the viewer is secured: every read of a node's values in SQL leaves
+    // out the keys that this viewer fails on that node (PropertyLabelSql), and the stored search column can't be used.
+    public bool HasOverrides { get; init; }
 }
 
 public sealed record GraphTypeInfo(string Label, string? Color, string? Icon);
@@ -152,7 +156,8 @@ public static partial class GraphPatternSql
                 }
 
                 // A value that isn't a plain number, from sampled data, is left out rather than failing the cast.
-                var value = $"CASE WHEN n{i}.props->>'{info.Key}' ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN (n{i}.props->>'{info.Key}')::numeric END";
+                var props = PropsOf(schema, $"n{i}");
+                var value = $"CASE WHEN {props}->>'{info.Key}' ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN ({props}->>'{info.Key}')::numeric END";
                 selects.Add(
                     $"""
                     SELECT '{label.Replace("'", "''")}' AS "Label", '{info.Key}' AS "Key", count(v)::bigint AS "Count", sum(v) AS "Sum", min(v) AS "Min", max(v) AS "Max", avg(v) AS "Average"
@@ -229,7 +234,7 @@ public static partial class GraphPatternSql
 
             // This checks the key, so it has to come before the key goes into the text below.
             var comparison = FilterSql(0, info.Label, filter, schema, add);
-            return $"(n0.label <> ALL({add(labels, NpgsqlDbType.Array | NpgsqlDbType.Text)}) OR n0.props->>'{filter.Key}' IS NULL OR {comparison})";
+            return $"(n0.label <> ALL({add(labels, NpgsqlDbType.Array | NpgsqlDbType.Text)}) OR {PropsOf(schema, "n0")}->>'{filter.Key}' IS NULL OR {comparison})";
         });
         return string.Join(" AND ", conditions.DefaultIfEmpty("TRUE"));
     }
@@ -243,8 +248,9 @@ public static partial class GraphPatternSql
 
         var type = ValueType(schema, label, filter.Key)
             ?? throw new LinkbaseValidationException($"Unknown property '{filter.Key}'.");
-        var column = filter.Key == "name" ? $"n{index}.name" : $"n{index}.props->>'{filter.Key}'";
-        return ValueFilterSql(column, $"n{index}.props", filter, type, add);
+        var props = PropsOf(schema, $"n{index}");
+        var column = filter.Key == "name" ? $"n{index}.name" : $"{props}->>'{filter.Key}'";
+        return ValueFilterSql(column, props, filter, type, add);
     }
 
     // A filter on a matched link's own values, such as role = Lead, found on relationship e{index}.
@@ -308,14 +314,23 @@ public static partial class GraphPatternSql
         // % is a near miss on the name, up to pg_trgm's similarity threshold. Unlike similarity(), it can use an index.
         // A viewer with hidden fields can't use search_text, which holds those values: they search what they can see instead, which
         // is slower, and the stored column and its index serve everyone else.
-        if (schema.HiddenKeys.Count > 0)
+        if (schema.HiddenKeys.Count > 0 || schema.HasOverrides)
         {
-            var hidden = add(schema.HiddenKeys.ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text);
-            return $"((graph_search_text({node}.name, {node}.props - {hidden}) ILIKE {like} AND ({node}.label <> ALL({borrowed}) OR graph_search_text('', {node}.props - {hidden}) ILIKE {like})) OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
+            var visible = PropsOf(schema, node);
+            if (schema.HiddenKeys.Count > 0)
+            {
+                visible += $" - {add(schema.HiddenKeys.ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text)}";
+            }
+
+            return $"((graph_search_text({node}.name, {visible}) ILIKE {like} AND ({node}.label <> ALL({borrowed}) OR graph_search_text('', {visible}) ILIKE {like})) OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
         }
 
         return $"(({node}.search_text ILIKE {like} AND ({node}.label <> ALL({borrowed}) OR graph_search_text('', {node}.props) ILIKE {like})) OR ({node}.label <> ALL({borrowed}) AND {node}.name % {term}))";
     }
+
+    // A node's properties as this viewer may read them: without any key a label on that record hides.
+    private static string PropsOf(GraphSchema schema, string node) =>
+        schema.HasOverrides ? $"({node}.props - {Linkbase.Core.Security.PropertyLabelSql.FailingKeys($"{node}.node_id")})" : $"{node}.props";
 
     private static string EscapeLike(string text) =>
         text.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");

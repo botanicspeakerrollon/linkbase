@@ -102,18 +102,21 @@ public sealed class CleanupRepository(IDbContextFactory<LinkbaseDbContext> conte
                 break;
             }
 
-            var rows = await db.Database.SqlQuery<RecordRow>(
-                $"""
+            // A value a record's own label hides isn't reported either, because saying it is missing would say it has no value.
+            var overridden = hidden.HasOverrides ? $"AND NOT ({Security.PropertyLabelSql.Fails("n.id", "{1}")})" : "";
+            var sql = $$"""
                 SELECT n.id AS "Id", n.type AS "Type", n.key AS "Key", n.name AS "Name"
                 FROM node n
-                WHERE n.user_id = {user} AND n.type = {field.NodeTypeName}
-                  AND (n.props -> {field.Key} IS NULL
-                       OR jsonb_typeof(n.props -> {field.Key}) = 'null'
-                       OR n.props -> {field.Key} = '[]'::jsonb
-                       OR n.props ->> {field.Key} = '')
+                WHERE n.user_id = {0} AND n.type = {2}
+                  AND (n.props -> {1} IS NULL
+                       OR jsonb_typeof(n.props -> {1}) = 'null'
+                       OR n.props -> {1} = '[]'::jsonb
+                       OR n.props ->> {1} = '')
+                  {{overridden}}
                 ORDER BY n.name, n.id
-                LIMIT {limit}
-                """).ToListAsync(cancellationToken);
+                LIMIT {3}
+                """;
+            var rows = await db.Database.SqlQueryRaw<RecordRow>(sql, user, field.Key, field.NodeTypeName, limit).ToListAsync(cancellationToken);
             issues.AddRange(rows.Select(r => new CleanupIssue(r.Id, r.Type, r.Key, r.Name, $"No {field.Key.Replace('_', ' ')}")));
         }
 

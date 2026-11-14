@@ -107,6 +107,103 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
         return changed;
     }
 
+    // The labels one record carries on its own properties, by property key. Only the ones this viewer may see (row security).
+    public async Task<IReadOnlyDictionary<string, LabelValue>> GetPropertyLabelsAsync(string nodeId, CancellationToken cancellationToken = default)
+    {
+        var security = await SettingsAsync(cancellationToken);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.NodePropertyLabels.AsNoTracking().Where(l => l.NodeId == nodeId)
+            .Select(l => new { l.Key, l.LabelLevel, l.LabelAny, l.LabelAll }).ToListAsync(cancellationToken);
+        return rows.ToDictionary(r => r.Key, r => Describe(security, r.LabelLevel, r.LabelAny, r.LabelAll));
+    }
+
+    // Sets, changes or clears the label on one property of one record. It can only restrict: the value shows only to a viewer
+    // who passes the field's label, the record's and this one. A label that comes out as no restriction removes the row. Returns
+    // whether anything changed.
+    public async Task<bool> EditPropertyAsync(string nodeId, string key, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await EditPropertyCoreAsync(nodeId, key, edit, reason, cancellationToken);
+        }
+        catch (Exception ex) when (IsRowSecurityRefusal(ex))
+        {
+            throw new LinkbaseValidationException(RefusedMessage);
+        }
+    }
+
+    private async Task<bool> EditPropertyCoreAsync(string nodeId, string key, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken)
+    {
+        var (security, history, checkedReason) = await PrepareAsync(edit, reason, cancellationToken);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(key) || !await db.Nodes.AnyAsync(n => n.Id == nodeId, cancellationToken))
+        {
+            throw new LinkbaseValidationException("There's no such record to label.");
+        }
+
+        var row = await db.NodePropertyLabels.SingleOrDefaultAsync(l => l.NodeId == nodeId && l.Key == key, cancellationToken);
+        var before = row is null ? Label(0, [LabelCodec.Everyone], []) : Label(row.LabelLevel, row.LabelAny, row.LabelAll);
+        var after = Apply(security, before, edit);
+        if (Same(before, after))
+        {
+            return false;
+        }
+
+        var unrestricted = after.Level == 0 && after.AnyOf.Count == 0 && after.AllOf.Count == 0;
+        if (unrestricted)
+        {
+            db.NodePropertyLabels.Remove(row!);
+        }
+        else if (row is null)
+        {
+            db.NodePropertyLabels.Add(new NodePropertyLabel
+            {
+                NodeId = nodeId, Key = key, LabelLevel = (short)after.Level,
+                LabelAny = LabelCodec.AnyColumn(after), LabelAll = LabelCodec.AllColumn(after),
+            });
+        }
+        else
+        {
+            row.LabelLevel = (short)after.Level;
+            row.LabelAny = LabelCodec.AnyColumn(after);
+            row.LabelAll = LabelCodec.AllColumn(after);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        if (history.Record)
+        {
+            var change = new PendingChange(ChangeEntityKind.PropertyLabel, nodeId, ChangeOp.Update, key, null, null,
+                Summary(security, before), Summary(security, after));
+            await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, checkedReason, [change], cancellationToken: cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return true;
+    }
+
+    // A label as one line of history text, in the model's own names. Nothing for no restriction.
+    private static string? Summary(ModelSecurity security, Label label)
+    {
+        var parts = new List<string>();
+        if (security.HasLevel && label.Level > 0)
+        {
+            parts.Add($"{security.Level!.Name} {LevelName(security, label.Level)}");
+        }
+
+        if (security.HasAnyOf && label.AnyOf.Count > 0)
+        {
+            parts.Add($"{security.AnyOf!.Name} {Text(label.AnyOf)}");
+        }
+
+        if (security.HasAllOf && label.AllOf.Count > 0)
+        {
+            parts.Add($"{security.AllOf!.Name} {Text(label.AllOf)}");
+        }
+
+        return parts.Count == 0 ? null : string.Join("; ", parts);
+    }
+
     // The same for links, by their ids.
     public async Task<int> EditLinksAsync(IReadOnlyCollection<long> linkIds, LabelEdit edit, ChangeReason? reason, CancellationToken cancellationToken = default)
     {

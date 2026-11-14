@@ -120,7 +120,14 @@ Property values live in `node.props` JSON, which a row policy can't look inside,
   projection and every graph query that returns values goes through it. A masked value is returned as a `Masked` marker, not
   an empty string, so the UI can draw `••••`, make the field read-only, and know the value exists.
 - **Per-record overrides** live in a sparse table, `node_property_label (node_id, key, label…)`, with its own policy. A
-  model that never overrides has an empty table.
+  model that never overrides has an empty table. **Built.** An override can only restrict (a record can hide a property its
+  field would show, never reveal one). Each reader loads the override rows for the records it returns (one primary-key
+  lookup, and none at all while the table is empty) and masks what the viewer fails; SQL that filters, sorts or searches on
+  values uses `props` without the keys that viewer fails on that record (`PropertyLabelSql`), and while any override exists
+  the stored `search_text` column isn't used for a secured viewer. Set from the lock beside each field on the record page
+  (reason and audit entry like any label change, as a `property_label` change). Deleting a record removes its overrides; a
+  viewer who can't see an override can't delete it either, so a record deleted by them leaves an orphan row, which can only
+  restrict.
 - **Filtering and sorting** on a masked property must not leak. Rows whose value is masked never match a filter on it, and
   never contribute to a sort order.
 - **Search.** `node.search_text` holds every value today, which would leak masked ones. Properties that carry a label
@@ -408,8 +415,8 @@ to the deployment. Nothing here is tied to one directory or protocol.
    and Insights reads them through the same policies, so climbing has no tables or views of its own left to cover. The gaps
    listed in step 4 (import paths and trips) still apply to climbing.
 4. `FieldPolicy`, field labels, masking in DTOs, and search. **Built** for a field's own label (set in the model file). A
-   per-record override (`node_property_label`) is not built: `VisibilityRule.CanSeeProperty` already accepts one, but nothing
-   stores it, and it would cost a join on every read. Not covered yet: `Hierarchy`, `Derived` and `Merge` read `props`
+   per-record override (`node_property_label`) is **built** too, on every reader (records, graph, history, timeline, cleanup);
+   see the measurements in `docs/performance.md`. Not covered yet: `Hierarchy`, `Derived` and `Merge` read `props`
    directly, and the import paths (`CsvImportService`, undo, trips) build their own `RecordRepository` without the policy.
 5. History, `external_ref`, saved views and the other side tables. **Built** as the table under "Other places that repeat
    data" says: history is filtered and masked, link counts are live for restricted viewers, `external_ref` has a policy.

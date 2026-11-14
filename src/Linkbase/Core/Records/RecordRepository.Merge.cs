@@ -143,6 +143,7 @@ public sealed partial class RecordRepository
             changes.Add(new RecordChange(RecordChangeKind.Updated, keep.Type, keepId, before, after));
         }
 
+        await db.NodePropertyLabels.Where(l => l.NodeId == dropId).ExecuteDeleteAsync(cancellationToken);
         await db.Nodes.Where(n => n.Id == dropId && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
         var changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
         await transaction.CommitAsync(cancellationToken);

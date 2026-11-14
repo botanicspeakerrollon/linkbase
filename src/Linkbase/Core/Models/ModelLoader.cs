@@ -79,7 +79,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
     {
         // The refs go with the nodes. Refs to climbing rows stay.
         await session.RunAsync("DELETE FROM external_ref WHERE node_id IS NOT NULL");
-        await session.RunAsync("TRUNCATE node_link, node, link_attribute, link_definition, field_definition, hierarchy_level, node_type");
+        await session.RunAsync("TRUNCATE node_link, node_property_label, node, link_attribute, link_definition, field_definition, hierarchy_level, node_type");
         foreach (var index in indexes)
         {
             await session.RunAsync($"DROP INDEX {IndexName(index)}");

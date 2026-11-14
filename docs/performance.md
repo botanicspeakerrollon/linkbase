@@ -202,3 +202,11 @@ Two things are not fine for a restricted viewer:
 Not covered: the app's own queries with a viewer (these are the views' shapes by hand, not `GraphRepository`), several users
 at once, writes, and hidden fields (those are masked in code, so they cost nothing in the database). The labels on links are
 few, so a model that labels most links will cost more on expand.
+
+## Per-record property labels
+
+A record can carry a label on one property (`node_property_label`). The extra read is one primary-key lookup for the records a
+page returns: about 1 ms for 100 rows, and 9 to 26 ms for a 5,000-row read. A model with no overrides skips it entirely, and
+filtering and search stayed within noise. Only while overrides exist, SQL that reads values uses a derived table with the hidden
+keys removed (`props - failing keys`) and the stored search column is bypassed for a secured viewer, so those queries lose their
+text index until the overrides are removed.
