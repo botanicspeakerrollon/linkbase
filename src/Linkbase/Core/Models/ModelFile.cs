@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Linkbase.Core.Security;
 using Linkbase.Data;
 using Linkbase.Domains;
 
@@ -20,6 +21,10 @@ public sealed partial class ModelFile
     // Whether the model keeps an audit trail, and whether every change needs a reason. Both are on if left out. See
     // docs/history/audit-history-plan.md.
     public ModelHistory? History { get; init; }
+
+    // Which of the three kinds of visibility part the model uses, what it calls them, and where people's grants come from.
+    // Security is off if left out. See docs/security-design.md.
+    public ModelSecurity? Security { get; init; }
 
     [JsonIgnore] public bool RecordHistory => History?.Record ?? true;
     [JsonIgnore] public bool RequireReason => RecordHistory && (History?.RequireReason ?? true);
@@ -81,6 +86,8 @@ public sealed partial class ModelFile
         {
             problems.Add("History can't both be off and require a reason. Leave requireReason out, or set it to false.");
         }
+
+        Security?.Validate(problems);
 
         if (SourceKinds.Any(k => k.Length is 0 or > 60))
         {
