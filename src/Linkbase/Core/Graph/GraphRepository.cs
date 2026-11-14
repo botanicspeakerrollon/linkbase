@@ -102,6 +102,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .Select(n => new { n.NodeId, n.Label, n.Name, n.Props })
             .ToListAsync(cancellationToken);
 
+        hidden = await hidden.ForRecordsAsync(db, rows.Select(n => n.NodeId), cancellationToken);
         return rows.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props, hidden)).ToList();
     }
 
@@ -131,8 +132,19 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         var relTypes = Add(filter.RelTypes is { Count: > 0 } ? filter.RelTypes.ToArray() : DBNull.Value, NpgsqlDbType.Array | NpgsqlDbType.Text);
 
         // Sorting by a date the viewer can't see would show its order, so for them it sorts by nothing.
-        var dateOrder = hidden.AnyType.Contains("date")
-            ? $"CASE WHEN label || chr(31) || 'date' = ANY({Add(Pairs(hidden), NpgsqlDbType.Array | NpgsqlDbType.Text)}) THEN NULL ELSE props->>'date' END"
+        var dateHidden = new List<string>();
+        if (hidden.AnyType.Contains("date"))
+        {
+            dateHidden.Add($"label || chr(31) || 'date' = ANY({Add(Pairs(hidden), NpgsqlDbType.Array | NpgsqlDbType.Text)})");
+        }
+
+        if (hidden.HasOverrides)
+        {
+            dateHidden.Add(Security.PropertyLabelSql.Fails("node_id", "'date'"));
+        }
+
+        var dateOrder = dateHidden.Count > 0
+            ? $"CASE WHEN {string.Join(" OR ", dateHidden)} THEN NULL ELSE props->>'date' END"
             : "props->>'date'";
 
         // Materialized so the sort happens after the neighbours are found. Otherwise, with an index on label, the
@@ -162,8 +174,9 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         var rows = await db.Database.SqlQueryRaw<NeighbourRow>(sql, parameters.Cast<object>().ToArray()).ToListAsync(cancellationToken);
 
         var total = rows.Count > 0 ? (int)rows[0].Total : 0;
+        var scoped = await hidden.ForRecordsAsync(db, rows.Select(r => r.NodeId), cancellationToken);
         return new GraphNeighbours(
-            rows.Select(r => ToNode(r.NodeId, r.Label, r.Name, r.Props, hidden)).ToList(),
+            rows.Select(r => ToNode(r.NodeId, r.Label, r.Name, r.Props, scoped)).ToList(),
             total - rows.Count);
     }
 
@@ -238,6 +251,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             Types = defined.Select(t => new GraphTypeInfo(t.Name, t.Color, t.Icon)).ToList(),
             LinkProperties = linkInfos,
             HiddenKeys = hidden.AnyType.ToList(),
+            HasOverrides = hidden.HasOverrides,
         };
     }
 
@@ -302,31 +316,35 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         var term = text.Trim();
         var pattern = $"%{EscapeLike(term)}%";
         var labelParameter = new NpgsqlParameter("label", NpgsqlDbType.Text) { Value = (object?)label ?? DBNull.Value };
-        var pairs = Pairs(await HiddenAsync(db, cancellationToken));
+        var hidden = await HiddenAsync(db, cancellationToken);
+        var pairs = Pairs(hidden);
 
-        var rows = await db.Database.SqlQuery<MatchRow>(
-            $"""
+        // A key a record's own label hides is left out too. Raw SQL, since the pieces aren't parameters.
+        var overridden = hidden.HasOverrides ? $"AND NOT (kv.key = ANY({Security.PropertyLabelSql.FailingKeys("n.node_id")}))" : "";
+        var sql1 = $$"""
             SELECT DISTINCT m."Label", m."Key", m."Value", m."Score"
             FROM (
                 SELECT n.label AS "Label", 'name' AS "Key", n.name AS "Value",
-                       (CASE WHEN n.name ILIKE {pattern} THEN 1 ELSE 0 END + similarity(n.name, {term}))::float8 AS "Score"
+                       (CASE WHEN n.name ILIKE {0} THEN 1 ELSE 0 END + similarity(n.name, {1}))::float8 AS "Score"
                 FROM graph_nodes n
-                WHERE n.label <> ALL({RegisteredDomains.LabelsNamedAfterParent})
-                  AND ({labelParameter} IS NULL OR n.label = {labelParameter})
-                  AND (n.name ILIKE {pattern} OR n.name % {term})
+                WHERE n.label <> ALL({2})
+                  AND ({3} IS NULL OR n.label = {3})
+                  AND (n.name ILIKE {0} OR n.name % {1})
                 UNION ALL
                 SELECT n.label, kv.key, item.value, 1::float8
                 FROM graph_nodes n, jsonb_each(n.props) kv,
                      jsonb_array_elements_text(CASE jsonb_typeof(kv.value) WHEN 'array' THEN kv.value WHEN 'string' THEN jsonb_build_array(kv.value) ELSE '[]' END) item(value)
-                WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
-                  AND n.search_text ILIKE {pattern}
-                  AND kv.key <> ALL({RegisteredDomains.LongTextProperties})
-                  AND n.label || chr(31) || kv.key <> ALL({pairs})
-                  AND item.value ILIKE {pattern}
+                WHERE ({3} IS NULL OR n.label = {3})
+                  AND n.search_text ILIKE {0}
+                  AND kv.key <> ALL({4})
+                  AND n.label || chr(31) || kv.key <> ALL({5})
+                  {{overridden}}
+                  AND item.value ILIKE {0}
             ) m
             ORDER BY m."Score" DESC, m."Label", m."Value"
-            LIMIT {MatchLimit}
-            """).ToListAsync(cancellationToken);
+            LIMIT {{MatchLimit}}
+            """;
+        var rows = await db.Database.SqlQueryRaw<MatchRow>(sql1, pattern, term, RegisteredDomains.LabelsNamedAfterParent, labelParameter, RegisteredDomains.LongTextProperties, pairs).ToListAsync(cancellationToken);
 
         return rows.Select(r => new PropertyMatch(r.Label, r.Key, r.Value)).ToList();
     }
@@ -339,36 +357,40 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var pattern = string.IsNullOrWhiteSpace(text) ? "%" : $"%{EscapeLike(text.Trim())}%";
         var labelParameter = new NpgsqlParameter("label", NpgsqlDbType.Text) { Value = (object?)label ?? DBNull.Value };
-        var pairs = Pairs(await HiddenAsync(db, cancellationToken));
+        var hidden = await HiddenAsync(db, cancellationToken);
+        var pairs = Pairs(hidden);
 
+        // A value a record's own label hides is left out too. Raw SQL, since the piece isn't a parameter.
+        var overridden = hidden.HasOverrides ? $"AND NOT ({Security.PropertyLabelSql.Fails("n.node_id", "{0}")})" : "";
         if (list)
         {
-            return await db.Database.SqlQuery<string>(
-                $"""
+            var sql2 = $$"""
                 SELECT DISTINCT item.value AS "Value"
                 FROM graph_nodes n,
-                     jsonb_array_elements_text(CASE jsonb_typeof(n.props->{key}) WHEN 'array' THEN n.props->{key} ELSE jsonb_build_array(n.props->{key}) END) item(value)
-                WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
-                  AND n.label || chr(31) || {key} <> ALL({pairs})
-                  AND item.value ILIKE {pattern}
+                     jsonb_array_elements_text(CASE jsonb_typeof(n.props->{0}) WHEN 'array' THEN n.props->{0} ELSE jsonb_build_array(n.props->{0}) END) item(value)
+                WHERE ({1} IS NULL OR n.label = {1})
+                  AND n.label || chr(31) || {0} <> ALL({2})
+                  {{overridden}}
+                  AND item.value ILIKE {3}
                 ORDER BY 1
-                LIMIT {MatchLimit}
-                """).ToListAsync(cancellationToken);
+                LIMIT {{MatchLimit}}
+                """;
+            return await db.Database.SqlQueryRaw<string>(sql2, key, labelParameter, pairs, pattern).ToListAsync(cancellationToken);
         }
 
-        return await db.Database.SqlQuery<string>(
-            $"""
+        var sql3 = $$"""
             SELECT DISTINCT v."Value"
             FROM (
-                SELECT CASE WHEN {key} = 'name' THEN n.name ELSE n.props->>{key} END AS "Value"
+                SELECT CASE WHEN {0} = 'name' THEN n.name ELSE n.props->>{0} END AS "Value"
                 FROM graph_nodes n
-                WHERE ({labelParameter} IS NULL OR n.label = {labelParameter})
-                  AND ({key} = 'name' OR n.label || chr(31) || {key} <> ALL({pairs}))
+                WHERE ({1} IS NULL OR n.label = {1})
+                  AND ({0} = 'name' OR (n.label || chr(31) || {0} <> ALL({2}) {{overridden}}))
             ) v
-            WHERE v."Value" ILIKE {pattern}
+            WHERE v."Value" ILIKE {3}
             ORDER BY v."Value"
-            LIMIT {MatchLimit}
-            """).ToListAsync(cancellationToken);
+            LIMIT {{MatchLimit}}
+            """;
+        return await db.Database.SqlQueryRaw<string>(sql3, key, labelParameter, pairs, pattern).ToListAsync(cancellationToken);
     }
 
     // Runs a pattern, returning each node in the matches. Limit and offset count whole matches.
@@ -431,6 +453,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             .Select(e => new { e.SourceId, e.TargetId, e.RelType, e.Props })
             .ToListAsync(cancellationToken);
 
+        hidden = await hidden.ForRecordsAsync(db, nodes.Select(n => n.NodeId), cancellationToken);
         return new Subgraph(
             nodes.Select(n => ToNode(n.NodeId, n.Label, n.Name, n.Props, hidden)).ToList(),
             edges.Select(e => new GraphEdge(e.SourceId, e.TargetId, e.RelType) { Values = EdgeValues(e.Props) }).ToList());
@@ -442,7 +465,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
 
     private static GraphNode ToNode(string id, string label, string name, string props, Security.HiddenFields hidden)
     {
-        var skip = hidden.For(label);
+        var skip = hidden.For(label, id);
         using var json = JsonDocument.Parse(props);
         var properties = new List<GraphProperty>();
         foreach (var property in json.RootElement.EnumerateObject())
