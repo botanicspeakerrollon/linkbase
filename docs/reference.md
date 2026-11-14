@@ -146,6 +146,12 @@ with their values (`WORKS_ON · Lead · 3`). Models can give types a colour, an 
 *Find a path* (`w`). The shortest chain of links, in either direction, between the selected record and another, up to 6 links.
 It stops looking through a hub that is too busy and says so.
 
+*Trace* (`r`). Follows the selected record's links level by level as a tree, downstream (the way links point), upstream or both
+ways, optionally only for chosen relationships. It opens 1 to 4 levels (2 by default) and 50 links per record, with *Show more*
+for the rest; counts beside a record say how many links lie beyond it (stopping at 100+). A record already above it in the tree
+is left out, so loops end. `↑` `↓` move, `→` opens, `←` closes, `Enter` traces from the highlighted record and `Backspace` goes
+back. *Show on graph* draws what the tree is showing, up to 500 records.
+
 *What changed nearby* (`d`). Edits since a date to the record, the records it links to and their links, up to 500.
 
 *Open and edit* (`o`). Opens the selected record's own page; `Ctrl+O` opens it in a new tab, so the graph stays as it is.
@@ -476,7 +482,7 @@ The `?` dialog is the source of truth; this is its content.
 | --- | --- |
 | Anywhere | `Ctrl K` Quick-find · `/` search or first field · `g h` Home · `g e` Explore · `g 1…9` rail item · `?` help |
 | Search box, empty | `← →` move between steps · `Backspace` take off the last condition · `Enter` search · `Esc` close suggestions, then leave |
-| Explore | `t` table · `s` totals · `v` views · `a` Ask · `f` fit · `c` clear · `n` `p` next or previous node · `e` expand · `w` path · `d` changes nearby · `Delete` remove node · `Esc` close menu or selection |
+| Explore | `t` table · `s` totals · `v` views · `a` Ask · `f` fit · `c` clear · `n` `p` next or previous node · `e` expand · `w` path · `r` trace · `d` changes nearby · `Delete` remove node · `Esc` close menu or selection |
 | Cleanup | `d` `u` `m` pick a finder · `r` look again |
 
 # Appendix B. Status at a glance

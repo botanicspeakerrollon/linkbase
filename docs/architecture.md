@@ -17,7 +17,7 @@ src/Linkbase/
     Records/            Generated list, record and edit pages, RecordRepository (reads, writes, merge, hierarchy), RecordHooks, ExternalRefRepository
     History/            ChangeRecorder (writes the audit trail), HistoryRepository (reads it), ChangeReverter
     Views/              Saved views and the state a page keeps in its address (ViewState)
-    Paths/, Timeline/   Find a path, and the timeline page
+    Paths/, Timeline/   Find a path, Trace (TraceRepository), and the timeline page
     Cleanup/, Home/     The cleanup page, and what the home page reads
     Import/             The Import page: one tab for each way in
     CsvImport/          CSV upload and column mapping, and what New model starts from
