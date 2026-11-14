@@ -217,7 +217,7 @@ try {
         }
         foreach ($database in $ResetModel) {
             Write-Host "  dropping database $database (it is reloaded when the app starts)..."
-            Invoke-Az postgres flexible-server db delete --resource-group $ResourceGroup --server-name $server --database-name $database --yes --output none
+            Invoke-Az postgres flexible-server db delete --resource-group $ResourceGroup --server-name $server --name $database --yes --output none
         }
     }
 
