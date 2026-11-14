@@ -64,6 +64,26 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     }
 
     [Fact]
+    public async Task Loads_the_large_archimate_model_with_its_strategy_and_motivation_layers()
+    {
+        var factory = await NewDatabaseAsync();
+
+        var summary = await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/archimate/model.json"), TextWriter.Null);
+
+        // The demo is meant to be big, so a change to generate.py that shrinks it below half a million links should fail here.
+        Assert.Equal(24, summary.Types);
+        Assert.True(summary.Links >= 500_000, $"Only {summary.Links} links.");
+        await using var db = factory.CreateDbContext();
+        var types = (await db.Nodes.AsNoTracking().Select(n => n.Type).Distinct().ToListAsync())
+            .Select(t => t.ToLowerInvariant()).ToList();
+        foreach (var type in new[] { "capability", "resource", "valuestream", "courseofaction", "stakeholder", "driver",
+                                     "assessment", "goal", "outcome", "principle", "requirement", "constraint", "meaning", "value" })
+        {
+            Assert.Contains(type, types);
+        }
+    }
+
+    [Fact]
     public async Task Loads_the_example_model_and_explore_sees_it()
     {
         var factory = await NewDatabaseAsync();
@@ -281,7 +301,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         var output = new StringWriter();
         var commands = new ModelCommands(scope.ServiceProvider, output);
         Assert.Equal(0, await commands.RunAsync(["model", "migrate"]));
-        Assert.Equal(0, await commands.RunAsync(["model", "load", RepoPaths.Resolve("models/archimate/model.json"), "only"]));
+        Assert.Equal(0, await commands.RunAsync(["model", "load", RepoPaths.Resolve("models/climbing-demo/model.json"), "only"]));
 
         Assert.Equal(1, await commands.RunAsync(["model", "security", "on"]));
         Assert.Contains("has no security section", output.ToString());

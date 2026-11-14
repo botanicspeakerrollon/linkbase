@@ -1,0 +1,1001 @@
+id,name,stakeholder_type,influence
+gbst-stk001,Carriers (GB Stores),external,high
+gbst-stk002,Community Groups (GB Stores),external,medium
+gbst-stk003,Shareholders (GB Stores),external,medium
+gbst-stk004,Unions (GB Stores),external,medium
+gbst-stk005,Investors (GB Stores),external,high
+gbst-stk006,Customers (GB Stores),external,high
+gbst-stk007,Franchise Partners (GB Stores),external,high
+gbst-stk008,Suppliers (GB Stores),external,high
+gbst-stk009,Regulators (GB Stores),external,low
+gbst-stk010,Board (GB Stores),internal,high
+gbon-stk001,Customers (GB Online),external,medium
+gbon-stk002,Regulators (GB Online),external,high
+gbon-stk003,Investors (GB Online),external,low
+gbon-stk004,Suppliers (GB Online),external,medium
+gbon-stk005,Unions (GB Online),external,low
+gbon-stk006,Employees (GB Online),internal,high
+gbon-stk007,Carriers (GB Online),external,high
+gbon-stk008,Local Authority (GB Online),external,high
+gbon-stk009,Community Groups (GB Online),external,low
+gbon-stk010,Shareholders (GB Online),external,medium
+gbwh-stk001,Investors (GB Wholesale),external,medium
+gbwh-stk002,Community Groups (GB Wholesale),external,medium
+gbwh-stk003,Shareholders (GB Wholesale),external,low
+gbwh-stk004,Local Authority (GB Wholesale),external,medium
+gbwh-stk005,Franchise Partners (GB Wholesale),external,high
+gbwh-stk006,Customers (GB Wholesale),external,medium
+gbwh-stk007,Board (GB Wholesale),internal,low
+gbwh-stk008,Employees (GB Wholesale),internal,low
+gbwh-stk009,Regulators (GB Wholesale),external,medium
+gbwh-stk010,Suppliers (GB Wholesale),external,high
+gblg-stk001,Investors (GB Logistics),external,high
+gblg-stk002,Suppliers (GB Logistics),external,medium
+gblg-stk003,Carriers (GB Logistics),external,low
+gblg-stk004,Board (GB Logistics),internal,low
+gblg-stk005,Local Authority (GB Logistics),external,medium
+gblg-stk006,Employees (GB Logistics),internal,low
+gblg-stk007,Shareholders (GB Logistics),external,high
+gblg-stk008,Regulators (GB Logistics),external,high
+gblg-stk009,Unions (GB Logistics),external,medium
+gblg-stk010,Customers (GB Logistics),external,high
+iest-stk001,Investors (IE Stores),external,low
+iest-stk002,Local Authority (IE Stores),external,high
+iest-stk003,Community Groups (IE Stores),external,high
+iest-stk004,Suppliers (IE Stores),external,medium
+iest-stk005,Regulators (IE Stores),external,medium
+iest-stk006,Employees (IE Stores),internal,low
+iest-stk007,Unions (IE Stores),external,high
+iest-stk008,Shareholders (IE Stores),external,medium
+iest-stk009,Franchise Partners (IE Stores),external,low
+iest-stk010,Customers (IE Stores),external,medium
+ieon-stk001,Customers (IE Online),external,medium
+ieon-stk002,Regulators (IE Online),external,medium
+ieon-stk003,Local Authority (IE Online),external,medium
+ieon-stk004,Employees (IE Online),internal,high
+ieon-stk005,Carriers (IE Online),external,high
+ieon-stk006,Shareholders (IE Online),external,high
+ieon-stk007,Investors (IE Online),external,low
+ieon-stk008,Board (IE Online),internal,medium
+ieon-stk009,Franchise Partners (IE Online),external,low
+ieon-stk010,Unions (IE Online),external,low
+iewh-stk001,Investors (IE Wholesale),external,medium
+iewh-stk002,Community Groups (IE Wholesale),external,low
+iewh-stk003,Employees (IE Wholesale),internal,low
+iewh-stk004,Board (IE Wholesale),internal,low
+iewh-stk005,Franchise Partners (IE Wholesale),external,medium
+iewh-stk006,Regulators (IE Wholesale),external,low
+iewh-stk007,Shareholders (IE Wholesale),external,high
+iewh-stk008,Local Authority (IE Wholesale),external,medium
+iewh-stk009,Suppliers (IE Wholesale),external,high
+iewh-stk010,Carriers (IE Wholesale),external,low
+ielg-stk001,Suppliers (IE Logistics),external,low
+ielg-stk002,Regulators (IE Logistics),external,low
+ielg-stk003,Franchise Partners (IE Logistics),external,low
+ielg-stk004,Shareholders (IE Logistics),external,high
+ielg-stk005,Board (IE Logistics),internal,high
+ielg-stk006,Community Groups (IE Logistics),external,low
+ielg-stk007,Local Authority (IE Logistics),external,high
+ielg-stk008,Carriers (IE Logistics),external,high
+ielg-stk009,Investors (IE Logistics),external,low
+ielg-stk010,Unions (IE Logistics),external,high
+frst-stk001,Investors (FR Stores),external,low
+frst-stk002,Employees (FR Stores),internal,low
+frst-stk003,Suppliers (FR Stores),external,medium
+frst-stk004,Carriers (FR Stores),external,medium
+frst-stk005,Community Groups (FR Stores),external,low
+frst-stk006,Unions (FR Stores),external,medium
+frst-stk007,Regulators (FR Stores),external,low
+frst-stk008,Franchise Partners (FR Stores),external,low
+frst-stk009,Customers (FR Stores),external,medium
+frst-stk010,Board (FR Stores),internal,low
+fron-stk001,Regulators (FR Online),external,high
+fron-stk002,Board (FR Online),internal,low
+fron-stk003,Suppliers (FR Online),external,high
+fron-stk004,Unions (FR Online),external,low
+fron-stk005,Local Authority (FR Online),external,high
+fron-stk006,Customers (FR Online),external,high
+fron-stk007,Employees (FR Online),internal,high
+fron-stk008,Franchise Partners (FR Online),external,medium
+fron-stk009,Carriers (FR Online),external,low
+fron-stk010,Investors (FR Online),external,medium
+frwh-stk001,Local Authority (FR Wholesale),external,medium
+frwh-stk002,Franchise Partners (FR Wholesale),external,low
+frwh-stk003,Regulators (FR Wholesale),external,high
+frwh-stk004,Carriers (FR Wholesale),external,low
+frwh-stk005,Employees (FR Wholesale),internal,high
+frwh-stk006,Customers (FR Wholesale),external,low
+frwh-stk007,Shareholders (FR Wholesale),external,low
+frwh-stk008,Suppliers (FR Wholesale),external,low
+frwh-stk009,Community Groups (FR Wholesale),external,medium
+frwh-stk010,Investors (FR Wholesale),external,high
+frlg-stk001,Investors (FR Logistics),external,low
+frlg-stk002,Suppliers (FR Logistics),external,high
+frlg-stk003,Unions (FR Logistics),external,high
+frlg-stk004,Local Authority (FR Logistics),external,medium
+frlg-stk005,Franchise Partners (FR Logistics),external,high
+frlg-stk006,Community Groups (FR Logistics),external,high
+frlg-stk007,Shareholders (FR Logistics),external,high
+frlg-stk008,Employees (FR Logistics),internal,medium
+frlg-stk009,Board (FR Logistics),internal,high
+frlg-stk010,Carriers (FR Logistics),external,low
+dest-stk001,Suppliers (DE Stores),external,medium
+dest-stk002,Customers (DE Stores),external,low
+dest-stk003,Shareholders (DE Stores),external,high
+dest-stk004,Investors (DE Stores),external,low
+dest-stk005,Regulators (DE Stores),external,low
+dest-stk006,Carriers (DE Stores),external,low
+dest-stk007,Board (DE Stores),internal,high
+dest-stk008,Franchise Partners (DE Stores),external,low
+dest-stk009,Local Authority (DE Stores),external,high
+dest-stk010,Community Groups (DE Stores),external,medium
+deon-stk001,Unions (DE Online),external,high
+deon-stk002,Carriers (DE Online),external,high
+deon-stk003,Franchise Partners (DE Online),external,medium
+deon-stk004,Local Authority (DE Online),external,medium
+deon-stk005,Community Groups (DE Online),external,medium
+deon-stk006,Shareholders (DE Online),external,high
+deon-stk007,Board (DE Online),internal,low
+deon-stk008,Customers (DE Online),external,high
+deon-stk009,Suppliers (DE Online),external,medium
+deon-stk010,Investors (DE Online),external,low
+dewh-stk001,Investors (DE Wholesale),external,medium
+dewh-stk002,Unions (DE Wholesale),external,high
+dewh-stk003,Employees (DE Wholesale),internal,medium
+dewh-stk004,Franchise Partners (DE Wholesale),external,medium
+dewh-stk005,Community Groups (DE Wholesale),external,high
+dewh-stk006,Customers (DE Wholesale),external,high
+dewh-stk007,Board (DE Wholesale),internal,high
+dewh-stk008,Suppliers (DE Wholesale),external,high
+dewh-stk009,Carriers (DE Wholesale),external,medium
+dewh-stk010,Regulators (DE Wholesale),external,medium
+delg-stk001,Investors (DE Logistics),external,high
+delg-stk002,Unions (DE Logistics),external,medium
+delg-stk003,Community Groups (DE Logistics),external,high
+delg-stk004,Shareholders (DE Logistics),external,high
+delg-stk005,Regulators (DE Logistics),external,high
+delg-stk006,Board (DE Logistics),internal,low
+delg-stk007,Suppliers (DE Logistics),external,high
+delg-stk008,Local Authority (DE Logistics),external,high
+delg-stk009,Employees (DE Logistics),internal,high
+delg-stk010,Franchise Partners (DE Logistics),external,low
+nlst-stk001,Regulators (NL Stores),external,medium
+nlst-stk002,Shareholders (NL Stores),external,high
+nlst-stk003,Community Groups (NL Stores),external,low
+nlst-stk004,Carriers (NL Stores),external,low
+nlst-stk005,Investors (NL Stores),external,high
+nlst-stk006,Customers (NL Stores),external,medium
+nlst-stk007,Board (NL Stores),internal,low
+nlst-stk008,Franchise Partners (NL Stores),external,high
+nlst-stk009,Employees (NL Stores),internal,low
+nlst-stk010,Suppliers (NL Stores),external,medium
+nlon-stk001,Regulators (NL Online),external,low
+nlon-stk002,Carriers (NL Online),external,high
+nlon-stk003,Community Groups (NL Online),external,low
+nlon-stk004,Local Authority (NL Online),external,low
+nlon-stk005,Board (NL Online),internal,medium
+nlon-stk006,Employees (NL Online),internal,high
+nlon-stk007,Suppliers (NL Online),external,medium
+nlon-stk008,Investors (NL Online),external,low
+nlon-stk009,Unions (NL Online),external,medium
+nlon-stk010,Customers (NL Online),external,high
+nlwh-stk001,Investors (NL Wholesale),external,high
+nlwh-stk002,Customers (NL Wholesale),external,high
+nlwh-stk003,Local Authority (NL Wholesale),external,medium
+nlwh-stk004,Unions (NL Wholesale),external,low
+nlwh-stk005,Carriers (NL Wholesale),external,high
+nlwh-stk006,Shareholders (NL Wholesale),external,low
+nlwh-stk007,Employees (NL Wholesale),internal,high
+nlwh-stk008,Franchise Partners (NL Wholesale),external,low
+nlwh-stk009,Board (NL Wholesale),internal,low
+nlwh-stk010,Regulators (NL Wholesale),external,medium
+nllg-stk001,Carriers (NL Logistics),external,high
+nllg-stk002,Franchise Partners (NL Logistics),external,medium
+nllg-stk003,Investors (NL Logistics),external,low
+nllg-stk004,Regulators (NL Logistics),external,medium
+nllg-stk005,Board (NL Logistics),internal,high
+nllg-stk006,Employees (NL Logistics),internal,low
+nllg-stk007,Community Groups (NL Logistics),external,low
+nllg-stk008,Shareholders (NL Logistics),external,high
+nllg-stk009,Customers (NL Logistics),external,high
+nllg-stk010,Local Authority (NL Logistics),external,low
+best-stk001,Unions (BE Stores),external,low
+best-stk002,Board (BE Stores),internal,high
+best-stk003,Franchise Partners (BE Stores),external,medium
+best-stk004,Local Authority (BE Stores),external,high
+best-stk005,Shareholders (BE Stores),external,medium
+best-stk006,Investors (BE Stores),external,medium
+best-stk007,Suppliers (BE Stores),external,medium
+best-stk008,Regulators (BE Stores),external,high
+best-stk009,Community Groups (BE Stores),external,low
+best-stk010,Customers (BE Stores),external,high
+beon-stk001,Franchise Partners (BE Online),external,low
+beon-stk002,Suppliers (BE Online),external,medium
+beon-stk003,Regulators (BE Online),external,medium
+beon-stk004,Shareholders (BE Online),external,medium
+beon-stk005,Local Authority (BE Online),external,low
+beon-stk006,Unions (BE Online),external,high
+beon-stk007,Community Groups (BE Online),external,low
+beon-stk008,Investors (BE Online),external,medium
+beon-stk009,Customers (BE Online),external,low
+beon-stk010,Carriers (BE Online),external,high
+bewh-stk001,Shareholders (BE Wholesale),external,low
+bewh-stk002,Carriers (BE Wholesale),external,high
+bewh-stk003,Employees (BE Wholesale),internal,medium
+bewh-stk004,Suppliers (BE Wholesale),external,high
+bewh-stk005,Unions (BE Wholesale),external,high
+bewh-stk006,Investors (BE Wholesale),external,medium
+bewh-stk007,Franchise Partners (BE Wholesale),external,high
+bewh-stk008,Customers (BE Wholesale),external,medium
+bewh-stk009,Local Authority (BE Wholesale),external,high
+bewh-stk010,Board (BE Wholesale),internal,high
+belg-stk001,Carriers (BE Logistics),external,low
+belg-stk002,Employees (BE Logistics),internal,low
+belg-stk003,Board (BE Logistics),internal,low
+belg-stk004,Investors (BE Logistics),external,high
+belg-stk005,Shareholders (BE Logistics),external,high
+belg-stk006,Franchise Partners (BE Logistics),external,low
+belg-stk007,Unions (BE Logistics),external,low
+belg-stk008,Suppliers (BE Logistics),external,high
+belg-stk009,Customers (BE Logistics),external,high
+belg-stk010,Regulators (BE Logistics),external,medium
+esst-stk001,Shareholders (ES Stores),external,high
+esst-stk002,Local Authority (ES Stores),external,medium
+esst-stk003,Board (ES Stores),internal,high
+esst-stk004,Franchise Partners (ES Stores),external,low
+esst-stk005,Customers (ES Stores),external,medium
+esst-stk006,Employees (ES Stores),internal,low
+esst-stk007,Regulators (ES Stores),external,low
+esst-stk008,Suppliers (ES Stores),external,low
+esst-stk009,Carriers (ES Stores),external,medium
+esst-stk010,Investors (ES Stores),external,medium
+eson-stk001,Unions (ES Online),external,medium
+eson-stk002,Investors (ES Online),external,high
+eson-stk003,Board (ES Online),internal,medium
+eson-stk004,Shareholders (ES Online),external,low
+eson-stk005,Suppliers (ES Online),external,high
+eson-stk006,Employees (ES Online),internal,high
+eson-stk007,Customers (ES Online),external,high
+eson-stk008,Franchise Partners (ES Online),external,medium
+eson-stk009,Carriers (ES Online),external,medium
+eson-stk010,Regulators (ES Online),external,medium
+eswh-stk001,Unions (ES Wholesale),external,low
+eswh-stk002,Shareholders (ES Wholesale),external,medium
+eswh-stk003,Employees (ES Wholesale),internal,medium
+eswh-stk004,Carriers (ES Wholesale),external,high
+eswh-stk005,Franchise Partners (ES Wholesale),external,high
+eswh-stk006,Customers (ES Wholesale),external,medium
+eswh-stk007,Regulators (ES Wholesale),external,low
+eswh-stk008,Suppliers (ES Wholesale),external,low
+eswh-stk009,Local Authority (ES Wholesale),external,medium
+eswh-stk010,Investors (ES Wholesale),external,medium
+eslg-stk001,Shareholders (ES Logistics),external,high
+eslg-stk002,Franchise Partners (ES Logistics),external,low
+eslg-stk003,Carriers (ES Logistics),external,medium
+eslg-stk004,Local Authority (ES Logistics),external,high
+eslg-stk005,Board (ES Logistics),internal,medium
+eslg-stk006,Customers (ES Logistics),external,medium
+eslg-stk007,Unions (ES Logistics),external,medium
+eslg-stk008,Employees (ES Logistics),internal,medium
+eslg-stk009,Community Groups (ES Logistics),external,medium
+eslg-stk010,Investors (ES Logistics),external,low
+ptst-stk001,Employees (PT Stores),internal,high
+ptst-stk002,Customers (PT Stores),external,medium
+ptst-stk003,Local Authority (PT Stores),external,medium
+ptst-stk004,Shareholders (PT Stores),external,medium
+ptst-stk005,Community Groups (PT Stores),external,high
+ptst-stk006,Suppliers (PT Stores),external,high
+ptst-stk007,Board (PT Stores),internal,low
+ptst-stk008,Unions (PT Stores),external,low
+ptst-stk009,Regulators (PT Stores),external,low
+ptst-stk010,Carriers (PT Stores),external,high
+pton-stk001,Regulators (PT Online),external,low
+pton-stk002,Investors (PT Online),external,medium
+pton-stk003,Community Groups (PT Online),external,medium
+pton-stk004,Board (PT Online),internal,medium
+pton-stk005,Unions (PT Online),external,high
+pton-stk006,Employees (PT Online),internal,medium
+pton-stk007,Carriers (PT Online),external,low
+pton-stk008,Customers (PT Online),external,low
+pton-stk009,Franchise Partners (PT Online),external,medium
+pton-stk010,Local Authority (PT Online),external,low
+ptwh-stk001,Community Groups (PT Wholesale),external,medium
+ptwh-stk002,Board (PT Wholesale),internal,low
+ptwh-stk003,Regulators (PT Wholesale),external,medium
+ptwh-stk004,Carriers (PT Wholesale),external,medium
+ptwh-stk005,Shareholders (PT Wholesale),external,high
+ptwh-stk006,Investors (PT Wholesale),external,low
+ptwh-stk007,Franchise Partners (PT Wholesale),external,high
+ptwh-stk008,Customers (PT Wholesale),external,high
+ptwh-stk009,Local Authority (PT Wholesale),external,medium
+ptwh-stk010,Employees (PT Wholesale),internal,high
+ptlg-stk001,Shareholders (PT Logistics),external,high
+ptlg-stk002,Investors (PT Logistics),external,low
+ptlg-stk003,Local Authority (PT Logistics),external,medium
+ptlg-stk004,Customers (PT Logistics),external,low
+ptlg-stk005,Regulators (PT Logistics),external,low
+ptlg-stk006,Employees (PT Logistics),internal,high
+ptlg-stk007,Carriers (PT Logistics),external,low
+ptlg-stk008,Board (PT Logistics),internal,medium
+ptlg-stk009,Suppliers (PT Logistics),external,medium
+ptlg-stk010,Franchise Partners (PT Logistics),external,low
+itst-stk001,Employees (IT Stores),internal,high
+itst-stk002,Carriers (IT Stores),external,medium
+itst-stk003,Community Groups (IT Stores),external,low
+itst-stk004,Franchise Partners (IT Stores),external,low
+itst-stk005,Regulators (IT Stores),external,medium
+itst-stk006,Local Authority (IT Stores),external,low
+itst-stk007,Unions (IT Stores),external,medium
+itst-stk008,Investors (IT Stores),external,high
+itst-stk009,Suppliers (IT Stores),external,medium
+itst-stk010,Board (IT Stores),internal,medium
+iton-stk001,Shareholders (IT Online),external,low
+iton-stk002,Investors (IT Online),external,medium
+iton-stk003,Unions (IT Online),external,high
+iton-stk004,Board (IT Online),internal,high
+iton-stk005,Regulators (IT Online),external,high
+iton-stk006,Employees (IT Online),internal,medium
+iton-stk007,Franchise Partners (IT Online),external,medium
+iton-stk008,Customers (IT Online),external,high
+iton-stk009,Local Authority (IT Online),external,medium
+iton-stk010,Suppliers (IT Online),external,high
+itwh-stk001,Unions (IT Wholesale),external,low
+itwh-stk002,Franchise Partners (IT Wholesale),external,low
+itwh-stk003,Local Authority (IT Wholesale),external,low
+itwh-stk004,Customers (IT Wholesale),external,low
+itwh-stk005,Suppliers (IT Wholesale),external,medium
+itwh-stk006,Employees (IT Wholesale),internal,high
+itwh-stk007,Board (IT Wholesale),internal,low
+itwh-stk008,Regulators (IT Wholesale),external,low
+itwh-stk009,Shareholders (IT Wholesale),external,low
+itwh-stk010,Carriers (IT Wholesale),external,low
+itlg-stk001,Unions (IT Logistics),external,low
+itlg-stk002,Investors (IT Logistics),external,low
+itlg-stk003,Carriers (IT Logistics),external,low
+itlg-stk004,Suppliers (IT Logistics),external,low
+itlg-stk005,Board (IT Logistics),internal,high
+itlg-stk006,Customers (IT Logistics),external,high
+itlg-stk007,Franchise Partners (IT Logistics),external,low
+itlg-stk008,Employees (IT Logistics),internal,low
+itlg-stk009,Local Authority (IT Logistics),external,low
+itlg-stk010,Regulators (IT Logistics),external,high
+chst-stk001,Carriers (CH Stores),external,high
+chst-stk002,Board (CH Stores),internal,medium
+chst-stk003,Local Authority (CH Stores),external,medium
+chst-stk004,Unions (CH Stores),external,high
+chst-stk005,Regulators (CH Stores),external,high
+chst-stk006,Franchise Partners (CH Stores),external,low
+chst-stk007,Community Groups (CH Stores),external,low
+chst-stk008,Suppliers (CH Stores),external,medium
+chst-stk009,Shareholders (CH Stores),external,high
+chst-stk010,Employees (CH Stores),internal,medium
+chon-stk001,Regulators (CH Online),external,low
+chon-stk002,Unions (CH Online),external,medium
+chon-stk003,Shareholders (CH Online),external,high
+chon-stk004,Employees (CH Online),internal,high
+chon-stk005,Local Authority (CH Online),external,high
+chon-stk006,Carriers (CH Online),external,medium
+chon-stk007,Customers (CH Online),external,high
+chon-stk008,Franchise Partners (CH Online),external,high
+chon-stk009,Investors (CH Online),external,high
+chon-stk010,Board (CH Online),internal,high
+chwh-stk001,Franchise Partners (CH Wholesale),external,high
+chwh-stk002,Community Groups (CH Wholesale),external,medium
+chwh-stk003,Board (CH Wholesale),internal,high
+chwh-stk004,Employees (CH Wholesale),internal,high
+chwh-stk005,Local Authority (CH Wholesale),external,high
+chwh-stk006,Shareholders (CH Wholesale),external,medium
+chwh-stk007,Unions (CH Wholesale),external,medium
+chwh-stk008,Investors (CH Wholesale),external,high
+chwh-stk009,Carriers (CH Wholesale),external,high
+chwh-stk010,Customers (CH Wholesale),external,high
+chlg-stk001,Community Groups (CH Logistics),external,medium
+chlg-stk002,Employees (CH Logistics),internal,high
+chlg-stk003,Unions (CH Logistics),external,medium
+chlg-stk004,Board (CH Logistics),internal,medium
+chlg-stk005,Customers (CH Logistics),external,medium
+chlg-stk006,Suppliers (CH Logistics),external,low
+chlg-stk007,Shareholders (CH Logistics),external,medium
+chlg-stk008,Carriers (CH Logistics),external,medium
+chlg-stk009,Franchise Partners (CH Logistics),external,high
+chlg-stk010,Investors (CH Logistics),external,high
+atst-stk001,Franchise Partners (AT Stores),external,medium
+atst-stk002,Customers (AT Stores),external,medium
+atst-stk003,Suppliers (AT Stores),external,medium
+atst-stk004,Local Authority (AT Stores),external,high
+atst-stk005,Investors (AT Stores),external,medium
+atst-stk006,Community Groups (AT Stores),external,medium
+atst-stk007,Shareholders (AT Stores),external,medium
+atst-stk008,Employees (AT Stores),internal,medium
+atst-stk009,Unions (AT Stores),external,low
+atst-stk010,Board (AT Stores),internal,high
+aton-stk001,Regulators (AT Online),external,low
+aton-stk002,Shareholders (AT Online),external,medium
+aton-stk003,Board (AT Online),internal,high
+aton-stk004,Community Groups (AT Online),external,low
+aton-stk005,Local Authority (AT Online),external,high
+aton-stk006,Unions (AT Online),external,medium
+aton-stk007,Suppliers (AT Online),external,medium
+aton-stk008,Carriers (AT Online),external,medium
+aton-stk009,Investors (AT Online),external,low
+aton-stk010,Customers (AT Online),external,medium
+atwh-stk001,Employees (AT Wholesale),internal,high
+atwh-stk002,Customers (AT Wholesale),external,low
+atwh-stk003,Regulators (AT Wholesale),external,high
+atwh-stk004,Suppliers (AT Wholesale),external,medium
+atwh-stk005,Franchise Partners (AT Wholesale),external,high
+atwh-stk006,Local Authority (AT Wholesale),external,high
+atwh-stk007,Board (AT Wholesale),internal,low
+atwh-stk008,Carriers (AT Wholesale),external,medium
+atwh-stk009,Investors (AT Wholesale),external,low
+atwh-stk010,Community Groups (AT Wholesale),external,high
+atlg-stk001,Investors (AT Logistics),external,medium
+atlg-stk002,Shareholders (AT Logistics),external,medium
+atlg-stk003,Community Groups (AT Logistics),external,low
+atlg-stk004,Customers (AT Logistics),external,medium
+atlg-stk005,Carriers (AT Logistics),external,low
+atlg-stk006,Unions (AT Logistics),external,high
+atlg-stk007,Suppliers (AT Logistics),external,low
+atlg-stk008,Franchise Partners (AT Logistics),external,low
+atlg-stk009,Regulators (AT Logistics),external,high
+atlg-stk010,Local Authority (AT Logistics),external,high
+plst-stk001,Board (PL Stores),internal,low
+plst-stk002,Employees (PL Stores),internal,low
+plst-stk003,Investors (PL Stores),external,low
+plst-stk004,Customers (PL Stores),external,high
+plst-stk005,Unions (PL Stores),external,medium
+plst-stk006,Carriers (PL Stores),external,high
+plst-stk007,Local Authority (PL Stores),external,high
+plst-stk008,Shareholders (PL Stores),external,high
+plst-stk009,Suppliers (PL Stores),external,low
+plst-stk010,Regulators (PL Stores),external,medium
+plon-stk001,Local Authority (PL Online),external,medium
+plon-stk002,Community Groups (PL Online),external,high
+plon-stk003,Franchise Partners (PL Online),external,low
+plon-stk004,Carriers (PL Online),external,high
+plon-stk005,Employees (PL Online),internal,medium
+plon-stk006,Shareholders (PL Online),external,low
+plon-stk007,Customers (PL Online),external,medium
+plon-stk008,Suppliers (PL Online),external,high
+plon-stk009,Board (PL Online),internal,high
+plon-stk010,Regulators (PL Online),external,medium
+plwh-stk001,Customers (PL Wholesale),external,low
+plwh-stk002,Investors (PL Wholesale),external,high
+plwh-stk003,Unions (PL Wholesale),external,high
+plwh-stk004,Carriers (PL Wholesale),external,high
+plwh-stk005,Shareholders (PL Wholesale),external,medium
+plwh-stk006,Regulators (PL Wholesale),external,low
+plwh-stk007,Suppliers (PL Wholesale),external,medium
+plwh-stk008,Community Groups (PL Wholesale),external,low
+plwh-stk009,Local Authority (PL Wholesale),external,high
+plwh-stk010,Franchise Partners (PL Wholesale),external,high
+pllg-stk001,Unions (PL Logistics),external,high
+pllg-stk002,Local Authority (PL Logistics),external,medium
+pllg-stk003,Suppliers (PL Logistics),external,high
+pllg-stk004,Carriers (PL Logistics),external,high
+pllg-stk005,Regulators (PL Logistics),external,high
+pllg-stk006,Customers (PL Logistics),external,medium
+pllg-stk007,Employees (PL Logistics),internal,high
+pllg-stk008,Investors (PL Logistics),external,low
+pllg-stk009,Board (PL Logistics),internal,low
+pllg-stk010,Franchise Partners (PL Logistics),external,low
+sest-stk001,Shareholders (SE Stores),external,medium
+sest-stk002,Regulators (SE Stores),external,high
+sest-stk003,Franchise Partners (SE Stores),external,high
+sest-stk004,Local Authority (SE Stores),external,medium
+sest-stk005,Community Groups (SE Stores),external,medium
+sest-stk006,Employees (SE Stores),internal,low
+sest-stk007,Investors (SE Stores),external,high
+sest-stk008,Customers (SE Stores),external,high
+sest-stk009,Board (SE Stores),internal,medium
+sest-stk010,Unions (SE Stores),external,medium
+seon-stk001,Shareholders (SE Online),external,low
+seon-stk002,Community Groups (SE Online),external,medium
+seon-stk003,Employees (SE Online),internal,high
+seon-stk004,Customers (SE Online),external,medium
+seon-stk005,Franchise Partners (SE Online),external,low
+seon-stk006,Carriers (SE Online),external,low
+seon-stk007,Investors (SE Online),external,high
+seon-stk008,Regulators (SE Online),external,medium
+seon-stk009,Local Authority (SE Online),external,low
+seon-stk010,Board (SE Online),internal,low
+sewh-stk001,Customers (SE Wholesale),external,medium
+sewh-stk002,Local Authority (SE Wholesale),external,high
+sewh-stk003,Carriers (SE Wholesale),external,low
+sewh-stk004,Investors (SE Wholesale),external,high
+sewh-stk005,Suppliers (SE Wholesale),external,low
+sewh-stk006,Employees (SE Wholesale),internal,high
+sewh-stk007,Regulators (SE Wholesale),external,medium
+sewh-stk008,Unions (SE Wholesale),external,medium
+sewh-stk009,Franchise Partners (SE Wholesale),external,medium
+sewh-stk010,Shareholders (SE Wholesale),external,high
+selg-stk001,Investors (SE Logistics),external,low
+selg-stk002,Carriers (SE Logistics),external,medium
+selg-stk003,Board (SE Logistics),internal,low
+selg-stk004,Unions (SE Logistics),external,medium
+selg-stk005,Customers (SE Logistics),external,high
+selg-stk006,Employees (SE Logistics),internal,medium
+selg-stk007,Franchise Partners (SE Logistics),external,medium
+selg-stk008,Local Authority (SE Logistics),external,medium
+selg-stk009,Regulators (SE Logistics),external,medium
+selg-stk010,Suppliers (SE Logistics),external,high
+nost-stk001,Board (NO Stores),internal,high
+nost-stk002,Regulators (NO Stores),external,low
+nost-stk003,Carriers (NO Stores),external,low
+nost-stk004,Employees (NO Stores),internal,low
+nost-stk005,Customers (NO Stores),external,medium
+nost-stk006,Suppliers (NO Stores),external,medium
+nost-stk007,Franchise Partners (NO Stores),external,high
+nost-stk008,Shareholders (NO Stores),external,medium
+nost-stk009,Investors (NO Stores),external,medium
+nost-stk010,Community Groups (NO Stores),external,low
+noon-stk001,Employees (NO Online),internal,low
+noon-stk002,Community Groups (NO Online),external,medium
+noon-stk003,Suppliers (NO Online),external,high
+noon-stk004,Local Authority (NO Online),external,low
+noon-stk005,Regulators (NO Online),external,high
+noon-stk006,Shareholders (NO Online),external,medium
+noon-stk007,Unions (NO Online),external,low
+noon-stk008,Carriers (NO Online),external,high
+noon-stk009,Customers (NO Online),external,high
+noon-stk010,Board (NO Online),internal,low
+nowh-stk001,Community Groups (NO Wholesale),external,low
+nowh-stk002,Employees (NO Wholesale),internal,high
+nowh-stk003,Suppliers (NO Wholesale),external,high
+nowh-stk004,Local Authority (NO Wholesale),external,high
+nowh-stk005,Investors (NO Wholesale),external,medium
+nowh-stk006,Customers (NO Wholesale),external,low
+nowh-stk007,Board (NO Wholesale),internal,low
+nowh-stk008,Carriers (NO Wholesale),external,high
+nowh-stk009,Regulators (NO Wholesale),external,high
+nowh-stk010,Unions (NO Wholesale),external,high
+nolg-stk001,Community Groups (NO Logistics),external,medium
+nolg-stk002,Franchise Partners (NO Logistics),external,low
+nolg-stk003,Unions (NO Logistics),external,high
+nolg-stk004,Board (NO Logistics),internal,medium
+nolg-stk005,Employees (NO Logistics),internal,high
+nolg-stk006,Customers (NO Logistics),external,medium
+nolg-stk007,Local Authority (NO Logistics),external,low
+nolg-stk008,Investors (NO Logistics),external,low
+nolg-stk009,Suppliers (NO Logistics),external,medium
+nolg-stk010,Shareholders (NO Logistics),external,low
+dkst-stk001,Regulators (DK Stores),external,high
+dkst-stk002,Investors (DK Stores),external,high
+dkst-stk003,Employees (DK Stores),internal,low
+dkst-stk004,Franchise Partners (DK Stores),external,medium
+dkst-stk005,Unions (DK Stores),external,medium
+dkst-stk006,Customers (DK Stores),external,high
+dkst-stk007,Shareholders (DK Stores),external,medium
+dkst-stk008,Community Groups (DK Stores),external,medium
+dkst-stk009,Suppliers (DK Stores),external,medium
+dkst-stk010,Local Authority (DK Stores),external,high
+dkon-stk001,Suppliers (DK Online),external,low
+dkon-stk002,Customers (DK Online),external,low
+dkon-stk003,Shareholders (DK Online),external,low
+dkon-stk004,Board (DK Online),internal,low
+dkon-stk005,Community Groups (DK Online),external,high
+dkon-stk006,Franchise Partners (DK Online),external,medium
+dkon-stk007,Local Authority (DK Online),external,low
+dkon-stk008,Unions (DK Online),external,medium
+dkon-stk009,Regulators (DK Online),external,high
+dkon-stk010,Employees (DK Online),internal,low
+dkwh-stk001,Board (DK Wholesale),internal,low
+dkwh-stk002,Employees (DK Wholesale),internal,high
+dkwh-stk003,Investors (DK Wholesale),external,high
+dkwh-stk004,Shareholders (DK Wholesale),external,low
+dkwh-stk005,Customers (DK Wholesale),external,medium
+dkwh-stk006,Carriers (DK Wholesale),external,high
+dkwh-stk007,Regulators (DK Wholesale),external,medium
+dkwh-stk008,Unions (DK Wholesale),external,low
+dkwh-stk009,Local Authority (DK Wholesale),external,medium
+dkwh-stk010,Community Groups (DK Wholesale),external,medium
+dklg-stk001,Unions (DK Logistics),external,low
+dklg-stk002,Regulators (DK Logistics),external,medium
+dklg-stk003,Carriers (DK Logistics),external,high
+dklg-stk004,Suppliers (DK Logistics),external,low
+dklg-stk005,Local Authority (DK Logistics),external,low
+dklg-stk006,Board (DK Logistics),internal,low
+dklg-stk007,Community Groups (DK Logistics),external,high
+dklg-stk008,Franchise Partners (DK Logistics),external,medium
+dklg-stk009,Employees (DK Logistics),internal,high
+dklg-stk010,Shareholders (DK Logistics),external,low
+fist-stk001,Investors (FI Stores),external,high
+fist-stk002,Suppliers (FI Stores),external,medium
+fist-stk003,Carriers (FI Stores),external,medium
+fist-stk004,Local Authority (FI Stores),external,medium
+fist-stk005,Community Groups (FI Stores),external,high
+fist-stk006,Shareholders (FI Stores),external,high
+fist-stk007,Customers (FI Stores),external,high
+fist-stk008,Regulators (FI Stores),external,medium
+fist-stk009,Franchise Partners (FI Stores),external,high
+fist-stk010,Unions (FI Stores),external,high
+fion-stk001,Suppliers (FI Online),external,high
+fion-stk002,Employees (FI Online),internal,medium
+fion-stk003,Regulators (FI Online),external,medium
+fion-stk004,Investors (FI Online),external,medium
+fion-stk005,Carriers (FI Online),external,high
+fion-stk006,Shareholders (FI Online),external,low
+fion-stk007,Board (FI Online),internal,medium
+fion-stk008,Franchise Partners (FI Online),external,low
+fion-stk009,Local Authority (FI Online),external,medium
+fion-stk010,Customers (FI Online),external,high
+fiwh-stk001,Community Groups (FI Wholesale),external,medium
+fiwh-stk002,Customers (FI Wholesale),external,medium
+fiwh-stk003,Franchise Partners (FI Wholesale),external,medium
+fiwh-stk004,Employees (FI Wholesale),internal,low
+fiwh-stk005,Carriers (FI Wholesale),external,high
+fiwh-stk006,Investors (FI Wholesale),external,high
+fiwh-stk007,Unions (FI Wholesale),external,high
+fiwh-stk008,Local Authority (FI Wholesale),external,medium
+fiwh-stk009,Regulators (FI Wholesale),external,high
+fiwh-stk010,Shareholders (FI Wholesale),external,low
+filg-stk001,Board (FI Logistics),internal,high
+filg-stk002,Franchise Partners (FI Logistics),external,low
+filg-stk003,Community Groups (FI Logistics),external,medium
+filg-stk004,Local Authority (FI Logistics),external,high
+filg-stk005,Customers (FI Logistics),external,low
+filg-stk006,Investors (FI Logistics),external,high
+filg-stk007,Employees (FI Logistics),internal,medium
+filg-stk008,Carriers (FI Logistics),external,low
+filg-stk009,Unions (FI Logistics),external,high
+filg-stk010,Suppliers (FI Logistics),external,medium
+czst-stk001,Employees (CZ Stores),internal,high
+czst-stk002,Regulators (CZ Stores),external,high
+czst-stk003,Investors (CZ Stores),external,medium
+czst-stk004,Carriers (CZ Stores),external,high
+czst-stk005,Board (CZ Stores),internal,medium
+czst-stk006,Local Authority (CZ Stores),external,low
+czst-stk007,Suppliers (CZ Stores),external,low
+czst-stk008,Franchise Partners (CZ Stores),external,high
+czst-stk009,Customers (CZ Stores),external,low
+czst-stk010,Community Groups (CZ Stores),external,low
+czon-stk001,Shareholders (CZ Online),external,low
+czon-stk002,Suppliers (CZ Online),external,high
+czon-stk003,Community Groups (CZ Online),external,low
+czon-stk004,Carriers (CZ Online),external,high
+czon-stk005,Employees (CZ Online),internal,medium
+czon-stk006,Investors (CZ Online),external,high
+czon-stk007,Board (CZ Online),internal,high
+czon-stk008,Customers (CZ Online),external,high
+czon-stk009,Franchise Partners (CZ Online),external,high
+czon-stk010,Unions (CZ Online),external,medium
+czwh-stk001,Suppliers (CZ Wholesale),external,low
+czwh-stk002,Community Groups (CZ Wholesale),external,medium
+czwh-stk003,Board (CZ Wholesale),internal,high
+czwh-stk004,Employees (CZ Wholesale),internal,high
+czwh-stk005,Unions (CZ Wholesale),external,high
+czwh-stk006,Franchise Partners (CZ Wholesale),external,medium
+czwh-stk007,Local Authority (CZ Wholesale),external,medium
+czwh-stk008,Investors (CZ Wholesale),external,medium
+czwh-stk009,Customers (CZ Wholesale),external,low
+czwh-stk010,Shareholders (CZ Wholesale),external,low
+czlg-stk001,Community Groups (CZ Logistics),external,high
+czlg-stk002,Investors (CZ Logistics),external,low
+czlg-stk003,Unions (CZ Logistics),external,medium
+czlg-stk004,Franchise Partners (CZ Logistics),external,high
+czlg-stk005,Shareholders (CZ Logistics),external,high
+czlg-stk006,Employees (CZ Logistics),internal,high
+czlg-stk007,Carriers (CZ Logistics),external,medium
+czlg-stk008,Board (CZ Logistics),internal,medium
+czlg-stk009,Regulators (CZ Logistics),external,medium
+czlg-stk010,Suppliers (CZ Logistics),external,medium
+grst-stk001,Customers (GR Stores),external,low
+grst-stk002,Board (GR Stores),internal,medium
+grst-stk003,Shareholders (GR Stores),external,medium
+grst-stk004,Community Groups (GR Stores),external,high
+grst-stk005,Suppliers (GR Stores),external,medium
+grst-stk006,Franchise Partners (GR Stores),external,medium
+grst-stk007,Unions (GR Stores),external,medium
+grst-stk008,Regulators (GR Stores),external,high
+grst-stk009,Local Authority (GR Stores),external,medium
+grst-stk010,Carriers (GR Stores),external,low
+gron-stk001,Suppliers (GR Online),external,medium
+gron-stk002,Carriers (GR Online),external,high
+gron-stk003,Local Authority (GR Online),external,low
+gron-stk004,Unions (GR Online),external,high
+gron-stk005,Franchise Partners (GR Online),external,medium
+gron-stk006,Board (GR Online),internal,low
+gron-stk007,Customers (GR Online),external,low
+gron-stk008,Shareholders (GR Online),external,high
+gron-stk009,Investors (GR Online),external,low
+gron-stk010,Community Groups (GR Online),external,high
+grwh-stk001,Carriers (GR Wholesale),external,medium
+grwh-stk002,Regulators (GR Wholesale),external,high
+grwh-stk003,Suppliers (GR Wholesale),external,medium
+grwh-stk004,Local Authority (GR Wholesale),external,high
+grwh-stk005,Community Groups (GR Wholesale),external,medium
+grwh-stk006,Unions (GR Wholesale),external,low
+grwh-stk007,Board (GR Wholesale),internal,medium
+grwh-stk008,Shareholders (GR Wholesale),external,low
+grwh-stk009,Investors (GR Wholesale),external,medium
+grwh-stk010,Customers (GR Wholesale),external,medium
+grlg-stk001,Suppliers (GR Logistics),external,medium
+grlg-stk002,Employees (GR Logistics),internal,low
+grlg-stk003,Unions (GR Logistics),external,high
+grlg-stk004,Regulators (GR Logistics),external,medium
+grlg-stk005,Community Groups (GR Logistics),external,medium
+grlg-stk006,Board (GR Logistics),internal,medium
+grlg-stk007,Carriers (GR Logistics),external,high
+grlg-stk008,Franchise Partners (GR Logistics),external,high
+grlg-stk009,Shareholders (GR Logistics),external,low
+grlg-stk010,Local Authority (GR Logistics),external,medium
+hust-stk001,Regulators (HU Stores),external,medium
+hust-stk002,Employees (HU Stores),internal,medium
+hust-stk003,Customers (HU Stores),external,low
+hust-stk004,Community Groups (HU Stores),external,medium
+hust-stk005,Suppliers (HU Stores),external,low
+hust-stk006,Investors (HU Stores),external,medium
+hust-stk007,Franchise Partners (HU Stores),external,medium
+hust-stk008,Unions (HU Stores),external,high
+hust-stk009,Local Authority (HU Stores),external,medium
+hust-stk010,Shareholders (HU Stores),external,medium
+huon-stk001,Board (HU Online),internal,low
+huon-stk002,Investors (HU Online),external,medium
+huon-stk003,Shareholders (HU Online),external,high
+huon-stk004,Community Groups (HU Online),external,medium
+huon-stk005,Customers (HU Online),external,low
+huon-stk006,Carriers (HU Online),external,low
+huon-stk007,Employees (HU Online),internal,low
+huon-stk008,Local Authority (HU Online),external,medium
+huon-stk009,Suppliers (HU Online),external,low
+huon-stk010,Franchise Partners (HU Online),external,high
+huwh-stk001,Franchise Partners (HU Wholesale),external,low
+huwh-stk002,Investors (HU Wholesale),external,high
+huwh-stk003,Customers (HU Wholesale),external,low
+huwh-stk004,Suppliers (HU Wholesale),external,high
+huwh-stk005,Community Groups (HU Wholesale),external,high
+huwh-stk006,Regulators (HU Wholesale),external,high
+huwh-stk007,Shareholders (HU Wholesale),external,high
+huwh-stk008,Employees (HU Wholesale),internal,medium
+huwh-stk009,Local Authority (HU Wholesale),external,low
+huwh-stk010,Carriers (HU Wholesale),external,medium
+hulg-stk001,Suppliers (HU Logistics),external,high
+hulg-stk002,Customers (HU Logistics),external,medium
+hulg-stk003,Shareholders (HU Logistics),external,low
+hulg-stk004,Board (HU Logistics),internal,high
+hulg-stk005,Employees (HU Logistics),internal,low
+hulg-stk006,Carriers (HU Logistics),external,low
+hulg-stk007,Investors (HU Logistics),external,low
+hulg-stk008,Community Groups (HU Logistics),external,high
+hulg-stk009,Franchise Partners (HU Logistics),external,medium
+hulg-stk010,Regulators (HU Logistics),external,medium
+rost-stk001,Community Groups (RO Stores),external,low
+rost-stk002,Customers (RO Stores),external,low
+rost-stk003,Shareholders (RO Stores),external,medium
+rost-stk004,Employees (RO Stores),internal,high
+rost-stk005,Franchise Partners (RO Stores),external,high
+rost-stk006,Regulators (RO Stores),external,medium
+rost-stk007,Investors (RO Stores),external,medium
+rost-stk008,Board (RO Stores),internal,medium
+rost-stk009,Local Authority (RO Stores),external,medium
+rost-stk010,Carriers (RO Stores),external,low
+roon-stk001,Carriers (RO Online),external,high
+roon-stk002,Shareholders (RO Online),external,medium
+roon-stk003,Unions (RO Online),external,low
+roon-stk004,Franchise Partners (RO Online),external,high
+roon-stk005,Local Authority (RO Online),external,low
+roon-stk006,Customers (RO Online),external,low
+roon-stk007,Board (RO Online),internal,medium
+roon-stk008,Regulators (RO Online),external,low
+roon-stk009,Community Groups (RO Online),external,low
+roon-stk010,Suppliers (RO Online),external,low
+rowh-stk001,Unions (RO Wholesale),external,low
+rowh-stk002,Carriers (RO Wholesale),external,low
+rowh-stk003,Customers (RO Wholesale),external,low
+rowh-stk004,Employees (RO Wholesale),internal,low
+rowh-stk005,Regulators (RO Wholesale),external,high
+rowh-stk006,Community Groups (RO Wholesale),external,high
+rowh-stk007,Local Authority (RO Wholesale),external,medium
+rowh-stk008,Franchise Partners (RO Wholesale),external,low
+rowh-stk009,Shareholders (RO Wholesale),external,medium
+rowh-stk010,Board (RO Wholesale),internal,low
+rolg-stk001,Employees (RO Logistics),internal,high
+rolg-stk002,Franchise Partners (RO Logistics),external,low
+rolg-stk003,Board (RO Logistics),internal,medium
+rolg-stk004,Suppliers (RO Logistics),external,low
+rolg-stk005,Investors (RO Logistics),external,low
+rolg-stk006,Customers (RO Logistics),external,medium
+rolg-stk007,Community Groups (RO Logistics),external,medium
+rolg-stk008,Regulators (RO Logistics),external,low
+rolg-stk009,Local Authority (RO Logistics),external,high
+rolg-stk010,Unions (RO Logistics),external,high
+hrst-stk001,Board (HR Stores),internal,low
+hrst-stk002,Unions (HR Stores),external,medium
+hrst-stk003,Local Authority (HR Stores),external,low
+hrst-stk004,Shareholders (HR Stores),external,medium
+hrst-stk005,Investors (HR Stores),external,high
+hrst-stk006,Suppliers (HR Stores),external,low
+hrst-stk007,Carriers (HR Stores),external,medium
+hrst-stk008,Customers (HR Stores),external,high
+hrst-stk009,Employees (HR Stores),internal,low
+hrst-stk010,Community Groups (HR Stores),external,low
+hron-stk001,Regulators (HR Online),external,high
+hron-stk002,Suppliers (HR Online),external,medium
+hron-stk003,Employees (HR Online),internal,high
+hron-stk004,Unions (HR Online),external,medium
+hron-stk005,Franchise Partners (HR Online),external,low
+hron-stk006,Carriers (HR Online),external,medium
+hron-stk007,Local Authority (HR Online),external,medium
+hron-stk008,Community Groups (HR Online),external,medium
+hron-stk009,Shareholders (HR Online),external,medium
+hron-stk010,Customers (HR Online),external,high
+hrwh-stk001,Unions (HR Wholesale),external,low
+hrwh-stk002,Suppliers (HR Wholesale),external,high
+hrwh-stk003,Customers (HR Wholesale),external,low
+hrwh-stk004,Investors (HR Wholesale),external,medium
+hrwh-stk005,Shareholders (HR Wholesale),external,medium
+hrwh-stk006,Regulators (HR Wholesale),external,low
+hrwh-stk007,Employees (HR Wholesale),internal,medium
+hrwh-stk008,Carriers (HR Wholesale),external,medium
+hrwh-stk009,Community Groups (HR Wholesale),external,medium
+hrwh-stk010,Franchise Partners (HR Wholesale),external,high
+hrlg-stk001,Unions (HR Logistics),external,low
+hrlg-stk002,Shareholders (HR Logistics),external,medium
+hrlg-stk003,Franchise Partners (HR Logistics),external,high
+hrlg-stk004,Suppliers (HR Logistics),external,high
+hrlg-stk005,Carriers (HR Logistics),external,high
+hrlg-stk006,Customers (HR Logistics),external,medium
+hrlg-stk007,Investors (HR Logistics),external,medium
+hrlg-stk008,Employees (HR Logistics),internal,medium
+hrlg-stk009,Board (HR Logistics),internal,low
+hrlg-stk010,Community Groups (HR Logistics),external,medium
+skst-stk001,Community Groups (SK Stores),external,medium
+skst-stk002,Suppliers (SK Stores),external,low
+skst-stk003,Franchise Partners (SK Stores),external,medium
+skst-stk004,Employees (SK Stores),internal,low
+skst-stk005,Carriers (SK Stores),external,low
+skst-stk006,Customers (SK Stores),external,low
+skst-stk007,Investors (SK Stores),external,medium
+skst-stk008,Regulators (SK Stores),external,low
+skst-stk009,Local Authority (SK Stores),external,medium
+skst-stk010,Shareholders (SK Stores),external,medium
+skon-stk001,Community Groups (SK Online),external,high
+skon-stk002,Franchise Partners (SK Online),external,high
+skon-stk003,Shareholders (SK Online),external,high
+skon-stk004,Local Authority (SK Online),external,medium
+skon-stk005,Suppliers (SK Online),external,high
+skon-stk006,Customers (SK Online),external,high
+skon-stk007,Unions (SK Online),external,low
+skon-stk008,Investors (SK Online),external,high
+skon-stk009,Employees (SK Online),internal,medium
+skon-stk010,Carriers (SK Online),external,high
+skwh-stk001,Carriers (SK Wholesale),external,low
+skwh-stk002,Board (SK Wholesale),internal,low
+skwh-stk003,Suppliers (SK Wholesale),external,low
+skwh-stk004,Regulators (SK Wholesale),external,high
+skwh-stk005,Unions (SK Wholesale),external,medium
+skwh-stk006,Community Groups (SK Wholesale),external,low
+skwh-stk007,Franchise Partners (SK Wholesale),external,high
+skwh-stk008,Employees (SK Wholesale),internal,medium
+skwh-stk009,Customers (SK Wholesale),external,high
+skwh-stk010,Investors (SK Wholesale),external,medium
+sklg-stk001,Community Groups (SK Logistics),external,high
+sklg-stk002,Customers (SK Logistics),external,medium
+sklg-stk003,Investors (SK Logistics),external,medium
+sklg-stk004,Regulators (SK Logistics),external,high
+sklg-stk005,Board (SK Logistics),internal,low
+sklg-stk006,Franchise Partners (SK Logistics),external,low
+sklg-stk007,Carriers (SK Logistics),external,medium
+sklg-stk008,Suppliers (SK Logistics),external,low
+sklg-stk009,Employees (SK Logistics),internal,high
+sklg-stk010,Unions (SK Logistics),external,low
+bgst-stk001,Suppliers (BG Stores),external,low
+bgst-stk002,Employees (BG Stores),internal,medium
+bgst-stk003,Shareholders (BG Stores),external,medium
+bgst-stk004,Unions (BG Stores),external,medium
+bgst-stk005,Investors (BG Stores),external,medium
+bgst-stk006,Regulators (BG Stores),external,medium
+bgst-stk007,Local Authority (BG Stores),external,medium
+bgst-stk008,Franchise Partners (BG Stores),external,medium
+bgst-stk009,Customers (BG Stores),external,low
+bgst-stk010,Carriers (BG Stores),external,high
+bgon-stk001,Customers (BG Online),external,medium
+bgon-stk002,Employees (BG Online),internal,high
+bgon-stk003,Shareholders (BG Online),external,low
+bgon-stk004,Unions (BG Online),external,medium
+bgon-stk005,Franchise Partners (BG Online),external,medium
+bgon-stk006,Local Authority (BG Online),external,low
+bgon-stk007,Investors (BG Online),external,low
+bgon-stk008,Suppliers (BG Online),external,medium
+bgon-stk009,Carriers (BG Online),external,high
+bgon-stk010,Regulators (BG Online),external,low
+bgwh-stk001,Franchise Partners (BG Wholesale),external,high
+bgwh-stk002,Carriers (BG Wholesale),external,high
+bgwh-stk003,Unions (BG Wholesale),external,medium
+bgwh-stk004,Investors (BG Wholesale),external,high
+bgwh-stk005,Employees (BG Wholesale),internal,medium
+bgwh-stk006,Board (BG Wholesale),internal,medium
+bgwh-stk007,Suppliers (BG Wholesale),external,low
+bgwh-stk008,Customers (BG Wholesale),external,high
+bgwh-stk009,Local Authority (BG Wholesale),external,low
+bgwh-stk010,Regulators (BG Wholesale),external,low
+bglg-stk001,Shareholders (BG Logistics),external,medium
+bglg-stk002,Regulators (BG Logistics),external,low
+bglg-stk003,Employees (BG Logistics),internal,high
+bglg-stk004,Customers (BG Logistics),external,medium
+bglg-stk005,Carriers (BG Logistics),external,medium
+bglg-stk006,Suppliers (BG Logistics),external,low
+bglg-stk007,Franchise Partners (BG Logistics),external,high
+bglg-stk008,Board (BG Logistics),internal,medium
+bglg-stk009,Investors (BG Logistics),external,high
+bglg-stk010,Local Authority (BG Logistics),external,low
+ltst-stk001,Customers (LT Stores),external,high
+ltst-stk002,Carriers (LT Stores),external,low
+ltst-stk003,Investors (LT Stores),external,low
+ltst-stk004,Franchise Partners (LT Stores),external,high
+ltst-stk005,Shareholders (LT Stores),external,high
+ltst-stk006,Unions (LT Stores),external,high
+ltst-stk007,Board (LT Stores),internal,low
+ltst-stk008,Community Groups (LT Stores),external,high
+ltst-stk009,Regulators (LT Stores),external,high
+ltst-stk010,Local Authority (LT Stores),external,low
+lton-stk001,Shareholders (LT Online),external,medium
+lton-stk002,Local Authority (LT Online),external,low
+lton-stk003,Investors (LT Online),external,high
+lton-stk004,Employees (LT Online),internal,medium
+lton-stk005,Franchise Partners (LT Online),external,low
+lton-stk006,Unions (LT Online),external,medium
+lton-stk007,Community Groups (LT Online),external,low
+lton-stk008,Board (LT Online),internal,low
+lton-stk009,Carriers (LT Online),external,high
+lton-stk010,Customers (LT Online),external,medium
+ltwh-stk001,Shareholders (LT Wholesale),external,low
+ltwh-stk002,Local Authority (LT Wholesale),external,medium
+ltwh-stk003,Investors (LT Wholesale),external,medium
+ltwh-stk004,Board (LT Wholesale),internal,low
+ltwh-stk005,Customers (LT Wholesale),external,high
+ltwh-stk006,Employees (LT Wholesale),internal,low
+ltwh-stk007,Regulators (LT Wholesale),external,low
+ltwh-stk008,Carriers (LT Wholesale),external,low
+ltwh-stk009,Community Groups (LT Wholesale),external,high
+ltwh-stk010,Suppliers (LT Wholesale),external,low
+ltlg-stk001,Franchise Partners (LT Logistics),external,high
+ltlg-stk002,Community Groups (LT Logistics),external,low
+ltlg-stk003,Investors (LT Logistics),external,low
+ltlg-stk004,Board (LT Logistics),internal,low
+ltlg-stk005,Shareholders (LT Logistics),external,medium
+ltlg-stk006,Local Authority (LT Logistics),external,low
+ltlg-stk007,Customers (LT Logistics),external,high
+ltlg-stk008,Unions (LT Logistics),external,low
+ltlg-stk009,Employees (LT Logistics),internal,medium
+ltlg-stk010,Carriers (LT Logistics),external,medium
+lvst-stk001,Community Groups (LV Stores),external,high
+lvst-stk002,Franchise Partners (LV Stores),external,medium
+lvst-stk003,Suppliers (LV Stores),external,medium
+lvst-stk004,Local Authority (LV Stores),external,medium
+lvst-stk005,Regulators (LV Stores),external,medium
+lvst-stk006,Investors (LV Stores),external,low
+lvst-stk007,Unions (LV Stores),external,medium
+lvst-stk008,Carriers (LV Stores),external,medium
+lvst-stk009,Shareholders (LV Stores),external,high
+lvst-stk010,Employees (LV Stores),internal,high
+lvon-stk001,Unions (LV Online),external,medium
+lvon-stk002,Suppliers (LV Online),external,low
+lvon-stk003,Customers (LV Online),external,low
+lvon-stk004,Local Authority (LV Online),external,high
+lvon-stk005,Investors (LV Online),external,low
+lvon-stk006,Regulators (LV Online),external,high
+lvon-stk007,Community Groups (LV Online),external,high
+lvon-stk008,Franchise Partners (LV Online),external,high
+lvon-stk009,Shareholders (LV Online),external,medium
+lvon-stk010,Carriers (LV Online),external,low
+lvwh-stk001,Customers (LV Wholesale),external,low
+lvwh-stk002,Investors (LV Wholesale),external,low
+lvwh-stk003,Shareholders (LV Wholesale),external,high
+lvwh-stk004,Local Authority (LV Wholesale),external,medium
+lvwh-stk005,Unions (LV Wholesale),external,low
+lvwh-stk006,Regulators (LV Wholesale),external,medium
+lvwh-stk007,Franchise Partners (LV Wholesale),external,low
+lvwh-stk008,Carriers (LV Wholesale),external,high
+lvwh-stk009,Suppliers (LV Wholesale),external,low
+lvwh-stk010,Community Groups (LV Wholesale),external,medium
+lvlg-stk001,Regulators (LV Logistics),external,low
+lvlg-stk002,Board (LV Logistics),internal,high
+lvlg-stk003,Unions (LV Logistics),external,low
+lvlg-stk004,Employees (LV Logistics),internal,medium
+lvlg-stk005,Community Groups (LV Logistics),external,low
+lvlg-stk006,Carriers (LV Logistics),external,medium
+lvlg-stk007,Investors (LV Logistics),external,low
+lvlg-stk008,Franchise Partners (LV Logistics),external,high
+lvlg-stk009,Local Authority (LV Logistics),external,medium
+lvlg-stk010,Suppliers (LV Logistics),external,medium

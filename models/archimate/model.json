@@ -1,5 +1,7 @@
-// A made-up retail group's enterprise architecture, in ArchiMate's three core layers (business, application,
-// technology), to show a larger generic model with cross-layer serving and realization. Everything here is fictional.
+// A made-up retail group's enterprise architecture, in ArchiMate's three core layers (business, application, technology)
+// and its strategy and motivation elements, as a large generic model: about 47,000 elements and 540,000 links across 25
+// markets and 4 business lines each. The files are made by generate.py (see docs/models.md) from the hand-written core in
+// core/. Everything here is fictional.
 {
   "name": "Aldergate Retail Group (ArchiMate)",
   "types": [
@@ -64,6 +66,87 @@
       "name": "TechnologyService", "color": "#22c55e", "icon": "SettingsEthernet",
       "source": { "file": "tech_services.csv", "key": "id", "name": "name" },
       "fields": [ { "key": "provider", "description": "Who runs it." } ]
+    },
+    {
+      "name": "Resource", "color": "#fb923c", "icon": "Inventory2",
+      "source": { "file": "resources.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "resource_type", "type": "choice", "options": [ "physical", "human", "financial", "intangible" ], "description": "What kind of asset it is." } ]
+    },
+    {
+      "name": "Capability", "color": "#f97316", "icon": "Extension",
+      "source": { "file": "capabilities.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "maturity", "type": "choice", "options": [ "initial", "developing", "defined", "managed", "optimising" ], "description": "How well the business can do it today." },
+        { "key": "importance", "type": "choice", "options": [ "low", "medium", "high" ], "description": "How much the strategy leans on it." }
+      ]
+    },
+    {
+      "name": "ValueStream", "color": "#ea580c", "icon": "Waves",
+      "source": { "file": "value_streams.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "customer_facing", "type": "boolean", "description": "Whether a customer sees it from end to end." } ]
+    },
+    {
+      "name": "CourseOfAction", "color": "#c2410c", "icon": "AltRoute",
+      "source": { "file": "courses_of_action.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "status", "type": "choice", "options": [ "proposed", "approved", "in_flight", "done" ], "description": "How far it has got." },
+        { "key": "horizon", "type": "choice", "options": [ "now", "next", "later" ], "description": "When it is meant to land." }
+      ]
+    },
+    {
+      "name": "Stakeholder", "color": "#a78bfa", "icon": "Groups",
+      "source": { "file": "stakeholders.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "stakeholder_type", "type": "choice", "options": [ "internal", "external" ], "description": "Inside the group or outside it." },
+        { "key": "influence", "type": "choice", "options": [ "low", "medium", "high" ], "description": "How much say they have." }
+      ]
+    },
+    {
+      "name": "Driver", "color": "#8b5cf6", "icon": "Bolt",
+      "source": { "file": "drivers.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "driver_type", "type": "choice", "options": [ "market", "regulatory", "technology", "customer", "competitive", "financial" ], "description": "Where the pressure comes from." } ]
+    },
+    {
+      "name": "Assessment", "color": "#7c3aed", "icon": "Assessment",
+      "source": { "file": "assessments.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "rating", "type": "choice", "options": [ "strength", "weakness", "opportunity", "threat" ], "description": "Which part of a SWOT it belongs to." } ]
+    },
+    {
+      "name": "Goal", "color": "#c084fc", "icon": "Flag",
+      "source": { "file": "goals.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "priority", "type": "choice", "options": [ "low", "medium", "high", "critical" ], "description": "How much it matters." } ]
+    },
+    {
+      "name": "Outcome", "color": "#d8b4fe", "icon": "EmojiEvents",
+      "source": { "file": "outcomes.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "target_date", "type": "date", "description": "When it should be reached." } ]
+    },
+    {
+      "name": "Principle", "color": "#9333ea", "icon": "Gavel",
+      "source": { "file": "principles.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "rationale", "type": "text", "description": "Why the group holds to it." } ]
+    },
+    {
+      "name": "Requirement", "color": "#e879f9", "icon": "Rule",
+      "source": { "file": "requirements.csv", "key": "id", "name": "name" },
+      "fields": [
+        { "key": "kind", "type": "choice", "options": [ "functional", "non_functional", "regulatory", "security" ], "description": "What sort of requirement it is." },
+        { "key": "priority", "type": "choice", "options": [ "must", "should", "could" ], "description": "How firm it is." }
+      ]
+    },
+    {
+      "name": "Constraint", "color": "#a855f7", "icon": "Block",
+      "source": { "file": "constraints.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "constraint_type", "type": "choice", "options": [ "budget", "time", "legal", "technical" ], "description": "What kind of limit it is." } ]
+    },
+    {
+      "name": "Meaning", "color": "#b794f4", "icon": "Lightbulb",
+      "source": { "file": "meanings.csv", "key": "id", "name": "name" }
+    },
+    {
+      "name": "Value", "color": "#d946ef", "icon": "Diamond",
+      "source": { "file": "values.csv", "key": "id", "name": "name" },
+      "fields": [ { "key": "value_type", "type": "choice", "options": [ "monetary", "experience", "convenience", "assurance" ], "description": "How people feel the benefit." } ]
     }
   ],
   "relationships": [
@@ -86,6 +169,41 @@
     { "from": "DataObject", "type": "REALIZATION", "to": "BusinessObject", "source": { "file": "data_realizes_object.csv", "fromColumn": "data", "toColumn": "object" } },
     { "from": "ApplicationComponent", "type": "ASSIGNMENT", "to": "TechnologyNode", "source": { "file": "component_deployed_on_node.csv", "fromColumn": "component", "toColumn": "node" } },
     { "from": "TechnologyService", "type": "SERVING", "to": "ApplicationComponent", "source": { "file": "techservice_serves_component.csv", "fromColumn": "service", "toColumn": "component" } },
-    { "from": "TechnologyNode", "type": "REALIZATION", "to": "TechnologyService", "source": { "file": "node_realizes_techservice.csv", "fromColumn": "node", "toColumn": "service" } }
+    { "from": "TechnologyNode", "type": "REALIZATION", "to": "TechnologyService", "source": { "file": "node_realizes_techservice.csv", "fromColumn": "node", "toColumn": "service" } },
+    { "from": "BusinessService", "type": "SERVING", "to": "BusinessActor", "source": { "file": "business_service_serves_actor.csv", "fromColumn": "service", "toColumn": "actor" } },
+    { "from": "ApplicationComponent", "type": "FLOW", "to": "ApplicationComponent", "source": { "file": "component_flows_to_component.csv", "fromColumn": "from", "toColumn": "to" },
+      "fields": [ { "key": "frequency", "type": "choice", "options": [ "realtime", "hourly", "daily", "batch" ], "description": "How often data moves." } ] },
+    { "from": "Capability", "type": "COMPOSITION", "to": "Capability", "source": { "file": "capability_composition.csv", "fromColumn": "parent", "toColumn": "child" } },
+    { "from": "BusinessProcess", "type": "REALIZATION", "to": "Capability", "source": { "file": "process_realizes_capability.csv", "fromColumn": "process", "toColumn": "capability" } },
+    { "from": "ApplicationComponent", "type": "REALIZATION", "to": "Resource", "source": { "file": "component_realizes_resource.csv", "fromColumn": "component", "toColumn": "resource" } },
+    { "from": "TechnologyNode", "type": "REALIZATION", "to": "Resource", "source": { "file": "node_realizes_resource.csv", "fromColumn": "node", "toColumn": "resource" } },
+    { "from": "Resource", "type": "REALIZATION", "to": "Capability", "source": { "file": "resource_realizes_capability.csv", "fromColumn": "resource", "toColumn": "capability" } },
+    { "from": "Capability", "type": "SERVING", "to": "ValueStream", "source": { "file": "capability_serves_value_stream.csv", "fromColumn": "capability", "toColumn": "stream" } },
+    { "from": "ValueStream", "type": "SERVING", "to": "BusinessActor", "source": { "file": "value_stream_serves_actor.csv", "fromColumn": "stream", "toColumn": "actor" } },
+    { "from": "CourseOfAction", "type": "AGGREGATION", "to": "Capability", "source": { "file": "course_aggregates_capability.csv", "fromColumn": "course", "toColumn": "capability" } },
+    { "from": "CourseOfAction", "type": "REALIZATION", "to": "Goal", "source": { "file": "course_realizes_goal.csv", "fromColumn": "course", "toColumn": "goal" } },
+    { "from": "Capability", "type": "REALIZATION", "to": "Requirement", "source": { "file": "capability_realizes_requirement.csv", "fromColumn": "capability", "toColumn": "requirement" } },
+    { "from": "Stakeholder", "type": "ASSOCIATION", "to": "Driver", "source": { "file": "stakeholder_driver.csv", "fromColumn": "stakeholder", "toColumn": "driver" } },
+    { "from": "BusinessActor", "type": "ASSOCIATION", "to": "Stakeholder", "source": { "file": "actor_stakeholder.csv", "fromColumn": "actor", "toColumn": "stakeholder" } },
+    { "from": "Driver", "type": "INFLUENCE", "to": "Driver", "source": { "file": "driver_influences_driver.csv", "fromColumn": "from", "toColumn": "to" },
+      "fields": [ { "key": "strength", "type": "choice", "options": [ "strong_negative", "negative", "positive", "strong_positive" ], "description": "How strongly it pushes, and which way." } ] },
+    { "from": "Driver", "type": "ASSOCIATION", "to": "Assessment", "source": { "file": "driver_assessment.csv", "fromColumn": "driver", "toColumn": "assessment" } },
+    { "from": "Assessment", "type": "INFLUENCE", "to": "Goal", "source": { "file": "assessment_influences_goal.csv", "fromColumn": "assessment", "toColumn": "goal" },
+      "fields": [ { "key": "strength", "type": "choice", "options": [ "strong_negative", "negative", "positive", "strong_positive" ], "description": "How strongly it pushes, and which way." } ] },
+    { "from": "Goal", "type": "AGGREGATION", "to": "Goal", "source": { "file": "goal_aggregation.csv", "fromColumn": "parent", "toColumn": "child" } },
+    { "from": "Outcome", "type": "REALIZATION", "to": "Goal", "source": { "file": "outcome_realizes_goal.csv", "fromColumn": "outcome", "toColumn": "goal" } },
+    { "from": "Principle", "type": "REALIZATION", "to": "Goal", "source": { "file": "principle_realizes_goal.csv", "fromColumn": "principle", "toColumn": "goal" } },
+    { "from": "Requirement", "type": "REALIZATION", "to": "Outcome", "source": { "file": "requirement_realizes_outcome.csv", "fromColumn": "requirement", "toColumn": "outcome" } },
+    { "from": "Requirement", "type": "REALIZATION", "to": "Principle", "source": { "file": "requirement_realizes_principle.csv", "fromColumn": "requirement", "toColumn": "principle" } },
+    { "from": "Constraint", "type": "INFLUENCE", "to": "Requirement", "source": { "file": "constraint_influences_requirement.csv", "fromColumn": "constraint", "toColumn": "requirement" },
+      "fields": [ { "key": "strength", "type": "choice", "options": [ "strong_negative", "negative", "positive", "strong_positive" ], "description": "How strongly it pushes, and which way." } ] },
+    { "from": "BusinessProcess", "type": "REALIZATION", "to": "Requirement", "source": { "file": "process_realizes_requirement.csv", "fromColumn": "process", "toColumn": "requirement" } },
+    { "from": "BusinessService", "type": "REALIZATION", "to": "Requirement", "source": { "file": "business_service_realizes_requirement.csv", "fromColumn": "service", "toColumn": "requirement" } },
+    { "from": "ApplicationService", "type": "REALIZATION", "to": "Requirement", "source": { "file": "app_service_realizes_requirement.csv", "fromColumn": "service", "toColumn": "requirement" } },
+    { "from": "ApplicationComponent", "type": "REALIZATION", "to": "Requirement", "source": { "file": "component_realizes_requirement.csv", "fromColumn": "component", "toColumn": "requirement" } },
+    { "from": "TechnologyNode", "type": "REALIZATION", "to": "Requirement", "source": { "file": "node_realizes_requirement.csv", "fromColumn": "node", "toColumn": "requirement" } },
+    { "from": "Meaning", "type": "ASSOCIATION", "to": "BusinessObject", "source": { "file": "meaning_object.csv", "fromColumn": "meaning", "toColumn": "object" } },
+    { "from": "BusinessService", "type": "ASSOCIATION", "to": "Value", "source": { "file": "business_service_value.csv", "fromColumn": "service", "toColumn": "value" } },
+    { "from": "Stakeholder", "type": "ASSOCIATION", "to": "Value", "source": { "file": "stakeholder_value.csv", "fromColumn": "stakeholder", "toColumn": "value" } }
   ]
 }

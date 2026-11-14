@@ -1,0 +1,13 @@
+id,name,rationale
+grp-pri001,Buy before build,Bought products cost less to keep than ours.
+grp-pri002,Data is a shared asset,One source of truth saves reconciling.
+grp-pri003,Design for failure,Every dependency will be down some day.
+grp-pri004,Prefer standard interfaces,Standards make parts easy to swap.
+grp-pri005,One owner per process,Shared ownership leaves problems unowned.
+grp-pri006,Automate by default,Manual steps are where errors creep in.
+grp-pri007,Secure by design,Security added later costs more.
+grp-pri008,Reuse before new,A second copy is a second thing to maintain.
+grp-pri009,Customer first,Choices are judged by what customers see.
+grp-pri010,Measure what matters,What isn't measured drifts.
+grp-pri011,Cloud where it fits,Run it where it costs least to run.
+grp-pri012,"Small changes, often",Small releases are easy to undo.

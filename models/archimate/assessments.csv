@@ -1,0 +1,1001 @@
+id,name,rating
+gbst-ass001,Growing Payment demand (GB Stores),opportunity
+gbst-ass002,Room to automate Supplier (GB Stores),opportunity
+gbst-ass003,Ageing Payment platform (GB Stores),weakness
+gbst-ass004,Ageing Fraud platform (GB Stores),weakness
+gbst-ass005,Growing Stock demand (GB Stores),opportunity
+gbst-ass006,Growing Order demand (GB Stores),opportunity
+gbst-ass007,Growing Promotion demand (GB Stores),opportunity
+gbst-ass008,Rising Customer risk (GB Stores),threat
+gbst-ass009,Growing Supplier demand (GB Stores),opportunity
+gbst-ass010,Growing Delivery demand (GB Stores),opportunity
+gbon-ass001,Fragmented Payment data (GB Online),weakness
+gbon-ass002,Ageing Delivery platform (GB Online),weakness
+gbon-ass003,Strong Order team (GB Online),strength
+gbon-ass004,Ageing Payment platform (GB Online),weakness
+gbon-ass005,Fragmented Stock data (GB Online),weakness
+gbon-ass006,Fragmented Pricing data (GB Online),weakness
+gbon-ass007,Strong Payment team (GB Online),strength
+gbon-ass008,Growing Promotion demand (GB Online),opportunity
+gbon-ass009,Rising Payment risk (GB Online),threat
+gbon-ass010,Rising Supplier risk (GB Online),threat
+gbwh-ass001,Growing Stock demand (GB Wholesale),opportunity
+gbwh-ass002,High Supplier accuracy (GB Wholesale),strength
+gbwh-ass003,Growing Order demand (GB Wholesale),opportunity
+gbwh-ass004,Fragmented Pricing data (GB Wholesale),weakness
+gbwh-ass005,Fragmented Returns data (GB Wholesale),weakness
+gbwh-ass006,Room to automate Order (GB Wholesale),opportunity
+gbwh-ass007,Room to automate Supplier (GB Wholesale),opportunity
+gbwh-ass008,Rising Payment risk (GB Wholesale),threat
+gbwh-ass009,Ageing Payment platform (GB Wholesale),weakness
+gbwh-ass010,Slow Order reporting (GB Wholesale),weakness
+gblg-ass001,Room to automate Supplier (GB Logistics),opportunity
+gblg-ass002,Room to automate Pricing (GB Logistics),opportunity
+gblg-ass003,Ageing Returns platform (GB Logistics),weakness
+gblg-ass004,Fragmented Payment data (GB Logistics),weakness
+gblg-ass005,High Payment accuracy (GB Logistics),strength
+gblg-ass006,Fragmented Customer data (GB Logistics),weakness
+gblg-ass007,Ageing Pricing platform (GB Logistics),weakness
+gblg-ass008,Growing Customer demand (GB Logistics),opportunity
+gblg-ass009,Room to automate Customer (GB Logistics),opportunity
+gblg-ass010,Rising Payment risk (GB Logistics),threat
+iest-ass001,Strong Supplier team (IE Stores),strength
+iest-ass002,Slow Payment reporting (IE Stores),weakness
+iest-ass003,Fragmented Payment data (IE Stores),weakness
+iest-ass004,Growing Order demand (IE Stores),opportunity
+iest-ass005,Ageing Returns platform (IE Stores),weakness
+iest-ass006,Rising Delivery risk (IE Stores),threat
+iest-ass007,Ageing Stock platform (IE Stores),weakness
+iest-ass008,Strong Payment team (IE Stores),strength
+iest-ass009,Fragmented Stock data (IE Stores),weakness
+iest-ass010,High Stock accuracy (IE Stores),strength
+ieon-ass001,High Promotion accuracy (IE Online),strength
+ieon-ass002,Growing Order demand (IE Online),opportunity
+ieon-ass003,Slow Order reporting (IE Online),weakness
+ieon-ass004,Room to automate Supplier (IE Online),opportunity
+ieon-ass005,High Payment accuracy (IE Online),strength
+ieon-ass006,Room to automate Fraud (IE Online),opportunity
+ieon-ass007,Room to automate Order (IE Online),opportunity
+ieon-ass008,High Pricing accuracy (IE Online),strength
+ieon-ass009,Slow Stock reporting (IE Online),weakness
+ieon-ass010,Slow Fraud reporting (IE Online),weakness
+iewh-ass001,Strong Customer team (IE Wholesale),strength
+iewh-ass002,Strong Supplier team (IE Wholesale),strength
+iewh-ass003,Rising Pricing risk (IE Wholesale),threat
+iewh-ass004,Growing Fraud demand (IE Wholesale),opportunity
+iewh-ass005,Slow Promotion reporting (IE Wholesale),weakness
+iewh-ass006,Growing Order demand (IE Wholesale),opportunity
+iewh-ass007,Ageing Supplier platform (IE Wholesale),weakness
+iewh-ass008,Strong Returns team (IE Wholesale),strength
+iewh-ass009,Slow Fraud reporting (IE Wholesale),weakness
+iewh-ass010,Fragmented Stock data (IE Wholesale),weakness
+ielg-ass001,Ageing Supplier platform (IE Logistics),weakness
+ielg-ass002,High Order accuracy (IE Logistics),strength
+ielg-ass003,Ageing Stock platform (IE Logistics),weakness
+ielg-ass004,Ageing Order platform (IE Logistics),weakness
+ielg-ass005,Ageing Fraud platform (IE Logistics),weakness
+ielg-ass006,Growing Fraud demand (IE Logistics),opportunity
+ielg-ass007,Growing Returns demand (IE Logistics),opportunity
+ielg-ass008,High Pricing accuracy (IE Logistics),strength
+ielg-ass009,Fragmented Payment data (IE Logistics),weakness
+ielg-ass010,Growing Delivery demand (IE Logistics),opportunity
+frst-ass001,High Payment accuracy (FR Stores),strength
+frst-ass002,Fragmented Fraud data (FR Stores),weakness
+frst-ass003,High Delivery accuracy (FR Stores),strength
+frst-ass004,Growing Pricing demand (FR Stores),opportunity
+frst-ass005,Fragmented Stock data (FR Stores),weakness
+frst-ass006,Growing Returns demand (FR Stores),opportunity
+frst-ass007,Rising Stock risk (FR Stores),threat
+frst-ass008,Ageing Returns platform (FR Stores),weakness
+frst-ass009,Rising Customer risk (FR Stores),threat
+frst-ass010,Ageing Fraud platform (FR Stores),weakness
+fron-ass001,Strong Stock team (FR Online),strength
+fron-ass002,Slow Returns reporting (FR Online),weakness
+fron-ass003,Room to automate Fraud (FR Online),opportunity
+fron-ass004,Room to automate Payment (FR Online),opportunity
+fron-ass005,Slow Stock reporting (FR Online),weakness
+fron-ass006,Slow Order reporting (FR Online),weakness
+fron-ass007,High Promotion accuracy (FR Online),strength
+fron-ass008,Rising Payment risk (FR Online),threat
+fron-ass009,Room to automate Promotion (FR Online),opportunity
+fron-ass010,Growing Payment demand (FR Online),opportunity
+frwh-ass001,Ageing Pricing platform (FR Wholesale),weakness
+frwh-ass002,Slow Fraud reporting (FR Wholesale),weakness
+frwh-ass003,Room to automate Fraud (FR Wholesale),opportunity
+frwh-ass004,Slow Payment reporting (FR Wholesale),weakness
+frwh-ass005,High Promotion accuracy (FR Wholesale),strength
+frwh-ass006,Room to automate Pricing (FR Wholesale),opportunity
+frwh-ass007,Growing Fraud demand (FR Wholesale),opportunity
+frwh-ass008,Room to automate Supplier (FR Wholesale),opportunity
+frwh-ass009,Strong Customer team (FR Wholesale),strength
+frwh-ass010,Ageing Payment platform (FR Wholesale),weakness
+frlg-ass001,Growing Delivery demand (FR Logistics),opportunity
+frlg-ass002,Strong Supplier team (FR Logistics),strength
+frlg-ass003,Slow Returns reporting (FR Logistics),weakness
+frlg-ass004,Strong Stock team (FR Logistics),strength
+frlg-ass005,Fragmented Stock data (FR Logistics),weakness
+frlg-ass006,Growing Payment demand (FR Logistics),opportunity
+frlg-ass007,Fragmented Delivery data (FR Logistics),weakness
+frlg-ass008,High Order accuracy (FR Logistics),strength
+frlg-ass009,Rising Returns risk (FR Logistics),threat
+frlg-ass010,Growing Supplier demand (FR Logistics),opportunity
+dest-ass001,Strong Stock team (DE Stores),strength
+dest-ass002,Room to automate Payment (DE Stores),opportunity
+dest-ass003,Rising Customer risk (DE Stores),threat
+dest-ass004,High Stock accuracy (DE Stores),strength
+dest-ass005,Room to automate Delivery (DE Stores),opportunity
+dest-ass006,High Customer accuracy (DE Stores),strength
+dest-ass007,Fragmented Delivery data (DE Stores),weakness
+dest-ass008,Ageing Delivery platform (DE Stores),weakness
+dest-ass009,Growing Returns demand (DE Stores),opportunity
+dest-ass010,Strong Fraud team (DE Stores),strength
+deon-ass001,Fragmented Supplier data (DE Online),weakness
+deon-ass002,Fragmented Payment data (DE Online),weakness
+deon-ass003,Strong Fraud team (DE Online),strength
+deon-ass004,Ageing Order platform (DE Online),weakness
+deon-ass005,Growing Supplier demand (DE Online),opportunity
+deon-ass006,Strong Delivery team (DE Online),strength
+deon-ass007,High Fraud accuracy (DE Online),strength
+deon-ass008,Ageing Promotion platform (DE Online),weakness
+deon-ass009,Ageing Delivery platform (DE Online),weakness
+deon-ass010,High Pricing accuracy (DE Online),strength
+dewh-ass001,Slow Customer reporting (DE Wholesale),weakness
+dewh-ass002,Fragmented Payment data (DE Wholesale),weakness
+dewh-ass003,Ageing Delivery platform (DE Wholesale),weakness
+dewh-ass004,Strong Pricing team (DE Wholesale),strength
+dewh-ass005,Ageing Returns platform (DE Wholesale),weakness
+dewh-ass006,Ageing Customer platform (DE Wholesale),weakness
+dewh-ass007,High Payment accuracy (DE Wholesale),strength
+dewh-ass008,Strong Stock team (DE Wholesale),strength
+dewh-ass009,Growing Delivery demand (DE Wholesale),opportunity
+dewh-ass010,Growing Payment demand (DE Wholesale),opportunity
+delg-ass001,Room to automate Order (DE Logistics),opportunity
+delg-ass002,High Delivery accuracy (DE Logistics),strength
+delg-ass003,Growing Payment demand (DE Logistics),opportunity
+delg-ass004,Room to automate Promotion (DE Logistics),opportunity
+delg-ass005,Strong Returns team (DE Logistics),strength
+delg-ass006,Strong Promotion team (DE Logistics),strength
+delg-ass007,Rising Order risk (DE Logistics),threat
+delg-ass008,Slow Order reporting (DE Logistics),weakness
+delg-ass009,Room to automate Delivery (DE Logistics),opportunity
+delg-ass010,High Payment accuracy (DE Logistics),strength
+nlst-ass001,Growing Customer demand (NL Stores),opportunity
+nlst-ass002,High Customer accuracy (NL Stores),strength
+nlst-ass003,Fragmented Delivery data (NL Stores),weakness
+nlst-ass004,Slow Order reporting (NL Stores),weakness
+nlst-ass005,Strong Payment team (NL Stores),strength
+nlst-ass006,Slow Stock reporting (NL Stores),weakness
+nlst-ass007,Room to automate Pricing (NL Stores),opportunity
+nlst-ass008,High Supplier accuracy (NL Stores),strength
+nlst-ass009,Room to automate Promotion (NL Stores),opportunity
+nlst-ass010,Rising Order risk (NL Stores),threat
+nlon-ass001,Growing Order demand (NL Online),opportunity
+nlon-ass002,Fragmented Delivery data (NL Online),weakness
+nlon-ass003,Ageing Returns platform (NL Online),weakness
+nlon-ass004,Room to automate Promotion (NL Online),opportunity
+nlon-ass005,Slow Delivery reporting (NL Online),weakness
+nlon-ass006,Room to automate Pricing (NL Online),opportunity
+nlon-ass007,Strong Fraud team (NL Online),strength
+nlon-ass008,Growing Pricing demand (NL Online),opportunity
+nlon-ass009,Strong Stock team (NL Online),strength
+nlon-ass010,High Payment accuracy (NL Online),strength
+nlwh-ass001,Room to automate Order (NL Wholesale),opportunity
+nlwh-ass002,High Payment accuracy (NL Wholesale),strength
+nlwh-ass003,Room to automate Promotion (NL Wholesale),opportunity
+nlwh-ass004,Rising Order risk (NL Wholesale),threat
+nlwh-ass005,Strong Customer team (NL Wholesale),strength
+nlwh-ass006,Room to automate Payment (NL Wholesale),opportunity
+nlwh-ass007,High Returns accuracy (NL Wholesale),strength
+nlwh-ass008,Ageing Order platform (NL Wholesale),weakness
+nlwh-ass009,Room to automate Delivery (NL Wholesale),opportunity
+nlwh-ass010,Fragmented Returns data (NL Wholesale),weakness
+nllg-ass001,Rising Returns risk (NL Logistics),threat
+nllg-ass002,Slow Stock reporting (NL Logistics),weakness
+nllg-ass003,Strong Order team (NL Logistics),strength
+nllg-ass004,Room to automate Delivery (NL Logistics),opportunity
+nllg-ass005,Slow Fraud reporting (NL Logistics),weakness
+nllg-ass006,High Order accuracy (NL Logistics),strength
+nllg-ass007,Growing Customer demand (NL Logistics),opportunity
+nllg-ass008,Growing Stock demand (NL Logistics),opportunity
+nllg-ass009,Ageing Fraud platform (NL Logistics),weakness
+nllg-ass010,Room to automate Customer (NL Logistics),opportunity
+best-ass001,Rising Customer risk (BE Stores),threat
+best-ass002,Growing Customer demand (BE Stores),opportunity
+best-ass003,Strong Fraud team (BE Stores),strength
+best-ass004,Room to automate Stock (BE Stores),opportunity
+best-ass005,Rising Delivery risk (BE Stores),threat
+best-ass006,Strong Delivery team (BE Stores),strength
+best-ass007,Slow Delivery reporting (BE Stores),weakness
+best-ass008,Rising Payment risk (BE Stores),threat
+best-ass009,Ageing Stock platform (BE Stores),weakness
+best-ass010,Strong Promotion team (BE Stores),strength
+beon-ass001,Strong Pricing team (BE Online),strength
+beon-ass002,Ageing Order platform (BE Online),weakness
+beon-ass003,Rising Order risk (BE Online),threat
+beon-ass004,Room to automate Stock (BE Online),opportunity
+beon-ass005,Rising Delivery risk (BE Online),threat
+beon-ass006,Room to automate Customer (BE Online),opportunity
+beon-ass007,Strong Payment team (BE Online),strength
+beon-ass008,Ageing Payment platform (BE Online),weakness
+beon-ass009,Growing Supplier demand (BE Online),opportunity
+beon-ass010,High Delivery accuracy (BE Online),strength
+bewh-ass001,Room to automate Returns (BE Wholesale),opportunity
+bewh-ass002,Growing Stock demand (BE Wholesale),opportunity
+bewh-ass003,Strong Delivery team (BE Wholesale),strength
+bewh-ass004,Growing Order demand (BE Wholesale),opportunity
+bewh-ass005,Growing Supplier demand (BE Wholesale),opportunity
+bewh-ass006,Rising Supplier risk (BE Wholesale),threat
+bewh-ass007,Room to automate Order (BE Wholesale),opportunity
+bewh-ass008,Fragmented Payment data (BE Wholesale),weakness
+bewh-ass009,Ageing Pricing platform (BE Wholesale),weakness
+bewh-ass010,Ageing Fraud platform (BE Wholesale),weakness
+belg-ass001,Fragmented Payment data (BE Logistics),weakness
+belg-ass002,High Stock accuracy (BE Logistics),strength
+belg-ass003,High Promotion accuracy (BE Logistics),strength
+belg-ass004,Ageing Order platform (BE Logistics),weakness
+belg-ass005,Slow Pricing reporting (BE Logistics),weakness
+belg-ass006,High Order accuracy (BE Logistics),strength
+belg-ass007,High Customer accuracy (BE Logistics),strength
+belg-ass008,Rising Fraud risk (BE Logistics),threat
+belg-ass009,Growing Stock demand (BE Logistics),opportunity
+belg-ass010,Strong Stock team (BE Logistics),strength
+esst-ass001,High Stock accuracy (ES Stores),strength
+esst-ass002,Strong Pricing team (ES Stores),strength
+esst-ass003,High Returns accuracy (ES Stores),strength
+esst-ass004,Fragmented Returns data (ES Stores),weakness
+esst-ass005,Strong Order team (ES Stores),strength
+esst-ass006,Ageing Fraud platform (ES Stores),weakness
+esst-ass007,Slow Fraud reporting (ES Stores),weakness
+esst-ass008,Room to automate Delivery (ES Stores),opportunity
+esst-ass009,Growing Order demand (ES Stores),opportunity
+esst-ass010,Strong Customer team (ES Stores),strength
+eson-ass001,Rising Fraud risk (ES Online),threat
+eson-ass002,Fragmented Customer data (ES Online),weakness
+eson-ass003,Strong Fraud team (ES Online),strength
+eson-ass004,Growing Customer demand (ES Online),opportunity
+eson-ass005,Fragmented Fraud data (ES Online),weakness
+eson-ass006,Growing Delivery demand (ES Online),opportunity
+eson-ass007,Growing Fraud demand (ES Online),opportunity
+eson-ass008,High Customer accuracy (ES Online),strength
+eson-ass009,Slow Order reporting (ES Online),weakness
+eson-ass010,High Stock accuracy (ES Online),strength
+eswh-ass001,Slow Delivery reporting (ES Wholesale),weakness
+eswh-ass002,Fragmented Supplier data (ES Wholesale),weakness
+eswh-ass003,Strong Returns team (ES Wholesale),strength
+eswh-ass004,Ageing Order platform (ES Wholesale),weakness
+eswh-ass005,Strong Payment team (ES Wholesale),strength
+eswh-ass006,Room to automate Order (ES Wholesale),opportunity
+eswh-ass007,High Payment accuracy (ES Wholesale),strength
+eswh-ass008,Room to automate Payment (ES Wholesale),opportunity
+eswh-ass009,Growing Supplier demand (ES Wholesale),opportunity
+eswh-ass010,High Stock accuracy (ES Wholesale),strength
+eslg-ass001,Slow Payment reporting (ES Logistics),weakness
+eslg-ass002,Strong Promotion team (ES Logistics),strength
+eslg-ass003,Slow Returns reporting (ES Logistics),weakness
+eslg-ass004,Rising Delivery risk (ES Logistics),threat
+eslg-ass005,Ageing Fraud platform (ES Logistics),weakness
+eslg-ass006,Slow Supplier reporting (ES Logistics),weakness
+eslg-ass007,High Returns accuracy (ES Logistics),strength
+eslg-ass008,Slow Fraud reporting (ES Logistics),weakness
+eslg-ass009,Room to automate Returns (ES Logistics),opportunity
+eslg-ass010,Slow Pricing reporting (ES Logistics),weakness
+ptst-ass001,High Stock accuracy (PT Stores),strength
+ptst-ass002,Growing Fraud demand (PT Stores),opportunity
+ptst-ass003,Strong Pricing team (PT Stores),strength
+ptst-ass004,Fragmented Payment data (PT Stores),weakness
+ptst-ass005,Rising Fraud risk (PT Stores),threat
+ptst-ass006,Strong Fraud team (PT Stores),strength
+ptst-ass007,Rising Pricing risk (PT Stores),threat
+ptst-ass008,Slow Returns reporting (PT Stores),weakness
+ptst-ass009,Slow Order reporting (PT Stores),weakness
+ptst-ass010,Fragmented Returns data (PT Stores),weakness
+pton-ass001,Ageing Stock platform (PT Online),weakness
+pton-ass002,Ageing Fraud platform (PT Online),weakness
+pton-ass003,Growing Stock demand (PT Online),opportunity
+pton-ass004,Growing Fraud demand (PT Online),opportunity
+pton-ass005,Fragmented Fraud data (PT Online),weakness
+pton-ass006,High Delivery accuracy (PT Online),strength
+pton-ass007,Fragmented Supplier data (PT Online),weakness
+pton-ass008,Fragmented Stock data (PT Online),weakness
+pton-ass009,Ageing Payment platform (PT Online),weakness
+pton-ass010,Fragmented Order data (PT Online),weakness
+ptwh-ass001,Rising Delivery risk (PT Wholesale),threat
+ptwh-ass002,Slow Pricing reporting (PT Wholesale),weakness
+ptwh-ass003,Growing Customer demand (PT Wholesale),opportunity
+ptwh-ass004,Growing Returns demand (PT Wholesale),opportunity
+ptwh-ass005,Growing Delivery demand (PT Wholesale),opportunity
+ptwh-ass006,Strong Fraud team (PT Wholesale),strength
+ptwh-ass007,Ageing Returns platform (PT Wholesale),weakness
+ptwh-ass008,Growing Promotion demand (PT Wholesale),opportunity
+ptwh-ass009,Slow Customer reporting (PT Wholesale),weakness
+ptwh-ass010,Growing Stock demand (PT Wholesale),opportunity
+ptlg-ass001,Rising Payment risk (PT Logistics),threat
+ptlg-ass002,Fragmented Delivery data (PT Logistics),weakness
+ptlg-ass003,Room to automate Customer (PT Logistics),opportunity
+ptlg-ass004,Ageing Promotion platform (PT Logistics),weakness
+ptlg-ass005,Slow Order reporting (PT Logistics),weakness
+ptlg-ass006,Strong Delivery team (PT Logistics),strength
+ptlg-ass007,Room to automate Promotion (PT Logistics),opportunity
+ptlg-ass008,Strong Promotion team (PT Logistics),strength
+ptlg-ass009,Ageing Fraud platform (PT Logistics),weakness
+ptlg-ass010,Growing Payment demand (PT Logistics),opportunity
+itst-ass001,Ageing Returns platform (IT Stores),weakness
+itst-ass002,Fragmented Supplier data (IT Stores),weakness
+itst-ass003,Fragmented Delivery data (IT Stores),weakness
+itst-ass004,High Pricing accuracy (IT Stores),strength
+itst-ass005,High Promotion accuracy (IT Stores),strength
+itst-ass006,Growing Fraud demand (IT Stores),opportunity
+itst-ass007,Growing Customer demand (IT Stores),opportunity
+itst-ass008,High Delivery accuracy (IT Stores),strength
+itst-ass009,Ageing Supplier platform (IT Stores),weakness
+itst-ass010,Growing Pricing demand (IT Stores),opportunity
+iton-ass001,Strong Fraud team (IT Online),strength
+iton-ass002,Ageing Stock platform (IT Online),weakness
+iton-ass003,Growing Stock demand (IT Online),opportunity
+iton-ass004,Fragmented Fraud data (IT Online),weakness
+iton-ass005,Strong Order team (IT Online),strength
+iton-ass006,Rising Payment risk (IT Online),threat
+iton-ass007,Fragmented Order data (IT Online),weakness
+iton-ass008,Fragmented Delivery data (IT Online),weakness
+iton-ass009,Fragmented Supplier data (IT Online),weakness
+iton-ass010,High Delivery accuracy (IT Online),strength
+itwh-ass001,High Order accuracy (IT Wholesale),strength
+itwh-ass002,Slow Order reporting (IT Wholesale),weakness
+itwh-ass003,Strong Payment team (IT Wholesale),strength
+itwh-ass004,Ageing Order platform (IT Wholesale),weakness
+itwh-ass005,Strong Fraud team (IT Wholesale),strength
+itwh-ass006,Growing Pricing demand (IT Wholesale),opportunity
+itwh-ass007,Fragmented Fraud data (IT Wholesale),weakness
+itwh-ass008,Strong Stock team (IT Wholesale),strength
+itwh-ass009,Fragmented Returns data (IT Wholesale),weakness
+itwh-ass010,High Pricing accuracy (IT Wholesale),strength
+itlg-ass001,Rising Order risk (IT Logistics),threat
+itlg-ass002,Growing Pricing demand (IT Logistics),opportunity
+itlg-ass003,Growing Fraud demand (IT Logistics),opportunity
+itlg-ass004,Strong Delivery team (IT Logistics),strength
+itlg-ass005,High Promotion accuracy (IT Logistics),strength
+itlg-ass006,Rising Pricing risk (IT Logistics),threat
+itlg-ass007,Slow Returns reporting (IT Logistics),weakness
+itlg-ass008,Slow Payment reporting (IT Logistics),weakness
+itlg-ass009,Fragmented Order data (IT Logistics),weakness
+itlg-ass010,Slow Fraud reporting (IT Logistics),weakness
+chst-ass001,Rising Customer risk (CH Stores),threat
+chst-ass002,Room to automate Returns (CH Stores),opportunity
+chst-ass003,Fragmented Stock data (CH Stores),weakness
+chst-ass004,Growing Delivery demand (CH Stores),opportunity
+chst-ass005,High Supplier accuracy (CH Stores),strength
+chst-ass006,Fragmented Promotion data (CH Stores),weakness
+chst-ass007,Strong Promotion team (CH Stores),strength
+chst-ass008,Ageing Customer platform (CH Stores),weakness
+chst-ass009,Rising Returns risk (CH Stores),threat
+chst-ass010,Strong Supplier team (CH Stores),strength
+chon-ass001,Growing Supplier demand (CH Online),opportunity
+chon-ass002,Slow Promotion reporting (CH Online),weakness
+chon-ass003,Rising Customer risk (CH Online),threat
+chon-ass004,High Delivery accuracy (CH Online),strength
+chon-ass005,Growing Promotion demand (CH Online),opportunity
+chon-ass006,Ageing Customer platform (CH Online),weakness
+chon-ass007,Rising Order risk (CH Online),threat
+chon-ass008,Ageing Pricing platform (CH Online),weakness
+chon-ass009,Rising Stock risk (CH Online),threat
+chon-ass010,Rising Payment risk (CH Online),threat
+chwh-ass001,Rising Promotion risk (CH Wholesale),threat
+chwh-ass002,Ageing Promotion platform (CH Wholesale),weakness
+chwh-ass003,Room to automate Customer (CH Wholesale),opportunity
+chwh-ass004,High Stock accuracy (CH Wholesale),strength
+chwh-ass005,Room to automate Stock (CH Wholesale),opportunity
+chwh-ass006,Ageing Stock platform (CH Wholesale),weakness
+chwh-ass007,Slow Stock reporting (CH Wholesale),weakness
+chwh-ass008,Slow Promotion reporting (CH Wholesale),weakness
+chwh-ass009,Slow Fraud reporting (CH Wholesale),weakness
+chwh-ass010,Ageing Customer platform (CH Wholesale),weakness
+chlg-ass001,Fragmented Payment data (CH Logistics),weakness
+chlg-ass002,Room to automate Returns (CH Logistics),opportunity
+chlg-ass003,Room to automate Delivery (CH Logistics),opportunity
+chlg-ass004,Slow Supplier reporting (CH Logistics),weakness
+chlg-ass005,Strong Delivery team (CH Logistics),strength
+chlg-ass006,High Payment accuracy (CH Logistics),strength
+chlg-ass007,Slow Fraud reporting (CH Logistics),weakness
+chlg-ass008,High Delivery accuracy (CH Logistics),strength
+chlg-ass009,Fragmented Pricing data (CH Logistics),weakness
+chlg-ass010,Ageing Stock platform (CH Logistics),weakness
+atst-ass001,Growing Supplier demand (AT Stores),opportunity
+atst-ass002,Slow Returns reporting (AT Stores),weakness
+atst-ass003,Slow Delivery reporting (AT Stores),weakness
+atst-ass004,Growing Stock demand (AT Stores),opportunity
+atst-ass005,High Order accuracy (AT Stores),strength
+atst-ass006,Growing Returns demand (AT Stores),opportunity
+atst-ass007,Rising Returns risk (AT Stores),threat
+atst-ass008,Fragmented Returns data (AT Stores),weakness
+atst-ass009,Slow Customer reporting (AT Stores),weakness
+atst-ass010,Rising Customer risk (AT Stores),threat
+aton-ass001,Strong Fraud team (AT Online),strength
+aton-ass002,Ageing Supplier platform (AT Online),weakness
+aton-ass003,Fragmented Returns data (AT Online),weakness
+aton-ass004,Ageing Returns platform (AT Online),weakness
+aton-ass005,Rising Supplier risk (AT Online),threat
+aton-ass006,Strong Order team (AT Online),strength
+aton-ass007,Room to automate Pricing (AT Online),opportunity
+aton-ass008,Rising Stock risk (AT Online),threat
+aton-ass009,Slow Order reporting (AT Online),weakness
+aton-ass010,Ageing Customer platform (AT Online),weakness
+atwh-ass001,Fragmented Stock data (AT Wholesale),weakness
+atwh-ass002,Rising Pricing risk (AT Wholesale),threat
+atwh-ass003,Strong Delivery team (AT Wholesale),strength
+atwh-ass004,Strong Promotion team (AT Wholesale),strength
+atwh-ass005,Fragmented Fraud data (AT Wholesale),weakness
+atwh-ass006,Slow Delivery reporting (AT Wholesale),weakness
+atwh-ass007,Growing Stock demand (AT Wholesale),opportunity
+atwh-ass008,Strong Payment team (AT Wholesale),strength
+atwh-ass009,Room to automate Promotion (AT Wholesale),opportunity
+atwh-ass010,Rising Customer risk (AT Wholesale),threat
+atlg-ass001,Ageing Order platform (AT Logistics),weakness
+atlg-ass002,Fragmented Returns data (AT Logistics),weakness
+atlg-ass003,Slow Pricing reporting (AT Logistics),weakness
+atlg-ass004,Fragmented Pricing data (AT Logistics),weakness
+atlg-ass005,Room to automate Pricing (AT Logistics),opportunity
+atlg-ass006,High Stock accuracy (AT Logistics),strength
+atlg-ass007,Growing Fraud demand (AT Logistics),opportunity
+atlg-ass008,High Returns accuracy (AT Logistics),strength
+atlg-ass009,Strong Fraud team (AT Logistics),strength
+atlg-ass010,Growing Order demand (AT Logistics),opportunity
+plst-ass001,Room to automate Pricing (PL Stores),opportunity
+plst-ass002,Room to automate Returns (PL Stores),opportunity
+plst-ass003,Slow Promotion reporting (PL Stores),weakness
+plst-ass004,Ageing Order platform (PL Stores),weakness
+plst-ass005,High Order accuracy (PL Stores),strength
+plst-ass006,Slow Returns reporting (PL Stores),weakness
+plst-ass007,Ageing Promotion platform (PL Stores),weakness
+plst-ass008,Growing Stock demand (PL Stores),opportunity
+plst-ass009,Ageing Stock platform (PL Stores),weakness
+plst-ass010,Growing Customer demand (PL Stores),opportunity
+plon-ass001,Rising Delivery risk (PL Online),threat
+plon-ass002,Growing Stock demand (PL Online),opportunity
+plon-ass003,Room to automate Fraud (PL Online),opportunity
+plon-ass004,Ageing Delivery platform (PL Online),weakness
+plon-ass005,High Customer accuracy (PL Online),strength
+plon-ass006,Rising Pricing risk (PL Online),threat
+plon-ass007,Room to automate Payment (PL Online),opportunity
+plon-ass008,Ageing Payment platform (PL Online),weakness
+plon-ass009,High Returns accuracy (PL Online),strength
+plon-ass010,Room to automate Order (PL Online),opportunity
+plwh-ass001,High Pricing accuracy (PL Wholesale),strength
+plwh-ass002,Fragmented Returns data (PL Wholesale),weakness
+plwh-ass003,Ageing Pricing platform (PL Wholesale),weakness
+plwh-ass004,Ageing Promotion platform (PL Wholesale),weakness
+plwh-ass005,Ageing Delivery platform (PL Wholesale),weakness
+plwh-ass006,Room to automate Supplier (PL Wholesale),opportunity
+plwh-ass007,Slow Returns reporting (PL Wholesale),weakness
+plwh-ass008,Room to automate Payment (PL Wholesale),opportunity
+plwh-ass009,Slow Stock reporting (PL Wholesale),weakness
+plwh-ass010,Strong Stock team (PL Wholesale),strength
+pllg-ass001,Strong Promotion team (PL Logistics),strength
+pllg-ass002,High Stock accuracy (PL Logistics),strength
+pllg-ass003,Rising Promotion risk (PL Logistics),threat
+pllg-ass004,Ageing Fraud platform (PL Logistics),weakness
+pllg-ass005,Strong Pricing team (PL Logistics),strength
+pllg-ass006,Fragmented Promotion data (PL Logistics),weakness
+pllg-ass007,High Fraud accuracy (PL Logistics),strength
+pllg-ass008,Slow Returns reporting (PL Logistics),weakness
+pllg-ass009,Growing Promotion demand (PL Logistics),opportunity
+pllg-ass010,Fragmented Pricing data (PL Logistics),weakness
+sest-ass001,Growing Promotion demand (SE Stores),opportunity
+sest-ass002,Ageing Returns platform (SE Stores),weakness
+sest-ass003,Room to automate Order (SE Stores),opportunity
+sest-ass004,Ageing Customer platform (SE Stores),weakness
+sest-ass005,Ageing Payment platform (SE Stores),weakness
+sest-ass006,Ageing Delivery platform (SE Stores),weakness
+sest-ass007,Slow Supplier reporting (SE Stores),weakness
+sest-ass008,Strong Returns team (SE Stores),strength
+sest-ass009,Rising Fraud risk (SE Stores),threat
+sest-ass010,Slow Customer reporting (SE Stores),weakness
+seon-ass001,Growing Delivery demand (SE Online),opportunity
+seon-ass002,Rising Payment risk (SE Online),threat
+seon-ass003,Strong Returns team (SE Online),strength
+seon-ass004,High Payment accuracy (SE Online),strength
+seon-ass005,Ageing Payment platform (SE Online),weakness
+seon-ass006,Rising Delivery risk (SE Online),threat
+seon-ass007,Slow Supplier reporting (SE Online),weakness
+seon-ass008,Ageing Pricing platform (SE Online),weakness
+seon-ass009,Fragmented Supplier data (SE Online),weakness
+seon-ass010,Room to automate Delivery (SE Online),opportunity
+sewh-ass001,Fragmented Supplier data (SE Wholesale),weakness
+sewh-ass002,Growing Fraud demand (SE Wholesale),opportunity
+sewh-ass003,High Customer accuracy (SE Wholesale),strength
+sewh-ass004,Slow Stock reporting (SE Wholesale),weakness
+sewh-ass005,Ageing Pricing platform (SE Wholesale),weakness
+sewh-ass006,Slow Supplier reporting (SE Wholesale),weakness
+sewh-ass007,Room to automate Promotion (SE Wholesale),opportunity
+sewh-ass008,Strong Promotion team (SE Wholesale),strength
+sewh-ass009,Strong Pricing team (SE Wholesale),strength
+sewh-ass010,Room to automate Fraud (SE Wholesale),opportunity
+selg-ass001,Slow Payment reporting (SE Logistics),weakness
+selg-ass002,Room to automate Delivery (SE Logistics),opportunity
+selg-ass003,Growing Delivery demand (SE Logistics),opportunity
+selg-ass004,Slow Promotion reporting (SE Logistics),weakness
+selg-ass005,Room to automate Pricing (SE Logistics),opportunity
+selg-ass006,Fragmented Payment data (SE Logistics),weakness
+selg-ass007,Ageing Customer platform (SE Logistics),weakness
+selg-ass008,Fragmented Promotion data (SE Logistics),weakness
+selg-ass009,High Customer accuracy (SE Logistics),strength
+selg-ass010,Slow Fraud reporting (SE Logistics),weakness
+nost-ass001,Fragmented Pricing data (NO Stores),weakness
+nost-ass002,Slow Supplier reporting (NO Stores),weakness
+nost-ass003,Strong Supplier team (NO Stores),strength
+nost-ass004,Slow Order reporting (NO Stores),weakness
+nost-ass005,Room to automate Promotion (NO Stores),opportunity
+nost-ass006,Slow Customer reporting (NO Stores),weakness
+nost-ass007,Rising Payment risk (NO Stores),threat
+nost-ass008,Ageing Delivery platform (NO Stores),weakness
+nost-ass009,Fragmented Delivery data (NO Stores),weakness
+nost-ass010,Room to automate Order (NO Stores),opportunity
+noon-ass001,Slow Delivery reporting (NO Online),weakness
+noon-ass002,Rising Promotion risk (NO Online),threat
+noon-ass003,Slow Supplier reporting (NO Online),weakness
+noon-ass004,High Promotion accuracy (NO Online),strength
+noon-ass005,High Supplier accuracy (NO Online),strength
+noon-ass006,Growing Supplier demand (NO Online),opportunity
+noon-ass007,Room to automate Stock (NO Online),opportunity
+noon-ass008,High Delivery accuracy (NO Online),strength
+noon-ass009,High Pricing accuracy (NO Online),strength
+noon-ass010,Ageing Pricing platform (NO Online),weakness
+nowh-ass001,High Returns accuracy (NO Wholesale),strength
+nowh-ass002,Strong Pricing team (NO Wholesale),strength
+nowh-ass003,Strong Payment team (NO Wholesale),strength
+nowh-ass004,High Customer accuracy (NO Wholesale),strength
+nowh-ass005,High Promotion accuracy (NO Wholesale),strength
+nowh-ass006,Strong Returns team (NO Wholesale),strength
+nowh-ass007,Slow Customer reporting (NO Wholesale),weakness
+nowh-ass008,Slow Promotion reporting (NO Wholesale),weakness
+nowh-ass009,High Payment accuracy (NO Wholesale),strength
+nowh-ass010,Strong Delivery team (NO Wholesale),strength
+nolg-ass001,Fragmented Promotion data (NO Logistics),weakness
+nolg-ass002,Room to automate Supplier (NO Logistics),opportunity
+nolg-ass003,Room to automate Returns (NO Logistics),opportunity
+nolg-ass004,Ageing Customer platform (NO Logistics),weakness
+nolg-ass005,Room to automate Promotion (NO Logistics),opportunity
+nolg-ass006,Rising Returns risk (NO Logistics),threat
+nolg-ass007,High Returns accuracy (NO Logistics),strength
+nolg-ass008,Strong Payment team (NO Logistics),strength
+nolg-ass009,High Payment accuracy (NO Logistics),strength
+nolg-ass010,Strong Delivery team (NO Logistics),strength
+dkst-ass001,Rising Order risk (DK Stores),threat
+dkst-ass002,Room to automate Pricing (DK Stores),opportunity
+dkst-ass003,Growing Supplier demand (DK Stores),opportunity
+dkst-ass004,Ageing Order platform (DK Stores),weakness
+dkst-ass005,Fragmented Payment data (DK Stores),weakness
+dkst-ass006,Strong Promotion team (DK Stores),strength
+dkst-ass007,Slow Order reporting (DK Stores),weakness
+dkst-ass008,High Delivery accuracy (DK Stores),strength
+dkst-ass009,Ageing Customer platform (DK Stores),weakness
+dkst-ass010,Room to automate Order (DK Stores),opportunity
+dkon-ass001,Slow Returns reporting (DK Online),weakness
+dkon-ass002,Growing Delivery demand (DK Online),opportunity
+dkon-ass003,Ageing Order platform (DK Online),weakness
+dkon-ass004,Fragmented Supplier data (DK Online),weakness
+dkon-ass005,Fragmented Customer data (DK Online),weakness
+dkon-ass006,High Delivery accuracy (DK Online),strength
+dkon-ass007,Rising Stock risk (DK Online),threat
+dkon-ass008,Fragmented Returns data (DK Online),weakness
+dkon-ass009,Growing Fraud demand (DK Online),opportunity
+dkon-ass010,High Order accuracy (DK Online),strength
+dkwh-ass001,Rising Payment risk (DK Wholesale),threat
+dkwh-ass002,Strong Promotion team (DK Wholesale),strength
+dkwh-ass003,Room to automate Order (DK Wholesale),opportunity
+dkwh-ass004,Fragmented Promotion data (DK Wholesale),weakness
+dkwh-ass005,Ageing Promotion platform (DK Wholesale),weakness
+dkwh-ass006,Slow Stock reporting (DK Wholesale),weakness
+dkwh-ass007,High Returns accuracy (DK Wholesale),strength
+dkwh-ass008,Fragmented Customer data (DK Wholesale),weakness
+dkwh-ass009,Rising Pricing risk (DK Wholesale),threat
+dkwh-ass010,Strong Delivery team (DK Wholesale),strength
+dklg-ass001,Fragmented Order data (DK Logistics),weakness
+dklg-ass002,Slow Fraud reporting (DK Logistics),weakness
+dklg-ass003,High Delivery accuracy (DK Logistics),strength
+dklg-ass004,Strong Delivery team (DK Logistics),strength
+dklg-ass005,Strong Returns team (DK Logistics),strength
+dklg-ass006,High Fraud accuracy (DK Logistics),strength
+dklg-ass007,Fragmented Payment data (DK Logistics),weakness
+dklg-ass008,Strong Stock team (DK Logistics),strength
+dklg-ass009,Growing Payment demand (DK Logistics),opportunity
+dklg-ass010,Room to automate Promotion (DK Logistics),opportunity
+fist-ass001,Room to automate Customer (FI Stores),opportunity
+fist-ass002,Strong Fraud team (FI Stores),strength
+fist-ass003,Rising Stock risk (FI Stores),threat
+fist-ass004,Slow Delivery reporting (FI Stores),weakness
+fist-ass005,Ageing Customer platform (FI Stores),weakness
+fist-ass006,Growing Customer demand (FI Stores),opportunity
+fist-ass007,Fragmented Pricing data (FI Stores),weakness
+fist-ass008,Room to automate Returns (FI Stores),opportunity
+fist-ass009,Ageing Payment platform (FI Stores),weakness
+fist-ass010,Growing Supplier demand (FI Stores),opportunity
+fion-ass001,Rising Stock risk (FI Online),threat
+fion-ass002,Slow Returns reporting (FI Online),weakness
+fion-ass003,Room to automate Order (FI Online),opportunity
+fion-ass004,Slow Customer reporting (FI Online),weakness
+fion-ass005,Ageing Supplier platform (FI Online),weakness
+fion-ass006,Room to automate Stock (FI Online),opportunity
+fion-ass007,High Customer accuracy (FI Online),strength
+fion-ass008,Ageing Payment platform (FI Online),weakness
+fion-ass009,Room to automate Returns (FI Online),opportunity
+fion-ass010,High Delivery accuracy (FI Online),strength
+fiwh-ass001,Room to automate Payment (FI Wholesale),opportunity
+fiwh-ass002,Ageing Payment platform (FI Wholesale),weakness
+fiwh-ass003,Rising Fraud risk (FI Wholesale),threat
+fiwh-ass004,Slow Pricing reporting (FI Wholesale),weakness
+fiwh-ass005,Strong Payment team (FI Wholesale),strength
+fiwh-ass006,Room to automate Returns (FI Wholesale),opportunity
+fiwh-ass007,Strong Stock team (FI Wholesale),strength
+fiwh-ass008,Strong Promotion team (FI Wholesale),strength
+fiwh-ass009,Rising Stock risk (FI Wholesale),threat
+fiwh-ass010,Growing Payment demand (FI Wholesale),opportunity
+filg-ass001,Ageing Promotion platform (FI Logistics),weakness
+filg-ass002,Strong Order team (FI Logistics),strength
+filg-ass003,Rising Payment risk (FI Logistics),threat
+filg-ass004,Room to automate Returns (FI Logistics),opportunity
+filg-ass005,Slow Returns reporting (FI Logistics),weakness
+filg-ass006,Growing Payment demand (FI Logistics),opportunity
+filg-ass007,Room to automate Stock (FI Logistics),opportunity
+filg-ass008,Strong Fraud team (FI Logistics),strength
+filg-ass009,Growing Delivery demand (FI Logistics),opportunity
+filg-ass010,Rising Pricing risk (FI Logistics),threat
+czst-ass001,Room to automate Order (CZ Stores),opportunity
+czst-ass002,Slow Fraud reporting (CZ Stores),weakness
+czst-ass003,Strong Stock team (CZ Stores),strength
+czst-ass004,Fragmented Delivery data (CZ Stores),weakness
+czst-ass005,Rising Payment risk (CZ Stores),threat
+czst-ass006,Growing Payment demand (CZ Stores),opportunity
+czst-ass007,Room to automate Returns (CZ Stores),opportunity
+czst-ass008,Slow Pricing reporting (CZ Stores),weakness
+czst-ass009,Growing Delivery demand (CZ Stores),opportunity
+czst-ass010,Slow Order reporting (CZ Stores),weakness
+czon-ass001,Rising Stock risk (CZ Online),threat
+czon-ass002,Room to automate Supplier (CZ Online),opportunity
+czon-ass003,Fragmented Fraud data (CZ Online),weakness
+czon-ass004,Strong Promotion team (CZ Online),strength
+czon-ass005,Ageing Delivery platform (CZ Online),weakness
+czon-ass006,Fragmented Stock data (CZ Online),weakness
+czon-ass007,Room to automate Customer (CZ Online),opportunity
+czon-ass008,Slow Stock reporting (CZ Online),weakness
+czon-ass009,Slow Delivery reporting (CZ Online),weakness
+czon-ass010,Growing Stock demand (CZ Online),opportunity
+czwh-ass001,High Payment accuracy (CZ Wholesale),strength
+czwh-ass002,Rising Customer risk (CZ Wholesale),threat
+czwh-ass003,Room to automate Order (CZ Wholesale),opportunity
+czwh-ass004,Rising Order risk (CZ Wholesale),threat
+czwh-ass005,High Supplier accuracy (CZ Wholesale),strength
+czwh-ass006,Room to automate Promotion (CZ Wholesale),opportunity
+czwh-ass007,Growing Customer demand (CZ Wholesale),opportunity
+czwh-ass008,Rising Supplier risk (CZ Wholesale),threat
+czwh-ass009,Rising Returns risk (CZ Wholesale),threat
+czwh-ass010,Slow Delivery reporting (CZ Wholesale),weakness
+czlg-ass001,Slow Delivery reporting (CZ Logistics),weakness
+czlg-ass002,Ageing Returns platform (CZ Logistics),weakness
+czlg-ass003,Growing Order demand (CZ Logistics),opportunity
+czlg-ass004,Ageing Supplier platform (CZ Logistics),weakness
+czlg-ass005,Ageing Customer platform (CZ Logistics),weakness
+czlg-ass006,Rising Promotion risk (CZ Logistics),threat
+czlg-ass007,Fragmented Customer data (CZ Logistics),weakness
+czlg-ass008,High Customer accuracy (CZ Logistics),strength
+czlg-ass009,Growing Stock demand (CZ Logistics),opportunity
+czlg-ass010,Fragmented Stock data (CZ Logistics),weakness
+grst-ass001,Fragmented Promotion data (GR Stores),weakness
+grst-ass002,Strong Delivery team (GR Stores),strength
+grst-ass003,Room to automate Pricing (GR Stores),opportunity
+grst-ass004,Slow Order reporting (GR Stores),weakness
+grst-ass005,Slow Promotion reporting (GR Stores),weakness
+grst-ass006,Strong Stock team (GR Stores),strength
+grst-ass007,Strong Pricing team (GR Stores),strength
+grst-ass008,Ageing Payment platform (GR Stores),weakness
+grst-ass009,Fragmented Pricing data (GR Stores),weakness
+grst-ass010,High Stock accuracy (GR Stores),strength
+gron-ass001,High Delivery accuracy (GR Online),strength
+gron-ass002,Growing Payment demand (GR Online),opportunity
+gron-ass003,Ageing Promotion platform (GR Online),weakness
+gron-ass004,Rising Stock risk (GR Online),threat
+gron-ass005,Fragmented Delivery data (GR Online),weakness
+gron-ass006,Growing Order demand (GR Online),opportunity
+gron-ass007,Growing Pricing demand (GR Online),opportunity
+gron-ass008,Ageing Order platform (GR Online),weakness
+gron-ass009,Slow Stock reporting (GR Online),weakness
+gron-ass010,Ageing Returns platform (GR Online),weakness
+grwh-ass001,Ageing Payment platform (GR Wholesale),weakness
+grwh-ass002,High Fraud accuracy (GR Wholesale),strength
+grwh-ass003,Rising Returns risk (GR Wholesale),threat
+grwh-ass004,Strong Stock team (GR Wholesale),strength
+grwh-ass005,Ageing Order platform (GR Wholesale),weakness
+grwh-ass006,Ageing Pricing platform (GR Wholesale),weakness
+grwh-ass007,High Payment accuracy (GR Wholesale),strength
+grwh-ass008,Slow Payment reporting (GR Wholesale),weakness
+grwh-ass009,Growing Customer demand (GR Wholesale),opportunity
+grwh-ass010,High Returns accuracy (GR Wholesale),strength
+grlg-ass001,High Returns accuracy (GR Logistics),strength
+grlg-ass002,Fragmented Payment data (GR Logistics),weakness
+grlg-ass003,Room to automate Stock (GR Logistics),opportunity
+grlg-ass004,Strong Fraud team (GR Logistics),strength
+grlg-ass005,Fragmented Pricing data (GR Logistics),weakness
+grlg-ass006,Fragmented Order data (GR Logistics),weakness
+grlg-ass007,Rising Delivery risk (GR Logistics),threat
+grlg-ass008,Strong Supplier team (GR Logistics),strength
+grlg-ass009,Room to automate Supplier (GR Logistics),opportunity
+grlg-ass010,Ageing Delivery platform (GR Logistics),weakness
+hust-ass001,Rising Fraud risk (HU Stores),threat
+hust-ass002,Slow Pricing reporting (HU Stores),weakness
+hust-ass003,Slow Returns reporting (HU Stores),weakness
+hust-ass004,Strong Payment team (HU Stores),strength
+hust-ass005,Rising Promotion risk (HU Stores),threat
+hust-ass006,High Pricing accuracy (HU Stores),strength
+hust-ass007,Slow Stock reporting (HU Stores),weakness
+hust-ass008,Fragmented Stock data (HU Stores),weakness
+hust-ass009,Growing Promotion demand (HU Stores),opportunity
+hust-ass010,High Fraud accuracy (HU Stores),strength
+huon-ass001,Rising Payment risk (HU Online),threat
+huon-ass002,Fragmented Fraud data (HU Online),weakness
+huon-ass003,High Supplier accuracy (HU Online),strength
+huon-ass004,Ageing Supplier platform (HU Online),weakness
+huon-ass005,Ageing Promotion platform (HU Online),weakness
+huon-ass006,Ageing Delivery platform (HU Online),weakness
+huon-ass007,Ageing Pricing platform (HU Online),weakness
+huon-ass008,Ageing Stock platform (HU Online),weakness
+huon-ass009,Growing Customer demand (HU Online),opportunity
+huon-ass010,Fragmented Stock data (HU Online),weakness
+huwh-ass001,High Supplier accuracy (HU Wholesale),strength
+huwh-ass002,High Pricing accuracy (HU Wholesale),strength
+huwh-ass003,Fragmented Order data (HU Wholesale),weakness
+huwh-ass004,High Order accuracy (HU Wholesale),strength
+huwh-ass005,Growing Fraud demand (HU Wholesale),opportunity
+huwh-ass006,Slow Stock reporting (HU Wholesale),weakness
+huwh-ass007,Rising Customer risk (HU Wholesale),threat
+huwh-ass008,High Promotion accuracy (HU Wholesale),strength
+huwh-ass009,Room to automate Stock (HU Wholesale),opportunity
+huwh-ass010,Ageing Promotion platform (HU Wholesale),weakness
+hulg-ass001,Ageing Customer platform (HU Logistics),weakness
+hulg-ass002,Rising Fraud risk (HU Logistics),threat
+hulg-ass003,Fragmented Fraud data (HU Logistics),weakness
+hulg-ass004,Strong Payment team (HU Logistics),strength
+hulg-ass005,Slow Stock reporting (HU Logistics),weakness
+hulg-ass006,Growing Delivery demand (HU Logistics),opportunity
+hulg-ass007,Ageing Supplier platform (HU Logistics),weakness
+hulg-ass008,Rising Stock risk (HU Logistics),threat
+hulg-ass009,Ageing Promotion platform (HU Logistics),weakness
+hulg-ass010,High Payment accuracy (HU Logistics),strength
+rost-ass001,Rising Delivery risk (RO Stores),threat
+rost-ass002,Ageing Payment platform (RO Stores),weakness
+rost-ass003,Rising Payment risk (RO Stores),threat
+rost-ass004,Strong Customer team (RO Stores),strength
+rost-ass005,Growing Customer demand (RO Stores),opportunity
+rost-ass006,Ageing Pricing platform (RO Stores),weakness
+rost-ass007,Ageing Stock platform (RO Stores),weakness
+rost-ass008,Fragmented Stock data (RO Stores),weakness
+rost-ass009,Room to automate Delivery (RO Stores),opportunity
+rost-ass010,High Order accuracy (RO Stores),strength
+roon-ass001,Ageing Stock platform (RO Online),weakness
+roon-ass002,Room to automate Returns (RO Online),opportunity
+roon-ass003,High Supplier accuracy (RO Online),strength
+roon-ass004,Fragmented Promotion data (RO Online),weakness
+roon-ass005,Rising Stock risk (RO Online),threat
+roon-ass006,Slow Pricing reporting (RO Online),weakness
+roon-ass007,Room to automate Pricing (RO Online),opportunity
+roon-ass008,Room to automate Payment (RO Online),opportunity
+roon-ass009,Rising Pricing risk (RO Online),threat
+roon-ass010,Strong Stock team (RO Online),strength
+rowh-ass001,Fragmented Pricing data (RO Wholesale),weakness
+rowh-ass002,Fragmented Returns data (RO Wholesale),weakness
+rowh-ass003,Strong Order team (RO Wholesale),strength
+rowh-ass004,Growing Supplier demand (RO Wholesale),opportunity
+rowh-ass005,Slow Order reporting (RO Wholesale),weakness
+rowh-ass006,Slow Delivery reporting (RO Wholesale),weakness
+rowh-ass007,Growing Stock demand (RO Wholesale),opportunity
+rowh-ass008,Slow Payment reporting (RO Wholesale),weakness
+rowh-ass009,Ageing Stock platform (RO Wholesale),weakness
+rowh-ass010,Strong Delivery team (RO Wholesale),strength
+rolg-ass001,High Payment accuracy (RO Logistics),strength
+rolg-ass002,Slow Returns reporting (RO Logistics),weakness
+rolg-ass003,Room to automate Order (RO Logistics),opportunity
+rolg-ass004,Growing Returns demand (RO Logistics),opportunity
+rolg-ass005,Fragmented Fraud data (RO Logistics),weakness
+rolg-ass006,Growing Fraud demand (RO Logistics),opportunity
+rolg-ass007,Rising Fraud risk (RO Logistics),threat
+rolg-ass008,Ageing Fraud platform (RO Logistics),weakness
+rolg-ass009,Rising Returns risk (RO Logistics),threat
+rolg-ass010,Fragmented Payment data (RO Logistics),weakness
+hrst-ass001,Room to automate Supplier (HR Stores),opportunity
+hrst-ass002,Room to automate Stock (HR Stores),opportunity
+hrst-ass003,High Delivery accuracy (HR Stores),strength
+hrst-ass004,Ageing Pricing platform (HR Stores),weakness
+hrst-ass005,Strong Stock team (HR Stores),strength
+hrst-ass006,Ageing Order platform (HR Stores),weakness
+hrst-ass007,Growing Promotion demand (HR Stores),opportunity
+hrst-ass008,Slow Stock reporting (HR Stores),weakness
+hrst-ass009,Slow Promotion reporting (HR Stores),weakness
+hrst-ass010,Growing Fraud demand (HR Stores),opportunity
+hron-ass001,Room to automate Promotion (HR Online),opportunity
+hron-ass002,Rising Order risk (HR Online),threat
+hron-ass003,Room to automate Returns (HR Online),opportunity
+hron-ass004,Rising Promotion risk (HR Online),threat
+hron-ass005,Fragmented Payment data (HR Online),weakness
+hron-ass006,Room to automate Delivery (HR Online),opportunity
+hron-ass007,Fragmented Returns data (HR Online),weakness
+hron-ass008,Fragmented Order data (HR Online),weakness
+hron-ass009,High Order accuracy (HR Online),strength
+hron-ass010,Slow Payment reporting (HR Online),weakness
+hrwh-ass001,Ageing Payment platform (HR Wholesale),weakness
+hrwh-ass002,Growing Order demand (HR Wholesale),opportunity
+hrwh-ass003,High Fraud accuracy (HR Wholesale),strength
+hrwh-ass004,Growing Supplier demand (HR Wholesale),opportunity
+hrwh-ass005,Fragmented Stock data (HR Wholesale),weakness
+hrwh-ass006,Slow Stock reporting (HR Wholesale),weakness
+hrwh-ass007,High Delivery accuracy (HR Wholesale),strength
+hrwh-ass008,Strong Order team (HR Wholesale),strength
+hrwh-ass009,High Stock accuracy (HR Wholesale),strength
+hrwh-ass010,Ageing Supplier platform (HR Wholesale),weakness
+hrlg-ass001,Fragmented Stock data (HR Logistics),weakness
+hrlg-ass002,Rising Promotion risk (HR Logistics),threat
+hrlg-ass003,Room to automate Promotion (HR Logistics),opportunity
+hrlg-ass004,High Promotion accuracy (HR Logistics),strength
+hrlg-ass005,Growing Fraud demand (HR Logistics),opportunity
+hrlg-ass006,Slow Payment reporting (HR Logistics),weakness
+hrlg-ass007,High Returns accuracy (HR Logistics),strength
+hrlg-ass008,High Fraud accuracy (HR Logistics),strength
+hrlg-ass009,Ageing Payment platform (HR Logistics),weakness
+hrlg-ass010,Growing Supplier demand (HR Logistics),opportunity
+skst-ass001,Room to automate Delivery (SK Stores),opportunity
+skst-ass002,High Returns accuracy (SK Stores),strength
+skst-ass003,Ageing Promotion platform (SK Stores),weakness
+skst-ass004,Room to automate Promotion (SK Stores),opportunity
+skst-ass005,Fragmented Delivery data (SK Stores),weakness
+skst-ass006,High Stock accuracy (SK Stores),strength
+skst-ass007,Fragmented Order data (SK Stores),weakness
+skst-ass008,Room to automate Pricing (SK Stores),opportunity
+skst-ass009,Growing Fraud demand (SK Stores),opportunity
+skst-ass010,High Customer accuracy (SK Stores),strength
+skon-ass001,Rising Fraud risk (SK Online),threat
+skon-ass002,Growing Supplier demand (SK Online),opportunity
+skon-ass003,High Pricing accuracy (SK Online),strength
+skon-ass004,High Order accuracy (SK Online),strength
+skon-ass005,Room to automate Order (SK Online),opportunity
+skon-ass006,Room to automate Supplier (SK Online),opportunity
+skon-ass007,Strong Order team (SK Online),strength
+skon-ass008,Ageing Stock platform (SK Online),weakness
+skon-ass009,Ageing Supplier platform (SK Online),weakness
+skon-ass010,Slow Pricing reporting (SK Online),weakness
+skwh-ass001,Growing Supplier demand (SK Wholesale),opportunity
+skwh-ass002,Strong Pricing team (SK Wholesale),strength
+skwh-ass003,Room to automate Supplier (SK Wholesale),opportunity
+skwh-ass004,Room to automate Stock (SK Wholesale),opportunity
+skwh-ass005,Strong Order team (SK Wholesale),strength
+skwh-ass006,High Supplier accuracy (SK Wholesale),strength
+skwh-ass007,Rising Stock risk (SK Wholesale),threat
+skwh-ass008,Slow Stock reporting (SK Wholesale),weakness
+skwh-ass009,Strong Supplier team (SK Wholesale),strength
+skwh-ass010,Growing Pricing demand (SK Wholesale),opportunity
+sklg-ass001,Slow Fraud reporting (SK Logistics),weakness
+sklg-ass002,High Promotion accuracy (SK Logistics),strength
+sklg-ass003,Growing Returns demand (SK Logistics),opportunity
+sklg-ass004,Slow Promotion reporting (SK Logistics),weakness
+sklg-ass005,High Fraud accuracy (SK Logistics),strength
+sklg-ass006,Ageing Returns platform (SK Logistics),weakness
+sklg-ass007,Ageing Stock platform (SK Logistics),weakness
+sklg-ass008,Slow Supplier reporting (SK Logistics),weakness
+sklg-ass009,Slow Delivery reporting (SK Logistics),weakness
+sklg-ass010,Fragmented Customer data (SK Logistics),weakness
+bgst-ass001,Fragmented Customer data (BG Stores),weakness
+bgst-ass002,Slow Order reporting (BG Stores),weakness
+bgst-ass003,Slow Promotion reporting (BG Stores),weakness
+bgst-ass004,Ageing Order platform (BG Stores),weakness
+bgst-ass005,Strong Customer team (BG Stores),strength
+bgst-ass006,High Fraud accuracy (BG Stores),strength
+bgst-ass007,Ageing Fraud platform (BG Stores),weakness
+bgst-ass008,Fragmented Delivery data (BG Stores),weakness
+bgst-ass009,Ageing Pricing platform (BG Stores),weakness
+bgst-ass010,Growing Returns demand (BG Stores),opportunity
+bgon-ass001,Room to automate Stock (BG Online),opportunity
+bgon-ass002,Slow Payment reporting (BG Online),weakness
+bgon-ass003,Room to automate Returns (BG Online),opportunity
+bgon-ass004,High Supplier accuracy (BG Online),strength
+bgon-ass005,Ageing Promotion platform (BG Online),weakness
+bgon-ass006,Ageing Order platform (BG Online),weakness
+bgon-ass007,High Payment accuracy (BG Online),strength
+bgon-ass008,Ageing Returns platform (BG Online),weakness
+bgon-ass009,Room to automate Customer (BG Online),opportunity
+bgon-ass010,Slow Delivery reporting (BG Online),weakness
+bgwh-ass001,High Order accuracy (BG Wholesale),strength
+bgwh-ass002,Rising Stock risk (BG Wholesale),threat
+bgwh-ass003,Slow Customer reporting (BG Wholesale),weakness
+bgwh-ass004,Strong Delivery team (BG Wholesale),strength
+bgwh-ass005,Rising Pricing risk (BG Wholesale),threat
+bgwh-ass006,Room to automate Stock (BG Wholesale),opportunity
+bgwh-ass007,Room to automate Customer (BG Wholesale),opportunity
+bgwh-ass008,Growing Supplier demand (BG Wholesale),opportunity
+bgwh-ass009,Fragmented Customer data (BG Wholesale),weakness
+bgwh-ass010,Room to automate Delivery (BG Wholesale),opportunity
+bglg-ass001,Room to automate Fraud (BG Logistics),opportunity
+bglg-ass002,Strong Promotion team (BG Logistics),strength
+bglg-ass003,Strong Returns team (BG Logistics),strength
+bglg-ass004,Room to automate Promotion (BG Logistics),opportunity
+bglg-ass005,Rising Stock risk (BG Logistics),threat
+bglg-ass006,Slow Stock reporting (BG Logistics),weakness
+bglg-ass007,Rising Fraud risk (BG Logistics),threat
+bglg-ass008,High Supplier accuracy (BG Logistics),strength
+bglg-ass009,Room to automate Pricing (BG Logistics),opportunity
+bglg-ass010,Growing Order demand (BG Logistics),opportunity
+ltst-ass001,Slow Delivery reporting (LT Stores),weakness
+ltst-ass002,Slow Stock reporting (LT Stores),weakness
+ltst-ass003,Ageing Payment platform (LT Stores),weakness
+ltst-ass004,Rising Payment risk (LT Stores),threat
+ltst-ass005,Slow Promotion reporting (LT Stores),weakness
+ltst-ass006,Ageing Supplier platform (LT Stores),weakness
+ltst-ass007,Fragmented Supplier data (LT Stores),weakness
+ltst-ass008,High Customer accuracy (LT Stores),strength
+ltst-ass009,Rising Returns risk (LT Stores),threat
+ltst-ass010,Ageing Returns platform (LT Stores),weakness
+lton-ass001,Slow Order reporting (LT Online),weakness
+lton-ass002,Room to automate Customer (LT Online),opportunity
+lton-ass003,High Returns accuracy (LT Online),strength
+lton-ass004,High Stock accuracy (LT Online),strength
+lton-ass005,Ageing Promotion platform (LT Online),weakness
+lton-ass006,Slow Pricing reporting (LT Online),weakness
+lton-ass007,Ageing Delivery platform (LT Online),weakness
+lton-ass008,Room to automate Stock (LT Online),opportunity
+lton-ass009,Growing Returns demand (LT Online),opportunity
+lton-ass010,Ageing Order platform (LT Online),weakness
+ltwh-ass001,Growing Customer demand (LT Wholesale),opportunity
+ltwh-ass002,High Customer accuracy (LT Wholesale),strength
+ltwh-ass003,Rising Returns risk (LT Wholesale),threat
+ltwh-ass004,Room to automate Payment (LT Wholesale),opportunity
+ltwh-ass005,Rising Fraud risk (LT Wholesale),threat
+ltwh-ass006,Strong Fraud team (LT Wholesale),strength
+ltwh-ass007,Growing Stock demand (LT Wholesale),opportunity
+ltwh-ass008,Strong Stock team (LT Wholesale),strength
+ltwh-ass009,Rising Pricing risk (LT Wholesale),threat
+ltwh-ass010,Room to automate Stock (LT Wholesale),opportunity
+ltlg-ass001,Room to automate Promotion (LT Logistics),opportunity
+ltlg-ass002,Fragmented Promotion data (LT Logistics),weakness
+ltlg-ass003,Growing Payment demand (LT Logistics),opportunity
+ltlg-ass004,Strong Order team (LT Logistics),strength
+ltlg-ass005,Growing Pricing demand (LT Logistics),opportunity
+ltlg-ass006,Ageing Delivery platform (LT Logistics),weakness
+ltlg-ass007,Growing Order demand (LT Logistics),opportunity
+ltlg-ass008,Slow Payment reporting (LT Logistics),weakness
+ltlg-ass009,Growing Customer demand (LT Logistics),opportunity
+ltlg-ass010,Fragmented Returns data (LT Logistics),weakness
+lvst-ass001,Growing Payment demand (LV Stores),opportunity
+lvst-ass002,Ageing Delivery platform (LV Stores),weakness
+lvst-ass003,High Order accuracy (LV Stores),strength
+lvst-ass004,Rising Promotion risk (LV Stores),threat
+lvst-ass005,Fragmented Returns data (LV Stores),weakness
+lvst-ass006,Slow Payment reporting (LV Stores),weakness
+lvst-ass007,Fragmented Payment data (LV Stores),weakness
+lvst-ass008,Rising Fraud risk (LV Stores),threat
+lvst-ass009,Growing Stock demand (LV Stores),opportunity
+lvst-ass010,Ageing Returns platform (LV Stores),weakness
+lvon-ass001,High Promotion accuracy (LV Online),strength
+lvon-ass002,Fragmented Pricing data (LV Online),weakness
+lvon-ass003,High Fraud accuracy (LV Online),strength
+lvon-ass004,Ageing Promotion platform (LV Online),weakness
+lvon-ass005,High Pricing accuracy (LV Online),strength
+lvon-ass006,Growing Delivery demand (LV Online),opportunity
+lvon-ass007,Rising Returns risk (LV Online),threat
+lvon-ass008,Room to automate Returns (LV Online),opportunity
+lvon-ass009,Rising Supplier risk (LV Online),threat
+lvon-ass010,Growing Stock demand (LV Online),opportunity
+lvwh-ass001,High Pricing accuracy (LV Wholesale),strength
+lvwh-ass002,Fragmented Pricing data (LV Wholesale),weakness
+lvwh-ass003,Fragmented Payment data (LV Wholesale),weakness
+lvwh-ass004,Fragmented Promotion data (LV Wholesale),weakness
+lvwh-ass005,Rising Order risk (LV Wholesale),threat
+lvwh-ass006,Slow Supplier reporting (LV Wholesale),weakness
+lvwh-ass007,High Promotion accuracy (LV Wholesale),strength
+lvwh-ass008,Fragmented Customer data (LV Wholesale),weakness
+lvwh-ass009,Growing Order demand (LV Wholesale),opportunity
+lvwh-ass010,Rising Customer risk (LV Wholesale),threat
+lvlg-ass001,High Returns accuracy (LV Logistics),strength
+lvlg-ass002,Fragmented Pricing data (LV Logistics),weakness
+lvlg-ass003,Room to automate Delivery (LV Logistics),opportunity
+lvlg-ass004,Room to automate Supplier (LV Logistics),opportunity
+lvlg-ass005,Growing Payment demand (LV Logistics),opportunity
+lvlg-ass006,Growing Returns demand (LV Logistics),opportunity
+lvlg-ass007,Fragmented Delivery data (LV Logistics),weakness
+lvlg-ass008,High Fraud accuracy (LV Logistics),strength
+lvlg-ass009,Room to automate Customer (LV Logistics),opportunity
+lvlg-ass010,Ageing Order platform (LV Logistics),weakness

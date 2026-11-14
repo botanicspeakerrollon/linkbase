@@ -9,3 +9,2507 @@ it-support-analyst,IT Support Analyst,internal,Technology
 supplier-account-manager,Supplier Account Manager,internal,Procurement
 regional-director,Regional Director,internal,Retail Operations
 compliance-officer,Compliance Officer,internal,Risk and Compliance
+grp-act001,Group Retail Operations Director (Group),internal,Retail Operations
+grp-act002,Group Logistics Director (Group),internal,Logistics
+grp-act003,Group Finance Director (Group),internal,Finance
+grp-act004,Group Marketing Director (Group),internal,Marketing
+gbst-act001,Controller Risk and Compliance (GB Stores),external,Retail Operations
+gbst-act002,Coordinator Marketing (GB Stores),external,Logistics
+gbst-act003,Controller Retail Operations (GB Stores),external,Finance
+gbst-act004,Specialist Logistics (GB Stores),internal,Marketing
+gbst-act005,Associate Retail Operations (GB Stores),internal,Technology
+gbst-act006,Analyst Merchandising (GB Stores),internal,Procurement
+gbst-act007,Coordinator Retail Operations (GB Stores),internal,Risk and Compliance
+gbst-act008,Coordinator People (GB Stores),internal,Customer Care
+gbst-act009,Specialist Risk and Compliance (GB Stores),internal,People
+gbst-act010,Coordinator Customer Care (GB Stores),internal,Merchandising
+gbst-act011,Advisor Customer Care (GB Stores),internal,Retail Operations
+gbst-act012,Controller Procurement (GB Stores),internal,Logistics
+gbst-act013,Advisor Marketing (GB Stores),internal,Finance
+gbst-act014,Planner Risk and Compliance (GB Stores),internal,Marketing
+gbst-act015,Clerk Technology (GB Stores),internal,Technology
+gbst-act016,Clerk Marketing (GB Stores),internal,Procurement
+gbst-act017,Specialist Customer Care (GB Stores),internal,Risk and Compliance
+gbst-act018,Associate Merchandising (GB Stores),internal,Customer Care
+gbst-act019,Controller Customer Care (GB Stores),internal,People
+gbst-act020,Coordinator Merchandising (GB Stores),internal,Merchandising
+gbst-act021,Associate Risk and Compliance (GB Stores),internal,Retail Operations
+gbst-act022,Planner Marketing (GB Stores),internal,Logistics
+gbst-act023,Specialist Marketing (GB Stores),internal,Finance
+gbst-act024,Lead Logistics (GB Stores),internal,Marketing
+gbst-act025,Advisor Logistics (GB Stores),internal,Technology
+gbon-act001,Planner Logistics (GB Online),external,Retail Operations
+gbon-act002,Advisor Customer Care (GB Online),external,Logistics
+gbon-act003,Associate Marketing (GB Online),external,Finance
+gbon-act004,Controller Finance (GB Online),internal,Marketing
+gbon-act005,Clerk Finance (GB Online),internal,Technology
+gbon-act006,Analyst Customer Care (GB Online),internal,Procurement
+gbon-act007,Advisor Marketing (GB Online),internal,Risk and Compliance
+gbon-act008,Lead Merchandising (GB Online),internal,Customer Care
+gbon-act009,Analyst Technology (GB Online),internal,People
+gbon-act010,Coordinator People (GB Online),internal,Merchandising
+gbon-act011,Manager Technology (GB Online),internal,Retail Operations
+gbon-act012,Lead Marketing (GB Online),internal,Logistics
+gbon-act013,Controller Logistics (GB Online),internal,Finance
+gbon-act014,Planner Customer Care (GB Online),internal,Marketing
+gbon-act015,Advisor People (GB Online),internal,Technology
+gbon-act016,Advisor Retail Operations (GB Online),internal,Procurement
+gbon-act017,Planner Technology (GB Online),internal,Risk and Compliance
+gbon-act018,Planner People (GB Online),internal,Customer Care
+gbon-act019,Associate Merchandising (GB Online),internal,People
+gbon-act020,Manager People (GB Online),internal,Merchandising
+gbon-act021,Lead Retail Operations (GB Online),internal,Retail Operations
+gbon-act022,Controller Technology (GB Online),internal,Logistics
+gbon-act023,Associate Customer Care (GB Online),internal,Finance
+gbon-act024,Planner Merchandising (GB Online),internal,Marketing
+gbon-act025,Lead Technology (GB Online),internal,Technology
+gbwh-act001,Associate Merchandising (GB Wholesale),external,Retail Operations
+gbwh-act002,Analyst Finance (GB Wholesale),external,Logistics
+gbwh-act003,Planner Procurement (GB Wholesale),external,Finance
+gbwh-act004,Controller Procurement (GB Wholesale),internal,Marketing
+gbwh-act005,Specialist People (GB Wholesale),internal,Technology
+gbwh-act006,Specialist Technology (GB Wholesale),internal,Procurement
+gbwh-act007,Manager Finance (GB Wholesale),internal,Risk and Compliance
+gbwh-act008,Manager Retail Operations (GB Wholesale),internal,Customer Care
+gbwh-act009,Advisor Risk and Compliance (GB Wholesale),internal,People
+gbwh-act010,Clerk Marketing (GB Wholesale),internal,Merchandising
+gbwh-act011,Clerk Logistics (GB Wholesale),internal,Retail Operations
+gbwh-act012,Coordinator Merchandising (GB Wholesale),internal,Logistics
+gbwh-act013,Planner Finance (GB Wholesale),internal,Finance
+gbwh-act014,Clerk Customer Care (GB Wholesale),internal,Marketing
+gbwh-act015,Associate People (GB Wholesale),internal,Technology
+gbwh-act016,Specialist Risk and Compliance (GB Wholesale),internal,Procurement
+gbwh-act017,Associate Logistics (GB Wholesale),internal,Risk and Compliance
+gbwh-act018,Controller Marketing (GB Wholesale),internal,Customer Care
+gbwh-act019,Controller Risk and Compliance (GB Wholesale),internal,People
+gbwh-act020,Analyst Logistics (GB Wholesale),internal,Merchandising
+gbwh-act021,Coordinator Risk and Compliance (GB Wholesale),internal,Retail Operations
+gbwh-act022,Lead Finance (GB Wholesale),internal,Logistics
+gbwh-act023,Coordinator Procurement (GB Wholesale),internal,Finance
+gbwh-act024,Specialist Logistics (GB Wholesale),internal,Marketing
+gbwh-act025,Lead Risk and Compliance (GB Wholesale),internal,Technology
+gblg-act001,Lead Technology (GB Logistics),external,Retail Operations
+gblg-act002,Analyst Risk and Compliance (GB Logistics),external,Logistics
+gblg-act003,Advisor Risk and Compliance (GB Logistics),external,Finance
+gblg-act004,Specialist Risk and Compliance (GB Logistics),internal,Marketing
+gblg-act005,Planner Finance (GB Logistics),internal,Technology
+gblg-act006,Analyst Procurement (GB Logistics),internal,Procurement
+gblg-act007,Planner Procurement (GB Logistics),internal,Risk and Compliance
+gblg-act008,Coordinator Marketing (GB Logistics),internal,Customer Care
+gblg-act009,Associate Risk and Compliance (GB Logistics),internal,People
+gblg-act010,Advisor People (GB Logistics),internal,Merchandising
+gblg-act011,Associate Customer Care (GB Logistics),internal,Retail Operations
+gblg-act012,Planner Logistics (GB Logistics),internal,Logistics
+gblg-act013,Controller Risk and Compliance (GB Logistics),internal,Finance
+gblg-act014,Manager Logistics (GB Logistics),internal,Marketing
+gblg-act015,Manager Customer Care (GB Logistics),internal,Technology
+gblg-act016,Specialist Procurement (GB Logistics),internal,Procurement
+gblg-act017,Controller Marketing (GB Logistics),internal,Risk and Compliance
+gblg-act018,Advisor Customer Care (GB Logistics),internal,Customer Care
+gblg-act019,Controller Procurement (GB Logistics),internal,People
+gblg-act020,Clerk Customer Care (GB Logistics),internal,Merchandising
+gblg-act021,Specialist Logistics (GB Logistics),internal,Retail Operations
+gblg-act022,Planner Risk and Compliance (GB Logistics),internal,Logistics
+gblg-act023,Manager Finance (GB Logistics),internal,Finance
+gblg-act024,Specialist Marketing (GB Logistics),internal,Marketing
+gblg-act025,Advisor Logistics (GB Logistics),internal,Technology
+iest-act001,Planner Retail Operations (IE Stores),external,Retail Operations
+iest-act002,Clerk Marketing (IE Stores),external,Logistics
+iest-act003,Associate Technology (IE Stores),external,Finance
+iest-act004,Clerk Logistics (IE Stores),internal,Marketing
+iest-act005,Specialist Finance (IE Stores),internal,Technology
+iest-act006,Analyst Marketing (IE Stores),internal,Procurement
+iest-act007,Controller Marketing (IE Stores),internal,Risk and Compliance
+iest-act008,Associate Marketing (IE Stores),internal,Customer Care
+iest-act009,Specialist Merchandising (IE Stores),internal,People
+iest-act010,Advisor Logistics (IE Stores),internal,Merchandising
+iest-act011,Controller Procurement (IE Stores),internal,Retail Operations
+iest-act012,Clerk Procurement (IE Stores),internal,Logistics
+iest-act013,Analyst Finance (IE Stores),internal,Finance
+iest-act014,Advisor Technology (IE Stores),internal,Marketing
+iest-act015,Controller Retail Operations (IE Stores),internal,Technology
+iest-act016,Planner Merchandising (IE Stores),internal,Procurement
+iest-act017,Analyst Customer Care (IE Stores),internal,Risk and Compliance
+iest-act018,Advisor Retail Operations (IE Stores),internal,Customer Care
+iest-act019,Controller Technology (IE Stores),internal,People
+iest-act020,Controller Merchandising (IE Stores),internal,Merchandising
+iest-act021,Coordinator Retail Operations (IE Stores),internal,Retail Operations
+iest-act022,Manager Procurement (IE Stores),internal,Logistics
+iest-act023,Specialist Retail Operations (IE Stores),internal,Finance
+iest-act024,Analyst Procurement (IE Stores),internal,Marketing
+iest-act025,Lead Technology (IE Stores),internal,Technology
+ieon-act001,Analyst Retail Operations (IE Online),external,Retail Operations
+ieon-act002,Lead Customer Care (IE Online),external,Logistics
+ieon-act003,Specialist Customer Care (IE Online),external,Finance
+ieon-act004,Controller People (IE Online),internal,Marketing
+ieon-act005,Advisor Marketing (IE Online),internal,Technology
+ieon-act006,Controller Merchandising (IE Online),internal,Procurement
+ieon-act007,Controller Procurement (IE Online),internal,Risk and Compliance
+ieon-act008,Associate Marketing (IE Online),internal,Customer Care
+ieon-act009,Manager Logistics (IE Online),internal,People
+ieon-act010,Manager Customer Care (IE Online),internal,Merchandising
+ieon-act011,Coordinator Merchandising (IE Online),internal,Retail Operations
+ieon-act012,Coordinator Retail Operations (IE Online),internal,Logistics
+ieon-act013,Lead Retail Operations (IE Online),internal,Finance
+ieon-act014,Coordinator Logistics (IE Online),internal,Marketing
+ieon-act015,Analyst Technology (IE Online),internal,Technology
+ieon-act016,Specialist Procurement (IE Online),internal,Procurement
+ieon-act017,Planner Customer Care (IE Online),internal,Risk and Compliance
+ieon-act018,Controller Finance (IE Online),internal,Customer Care
+ieon-act019,Analyst Merchandising (IE Online),internal,People
+ieon-act020,Manager Procurement (IE Online),internal,Merchandising
+ieon-act021,Planner Retail Operations (IE Online),internal,Retail Operations
+ieon-act022,Controller Customer Care (IE Online),internal,Logistics
+ieon-act023,Specialist Risk and Compliance (IE Online),internal,Finance
+ieon-act024,Clerk Logistics (IE Online),internal,Marketing
+ieon-act025,Advisor People (IE Online),internal,Technology
+iewh-act001,Analyst Risk and Compliance (IE Wholesale),external,Retail Operations
+iewh-act002,Advisor Marketing (IE Wholesale),external,Logistics
+iewh-act003,Specialist Retail Operations (IE Wholesale),external,Finance
+iewh-act004,Controller Logistics (IE Wholesale),internal,Marketing
+iewh-act005,Lead Marketing (IE Wholesale),internal,Technology
+iewh-act006,Controller Finance (IE Wholesale),internal,Procurement
+iewh-act007,Planner Logistics (IE Wholesale),internal,Risk and Compliance
+iewh-act008,Coordinator Logistics (IE Wholesale),internal,Customer Care
+iewh-act009,Advisor Logistics (IE Wholesale),internal,People
+iewh-act010,Coordinator People (IE Wholesale),internal,Merchandising
+iewh-act011,Controller Customer Care (IE Wholesale),internal,Retail Operations
+iewh-act012,Lead Customer Care (IE Wholesale),internal,Logistics
+iewh-act013,Associate Risk and Compliance (IE Wholesale),internal,Finance
+iewh-act014,Planner Retail Operations (IE Wholesale),internal,Marketing
+iewh-act015,Clerk Finance (IE Wholesale),internal,Technology
+iewh-act016,Controller People (IE Wholesale),internal,Procurement
+iewh-act017,Lead Logistics (IE Wholesale),internal,Risk and Compliance
+iewh-act018,Associate People (IE Wholesale),internal,Customer Care
+iewh-act019,Coordinator Customer Care (IE Wholesale),internal,People
+iewh-act020,Specialist Technology (IE Wholesale),internal,Merchandising
+iewh-act021,Clerk Technology (IE Wholesale),internal,Retail Operations
+iewh-act022,Clerk Procurement (IE Wholesale),internal,Logistics
+iewh-act023,Manager Retail Operations (IE Wholesale),internal,Finance
+iewh-act024,Associate Marketing (IE Wholesale),internal,Marketing
+iewh-act025,Analyst Logistics (IE Wholesale),internal,Technology
+ielg-act001,Lead People (IE Logistics),external,Retail Operations
+ielg-act002,Controller Merchandising (IE Logistics),external,Logistics
+ielg-act003,Clerk Customer Care (IE Logistics),external,Finance
+ielg-act004,Associate Risk and Compliance (IE Logistics),internal,Marketing
+ielg-act005,Manager Procurement (IE Logistics),internal,Technology
+ielg-act006,Controller Customer Care (IE Logistics),internal,Procurement
+ielg-act007,Analyst Merchandising (IE Logistics),internal,Risk and Compliance
+ielg-act008,Planner Finance (IE Logistics),internal,Customer Care
+ielg-act009,Controller Retail Operations (IE Logistics),internal,People
+ielg-act010,Controller Marketing (IE Logistics),internal,Merchandising
+ielg-act011,Planner Risk and Compliance (IE Logistics),internal,Retail Operations
+ielg-act012,Associate Procurement (IE Logistics),internal,Logistics
+ielg-act013,Associate Retail Operations (IE Logistics),internal,Finance
+ielg-act014,Specialist Finance (IE Logistics),internal,Marketing
+ielg-act015,Associate Technology (IE Logistics),internal,Technology
+ielg-act016,Specialist Retail Operations (IE Logistics),internal,Procurement
+ielg-act017,Clerk Marketing (IE Logistics),internal,Risk and Compliance
+ielg-act018,Analyst People (IE Logistics),internal,Customer Care
+ielg-act019,Specialist Merchandising (IE Logistics),internal,People
+ielg-act020,Analyst Technology (IE Logistics),internal,Merchandising
+ielg-act021,Associate Marketing (IE Logistics),internal,Retail Operations
+ielg-act022,Controller Logistics (IE Logistics),internal,Logistics
+ielg-act023,Planner Retail Operations (IE Logistics),internal,Finance
+ielg-act024,Lead Technology (IE Logistics),internal,Marketing
+ielg-act025,Clerk Merchandising (IE Logistics),internal,Technology
+frst-act001,Clerk Risk and Compliance (FR Stores),external,Retail Operations
+frst-act002,Controller Retail Operations (FR Stores),external,Logistics
+frst-act003,Specialist Retail Operations (FR Stores),external,Finance
+frst-act004,Clerk People (FR Stores),internal,Marketing
+frst-act005,Lead Technology (FR Stores),internal,Technology
+frst-act006,Manager People (FR Stores),internal,Procurement
+frst-act007,Controller Procurement (FR Stores),internal,Risk and Compliance
+frst-act008,Manager Merchandising (FR Stores),internal,Customer Care
+frst-act009,Analyst People (FR Stores),internal,People
+frst-act010,Coordinator Customer Care (FR Stores),internal,Merchandising
+frst-act011,Planner Logistics (FR Stores),internal,Retail Operations
+frst-act012,Analyst Marketing (FR Stores),internal,Logistics
+frst-act013,Associate People (FR Stores),internal,Finance
+frst-act014,Lead Retail Operations (FR Stores),internal,Marketing
+frst-act015,Associate Finance (FR Stores),internal,Technology
+frst-act016,Analyst Retail Operations (FR Stores),internal,Procurement
+frst-act017,Specialist Procurement (FR Stores),internal,Risk and Compliance
+frst-act018,Coordinator Marketing (FR Stores),internal,Customer Care
+frst-act019,Planner People (FR Stores),internal,People
+frst-act020,Planner Customer Care (FR Stores),internal,Merchandising
+frst-act021,Planner Risk and Compliance (FR Stores),internal,Retail Operations
+frst-act022,Specialist Merchandising (FR Stores),internal,Logistics
+frst-act023,Associate Risk and Compliance (FR Stores),internal,Finance
+frst-act024,Manager Finance (FR Stores),internal,Marketing
+frst-act025,Associate Merchandising (FR Stores),internal,Technology
+fron-act001,Advisor Customer Care (FR Online),external,Retail Operations
+fron-act002,Controller Technology (FR Online),external,Logistics
+fron-act003,Coordinator Risk and Compliance (FR Online),external,Finance
+fron-act004,Associate Risk and Compliance (FR Online),internal,Marketing
+fron-act005,Coordinator Customer Care (FR Online),internal,Technology
+fron-act006,Controller Marketing (FR Online),internal,Procurement
+fron-act007,Clerk Finance (FR Online),internal,Risk and Compliance
+fron-act008,Planner Risk and Compliance (FR Online),internal,Customer Care
+fron-act009,Associate Merchandising (FR Online),internal,People
+fron-act010,Lead Technology (FR Online),internal,Merchandising
+fron-act011,Specialist Marketing (FR Online),internal,Retail Operations
+fron-act012,Manager Technology (FR Online),internal,Logistics
+fron-act013,Specialist Finance (FR Online),internal,Finance
+fron-act014,Analyst Marketing (FR Online),internal,Marketing
+fron-act015,Planner People (FR Online),internal,Technology
+fron-act016,Lead Finance (FR Online),internal,Procurement
+fron-act017,Coordinator Retail Operations (FR Online),internal,Risk and Compliance
+fron-act018,Clerk Retail Operations (FR Online),internal,Customer Care
+fron-act019,Controller Procurement (FR Online),internal,People
+fron-act020,Lead Retail Operations (FR Online),internal,Merchandising
+fron-act021,Clerk Procurement (FR Online),internal,Retail Operations
+fron-act022,Coordinator Merchandising (FR Online),internal,Logistics
+fron-act023,Analyst People (FR Online),internal,Finance
+fron-act024,Specialist Customer Care (FR Online),internal,Marketing
+fron-act025,Manager Merchandising (FR Online),internal,Technology
+frwh-act001,Coordinator Retail Operations (FR Wholesale),external,Retail Operations
+frwh-act002,Controller Logistics (FR Wholesale),external,Logistics
+frwh-act003,Analyst Retail Operations (FR Wholesale),external,Finance
+frwh-act004,Analyst People (FR Wholesale),internal,Marketing
+frwh-act005,Coordinator Risk and Compliance (FR Wholesale),internal,Technology
+frwh-act006,Clerk Risk and Compliance (FR Wholesale),internal,Procurement
+frwh-act007,Manager Procurement (FR Wholesale),internal,Risk and Compliance
+frwh-act008,Clerk Merchandising (FR Wholesale),internal,Customer Care
+frwh-act009,Specialist Technology (FR Wholesale),internal,People
+frwh-act010,Coordinator Technology (FR Wholesale),internal,Merchandising
+frwh-act011,Manager Finance (FR Wholesale),internal,Retail Operations
+frwh-act012,Advisor People (FR Wholesale),internal,Logistics
+frwh-act013,Manager Risk and Compliance (FR Wholesale),internal,Finance
+frwh-act014,Planner Logistics (FR Wholesale),internal,Marketing
+frwh-act015,Associate Technology (FR Wholesale),internal,Technology
+frwh-act016,Analyst Marketing (FR Wholesale),internal,Procurement
+frwh-act017,Planner Marketing (FR Wholesale),internal,Risk and Compliance
+frwh-act018,Specialist Merchandising (FR Wholesale),internal,Customer Care
+frwh-act019,Manager Marketing (FR Wholesale),internal,People
+frwh-act020,Specialist Procurement (FR Wholesale),internal,Merchandising
+frwh-act021,Lead Finance (FR Wholesale),internal,Retail Operations
+frwh-act022,Associate Marketing (FR Wholesale),internal,Logistics
+frwh-act023,Advisor Procurement (FR Wholesale),internal,Finance
+frwh-act024,Controller Procurement (FR Wholesale),internal,Marketing
+frwh-act025,Lead Customer Care (FR Wholesale),internal,Technology
+frlg-act001,Coordinator Merchandising (FR Logistics),external,Retail Operations
+frlg-act002,Planner Technology (FR Logistics),external,Logistics
+frlg-act003,Analyst Procurement (FR Logistics),external,Finance
+frlg-act004,Clerk Merchandising (FR Logistics),internal,Marketing
+frlg-act005,Associate Logistics (FR Logistics),internal,Technology
+frlg-act006,Lead Retail Operations (FR Logistics),internal,Procurement
+frlg-act007,Lead Risk and Compliance (FR Logistics),internal,Risk and Compliance
+frlg-act008,Associate Finance (FR Logistics),internal,Customer Care
+frlg-act009,Advisor Marketing (FR Logistics),internal,People
+frlg-act010,Coordinator Procurement (FR Logistics),internal,Merchandising
+frlg-act011,Controller Procurement (FR Logistics),internal,Retail Operations
+frlg-act012,Controller Marketing (FR Logistics),internal,Logistics
+frlg-act013,Advisor Customer Care (FR Logistics),internal,Finance
+frlg-act014,Controller Logistics (FR Logistics),internal,Marketing
+frlg-act015,Lead Marketing (FR Logistics),internal,Technology
+frlg-act016,Planner Merchandising (FR Logistics),internal,Procurement
+frlg-act017,Specialist Retail Operations (FR Logistics),internal,Risk and Compliance
+frlg-act018,Advisor Risk and Compliance (FR Logistics),internal,Customer Care
+frlg-act019,Clerk Retail Operations (FR Logistics),internal,People
+frlg-act020,Coordinator Technology (FR Logistics),internal,Merchandising
+frlg-act021,Associate Risk and Compliance (FR Logistics),internal,Retail Operations
+frlg-act022,Advisor Finance (FR Logistics),internal,Logistics
+frlg-act023,Clerk Risk and Compliance (FR Logistics),internal,Finance
+frlg-act024,Specialist People (FR Logistics),internal,Marketing
+frlg-act025,Planner Finance (FR Logistics),internal,Technology
+dest-act001,Advisor Merchandising (DE Stores),external,Retail Operations
+dest-act002,Specialist Merchandising (DE Stores),external,Logistics
+dest-act003,Controller Logistics (DE Stores),external,Finance
+dest-act004,Associate Retail Operations (DE Stores),internal,Marketing
+dest-act005,Controller Retail Operations (DE Stores),internal,Technology
+dest-act006,Advisor Logistics (DE Stores),internal,Procurement
+dest-act007,Advisor Marketing (DE Stores),internal,Risk and Compliance
+dest-act008,Manager People (DE Stores),internal,Customer Care
+dest-act009,Lead Marketing (DE Stores),internal,People
+dest-act010,Clerk Procurement (DE Stores),internal,Merchandising
+dest-act011,Associate Merchandising (DE Stores),internal,Retail Operations
+dest-act012,Lead Logistics (DE Stores),internal,Logistics
+dest-act013,Planner Customer Care (DE Stores),internal,Finance
+dest-act014,Planner Merchandising (DE Stores),internal,Marketing
+dest-act015,Coordinator Finance (DE Stores),internal,Technology
+dest-act016,Analyst People (DE Stores),internal,Procurement
+dest-act017,Analyst Procurement (DE Stores),internal,Risk and Compliance
+dest-act018,Analyst Risk and Compliance (DE Stores),internal,Customer Care
+dest-act019,Analyst Technology (DE Stores),internal,People
+dest-act020,Controller People (DE Stores),internal,Merchandising
+dest-act021,Analyst Marketing (DE Stores),internal,Retail Operations
+dest-act022,Coordinator Procurement (DE Stores),internal,Logistics
+dest-act023,Controller Marketing (DE Stores),internal,Finance
+dest-act024,Analyst Logistics (DE Stores),internal,Marketing
+dest-act025,Coordinator People (DE Stores),internal,Technology
+deon-act001,Specialist Technology (DE Online),external,Retail Operations
+deon-act002,Advisor Finance (DE Online),external,Logistics
+deon-act003,Specialist People (DE Online),external,Finance
+deon-act004,Lead Logistics (DE Online),internal,Marketing
+deon-act005,Advisor Technology (DE Online),internal,Technology
+deon-act006,Associate Marketing (DE Online),internal,Procurement
+deon-act007,Planner Merchandising (DE Online),internal,Risk and Compliance
+deon-act008,Lead Marketing (DE Online),internal,Customer Care
+deon-act009,Analyst Finance (DE Online),internal,People
+deon-act010,Associate Finance (DE Online),internal,Merchandising
+deon-act011,Clerk Technology (DE Online),internal,Retail Operations
+deon-act012,Manager Retail Operations (DE Online),internal,Logistics
+deon-act013,Analyst Technology (DE Online),internal,Finance
+deon-act014,Manager Technology (DE Online),internal,Marketing
+deon-act015,Advisor Procurement (DE Online),internal,Technology
+deon-act016,Lead People (DE Online),internal,Procurement
+deon-act017,Advisor Retail Operations (DE Online),internal,Risk and Compliance
+deon-act018,Manager Merchandising (DE Online),internal,Customer Care
+deon-act019,Analyst Marketing (DE Online),internal,People
+deon-act020,Planner Technology (DE Online),internal,Merchandising
+deon-act021,Controller Finance (DE Online),internal,Retail Operations
+deon-act022,Clerk Retail Operations (DE Online),internal,Logistics
+deon-act023,Coordinator Technology (DE Online),internal,Finance
+deon-act024,Specialist Procurement (DE Online),internal,Marketing
+deon-act025,Controller People (DE Online),internal,Technology
+dewh-act001,Planner Procurement (DE Wholesale),external,Retail Operations
+dewh-act002,Associate Finance (DE Wholesale),external,Logistics
+dewh-act003,Coordinator Risk and Compliance (DE Wholesale),external,Finance
+dewh-act004,Manager Procurement (DE Wholesale),internal,Marketing
+dewh-act005,Specialist Finance (DE Wholesale),internal,Technology
+dewh-act006,Clerk Technology (DE Wholesale),internal,Procurement
+dewh-act007,Associate Procurement (DE Wholesale),internal,Risk and Compliance
+dewh-act008,Analyst Retail Operations (DE Wholesale),internal,Customer Care
+dewh-act009,Lead Risk and Compliance (DE Wholesale),internal,People
+dewh-act010,Advisor Logistics (DE Wholesale),internal,Merchandising
+dewh-act011,Analyst People (DE Wholesale),internal,Retail Operations
+dewh-act012,Manager Merchandising (DE Wholesale),internal,Logistics
+dewh-act013,Advisor Retail Operations (DE Wholesale),internal,Finance
+dewh-act014,Associate Customer Care (DE Wholesale),internal,Marketing
+dewh-act015,Controller Technology (DE Wholesale),internal,Technology
+dewh-act016,Controller Procurement (DE Wholesale),internal,Procurement
+dewh-act017,Analyst Logistics (DE Wholesale),internal,Risk and Compliance
+dewh-act018,Planner Logistics (DE Wholesale),internal,Customer Care
+dewh-act019,Planner Customer Care (DE Wholesale),internal,People
+dewh-act020,Coordinator Retail Operations (DE Wholesale),internal,Merchandising
+dewh-act021,Controller Customer Care (DE Wholesale),internal,Retail Operations
+dewh-act022,Planner Merchandising (DE Wholesale),internal,Logistics
+dewh-act023,Clerk Logistics (DE Wholesale),internal,Finance
+dewh-act024,Associate Logistics (DE Wholesale),internal,Marketing
+dewh-act025,Manager Risk and Compliance (DE Wholesale),internal,Technology
+delg-act001,Clerk Procurement (DE Logistics),external,Retail Operations
+delg-act002,Clerk Retail Operations (DE Logistics),external,Logistics
+delg-act003,Associate Customer Care (DE Logistics),external,Finance
+delg-act004,Associate Finance (DE Logistics),internal,Marketing
+delg-act005,Advisor Technology (DE Logistics),internal,Technology
+delg-act006,Coordinator Finance (DE Logistics),internal,Procurement
+delg-act007,Advisor Logistics (DE Logistics),internal,Risk and Compliance
+delg-act008,Manager Finance (DE Logistics),internal,Customer Care
+delg-act009,Clerk Marketing (DE Logistics),internal,People
+delg-act010,Coordinator Logistics (DE Logistics),internal,Merchandising
+delg-act011,Advisor Finance (DE Logistics),internal,Retail Operations
+delg-act012,Manager Marketing (DE Logistics),internal,Logistics
+delg-act013,Controller Technology (DE Logistics),internal,Finance
+delg-act014,Controller Merchandising (DE Logistics),internal,Marketing
+delg-act015,Coordinator Merchandising (DE Logistics),internal,Technology
+delg-act016,Associate Technology (DE Logistics),internal,Procurement
+delg-act017,Planner Merchandising (DE Logistics),internal,Risk and Compliance
+delg-act018,Associate Risk and Compliance (DE Logistics),internal,Customer Care
+delg-act019,Specialist Technology (DE Logistics),internal,People
+delg-act020,Specialist Merchandising (DE Logistics),internal,Merchandising
+delg-act021,Manager People (DE Logistics),internal,Retail Operations
+delg-act022,Specialist Risk and Compliance (DE Logistics),internal,Logistics
+delg-act023,Analyst Logistics (DE Logistics),internal,Finance
+delg-act024,Planner Customer Care (DE Logistics),internal,Marketing
+delg-act025,Associate Retail Operations (DE Logistics),internal,Technology
+nlst-act001,Coordinator Finance (NL Stores),external,Retail Operations
+nlst-act002,Clerk Retail Operations (NL Stores),external,Logistics
+nlst-act003,Coordinator Procurement (NL Stores),external,Finance
+nlst-act004,Specialist People (NL Stores),internal,Marketing
+nlst-act005,Controller Risk and Compliance (NL Stores),internal,Technology
+nlst-act006,Controller Technology (NL Stores),internal,Procurement
+nlst-act007,Specialist Finance (NL Stores),internal,Risk and Compliance
+nlst-act008,Advisor People (NL Stores),internal,Customer Care
+nlst-act009,Coordinator Retail Operations (NL Stores),internal,People
+nlst-act010,Associate Risk and Compliance (NL Stores),internal,Merchandising
+nlst-act011,Lead Customer Care (NL Stores),internal,Retail Operations
+nlst-act012,Associate Merchandising (NL Stores),internal,Logistics
+nlst-act013,Analyst Merchandising (NL Stores),internal,Finance
+nlst-act014,Lead Technology (NL Stores),internal,Marketing
+nlst-act015,Manager Technology (NL Stores),internal,Technology
+nlst-act016,Analyst Customer Care (NL Stores),internal,Procurement
+nlst-act017,Coordinator Risk and Compliance (NL Stores),internal,Risk and Compliance
+nlst-act018,Advisor Marketing (NL Stores),internal,Customer Care
+nlst-act019,Planner Retail Operations (NL Stores),internal,People
+nlst-act020,Associate Customer Care (NL Stores),internal,Merchandising
+nlst-act021,Lead Finance (NL Stores),internal,Retail Operations
+nlst-act022,Coordinator Marketing (NL Stores),internal,Logistics
+nlst-act023,Planner Procurement (NL Stores),internal,Finance
+nlst-act024,Manager Risk and Compliance (NL Stores),internal,Marketing
+nlst-act025,Specialist Procurement (NL Stores),internal,Technology
+nlon-act001,Specialist Retail Operations (NL Online),external,Retail Operations
+nlon-act002,Clerk Finance (NL Online),external,Logistics
+nlon-act003,Analyst Technology (NL Online),external,Finance
+nlon-act004,Planner People (NL Online),internal,Marketing
+nlon-act005,Analyst People (NL Online),internal,Technology
+nlon-act006,Associate Marketing (NL Online),internal,Procurement
+nlon-act007,Associate Risk and Compliance (NL Online),internal,Risk and Compliance
+nlon-act008,Planner Logistics (NL Online),internal,Customer Care
+nlon-act009,Controller Technology (NL Online),internal,People
+nlon-act010,Lead People (NL Online),internal,Merchandising
+nlon-act011,Coordinator Merchandising (NL Online),internal,Retail Operations
+nlon-act012,Advisor Procurement (NL Online),internal,Logistics
+nlon-act013,Planner Technology (NL Online),internal,Finance
+nlon-act014,Lead Risk and Compliance (NL Online),internal,Marketing
+nlon-act015,Advisor Merchandising (NL Online),internal,Technology
+nlon-act016,Manager People (NL Online),internal,Procurement
+nlon-act017,Specialist People (NL Online),internal,Risk and Compliance
+nlon-act018,Specialist Procurement (NL Online),internal,Customer Care
+nlon-act019,Lead Customer Care (NL Online),internal,People
+nlon-act020,Clerk Retail Operations (NL Online),internal,Merchandising
+nlon-act021,Associate Finance (NL Online),internal,Retail Operations
+nlon-act022,Advisor Customer Care (NL Online),internal,Logistics
+nlon-act023,Manager Marketing (NL Online),internal,Finance
+nlon-act024,Lead Finance (NL Online),internal,Marketing
+nlon-act025,Planner Finance (NL Online),internal,Technology
+nlwh-act001,Associate Risk and Compliance (NL Wholesale),external,Retail Operations
+nlwh-act002,Coordinator Marketing (NL Wholesale),external,Logistics
+nlwh-act003,Planner Procurement (NL Wholesale),external,Finance
+nlwh-act004,Advisor Technology (NL Wholesale),internal,Marketing
+nlwh-act005,Associate Merchandising (NL Wholesale),internal,Technology
+nlwh-act006,Advisor Finance (NL Wholesale),internal,Procurement
+nlwh-act007,Coordinator Logistics (NL Wholesale),internal,Risk and Compliance
+nlwh-act008,Associate People (NL Wholesale),internal,Customer Care
+nlwh-act009,Manager Risk and Compliance (NL Wholesale),internal,People
+nlwh-act010,Coordinator Merchandising (NL Wholesale),internal,Merchandising
+nlwh-act011,Manager Finance (NL Wholesale),internal,Retail Operations
+nlwh-act012,Manager Retail Operations (NL Wholesale),internal,Logistics
+nlwh-act013,Specialist Marketing (NL Wholesale),internal,Finance
+nlwh-act014,Analyst Marketing (NL Wholesale),internal,Marketing
+nlwh-act015,Lead Risk and Compliance (NL Wholesale),internal,Technology
+nlwh-act016,Advisor Marketing (NL Wholesale),internal,Procurement
+nlwh-act017,Controller Logistics (NL Wholesale),internal,Risk and Compliance
+nlwh-act018,Specialist Risk and Compliance (NL Wholesale),internal,Customer Care
+nlwh-act019,Analyst Retail Operations (NL Wholesale),internal,People
+nlwh-act020,Manager Technology (NL Wholesale),internal,Merchandising
+nlwh-act021,Analyst Procurement (NL Wholesale),internal,Retail Operations
+nlwh-act022,Clerk Finance (NL Wholesale),internal,Logistics
+nlwh-act023,Advisor People (NL Wholesale),internal,Finance
+nlwh-act024,Associate Retail Operations (NL Wholesale),internal,Marketing
+nlwh-act025,Lead Retail Operations (NL Wholesale),internal,Technology
+nllg-act001,Analyst People (NL Logistics),external,Retail Operations
+nllg-act002,Advisor Procurement (NL Logistics),external,Logistics
+nllg-act003,Lead Finance (NL Logistics),external,Finance
+nllg-act004,Lead Risk and Compliance (NL Logistics),internal,Marketing
+nllg-act005,Analyst Merchandising (NL Logistics),internal,Technology
+nllg-act006,Clerk Finance (NL Logistics),internal,Procurement
+nllg-act007,Clerk Merchandising (NL Logistics),internal,Risk and Compliance
+nllg-act008,Lead Customer Care (NL Logistics),internal,Customer Care
+nllg-act009,Coordinator Retail Operations (NL Logistics),internal,People
+nllg-act010,Coordinator Procurement (NL Logistics),internal,Merchandising
+nllg-act011,Manager Technology (NL Logistics),internal,Retail Operations
+nllg-act012,Specialist Merchandising (NL Logistics),internal,Logistics
+nllg-act013,Associate People (NL Logistics),internal,Finance
+nllg-act014,Planner Retail Operations (NL Logistics),internal,Marketing
+nllg-act015,Planner People (NL Logistics),internal,Technology
+nllg-act016,Advisor Risk and Compliance (NL Logistics),internal,Procurement
+nllg-act017,Associate Logistics (NL Logistics),internal,Risk and Compliance
+nllg-act018,Associate Merchandising (NL Logistics),internal,Customer Care
+nllg-act019,Clerk Risk and Compliance (NL Logistics),internal,People
+nllg-act020,Planner Finance (NL Logistics),internal,Merchandising
+nllg-act021,Manager People (NL Logistics),internal,Retail Operations
+nllg-act022,Manager Logistics (NL Logistics),internal,Logistics
+nllg-act023,Lead Procurement (NL Logistics),internal,Finance
+nllg-act024,Advisor Technology (NL Logistics),internal,Marketing
+nllg-act025,Analyst Logistics (NL Logistics),internal,Technology
+best-act001,Lead Technology (BE Stores),external,Retail Operations
+best-act002,Planner Marketing (BE Stores),external,Logistics
+best-act003,Coordinator Retail Operations (BE Stores),external,Finance
+best-act004,Planner Risk and Compliance (BE Stores),internal,Marketing
+best-act005,Controller Procurement (BE Stores),internal,Technology
+best-act006,Planner Finance (BE Stores),internal,Procurement
+best-act007,Planner Technology (BE Stores),internal,Risk and Compliance
+best-act008,Coordinator Procurement (BE Stores),internal,Customer Care
+best-act009,Planner Procurement (BE Stores),internal,People
+best-act010,Manager Technology (BE Stores),internal,Merchandising
+best-act011,Planner Retail Operations (BE Stores),internal,Retail Operations
+best-act012,Clerk Finance (BE Stores),internal,Logistics
+best-act013,Controller Logistics (BE Stores),internal,Finance
+best-act014,Clerk Retail Operations (BE Stores),internal,Marketing
+best-act015,Specialist Finance (BE Stores),internal,Technology
+best-act016,Lead Procurement (BE Stores),internal,Procurement
+best-act017,Controller Customer Care (BE Stores),internal,Risk and Compliance
+best-act018,Specialist Retail Operations (BE Stores),internal,Customer Care
+best-act019,Specialist Risk and Compliance (BE Stores),internal,People
+best-act020,Clerk Procurement (BE Stores),internal,Merchandising
+best-act021,Clerk Logistics (BE Stores),internal,Retail Operations
+best-act022,Manager Customer Care (BE Stores),internal,Logistics
+best-act023,Coordinator Logistics (BE Stores),internal,Finance
+best-act024,Clerk Technology (BE Stores),internal,Marketing
+best-act025,Planner Customer Care (BE Stores),internal,Technology
+beon-act001,Analyst Customer Care (BE Online),external,Retail Operations
+beon-act002,Analyst Procurement (BE Online),external,Logistics
+beon-act003,Associate Customer Care (BE Online),external,Finance
+beon-act004,Manager Finance (BE Online),internal,Marketing
+beon-act005,Lead Risk and Compliance (BE Online),internal,Technology
+beon-act006,Associate People (BE Online),internal,Procurement
+beon-act007,Planner Retail Operations (BE Online),internal,Risk and Compliance
+beon-act008,Manager People (BE Online),internal,Customer Care
+beon-act009,Lead Finance (BE Online),internal,People
+beon-act010,Associate Risk and Compliance (BE Online),internal,Merchandising
+beon-act011,Manager Procurement (BE Online),internal,Retail Operations
+beon-act012,Analyst Marketing (BE Online),internal,Logistics
+beon-act013,Advisor Merchandising (BE Online),internal,Finance
+beon-act014,Coordinator Technology (BE Online),internal,Marketing
+beon-act015,Coordinator Merchandising (BE Online),internal,Technology
+beon-act016,Manager Risk and Compliance (BE Online),internal,Procurement
+beon-act017,Controller Finance (BE Online),internal,Risk and Compliance
+beon-act018,Associate Technology (BE Online),internal,Customer Care
+beon-act019,Lead Logistics (BE Online),internal,People
+beon-act020,Coordinator Procurement (BE Online),internal,Merchandising
+beon-act021,Specialist Marketing (BE Online),internal,Retail Operations
+beon-act022,Controller Logistics (BE Online),internal,Logistics
+beon-act023,Specialist Procurement (BE Online),internal,Finance
+beon-act024,Coordinator People (BE Online),internal,Marketing
+beon-act025,Planner Customer Care (BE Online),internal,Technology
+bewh-act001,Controller Marketing (BE Wholesale),external,Retail Operations
+bewh-act002,Clerk Marketing (BE Wholesale),external,Logistics
+bewh-act003,Advisor Merchandising (BE Wholesale),external,Finance
+bewh-act004,Manager Marketing (BE Wholesale),internal,Marketing
+bewh-act005,Analyst Customer Care (BE Wholesale),internal,Technology
+bewh-act006,Coordinator Customer Care (BE Wholesale),internal,Procurement
+bewh-act007,Coordinator People (BE Wholesale),internal,Risk and Compliance
+bewh-act008,Lead Merchandising (BE Wholesale),internal,Customer Care
+bewh-act009,Manager Merchandising (BE Wholesale),internal,People
+bewh-act010,Lead Customer Care (BE Wholesale),internal,Merchandising
+bewh-act011,Clerk Merchandising (BE Wholesale),internal,Retail Operations
+bewh-act012,Specialist Finance (BE Wholesale),internal,Logistics
+bewh-act013,Associate People (BE Wholesale),internal,Finance
+bewh-act014,Analyst Merchandising (BE Wholesale),internal,Marketing
+bewh-act015,Controller Technology (BE Wholesale),internal,Technology
+bewh-act016,Manager Procurement (BE Wholesale),internal,Procurement
+bewh-act017,Lead Finance (BE Wholesale),internal,Risk and Compliance
+bewh-act018,Clerk Customer Care (BE Wholesale),internal,Customer Care
+bewh-act019,Clerk Retail Operations (BE Wholesale),internal,People
+bewh-act020,Coordinator Procurement (BE Wholesale),internal,Merchandising
+bewh-act021,Coordinator Marketing (BE Wholesale),internal,Retail Operations
+bewh-act022,Planner Retail Operations (BE Wholesale),internal,Logistics
+bewh-act023,Manager Finance (BE Wholesale),internal,Finance
+bewh-act024,Controller Logistics (BE Wholesale),internal,Marketing
+bewh-act025,Clerk Finance (BE Wholesale),internal,Technology
+belg-act001,Specialist People (BE Logistics),external,Retail Operations
+belg-act002,Planner Finance (BE Logistics),external,Logistics
+belg-act003,Coordinator Marketing (BE Logistics),external,Finance
+belg-act004,Coordinator Retail Operations (BE Logistics),internal,Marketing
+belg-act005,Analyst Marketing (BE Logistics),internal,Technology
+belg-act006,Specialist Merchandising (BE Logistics),internal,Procurement
+belg-act007,Associate Procurement (BE Logistics),internal,Risk and Compliance
+belg-act008,Clerk Procurement (BE Logistics),internal,Customer Care
+belg-act009,Clerk Marketing (BE Logistics),internal,People
+belg-act010,Specialist Logistics (BE Logistics),internal,Merchandising
+belg-act011,Associate Risk and Compliance (BE Logistics),internal,Retail Operations
+belg-act012,Manager Risk and Compliance (BE Logistics),internal,Logistics
+belg-act013,Associate Finance (BE Logistics),internal,Finance
+belg-act014,Advisor Procurement (BE Logistics),internal,Marketing
+belg-act015,Controller Risk and Compliance (BE Logistics),internal,Technology
+belg-act016,Coordinator Technology (BE Logistics),internal,Procurement
+belg-act017,Advisor Retail Operations (BE Logistics),internal,Risk and Compliance
+belg-act018,Associate People (BE Logistics),internal,Customer Care
+belg-act019,Controller Marketing (BE Logistics),internal,People
+belg-act020,Controller Finance (BE Logistics),internal,Merchandising
+belg-act021,Clerk Logistics (BE Logistics),internal,Retail Operations
+belg-act022,Controller Procurement (BE Logistics),internal,Logistics
+belg-act023,Advisor Technology (BE Logistics),internal,Finance
+belg-act024,Coordinator People (BE Logistics),internal,Marketing
+belg-act025,Controller Customer Care (BE Logistics),internal,Technology
+esst-act001,Associate Customer Care (ES Stores),external,Retail Operations
+esst-act002,Associate Marketing (ES Stores),external,Logistics
+esst-act003,Analyst Customer Care (ES Stores),external,Finance
+esst-act004,Specialist Customer Care (ES Stores),internal,Marketing
+esst-act005,Clerk Merchandising (ES Stores),internal,Technology
+esst-act006,Coordinator People (ES Stores),internal,Procurement
+esst-act007,Lead People (ES Stores),internal,Risk and Compliance
+esst-act008,Clerk Procurement (ES Stores),internal,Customer Care
+esst-act009,Advisor Finance (ES Stores),internal,People
+esst-act010,Lead Merchandising (ES Stores),internal,Merchandising
+esst-act011,Advisor Retail Operations (ES Stores),internal,Retail Operations
+esst-act012,Associate Finance (ES Stores),internal,Logistics
+esst-act013,Advisor Procurement (ES Stores),internal,Finance
+esst-act014,Advisor People (ES Stores),internal,Marketing
+esst-act015,Planner Retail Operations (ES Stores),internal,Technology
+esst-act016,Manager Technology (ES Stores),internal,Procurement
+esst-act017,Specialist Procurement (ES Stores),internal,Risk and Compliance
+esst-act018,Manager Logistics (ES Stores),internal,Customer Care
+esst-act019,Manager People (ES Stores),internal,People
+esst-act020,Manager Customer Care (ES Stores),internal,Merchandising
+esst-act021,Specialist Retail Operations (ES Stores),internal,Retail Operations
+esst-act022,Coordinator Finance (ES Stores),internal,Logistics
+esst-act023,Analyst Retail Operations (ES Stores),internal,Finance
+esst-act024,Controller Risk and Compliance (ES Stores),internal,Marketing
+esst-act025,Controller Technology (ES Stores),internal,Technology
+eson-act001,Manager Marketing (ES Online),external,Retail Operations
+eson-act002,Manager Customer Care (ES Online),external,Logistics
+eson-act003,Lead People (ES Online),external,Finance
+eson-act004,Coordinator Technology (ES Online),internal,Marketing
+eson-act005,Planner Technology (ES Online),internal,Technology
+eson-act006,Clerk Technology (ES Online),internal,Procurement
+eson-act007,Clerk Risk and Compliance (ES Online),internal,Risk and Compliance
+eson-act008,Analyst Customer Care (ES Online),internal,Customer Care
+eson-act009,Lead Technology (ES Online),internal,People
+eson-act010,Associate Finance (ES Online),internal,Merchandising
+eson-act011,Clerk Logistics (ES Online),internal,Retail Operations
+eson-act012,Coordinator Retail Operations (ES Online),internal,Logistics
+eson-act013,Coordinator Logistics (ES Online),internal,Finance
+eson-act014,Analyst Merchandising (ES Online),internal,Marketing
+eson-act015,Lead Marketing (ES Online),internal,Technology
+eson-act016,Associate Technology (ES Online),internal,Procurement
+eson-act017,Clerk Marketing (ES Online),internal,Risk and Compliance
+eson-act018,Controller Technology (ES Online),internal,Customer Care
+eson-act019,Coordinator Customer Care (ES Online),internal,People
+eson-act020,Clerk Retail Operations (ES Online),internal,Merchandising
+eson-act021,Analyst Technology (ES Online),internal,Retail Operations
+eson-act022,Specialist Technology (ES Online),internal,Logistics
+eson-act023,Lead Retail Operations (ES Online),internal,Finance
+eson-act024,Associate People (ES Online),internal,Marketing
+eson-act025,Manager Technology (ES Online),internal,Technology
+eswh-act001,Controller Merchandising (ES Wholesale),external,Retail Operations
+eswh-act002,Controller Logistics (ES Wholesale),external,Logistics
+eswh-act003,Lead Retail Operations (ES Wholesale),external,Finance
+eswh-act004,Associate Retail Operations (ES Wholesale),internal,Marketing
+eswh-act005,Planner Marketing (ES Wholesale),internal,Technology
+eswh-act006,Controller People (ES Wholesale),internal,Procurement
+eswh-act007,Specialist Finance (ES Wholesale),internal,Risk and Compliance
+eswh-act008,Advisor Customer Care (ES Wholesale),internal,Customer Care
+eswh-act009,Advisor Marketing (ES Wholesale),internal,People
+eswh-act010,Associate Marketing (ES Wholesale),internal,Merchandising
+eswh-act011,Clerk Procurement (ES Wholesale),internal,Retail Operations
+eswh-act012,Planner Procurement (ES Wholesale),internal,Logistics
+eswh-act013,Planner Customer Care (ES Wholesale),internal,Finance
+eswh-act014,Advisor Procurement (ES Wholesale),internal,Marketing
+eswh-act015,Lead Customer Care (ES Wholesale),internal,Technology
+eswh-act016,Associate Procurement (ES Wholesale),internal,Procurement
+eswh-act017,Planner Merchandising (ES Wholesale),internal,Risk and Compliance
+eswh-act018,Lead Merchandising (ES Wholesale),internal,Customer Care
+eswh-act019,Controller Retail Operations (ES Wholesale),internal,People
+eswh-act020,Advisor Logistics (ES Wholesale),internal,Merchandising
+eswh-act021,Associate Technology (ES Wholesale),internal,Retail Operations
+eswh-act022,Coordinator Technology (ES Wholesale),internal,Logistics
+eswh-act023,Lead Technology (ES Wholesale),internal,Finance
+eswh-act024,Manager Marketing (ES Wholesale),internal,Marketing
+eswh-act025,Planner Technology (ES Wholesale),internal,Technology
+eslg-act001,Advisor Retail Operations (ES Logistics),external,Retail Operations
+eslg-act002,Coordinator Retail Operations (ES Logistics),external,Logistics
+eslg-act003,Associate Procurement (ES Logistics),external,Finance
+eslg-act004,Manager Marketing (ES Logistics),internal,Marketing
+eslg-act005,Lead Merchandising (ES Logistics),internal,Technology
+eslg-act006,Planner Technology (ES Logistics),internal,Procurement
+eslg-act007,Lead Finance (ES Logistics),internal,Risk and Compliance
+eslg-act008,Analyst People (ES Logistics),internal,Customer Care
+eslg-act009,Specialist Marketing (ES Logistics),internal,People
+eslg-act010,Planner Marketing (ES Logistics),internal,Merchandising
+eslg-act011,Lead Technology (ES Logistics),internal,Retail Operations
+eslg-act012,Advisor Procurement (ES Logistics),internal,Logistics
+eslg-act013,Analyst Marketing (ES Logistics),internal,Finance
+eslg-act014,Specialist Finance (ES Logistics),internal,Marketing
+eslg-act015,Advisor Logistics (ES Logistics),internal,Technology
+eslg-act016,Associate Customer Care (ES Logistics),internal,Procurement
+eslg-act017,Analyst Logistics (ES Logistics),internal,Risk and Compliance
+eslg-act018,Lead Customer Care (ES Logistics),internal,Customer Care
+eslg-act019,Planner Logistics (ES Logistics),internal,People
+eslg-act020,Coordinator Technology (ES Logistics),internal,Merchandising
+eslg-act021,Controller Logistics (ES Logistics),internal,Retail Operations
+eslg-act022,Planner Customer Care (ES Logistics),internal,Logistics
+eslg-act023,Manager Technology (ES Logistics),internal,Finance
+eslg-act024,Coordinator Marketing (ES Logistics),internal,Marketing
+eslg-act025,Specialist Technology (ES Logistics),internal,Technology
+ptst-act001,Advisor Procurement (PT Stores),external,Retail Operations
+ptst-act002,Clerk People (PT Stores),external,Logistics
+ptst-act003,Analyst Logistics (PT Stores),external,Finance
+ptst-act004,Controller Finance (PT Stores),internal,Marketing
+ptst-act005,Analyst Marketing (PT Stores),internal,Technology
+ptst-act006,Manager Finance (PT Stores),internal,Procurement
+ptst-act007,Coordinator Merchandising (PT Stores),internal,Risk and Compliance
+ptst-act008,Manager Marketing (PT Stores),internal,Customer Care
+ptst-act009,Specialist Risk and Compliance (PT Stores),internal,People
+ptst-act010,Manager Retail Operations (PT Stores),internal,Merchandising
+ptst-act011,Associate Logistics (PT Stores),internal,Retail Operations
+ptst-act012,Coordinator Finance (PT Stores),internal,Logistics
+ptst-act013,Specialist Finance (PT Stores),internal,Finance
+ptst-act014,Advisor Logistics (PT Stores),internal,Marketing
+ptst-act015,Planner Risk and Compliance (PT Stores),internal,Technology
+ptst-act016,Controller People (PT Stores),internal,Procurement
+ptst-act017,Analyst Procurement (PT Stores),internal,Risk and Compliance
+ptst-act018,Advisor People (PT Stores),internal,Customer Care
+ptst-act019,Manager Risk and Compliance (PT Stores),internal,People
+ptst-act020,Lead Customer Care (PT Stores),internal,Merchandising
+ptst-act021,Manager Technology (PT Stores),internal,Retail Operations
+ptst-act022,Lead Finance (PT Stores),internal,Logistics
+ptst-act023,Associate Customer Care (PT Stores),internal,Finance
+ptst-act024,Coordinator People (PT Stores),internal,Marketing
+ptst-act025,Controller Logistics (PT Stores),internal,Technology
+pton-act001,Advisor People (PT Online),external,Retail Operations
+pton-act002,Lead Logistics (PT Online),external,Logistics
+pton-act003,Advisor Marketing (PT Online),external,Finance
+pton-act004,Manager Logistics (PT Online),internal,Marketing
+pton-act005,Associate Marketing (PT Online),internal,Technology
+pton-act006,Controller Retail Operations (PT Online),internal,Procurement
+pton-act007,Controller Customer Care (PT Online),internal,Risk and Compliance
+pton-act008,Planner Technology (PT Online),internal,Customer Care
+pton-act009,Associate Technology (PT Online),internal,People
+pton-act010,Specialist Customer Care (PT Online),internal,Merchandising
+pton-act011,Specialist Logistics (PT Online),internal,Retail Operations
+pton-act012,Specialist Finance (PT Online),internal,Logistics
+pton-act013,Coordinator Retail Operations (PT Online),internal,Finance
+pton-act014,Specialist Retail Operations (PT Online),internal,Marketing
+pton-act015,Advisor Merchandising (PT Online),internal,Technology
+pton-act016,Lead Customer Care (PT Online),internal,Procurement
+pton-act017,Planner Marketing (PT Online),internal,Risk and Compliance
+pton-act018,Analyst Merchandising (PT Online),internal,Customer Care
+pton-act019,Lead Risk and Compliance (PT Online),internal,People
+pton-act020,Analyst Technology (PT Online),internal,Merchandising
+pton-act021,Analyst Retail Operations (PT Online),internal,Retail Operations
+pton-act022,Clerk Risk and Compliance (PT Online),internal,Logistics
+pton-act023,Analyst Finance (PT Online),internal,Finance
+pton-act024,Clerk Retail Operations (PT Online),internal,Marketing
+pton-act025,Clerk Merchandising (PT Online),internal,Technology
+ptwh-act001,Lead Risk and Compliance (PT Wholesale),external,Retail Operations
+ptwh-act002,Associate Technology (PT Wholesale),external,Logistics
+ptwh-act003,Specialist Retail Operations (PT Wholesale),external,Finance
+ptwh-act004,Manager Finance (PT Wholesale),internal,Marketing
+ptwh-act005,Planner Finance (PT Wholesale),internal,Technology
+ptwh-act006,Planner Technology (PT Wholesale),internal,Procurement
+ptwh-act007,Manager Procurement (PT Wholesale),internal,Risk and Compliance
+ptwh-act008,Clerk Risk and Compliance (PT Wholesale),internal,Customer Care
+ptwh-act009,Associate People (PT Wholesale),internal,People
+ptwh-act010,Clerk Retail Operations (PT Wholesale),internal,Merchandising
+ptwh-act011,Controller Risk and Compliance (PT Wholesale),internal,Retail Operations
+ptwh-act012,Planner Merchandising (PT Wholesale),internal,Logistics
+ptwh-act013,Coordinator Technology (PT Wholesale),internal,Finance
+ptwh-act014,Clerk Customer Care (PT Wholesale),internal,Marketing
+ptwh-act015,Advisor Risk and Compliance (PT Wholesale),internal,Technology
+ptwh-act016,Controller Procurement (PT Wholesale),internal,Procurement
+ptwh-act017,Coordinator Customer Care (PT Wholesale),internal,Risk and Compliance
+ptwh-act018,Advisor Merchandising (PT Wholesale),internal,Customer Care
+ptwh-act019,Lead Customer Care (PT Wholesale),internal,People
+ptwh-act020,Controller Marketing (PT Wholesale),internal,Merchandising
+ptwh-act021,Specialist People (PT Wholesale),internal,Retail Operations
+ptwh-act022,Clerk Logistics (PT Wholesale),internal,Logistics
+ptwh-act023,Controller Merchandising (PT Wholesale),internal,Finance
+ptwh-act024,Controller Logistics (PT Wholesale),internal,Marketing
+ptwh-act025,Analyst Risk and Compliance (PT Wholesale),internal,Technology
+ptlg-act001,Associate Retail Operations (PT Logistics),external,Retail Operations
+ptlg-act002,Planner Retail Operations (PT Logistics),external,Logistics
+ptlg-act003,Analyst Logistics (PT Logistics),external,Finance
+ptlg-act004,Lead Risk and Compliance (PT Logistics),internal,Marketing
+ptlg-act005,Associate Technology (PT Logistics),internal,Technology
+ptlg-act006,Clerk Procurement (PT Logistics),internal,Procurement
+ptlg-act007,Advisor Risk and Compliance (PT Logistics),internal,Risk and Compliance
+ptlg-act008,Analyst Marketing (PT Logistics),internal,Customer Care
+ptlg-act009,Controller People (PT Logistics),internal,People
+ptlg-act010,Lead Procurement (PT Logistics),internal,Merchandising
+ptlg-act011,Controller Risk and Compliance (PT Logistics),internal,Retail Operations
+ptlg-act012,Manager Risk and Compliance (PT Logistics),internal,Logistics
+ptlg-act013,Manager Logistics (PT Logistics),internal,Finance
+ptlg-act014,Coordinator Logistics (PT Logistics),internal,Marketing
+ptlg-act015,Planner Marketing (PT Logistics),internal,Technology
+ptlg-act016,Lead Marketing (PT Logistics),internal,Procurement
+ptlg-act017,Planner Merchandising (PT Logistics),internal,Risk and Compliance
+ptlg-act018,Associate People (PT Logistics),internal,Customer Care
+ptlg-act019,Planner Risk and Compliance (PT Logistics),internal,People
+ptlg-act020,Specialist Customer Care (PT Logistics),internal,Merchandising
+ptlg-act021,Lead People (PT Logistics),internal,Retail Operations
+ptlg-act022,Controller Technology (PT Logistics),internal,Logistics
+ptlg-act023,Specialist Logistics (PT Logistics),internal,Finance
+ptlg-act024,Analyst Customer Care (PT Logistics),internal,Marketing
+ptlg-act025,Controller Retail Operations (PT Logistics),internal,Technology
+itst-act001,Specialist Procurement (IT Stores),external,Retail Operations
+itst-act002,Clerk Finance (IT Stores),external,Logistics
+itst-act003,Analyst Risk and Compliance (IT Stores),external,Finance
+itst-act004,Associate People (IT Stores),internal,Marketing
+itst-act005,Analyst Retail Operations (IT Stores),internal,Technology
+itst-act006,Controller Logistics (IT Stores),internal,Procurement
+itst-act007,Specialist Customer Care (IT Stores),internal,Risk and Compliance
+itst-act008,Clerk Merchandising (IT Stores),internal,Customer Care
+itst-act009,Coordinator Procurement (IT Stores),internal,People
+itst-act010,Planner Procurement (IT Stores),internal,Merchandising
+itst-act011,Lead People (IT Stores),internal,Retail Operations
+itst-act012,Clerk Procurement (IT Stores),internal,Logistics
+itst-act013,Associate Marketing (IT Stores),internal,Finance
+itst-act014,Specialist Technology (IT Stores),internal,Marketing
+itst-act015,Clerk People (IT Stores),internal,Technology
+itst-act016,Planner People (IT Stores),internal,Procurement
+itst-act017,Controller Merchandising (IT Stores),internal,Risk and Compliance
+itst-act018,Manager Customer Care (IT Stores),internal,Customer Care
+itst-act019,Coordinator Logistics (IT Stores),internal,People
+itst-act020,Analyst Marketing (IT Stores),internal,Merchandising
+itst-act021,Analyst People (IT Stores),internal,Retail Operations
+itst-act022,Lead Procurement (IT Stores),internal,Logistics
+itst-act023,Specialist Retail Operations (IT Stores),internal,Finance
+itst-act024,Clerk Customer Care (IT Stores),internal,Marketing
+itst-act025,Advisor Marketing (IT Stores),internal,Technology
+iton-act001,Lead People (IT Online),external,Retail Operations
+iton-act002,Coordinator Procurement (IT Online),external,Logistics
+iton-act003,Associate People (IT Online),external,Finance
+iton-act004,Advisor Finance (IT Online),internal,Marketing
+iton-act005,Coordinator Finance (IT Online),internal,Technology
+iton-act006,Lead Merchandising (IT Online),internal,Procurement
+iton-act007,Clerk Marketing (IT Online),internal,Risk and Compliance
+iton-act008,Clerk Procurement (IT Online),internal,Customer Care
+iton-act009,Coordinator Marketing (IT Online),internal,People
+iton-act010,Manager Finance (IT Online),internal,Merchandising
+iton-act011,Specialist Marketing (IT Online),internal,Retail Operations
+iton-act012,Controller Technology (IT Online),internal,Logistics
+iton-act013,Advisor Procurement (IT Online),internal,Finance
+iton-act014,Planner Marketing (IT Online),internal,Marketing
+iton-act015,Coordinator Retail Operations (IT Online),internal,Technology
+iton-act016,Coordinator Risk and Compliance (IT Online),internal,Procurement
+iton-act017,Controller Finance (IT Online),internal,Risk and Compliance
+iton-act018,Lead Logistics (IT Online),internal,Customer Care
+iton-act019,Controller Merchandising (IT Online),internal,People
+iton-act020,Advisor Marketing (IT Online),internal,Merchandising
+iton-act021,Specialist Technology (IT Online),internal,Retail Operations
+iton-act022,Lead Procurement (IT Online),internal,Logistics
+iton-act023,Controller Risk and Compliance (IT Online),internal,Finance
+iton-act024,Clerk Retail Operations (IT Online),internal,Marketing
+iton-act025,Coordinator Logistics (IT Online),internal,Technology
+itwh-act001,Specialist Logistics (IT Wholesale),external,Retail Operations
+itwh-act002,Coordinator Merchandising (IT Wholesale),external,Logistics
+itwh-act003,Coordinator Customer Care (IT Wholesale),external,Finance
+itwh-act004,Specialist People (IT Wholesale),internal,Marketing
+itwh-act005,Manager Merchandising (IT Wholesale),internal,Technology
+itwh-act006,Analyst Logistics (IT Wholesale),internal,Procurement
+itwh-act007,Manager Retail Operations (IT Wholesale),internal,Risk and Compliance
+itwh-act008,Specialist Finance (IT Wholesale),internal,Customer Care
+itwh-act009,Coordinator Logistics (IT Wholesale),internal,People
+itwh-act010,Controller Customer Care (IT Wholesale),internal,Merchandising
+itwh-act011,Manager People (IT Wholesale),internal,Retail Operations
+itwh-act012,Specialist Retail Operations (IT Wholesale),internal,Logistics
+itwh-act013,Analyst People (IT Wholesale),internal,Finance
+itwh-act014,Specialist Merchandising (IT Wholesale),internal,Marketing
+itwh-act015,Analyst Procurement (IT Wholesale),internal,Technology
+itwh-act016,Lead People (IT Wholesale),internal,Procurement
+itwh-act017,Associate Customer Care (IT Wholesale),internal,Risk and Compliance
+itwh-act018,Controller Merchandising (IT Wholesale),internal,Customer Care
+itwh-act019,Associate Merchandising (IT Wholesale),internal,People
+itwh-act020,Clerk Procurement (IT Wholesale),internal,Merchandising
+itwh-act021,Advisor Risk and Compliance (IT Wholesale),internal,Retail Operations
+itwh-act022,Clerk People (IT Wholesale),internal,Logistics
+itwh-act023,Specialist Risk and Compliance (IT Wholesale),internal,Finance
+itwh-act024,Lead Finance (IT Wholesale),internal,Marketing
+itwh-act025,Clerk Retail Operations (IT Wholesale),internal,Technology
+itlg-act001,Planner Finance (IT Logistics),external,Retail Operations
+itlg-act002,Manager Logistics (IT Logistics),external,Logistics
+itlg-act003,Planner Retail Operations (IT Logistics),external,Finance
+itlg-act004,Clerk Marketing (IT Logistics),internal,Marketing
+itlg-act005,Analyst Merchandising (IT Logistics),internal,Technology
+itlg-act006,Lead Customer Care (IT Logistics),internal,Procurement
+itlg-act007,Analyst Retail Operations (IT Logistics),internal,Risk and Compliance
+itlg-act008,Associate Finance (IT Logistics),internal,Customer Care
+itlg-act009,Controller Finance (IT Logistics),internal,People
+itlg-act010,Lead Procurement (IT Logistics),internal,Merchandising
+itlg-act011,Advisor People (IT Logistics),internal,Retail Operations
+itlg-act012,Associate Merchandising (IT Logistics),internal,Logistics
+itlg-act013,Associate People (IT Logistics),internal,Finance
+itlg-act014,Manager Customer Care (IT Logistics),internal,Marketing
+itlg-act015,Coordinator Procurement (IT Logistics),internal,Technology
+itlg-act016,Clerk Merchandising (IT Logistics),internal,Procurement
+itlg-act017,Coordinator Technology (IT Logistics),internal,Risk and Compliance
+itlg-act018,Lead Technology (IT Logistics),internal,Customer Care
+itlg-act019,Coordinator Merchandising (IT Logistics),internal,People
+itlg-act020,Advisor Merchandising (IT Logistics),internal,Merchandising
+itlg-act021,Lead Risk and Compliance (IT Logistics),internal,Retail Operations
+itlg-act022,Controller Merchandising (IT Logistics),internal,Logistics
+itlg-act023,Clerk Technology (IT Logistics),internal,Finance
+itlg-act024,Lead Retail Operations (IT Logistics),internal,Marketing
+itlg-act025,Analyst People (IT Logistics),internal,Technology
+chst-act001,Planner Technology (CH Stores),external,Retail Operations
+chst-act002,Specialist People (CH Stores),external,Logistics
+chst-act003,Controller Technology (CH Stores),external,Finance
+chst-act004,Analyst Retail Operations (CH Stores),internal,Marketing
+chst-act005,Analyst Merchandising (CH Stores),internal,Technology
+chst-act006,Manager Merchandising (CH Stores),internal,Procurement
+chst-act007,Planner Finance (CH Stores),internal,Risk and Compliance
+chst-act008,Advisor Marketing (CH Stores),internal,Customer Care
+chst-act009,Advisor Finance (CH Stores),internal,People
+chst-act010,Clerk Procurement (CH Stores),internal,Merchandising
+chst-act011,Analyst Risk and Compliance (CH Stores),internal,Retail Operations
+chst-act012,Analyst Technology (CH Stores),internal,Logistics
+chst-act013,Coordinator Retail Operations (CH Stores),internal,Finance
+chst-act014,Coordinator Merchandising (CH Stores),internal,Marketing
+chst-act015,Controller Customer Care (CH Stores),internal,Technology
+chst-act016,Associate Technology (CH Stores),internal,Procurement
+chst-act017,Lead Retail Operations (CH Stores),internal,Risk and Compliance
+chst-act018,Planner Marketing (CH Stores),internal,Customer Care
+chst-act019,Planner Procurement (CH Stores),internal,People
+chst-act020,Specialist Marketing (CH Stores),internal,Merchandising
+chst-act021,Controller Merchandising (CH Stores),internal,Retail Operations
+chst-act022,Controller Finance (CH Stores),internal,Logistics
+chst-act023,Lead Merchandising (CH Stores),internal,Finance
+chst-act024,Manager Marketing (CH Stores),internal,Marketing
+chst-act025,Analyst People (CH Stores),internal,Technology
+chon-act001,Planner Procurement (CH Online),external,Retail Operations
+chon-act002,Advisor Risk and Compliance (CH Online),external,Logistics
+chon-act003,Advisor Customer Care (CH Online),external,Finance
+chon-act004,Controller Customer Care (CH Online),internal,Marketing
+chon-act005,Specialist Marketing (CH Online),internal,Technology
+chon-act006,Clerk Retail Operations (CH Online),internal,Procurement
+chon-act007,Controller Marketing (CH Online),internal,Risk and Compliance
+chon-act008,Lead Customer Care (CH Online),internal,Customer Care
+chon-act009,Associate People (CH Online),internal,People
+chon-act010,Planner Risk and Compliance (CH Online),internal,Merchandising
+chon-act011,Lead Retail Operations (CH Online),internal,Retail Operations
+chon-act012,Associate Procurement (CH Online),internal,Logistics
+chon-act013,Clerk Marketing (CH Online),internal,Finance
+chon-act014,Coordinator Finance (CH Online),internal,Marketing
+chon-act015,Manager Retail Operations (CH Online),internal,Technology
+chon-act016,Lead Technology (CH Online),internal,Procurement
+chon-act017,Analyst Technology (CH Online),internal,Risk and Compliance
+chon-act018,Associate Logistics (CH Online),internal,Customer Care
+chon-act019,Clerk Logistics (CH Online),internal,People
+chon-act020,Controller Logistics (CH Online),internal,Merchandising
+chon-act021,Analyst Risk and Compliance (CH Online),internal,Retail Operations
+chon-act022,Associate Risk and Compliance (CH Online),internal,Logistics
+chon-act023,Planner Merchandising (CH Online),internal,Finance
+chon-act024,Controller Technology (CH Online),internal,Marketing
+chon-act025,Analyst Merchandising (CH Online),internal,Technology
+chwh-act001,Advisor Logistics (CH Wholesale),external,Retail Operations
+chwh-act002,Lead Customer Care (CH Wholesale),external,Logistics
+chwh-act003,Manager Customer Care (CH Wholesale),external,Finance
+chwh-act004,Analyst Procurement (CH Wholesale),internal,Marketing
+chwh-act005,Clerk Procurement (CH Wholesale),internal,Technology
+chwh-act006,Specialist Retail Operations (CH Wholesale),internal,Procurement
+chwh-act007,Coordinator Customer Care (CH Wholesale),internal,Risk and Compliance
+chwh-act008,Manager Retail Operations (CH Wholesale),internal,Customer Care
+chwh-act009,Clerk Marketing (CH Wholesale),internal,People
+chwh-act010,Associate Retail Operations (CH Wholesale),internal,Merchandising
+chwh-act011,Controller Technology (CH Wholesale),internal,Retail Operations
+chwh-act012,Associate Customer Care (CH Wholesale),internal,Logistics
+chwh-act013,Controller Retail Operations (CH Wholesale),internal,Finance
+chwh-act014,Coordinator Technology (CH Wholesale),internal,Marketing
+chwh-act015,Specialist Customer Care (CH Wholesale),internal,Technology
+chwh-act016,Specialist Marketing (CH Wholesale),internal,Procurement
+chwh-act017,Coordinator People (CH Wholesale),internal,Risk and Compliance
+chwh-act018,Analyst Finance (CH Wholesale),internal,Customer Care
+chwh-act019,Planner Merchandising (CH Wholesale),internal,People
+chwh-act020,Lead Merchandising (CH Wholesale),internal,Merchandising
+chwh-act021,Controller Procurement (CH Wholesale),internal,Retail Operations
+chwh-act022,Planner Retail Operations (CH Wholesale),internal,Logistics
+chwh-act023,Advisor People (CH Wholesale),internal,Finance
+chwh-act024,Coordinator Marketing (CH Wholesale),internal,Marketing
+chwh-act025,Analyst Logistics (CH Wholesale),internal,Technology
+chlg-act001,Specialist Risk and Compliance (CH Logistics),external,Retail Operations
+chlg-act002,Lead Marketing (CH Logistics),external,Logistics
+chlg-act003,Manager People (CH Logistics),external,Finance
+chlg-act004,Planner Technology (CH Logistics),internal,Marketing
+chlg-act005,Manager Finance (CH Logistics),internal,Technology
+chlg-act006,Lead Logistics (CH Logistics),internal,Procurement
+chlg-act007,Advisor Retail Operations (CH Logistics),internal,Risk and Compliance
+chlg-act008,Lead Finance (CH Logistics),internal,Customer Care
+chlg-act009,Clerk Finance (CH Logistics),internal,People
+chlg-act010,Controller Customer Care (CH Logistics),internal,Merchandising
+chlg-act011,Manager Procurement (CH Logistics),internal,Retail Operations
+chlg-act012,Analyst Customer Care (CH Logistics),internal,Logistics
+chlg-act013,Specialist Customer Care (CH Logistics),internal,Finance
+chlg-act014,Planner Risk and Compliance (CH Logistics),internal,Marketing
+chlg-act015,Coordinator Retail Operations (CH Logistics),internal,Technology
+chlg-act016,Clerk Procurement (CH Logistics),internal,Procurement
+chlg-act017,Lead Retail Operations (CH Logistics),internal,Risk and Compliance
+chlg-act018,Manager Merchandising (CH Logistics),internal,Customer Care
+chlg-act019,Controller Merchandising (CH Logistics),internal,People
+chlg-act020,Analyst Finance (CH Logistics),internal,Merchandising
+chlg-act021,Clerk Risk and Compliance (CH Logistics),internal,Retail Operations
+chlg-act022,Coordinator Logistics (CH Logistics),internal,Logistics
+chlg-act023,Advisor Logistics (CH Logistics),internal,Finance
+chlg-act024,Advisor People (CH Logistics),internal,Marketing
+chlg-act025,Planner Procurement (CH Logistics),internal,Technology
+atst-act001,Advisor People (AT Stores),external,Retail Operations
+atst-act002,Clerk Procurement (AT Stores),external,Logistics
+atst-act003,Analyst Customer Care (AT Stores),external,Finance
+atst-act004,Clerk Marketing (AT Stores),internal,Marketing
+atst-act005,Advisor Risk and Compliance (AT Stores),internal,Technology
+atst-act006,Analyst Procurement (AT Stores),internal,Procurement
+atst-act007,Manager Retail Operations (AT Stores),internal,Risk and Compliance
+atst-act008,Coordinator Customer Care (AT Stores),internal,Customer Care
+atst-act009,Planner Merchandising (AT Stores),internal,People
+atst-act010,Lead Finance (AT Stores),internal,Merchandising
+atst-act011,Specialist Logistics (AT Stores),internal,Retail Operations
+atst-act012,Clerk People (AT Stores),internal,Logistics
+atst-act013,Manager Marketing (AT Stores),internal,Finance
+atst-act014,Analyst Retail Operations (AT Stores),internal,Marketing
+atst-act015,Lead People (AT Stores),internal,Technology
+atst-act016,Controller Logistics (AT Stores),internal,Procurement
+atst-act017,Coordinator Risk and Compliance (AT Stores),internal,Risk and Compliance
+atst-act018,Lead Merchandising (AT Stores),internal,Customer Care
+atst-act019,Manager Merchandising (AT Stores),internal,People
+atst-act020,Lead Marketing (AT Stores),internal,Merchandising
+atst-act021,Planner People (AT Stores),internal,Retail Operations
+atst-act022,Specialist Customer Care (AT Stores),internal,Logistics
+atst-act023,Associate Customer Care (AT Stores),internal,Finance
+atst-act024,Advisor Logistics (AT Stores),internal,Marketing
+atst-act025,Advisor Technology (AT Stores),internal,Technology
+aton-act001,Clerk Customer Care (AT Online),external,Retail Operations
+aton-act002,Lead Merchandising (AT Online),external,Logistics
+aton-act003,Controller Logistics (AT Online),external,Finance
+aton-act004,Planner Procurement (AT Online),internal,Marketing
+aton-act005,Advisor Procurement (AT Online),internal,Technology
+aton-act006,Advisor Retail Operations (AT Online),internal,Procurement
+aton-act007,Analyst Procurement (AT Online),internal,Risk and Compliance
+aton-act008,Controller People (AT Online),internal,Customer Care
+aton-act009,Planner Merchandising (AT Online),internal,People
+aton-act010,Manager Merchandising (AT Online),internal,Merchandising
+aton-act011,Clerk Retail Operations (AT Online),internal,Retail Operations
+aton-act012,Associate Finance (AT Online),internal,Logistics
+aton-act013,Advisor Finance (AT Online),internal,Finance
+aton-act014,Planner Technology (AT Online),internal,Marketing
+aton-act015,Controller Finance (AT Online),internal,Technology
+aton-act016,Manager Procurement (AT Online),internal,Procurement
+aton-act017,Advisor People (AT Online),internal,Risk and Compliance
+aton-act018,Analyst Risk and Compliance (AT Online),internal,Customer Care
+aton-act019,Analyst Merchandising (AT Online),internal,People
+aton-act020,Coordinator Retail Operations (AT Online),internal,Merchandising
+aton-act021,Specialist Merchandising (AT Online),internal,Retail Operations
+aton-act022,Specialist Technology (AT Online),internal,Logistics
+aton-act023,Lead Technology (AT Online),internal,Finance
+aton-act024,Associate Logistics (AT Online),internal,Marketing
+aton-act025,Coordinator People (AT Online),internal,Technology
+atwh-act001,Manager Retail Operations (AT Wholesale),external,Retail Operations
+atwh-act002,Controller Risk and Compliance (AT Wholesale),external,Logistics
+atwh-act003,Analyst Marketing (AT Wholesale),external,Finance
+atwh-act004,Planner Marketing (AT Wholesale),internal,Marketing
+atwh-act005,Manager Risk and Compliance (AT Wholesale),internal,Technology
+atwh-act006,Specialist Technology (AT Wholesale),internal,Procurement
+atwh-act007,Controller Customer Care (AT Wholesale),internal,Risk and Compliance
+atwh-act008,Clerk Marketing (AT Wholesale),internal,Customer Care
+atwh-act009,Planner Customer Care (AT Wholesale),internal,People
+atwh-act010,Specialist People (AT Wholesale),internal,Merchandising
+atwh-act011,Associate Customer Care (AT Wholesale),internal,Retail Operations
+atwh-act012,Specialist Finance (AT Wholesale),internal,Logistics
+atwh-act013,Planner Technology (AT Wholesale),internal,Finance
+atwh-act014,Planner Risk and Compliance (AT Wholesale),internal,Marketing
+atwh-act015,Advisor Merchandising (AT Wholesale),internal,Technology
+atwh-act016,Coordinator Logistics (AT Wholesale),internal,Procurement
+atwh-act017,Controller Merchandising (AT Wholesale),internal,Risk and Compliance
+atwh-act018,Manager Finance (AT Wholesale),internal,Customer Care
+atwh-act019,Coordinator Merchandising (AT Wholesale),internal,People
+atwh-act020,Planner Finance (AT Wholesale),internal,Merchandising
+atwh-act021,Analyst Retail Operations (AT Wholesale),internal,Retail Operations
+atwh-act022,Analyst Customer Care (AT Wholesale),internal,Logistics
+atwh-act023,Manager Logistics (AT Wholesale),internal,Finance
+atwh-act024,Controller Procurement (AT Wholesale),internal,Marketing
+atwh-act025,Specialist Marketing (AT Wholesale),internal,Technology
+atlg-act001,Analyst People (AT Logistics),external,Retail Operations
+atlg-act002,Coordinator Procurement (AT Logistics),external,Logistics
+atlg-act003,Clerk Customer Care (AT Logistics),external,Finance
+atlg-act004,Associate Logistics (AT Logistics),internal,Marketing
+atlg-act005,Coordinator Customer Care (AT Logistics),internal,Technology
+atlg-act006,Advisor Retail Operations (AT Logistics),internal,Procurement
+atlg-act007,Clerk Procurement (AT Logistics),internal,Risk and Compliance
+atlg-act008,Planner Logistics (AT Logistics),internal,Customer Care
+atlg-act009,Analyst Merchandising (AT Logistics),internal,People
+atlg-act010,Advisor Technology (AT Logistics),internal,Merchandising
+atlg-act011,Specialist Technology (AT Logistics),internal,Retail Operations
+atlg-act012,Controller Retail Operations (AT Logistics),internal,Logistics
+atlg-act013,Advisor Merchandising (AT Logistics),internal,Finance
+atlg-act014,Lead Marketing (AT Logistics),internal,Marketing
+atlg-act015,Coordinator Merchandising (AT Logistics),internal,Technology
+atlg-act016,Analyst Logistics (AT Logistics),internal,Procurement
+atlg-act017,Associate Marketing (AT Logistics),internal,Risk and Compliance
+atlg-act018,Specialist People (AT Logistics),internal,Customer Care
+atlg-act019,Lead Risk and Compliance (AT Logistics),internal,People
+atlg-act020,Planner Customer Care (AT Logistics),internal,Merchandising
+atlg-act021,Planner Risk and Compliance (AT Logistics),internal,Retail Operations
+atlg-act022,Specialist Risk and Compliance (AT Logistics),internal,Logistics
+atlg-act023,Analyst Marketing (AT Logistics),internal,Finance
+atlg-act024,Analyst Procurement (AT Logistics),internal,Marketing
+atlg-act025,Clerk Merchandising (AT Logistics),internal,Technology
+plst-act001,Clerk Procurement (PL Stores),external,Retail Operations
+plst-act002,Manager Marketing (PL Stores),external,Logistics
+plst-act003,Specialist Technology (PL Stores),external,Finance
+plst-act004,Planner Procurement (PL Stores),internal,Marketing
+plst-act005,Associate Finance (PL Stores),internal,Technology
+plst-act006,Planner Merchandising (PL Stores),internal,Procurement
+plst-act007,Manager Technology (PL Stores),internal,Risk and Compliance
+plst-act008,Manager Procurement (PL Stores),internal,Customer Care
+plst-act009,Planner Technology (PL Stores),internal,People
+plst-act010,Lead Logistics (PL Stores),internal,Merchandising
+plst-act011,Lead Technology (PL Stores),internal,Retail Operations
+plst-act012,Analyst Risk and Compliance (PL Stores),internal,Logistics
+plst-act013,Coordinator People (PL Stores),internal,Finance
+plst-act014,Manager People (PL Stores),internal,Marketing
+plst-act015,Clerk Logistics (PL Stores),internal,Technology
+plst-act016,Planner Risk and Compliance (PL Stores),internal,Procurement
+plst-act017,Advisor Marketing (PL Stores),internal,Risk and Compliance
+plst-act018,Coordinator Procurement (PL Stores),internal,Customer Care
+plst-act019,Analyst Logistics (PL Stores),internal,People
+plst-act020,Analyst Marketing (PL Stores),internal,Merchandising
+plst-act021,Analyst Retail Operations (PL Stores),internal,Retail Operations
+plst-act022,Clerk Marketing (PL Stores),internal,Logistics
+plst-act023,Controller Marketing (PL Stores),internal,Finance
+plst-act024,Lead Risk and Compliance (PL Stores),internal,Marketing
+plst-act025,Coordinator Finance (PL Stores),internal,Technology
+plon-act001,Planner Retail Operations (PL Online),external,Retail Operations
+plon-act002,Lead Merchandising (PL Online),external,Logistics
+plon-act003,Planner Procurement (PL Online),external,Finance
+plon-act004,Clerk Technology (PL Online),internal,Marketing
+plon-act005,Manager Finance (PL Online),internal,Technology
+plon-act006,Coordinator Merchandising (PL Online),internal,Procurement
+plon-act007,Lead People (PL Online),internal,Risk and Compliance
+plon-act008,Associate Retail Operations (PL Online),internal,Customer Care
+plon-act009,Coordinator People (PL Online),internal,People
+plon-act010,Manager Risk and Compliance (PL Online),internal,Merchandising
+plon-act011,Planner Risk and Compliance (PL Online),internal,Retail Operations
+plon-act012,Associate Merchandising (PL Online),internal,Logistics
+plon-act013,Manager Retail Operations (PL Online),internal,Finance
+plon-act014,Advisor People (PL Online),internal,Marketing
+plon-act015,Coordinator Finance (PL Online),internal,Technology
+plon-act016,Coordinator Logistics (PL Online),internal,Procurement
+plon-act017,Specialist Marketing (PL Online),internal,Risk and Compliance
+plon-act018,Lead Procurement (PL Online),internal,Customer Care
+plon-act019,Coordinator Risk and Compliance (PL Online),internal,People
+plon-act020,Controller Logistics (PL Online),internal,Merchandising
+plon-act021,Controller Technology (PL Online),internal,Retail Operations
+plon-act022,Specialist Logistics (PL Online),internal,Logistics
+plon-act023,Specialist Risk and Compliance (PL Online),internal,Finance
+plon-act024,Coordinator Technology (PL Online),internal,Marketing
+plon-act025,Manager Marketing (PL Online),internal,Technology
+plwh-act001,Manager Retail Operations (PL Wholesale),external,Retail Operations
+plwh-act002,Clerk Finance (PL Wholesale),external,Logistics
+plwh-act003,Advisor Risk and Compliance (PL Wholesale),external,Finance
+plwh-act004,Planner Technology (PL Wholesale),internal,Marketing
+plwh-act005,Lead Risk and Compliance (PL Wholesale),internal,Technology
+plwh-act006,Clerk Marketing (PL Wholesale),internal,Procurement
+plwh-act007,Associate Finance (PL Wholesale),internal,Risk and Compliance
+plwh-act008,Controller Risk and Compliance (PL Wholesale),internal,Customer Care
+plwh-act009,Specialist Retail Operations (PL Wholesale),internal,People
+plwh-act010,Analyst Logistics (PL Wholesale),internal,Merchandising
+plwh-act011,Associate Risk and Compliance (PL Wholesale),internal,Retail Operations
+plwh-act012,Associate Procurement (PL Wholesale),internal,Logistics
+plwh-act013,Advisor Merchandising (PL Wholesale),internal,Finance
+plwh-act014,Advisor Procurement (PL Wholesale),internal,Marketing
+plwh-act015,Manager Finance (PL Wholesale),internal,Technology
+plwh-act016,Coordinator Customer Care (PL Wholesale),internal,Procurement
+plwh-act017,Clerk Risk and Compliance (PL Wholesale),internal,Risk and Compliance
+plwh-act018,Clerk Procurement (PL Wholesale),internal,Customer Care
+plwh-act019,Planner People (PL Wholesale),internal,People
+plwh-act020,Analyst Retail Operations (PL Wholesale),internal,Merchandising
+plwh-act021,Advisor People (PL Wholesale),internal,Retail Operations
+plwh-act022,Advisor Logistics (PL Wholesale),internal,Logistics
+plwh-act023,Advisor Retail Operations (PL Wholesale),internal,Finance
+plwh-act024,Controller Technology (PL Wholesale),internal,Marketing
+plwh-act025,Controller People (PL Wholesale),internal,Technology
+pllg-act001,Analyst Marketing (PL Logistics),external,Retail Operations
+pllg-act002,Controller Procurement (PL Logistics),external,Logistics
+pllg-act003,Planner Customer Care (PL Logistics),external,Finance
+pllg-act004,Specialist Customer Care (PL Logistics),internal,Marketing
+pllg-act005,Lead Customer Care (PL Logistics),internal,Technology
+pllg-act006,Analyst People (PL Logistics),internal,Procurement
+pllg-act007,Planner Procurement (PL Logistics),internal,Risk and Compliance
+pllg-act008,Planner Technology (PL Logistics),internal,Customer Care
+pllg-act009,Coordinator Marketing (PL Logistics),internal,People
+pllg-act010,Advisor Customer Care (PL Logistics),internal,Merchandising
+pllg-act011,Associate Merchandising (PL Logistics),internal,Retail Operations
+pllg-act012,Analyst Procurement (PL Logistics),internal,Logistics
+pllg-act013,Advisor Finance (PL Logistics),internal,Finance
+pllg-act014,Planner Merchandising (PL Logistics),internal,Marketing
+pllg-act015,Lead Logistics (PL Logistics),internal,Technology
+pllg-act016,Coordinator Risk and Compliance (PL Logistics),internal,Procurement
+pllg-act017,Clerk Marketing (PL Logistics),internal,Risk and Compliance
+pllg-act018,Manager Retail Operations (PL Logistics),internal,Customer Care
+pllg-act019,Advisor Risk and Compliance (PL Logistics),internal,People
+pllg-act020,Advisor Logistics (PL Logistics),internal,Merchandising
+pllg-act021,Specialist Merchandising (PL Logistics),internal,Retail Operations
+pllg-act022,Analyst Logistics (PL Logistics),internal,Logistics
+pllg-act023,Manager Technology (PL Logistics),internal,Finance
+pllg-act024,Advisor Procurement (PL Logistics),internal,Marketing
+pllg-act025,Planner Retail Operations (PL Logistics),internal,Technology
+sest-act001,Clerk Finance (SE Stores),external,Retail Operations
+sest-act002,Clerk People (SE Stores),external,Logistics
+sest-act003,Analyst Logistics (SE Stores),external,Finance
+sest-act004,Clerk Risk and Compliance (SE Stores),internal,Marketing
+sest-act005,Lead Logistics (SE Stores),internal,Technology
+sest-act006,Manager Technology (SE Stores),internal,Procurement
+sest-act007,Controller Procurement (SE Stores),internal,Risk and Compliance
+sest-act008,Clerk Customer Care (SE Stores),internal,Customer Care
+sest-act009,Lead Marketing (SE Stores),internal,People
+sest-act010,Manager Marketing (SE Stores),internal,Merchandising
+sest-act011,Lead Merchandising (SE Stores),internal,Retail Operations
+sest-act012,Coordinator Logistics (SE Stores),internal,Logistics
+sest-act013,Lead People (SE Stores),internal,Finance
+sest-act014,Specialist Logistics (SE Stores),internal,Marketing
+sest-act015,Associate People (SE Stores),internal,Technology
+sest-act016,Manager Merchandising (SE Stores),internal,Procurement
+sest-act017,Clerk Technology (SE Stores),internal,Risk and Compliance
+sest-act018,Controller Marketing (SE Stores),internal,Customer Care
+sest-act019,Planner Risk and Compliance (SE Stores),internal,People
+sest-act020,Clerk Marketing (SE Stores),internal,Merchandising
+sest-act021,Lead Retail Operations (SE Stores),internal,Retail Operations
+sest-act022,Coordinator Retail Operations (SE Stores),internal,Logistics
+sest-act023,Associate Finance (SE Stores),internal,Finance
+sest-act024,Lead Procurement (SE Stores),internal,Marketing
+sest-act025,Specialist Retail Operations (SE Stores),internal,Technology
+seon-act001,Controller Retail Operations (SE Online),external,Retail Operations
+seon-act002,Controller People (SE Online),external,Logistics
+seon-act003,Lead Merchandising (SE Online),external,Finance
+seon-act004,Lead Procurement (SE Online),internal,Marketing
+seon-act005,Advisor People (SE Online),internal,Technology
+seon-act006,Lead Customer Care (SE Online),internal,Procurement
+seon-act007,Planner People (SE Online),internal,Risk and Compliance
+seon-act008,Advisor Marketing (SE Online),internal,Customer Care
+seon-act009,Analyst Merchandising (SE Online),internal,People
+seon-act010,Associate Procurement (SE Online),internal,Merchandising
+seon-act011,Clerk Logistics (SE Online),internal,Retail Operations
+seon-act012,Planner Merchandising (SE Online),internal,Logistics
+seon-act013,Lead Risk and Compliance (SE Online),internal,Finance
+seon-act014,Controller Marketing (SE Online),internal,Marketing
+seon-act015,Coordinator Retail Operations (SE Online),internal,Technology
+seon-act016,Coordinator Risk and Compliance (SE Online),internal,Procurement
+seon-act017,Coordinator Marketing (SE Online),internal,Risk and Compliance
+seon-act018,Specialist Risk and Compliance (SE Online),internal,Customer Care
+seon-act019,Specialist Customer Care (SE Online),internal,People
+seon-act020,Lead Finance (SE Online),internal,Merchandising
+seon-act021,Clerk Technology (SE Online),internal,Retail Operations
+seon-act022,Specialist Finance (SE Online),internal,Logistics
+seon-act023,Manager Technology (SE Online),internal,Finance
+seon-act024,Associate Merchandising (SE Online),internal,Marketing
+seon-act025,Advisor Risk and Compliance (SE Online),internal,Technology
+sewh-act001,Clerk Marketing (SE Wholesale),external,Retail Operations
+sewh-act002,Associate Marketing (SE Wholesale),external,Logistics
+sewh-act003,Lead Marketing (SE Wholesale),external,Finance
+sewh-act004,Specialist Procurement (SE Wholesale),internal,Marketing
+sewh-act005,Analyst Logistics (SE Wholesale),internal,Technology
+sewh-act006,Coordinator Risk and Compliance (SE Wholesale),internal,Procurement
+sewh-act007,Manager Procurement (SE Wholesale),internal,Risk and Compliance
+sewh-act008,Manager Risk and Compliance (SE Wholesale),internal,Customer Care
+sewh-act009,Clerk Retail Operations (SE Wholesale),internal,People
+sewh-act010,Controller Marketing (SE Wholesale),internal,Merchandising
+sewh-act011,Advisor Technology (SE Wholesale),internal,Retail Operations
+sewh-act012,Coordinator Marketing (SE Wholesale),internal,Logistics
+sewh-act013,Planner Retail Operations (SE Wholesale),internal,Finance
+sewh-act014,Advisor People (SE Wholesale),internal,Marketing
+sewh-act015,Specialist People (SE Wholesale),internal,Technology
+sewh-act016,Analyst Marketing (SE Wholesale),internal,Procurement
+sewh-act017,Planner Marketing (SE Wholesale),internal,Risk and Compliance
+sewh-act018,Manager Marketing (SE Wholesale),internal,Customer Care
+sewh-act019,Lead Logistics (SE Wholesale),internal,People
+sewh-act020,Specialist Finance (SE Wholesale),internal,Merchandising
+sewh-act021,Controller People (SE Wholesale),internal,Retail Operations
+sewh-act022,Specialist Technology (SE Wholesale),internal,Logistics
+sewh-act023,Lead Procurement (SE Wholesale),internal,Finance
+sewh-act024,Clerk Customer Care (SE Wholesale),internal,Marketing
+sewh-act025,Manager People (SE Wholesale),internal,Technology
+selg-act001,Advisor Logistics (SE Logistics),external,Retail Operations
+selg-act002,Planner People (SE Logistics),external,Logistics
+selg-act003,Specialist Logistics (SE Logistics),external,Finance
+selg-act004,Advisor Risk and Compliance (SE Logistics),internal,Marketing
+selg-act005,Clerk Risk and Compliance (SE Logistics),internal,Technology
+selg-act006,Clerk People (SE Logistics),internal,Procurement
+selg-act007,Lead Technology (SE Logistics),internal,Risk and Compliance
+selg-act008,Specialist Merchandising (SE Logistics),internal,Customer Care
+selg-act009,Advisor Procurement (SE Logistics),internal,People
+selg-act010,Coordinator Technology (SE Logistics),internal,Merchandising
+selg-act011,Controller Merchandising (SE Logistics),internal,Retail Operations
+selg-act012,Specialist People (SE Logistics),internal,Logistics
+selg-act013,Analyst Customer Care (SE Logistics),internal,Finance
+selg-act014,Lead Merchandising (SE Logistics),internal,Marketing
+selg-act015,Clerk Logistics (SE Logistics),internal,Technology
+selg-act016,Associate Customer Care (SE Logistics),internal,Procurement
+selg-act017,Controller Customer Care (SE Logistics),internal,Risk and Compliance
+selg-act018,Manager Retail Operations (SE Logistics),internal,Customer Care
+selg-act019,Associate Logistics (SE Logistics),internal,People
+selg-act020,Advisor Marketing (SE Logistics),internal,Merchandising
+selg-act021,Specialist Marketing (SE Logistics),internal,Retail Operations
+selg-act022,Associate Risk and Compliance (SE Logistics),internal,Logistics
+selg-act023,Controller People (SE Logistics),internal,Finance
+selg-act024,Controller Risk and Compliance (SE Logistics),internal,Marketing
+selg-act025,Planner Technology (SE Logistics),internal,Technology
+nost-act001,Lead Marketing (NO Stores),external,Retail Operations
+nost-act002,Coordinator Logistics (NO Stores),external,Logistics
+nost-act003,Planner Logistics (NO Stores),external,Finance
+nost-act004,Planner Finance (NO Stores),internal,Marketing
+nost-act005,Specialist Procurement (NO Stores),internal,Technology
+nost-act006,Controller Merchandising (NO Stores),internal,Procurement
+nost-act007,Advisor Procurement (NO Stores),internal,Risk and Compliance
+nost-act008,Controller Finance (NO Stores),internal,Customer Care
+nost-act009,Manager Marketing (NO Stores),internal,People
+nost-act010,Coordinator Procurement (NO Stores),internal,Merchandising
+nost-act011,Lead Technology (NO Stores),internal,Retail Operations
+nost-act012,Coordinator Finance (NO Stores),internal,Logistics
+nost-act013,Coordinator Risk and Compliance (NO Stores),internal,Finance
+nost-act014,Specialist Risk and Compliance (NO Stores),internal,Marketing
+nost-act015,Coordinator Customer Care (NO Stores),internal,Technology
+nost-act016,Clerk Technology (NO Stores),internal,Procurement
+nost-act017,Controller Procurement (NO Stores),internal,Risk and Compliance
+nost-act018,Lead Retail Operations (NO Stores),internal,Customer Care
+nost-act019,Specialist Marketing (NO Stores),internal,People
+nost-act020,Advisor Marketing (NO Stores),internal,Merchandising
+nost-act021,Analyst Risk and Compliance (NO Stores),internal,Retail Operations
+nost-act022,Clerk Marketing (NO Stores),internal,Logistics
+nost-act023,Coordinator Retail Operations (NO Stores),internal,Finance
+nost-act024,Lead Finance (NO Stores),internal,Marketing
+nost-act025,Planner Merchandising (NO Stores),internal,Technology
+noon-act001,Lead Retail Operations (NO Online),external,Retail Operations
+noon-act002,Manager Logistics (NO Online),external,Logistics
+noon-act003,Coordinator Risk and Compliance (NO Online),external,Finance
+noon-act004,Coordinator Retail Operations (NO Online),internal,Marketing
+noon-act005,Advisor Finance (NO Online),internal,Technology
+noon-act006,Manager Marketing (NO Online),internal,Procurement
+noon-act007,Controller Procurement (NO Online),internal,Risk and Compliance
+noon-act008,Specialist Technology (NO Online),internal,Customer Care
+noon-act009,Associate Retail Operations (NO Online),internal,People
+noon-act010,Specialist People (NO Online),internal,Merchandising
+noon-act011,Advisor Merchandising (NO Online),internal,Retail Operations
+noon-act012,Associate People (NO Online),internal,Logistics
+noon-act013,Clerk People (NO Online),internal,Finance
+noon-act014,Specialist Logistics (NO Online),internal,Marketing
+noon-act015,Analyst Logistics (NO Online),internal,Technology
+noon-act016,Clerk Technology (NO Online),internal,Procurement
+noon-act017,Clerk Merchandising (NO Online),internal,Risk and Compliance
+noon-act018,Planner Retail Operations (NO Online),internal,Customer Care
+noon-act019,Associate Risk and Compliance (NO Online),internal,People
+noon-act020,Planner Procurement (NO Online),internal,Merchandising
+noon-act021,Associate Procurement (NO Online),internal,Retail Operations
+noon-act022,Coordinator Technology (NO Online),internal,Logistics
+noon-act023,Controller Logistics (NO Online),internal,Finance
+noon-act024,Planner Customer Care (NO Online),internal,Marketing
+noon-act025,Advisor Procurement (NO Online),internal,Technology
+nowh-act001,Manager Risk and Compliance (NO Wholesale),external,Retail Operations
+nowh-act002,Specialist Customer Care (NO Wholesale),external,Logistics
+nowh-act003,Specialist Logistics (NO Wholesale),external,Finance
+nowh-act004,Controller Finance (NO Wholesale),internal,Marketing
+nowh-act005,Clerk Customer Care (NO Wholesale),internal,Technology
+nowh-act006,Analyst People (NO Wholesale),internal,Procurement
+nowh-act007,Controller Merchandising (NO Wholesale),internal,Risk and Compliance
+nowh-act008,Planner Technology (NO Wholesale),internal,Customer Care
+nowh-act009,Lead Merchandising (NO Wholesale),internal,People
+nowh-act010,Lead Risk and Compliance (NO Wholesale),internal,Merchandising
+nowh-act011,Controller Marketing (NO Wholesale),internal,Retail Operations
+nowh-act012,Lead Procurement (NO Wholesale),internal,Logistics
+nowh-act013,Lead Customer Care (NO Wholesale),internal,Finance
+nowh-act014,Controller Risk and Compliance (NO Wholesale),internal,Marketing
+nowh-act015,Analyst Retail Operations (NO Wholesale),internal,Technology
+nowh-act016,Clerk Procurement (NO Wholesale),internal,Procurement
+nowh-act017,Analyst Risk and Compliance (NO Wholesale),internal,Risk and Compliance
+nowh-act018,Specialist Finance (NO Wholesale),internal,Customer Care
+nowh-act019,Manager People (NO Wholesale),internal,People
+nowh-act020,Manager Technology (NO Wholesale),internal,Merchandising
+nowh-act021,Advisor Finance (NO Wholesale),internal,Retail Operations
+nowh-act022,Manager Procurement (NO Wholesale),internal,Logistics
+nowh-act023,Manager Customer Care (NO Wholesale),internal,Finance
+nowh-act024,Advisor Customer Care (NO Wholesale),internal,Marketing
+nowh-act025,Clerk Finance (NO Wholesale),internal,Technology
+nolg-act001,Associate Risk and Compliance (NO Logistics),external,Retail Operations
+nolg-act002,Advisor Marketing (NO Logistics),external,Logistics
+nolg-act003,Lead People (NO Logistics),external,Finance
+nolg-act004,Manager Risk and Compliance (NO Logistics),internal,Marketing
+nolg-act005,Controller Marketing (NO Logistics),internal,Technology
+nolg-act006,Controller People (NO Logistics),internal,Procurement
+nolg-act007,Controller Logistics (NO Logistics),internal,Risk and Compliance
+nolg-act008,Manager Logistics (NO Logistics),internal,Customer Care
+nolg-act009,Advisor Merchandising (NO Logistics),internal,People
+nolg-act010,Planner Risk and Compliance (NO Logistics),internal,Merchandising
+nolg-act011,Manager People (NO Logistics),internal,Retail Operations
+nolg-act012,Lead Retail Operations (NO Logistics),internal,Logistics
+nolg-act013,Planner Finance (NO Logistics),internal,Finance
+nolg-act014,Controller Risk and Compliance (NO Logistics),internal,Marketing
+nolg-act015,Coordinator Retail Operations (NO Logistics),internal,Technology
+nolg-act016,Coordinator Merchandising (NO Logistics),internal,Procurement
+nolg-act017,Advisor Customer Care (NO Logistics),internal,Risk and Compliance
+nolg-act018,Specialist Merchandising (NO Logistics),internal,Customer Care
+nolg-act019,Associate People (NO Logistics),internal,People
+nolg-act020,Lead Marketing (NO Logistics),internal,Merchandising
+nolg-act021,Planner Merchandising (NO Logistics),internal,Retail Operations
+nolg-act022,Clerk Marketing (NO Logistics),internal,Logistics
+nolg-act023,Lead Logistics (NO Logistics),internal,Finance
+nolg-act024,Associate Technology (NO Logistics),internal,Marketing
+nolg-act025,Clerk Finance (NO Logistics),internal,Technology
+dkst-act001,Planner Procurement (DK Stores),external,Retail Operations
+dkst-act002,Associate Customer Care (DK Stores),external,Logistics
+dkst-act003,Associate Logistics (DK Stores),external,Finance
+dkst-act004,Analyst People (DK Stores),internal,Marketing
+dkst-act005,Clerk Retail Operations (DK Stores),internal,Technology
+dkst-act006,Analyst Merchandising (DK Stores),internal,Procurement
+dkst-act007,Lead Customer Care (DK Stores),internal,Risk and Compliance
+dkst-act008,Planner Finance (DK Stores),internal,Customer Care
+dkst-act009,Lead Procurement (DK Stores),internal,People
+dkst-act010,Analyst Retail Operations (DK Stores),internal,Merchandising
+dkst-act011,Analyst Risk and Compliance (DK Stores),internal,Retail Operations
+dkst-act012,Advisor Customer Care (DK Stores),internal,Logistics
+dkst-act013,Advisor Marketing (DK Stores),internal,Finance
+dkst-act014,Specialist Marketing (DK Stores),internal,Marketing
+dkst-act015,Controller Logistics (DK Stores),internal,Technology
+dkst-act016,Specialist Risk and Compliance (DK Stores),internal,Procurement
+dkst-act017,Coordinator Retail Operations (DK Stores),internal,Risk and Compliance
+dkst-act018,Specialist Technology (DK Stores),internal,Customer Care
+dkst-act019,Advisor Risk and Compliance (DK Stores),internal,People
+dkst-act020,Controller Retail Operations (DK Stores),internal,Merchandising
+dkst-act021,Analyst Procurement (DK Stores),internal,Retail Operations
+dkst-act022,Coordinator Finance (DK Stores),internal,Logistics
+dkst-act023,Coordinator Merchandising (DK Stores),internal,Finance
+dkst-act024,Analyst Customer Care (DK Stores),internal,Marketing
+dkst-act025,Specialist People (DK Stores),internal,Technology
+dkon-act001,Planner Logistics (DK Online),external,Retail Operations
+dkon-act002,Controller Finance (DK Online),external,Logistics
+dkon-act003,Coordinator Marketing (DK Online),external,Finance
+dkon-act004,Advisor Marketing (DK Online),internal,Marketing
+dkon-act005,Coordinator Customer Care (DK Online),internal,Technology
+dkon-act006,Associate Logistics (DK Online),internal,Procurement
+dkon-act007,Clerk Retail Operations (DK Online),internal,Risk and Compliance
+dkon-act008,Analyst Customer Care (DK Online),internal,Customer Care
+dkon-act009,Clerk Procurement (DK Online),internal,People
+dkon-act010,Specialist Logistics (DK Online),internal,Merchandising
+dkon-act011,Lead Procurement (DK Online),internal,Retail Operations
+dkon-act012,Associate Customer Care (DK Online),internal,Logistics
+dkon-act013,Analyst Marketing (DK Online),internal,Finance
+dkon-act014,Manager Logistics (DK Online),internal,Marketing
+dkon-act015,Coordinator People (DK Online),internal,Technology
+dkon-act016,Lead Marketing (DK Online),internal,Procurement
+dkon-act017,Specialist Retail Operations (DK Online),internal,Risk and Compliance
+dkon-act018,Planner Customer Care (DK Online),internal,Customer Care
+dkon-act019,Associate Marketing (DK Online),internal,People
+dkon-act020,Clerk People (DK Online),internal,Merchandising
+dkon-act021,Controller Customer Care (DK Online),internal,Retail Operations
+dkon-act022,Controller Risk and Compliance (DK Online),internal,Logistics
+dkon-act023,Manager Merchandising (DK Online),internal,Finance
+dkon-act024,Manager Procurement (DK Online),internal,Marketing
+dkon-act025,Planner Merchandising (DK Online),internal,Technology
+dkwh-act001,Analyst Procurement (DK Wholesale),external,Retail Operations
+dkwh-act002,Associate Technology (DK Wholesale),external,Logistics
+dkwh-act003,Analyst Customer Care (DK Wholesale),external,Finance
+dkwh-act004,Analyst Logistics (DK Wholesale),internal,Marketing
+dkwh-act005,Specialist Customer Care (DK Wholesale),internal,Technology
+dkwh-act006,Lead Customer Care (DK Wholesale),internal,Procurement
+dkwh-act007,Controller People (DK Wholesale),internal,Risk and Compliance
+dkwh-act008,Advisor Technology (DK Wholesale),internal,Customer Care
+dkwh-act009,Manager Technology (DK Wholesale),internal,People
+dkwh-act010,Manager Risk and Compliance (DK Wholesale),internal,Merchandising
+dkwh-act011,Controller Customer Care (DK Wholesale),internal,Retail Operations
+dkwh-act012,Clerk Risk and Compliance (DK Wholesale),internal,Logistics
+dkwh-act013,Associate Finance (DK Wholesale),internal,Finance
+dkwh-act014,Manager Merchandising (DK Wholesale),internal,Marketing
+dkwh-act015,Clerk Merchandising (DK Wholesale),internal,Technology
+dkwh-act016,Coordinator Finance (DK Wholesale),internal,Procurement
+dkwh-act017,Specialist Procurement (DK Wholesale),internal,Risk and Compliance
+dkwh-act018,Planner Marketing (DK Wholesale),internal,Customer Care
+dkwh-act019,Analyst Risk and Compliance (DK Wholesale),internal,People
+dkwh-act020,Controller Risk and Compliance (DK Wholesale),internal,Merchandising
+dkwh-act021,Specialist Technology (DK Wholesale),internal,Retail Operations
+dkwh-act022,Specialist Marketing (DK Wholesale),internal,Logistics
+dkwh-act023,Controller Retail Operations (DK Wholesale),internal,Finance
+dkwh-act024,Specialist Merchandising (DK Wholesale),internal,Marketing
+dkwh-act025,Associate Logistics (DK Wholesale),internal,Technology
+dklg-act001,Clerk Marketing (DK Logistics),external,Retail Operations
+dklg-act002,Clerk Retail Operations (DK Logistics),external,Logistics
+dklg-act003,Manager Customer Care (DK Logistics),external,Finance
+dklg-act004,Lead Procurement (DK Logistics),internal,Marketing
+dklg-act005,Analyst Retail Operations (DK Logistics),internal,Technology
+dklg-act006,Advisor Logistics (DK Logistics),internal,Procurement
+dklg-act007,Lead Technology (DK Logistics),internal,Risk and Compliance
+dklg-act008,Lead Customer Care (DK Logistics),internal,Customer Care
+dklg-act009,Lead People (DK Logistics),internal,People
+dklg-act010,Planner Risk and Compliance (DK Logistics),internal,Merchandising
+dklg-act011,Manager People (DK Logistics),internal,Retail Operations
+dklg-act012,Planner Retail Operations (DK Logistics),internal,Logistics
+dklg-act013,Coordinator Logistics (DK Logistics),internal,Finance
+dklg-act014,Lead Marketing (DK Logistics),internal,Marketing
+dklg-act015,Analyst Procurement (DK Logistics),internal,Technology
+dklg-act016,Manager Marketing (DK Logistics),internal,Procurement
+dklg-act017,Controller Finance (DK Logistics),internal,Risk and Compliance
+dklg-act018,Planner Technology (DK Logistics),internal,Customer Care
+dklg-act019,Clerk Technology (DK Logistics),internal,People
+dklg-act020,Controller Procurement (DK Logistics),internal,Merchandising
+dklg-act021,Clerk Logistics (DK Logistics),internal,Retail Operations
+dklg-act022,Analyst Merchandising (DK Logistics),internal,Logistics
+dklg-act023,Specialist Customer Care (DK Logistics),internal,Finance
+dklg-act024,Lead Retail Operations (DK Logistics),internal,Marketing
+dklg-act025,Specialist Technology (DK Logistics),internal,Technology
+fist-act001,Advisor Risk and Compliance (FI Stores),external,Retail Operations
+fist-act002,Specialist Marketing (FI Stores),external,Logistics
+fist-act003,Planner Finance (FI Stores),external,Finance
+fist-act004,Advisor Customer Care (FI Stores),internal,Marketing
+fist-act005,Coordinator Finance (FI Stores),internal,Technology
+fist-act006,Clerk Finance (FI Stores),internal,Procurement
+fist-act007,Coordinator Technology (FI Stores),internal,Risk and Compliance
+fist-act008,Manager Technology (FI Stores),internal,Customer Care
+fist-act009,Planner Merchandising (FI Stores),internal,People
+fist-act010,Controller Procurement (FI Stores),internal,Merchandising
+fist-act011,Lead Customer Care (FI Stores),internal,Retail Operations
+fist-act012,Lead Retail Operations (FI Stores),internal,Logistics
+fist-act013,Associate Procurement (FI Stores),internal,Finance
+fist-act014,Coordinator Risk and Compliance (FI Stores),internal,Marketing
+fist-act015,Advisor People (FI Stores),internal,Technology
+fist-act016,Controller People (FI Stores),internal,Procurement
+fist-act017,Associate Marketing (FI Stores),internal,Risk and Compliance
+fist-act018,Lead Marketing (FI Stores),internal,Customer Care
+fist-act019,Planner Retail Operations (FI Stores),internal,People
+fist-act020,Advisor Logistics (FI Stores),internal,Merchandising
+fist-act021,Associate Customer Care (FI Stores),internal,Retail Operations
+fist-act022,Clerk People (FI Stores),internal,Logistics
+fist-act023,Specialist Retail Operations (FI Stores),internal,Finance
+fist-act024,Specialist Technology (FI Stores),internal,Marketing
+fist-act025,Clerk Logistics (FI Stores),internal,Technology
+fion-act001,Planner People (FI Online),external,Retail Operations
+fion-act002,Analyst Risk and Compliance (FI Online),external,Logistics
+fion-act003,Lead Merchandising (FI Online),external,Finance
+fion-act004,Associate Marketing (FI Online),internal,Marketing
+fion-act005,Manager Technology (FI Online),internal,Technology
+fion-act006,Manager Procurement (FI Online),internal,Procurement
+fion-act007,Analyst Logistics (FI Online),internal,Risk and Compliance
+fion-act008,Associate Finance (FI Online),internal,Customer Care
+fion-act009,Associate Risk and Compliance (FI Online),internal,People
+fion-act010,Advisor Merchandising (FI Online),internal,Merchandising
+fion-act011,Planner Merchandising (FI Online),internal,Retail Operations
+fion-act012,Controller Customer Care (FI Online),internal,Logistics
+fion-act013,Coordinator Finance (FI Online),internal,Finance
+fion-act014,Clerk Procurement (FI Online),internal,Marketing
+fion-act015,Specialist Technology (FI Online),internal,Technology
+fion-act016,Associate Logistics (FI Online),internal,Procurement
+fion-act017,Lead People (FI Online),internal,Risk and Compliance
+fion-act018,Analyst Procurement (FI Online),internal,Customer Care
+fion-act019,Coordinator People (FI Online),internal,People
+fion-act020,Planner Technology (FI Online),internal,Merchandising
+fion-act021,Lead Retail Operations (FI Online),internal,Retail Operations
+fion-act022,Controller Merchandising (FI Online),internal,Logistics
+fion-act023,Advisor Risk and Compliance (FI Online),internal,Finance
+fion-act024,Clerk Retail Operations (FI Online),internal,Marketing
+fion-act025,Controller Risk and Compliance (FI Online),internal,Technology
+fiwh-act001,Advisor Technology (FI Wholesale),external,Retail Operations
+fiwh-act002,Specialist Finance (FI Wholesale),external,Logistics
+fiwh-act003,Controller Technology (FI Wholesale),external,Finance
+fiwh-act004,Analyst Retail Operations (FI Wholesale),internal,Marketing
+fiwh-act005,Clerk Merchandising (FI Wholesale),internal,Technology
+fiwh-act006,Coordinator Finance (FI Wholesale),internal,Procurement
+fiwh-act007,Controller Risk and Compliance (FI Wholesale),internal,Risk and Compliance
+fiwh-act008,Advisor Risk and Compliance (FI Wholesale),internal,Customer Care
+fiwh-act009,Planner Risk and Compliance (FI Wholesale),internal,People
+fiwh-act010,Manager Procurement (FI Wholesale),internal,Merchandising
+fiwh-act011,Associate Merchandising (FI Wholesale),internal,Retail Operations
+fiwh-act012,Coordinator Customer Care (FI Wholesale),internal,Logistics
+fiwh-act013,Associate Technology (FI Wholesale),internal,Finance
+fiwh-act014,Planner People (FI Wholesale),internal,Marketing
+fiwh-act015,Coordinator Risk and Compliance (FI Wholesale),internal,Technology
+fiwh-act016,Controller Finance (FI Wholesale),internal,Procurement
+fiwh-act017,Analyst Merchandising (FI Wholesale),internal,Risk and Compliance
+fiwh-act018,Planner Marketing (FI Wholesale),internal,Customer Care
+fiwh-act019,Clerk Procurement (FI Wholesale),internal,People
+fiwh-act020,Advisor Merchandising (FI Wholesale),internal,Merchandising
+fiwh-act021,Analyst Procurement (FI Wholesale),internal,Retail Operations
+fiwh-act022,Advisor Retail Operations (FI Wholesale),internal,Logistics
+fiwh-act023,Coordinator Marketing (FI Wholesale),internal,Finance
+fiwh-act024,Manager People (FI Wholesale),internal,Marketing
+fiwh-act025,Controller Marketing (FI Wholesale),internal,Technology
+filg-act001,Associate Customer Care (FI Logistics),external,Retail Operations
+filg-act002,Controller Finance (FI Logistics),external,Logistics
+filg-act003,Manager Finance (FI Logistics),external,Finance
+filg-act004,Advisor Marketing (FI Logistics),internal,Marketing
+filg-act005,Manager Customer Care (FI Logistics),internal,Technology
+filg-act006,Advisor Procurement (FI Logistics),internal,Procurement
+filg-act007,Coordinator Retail Operations (FI Logistics),internal,Risk and Compliance
+filg-act008,Lead Customer Care (FI Logistics),internal,Customer Care
+filg-act009,Manager Merchandising (FI Logistics),internal,People
+filg-act010,Manager Procurement (FI Logistics),internal,Merchandising
+filg-act011,Lead Finance (FI Logistics),internal,Retail Operations
+filg-act012,Specialist Technology (FI Logistics),internal,Logistics
+filg-act013,Advisor Retail Operations (FI Logistics),internal,Finance
+filg-act014,Planner People (FI Logistics),internal,Marketing
+filg-act015,Planner Risk and Compliance (FI Logistics),internal,Technology
+filg-act016,Lead Technology (FI Logistics),internal,Procurement
+filg-act017,Planner Marketing (FI Logistics),internal,Risk and Compliance
+filg-act018,Analyst Procurement (FI Logistics),internal,Customer Care
+filg-act019,Planner Finance (FI Logistics),internal,People
+filg-act020,Analyst Retail Operations (FI Logistics),internal,Merchandising
+filg-act021,Associate Logistics (FI Logistics),internal,Retail Operations
+filg-act022,Clerk Procurement (FI Logistics),internal,Logistics
+filg-act023,Associate Technology (FI Logistics),internal,Finance
+filg-act024,Analyst Risk and Compliance (FI Logistics),internal,Marketing
+filg-act025,Analyst Customer Care (FI Logistics),internal,Technology
+czst-act001,Lead Procurement (CZ Stores),external,Retail Operations
+czst-act002,Manager People (CZ Stores),external,Logistics
+czst-act003,Associate Risk and Compliance (CZ Stores),external,Finance
+czst-act004,Clerk Retail Operations (CZ Stores),internal,Marketing
+czst-act005,Associate Procurement (CZ Stores),internal,Technology
+czst-act006,Lead Logistics (CZ Stores),internal,Procurement
+czst-act007,Controller Retail Operations (CZ Stores),internal,Risk and Compliance
+czst-act008,Coordinator Procurement (CZ Stores),internal,Customer Care
+czst-act009,Clerk Marketing (CZ Stores),internal,People
+czst-act010,Controller People (CZ Stores),internal,Merchandising
+czst-act011,Specialist Procurement (CZ Stores),internal,Retail Operations
+czst-act012,Planner Merchandising (CZ Stores),internal,Logistics
+czst-act013,Associate Customer Care (CZ Stores),internal,Finance
+czst-act014,Associate Finance (CZ Stores),internal,Marketing
+czst-act015,Analyst Marketing (CZ Stores),internal,Technology
+czst-act016,Advisor Retail Operations (CZ Stores),internal,Procurement
+czst-act017,Coordinator Marketing (CZ Stores),internal,Risk and Compliance
+czst-act018,Analyst Customer Care (CZ Stores),internal,Customer Care
+czst-act019,Clerk People (CZ Stores),internal,People
+czst-act020,Advisor Logistics (CZ Stores),internal,Merchandising
+czst-act021,Controller Marketing (CZ Stores),internal,Retail Operations
+czst-act022,Manager Procurement (CZ Stores),internal,Logistics
+czst-act023,Analyst Finance (CZ Stores),internal,Finance
+czst-act024,Specialist Risk and Compliance (CZ Stores),internal,Marketing
+czst-act025,Coordinator Technology (CZ Stores),internal,Technology
+czon-act001,Manager Finance (CZ Online),external,Retail Operations
+czon-act002,Lead Marketing (CZ Online),external,Logistics
+czon-act003,Associate Finance (CZ Online),external,Finance
+czon-act004,Clerk Technology (CZ Online),internal,Marketing
+czon-act005,Specialist Merchandising (CZ Online),internal,Technology
+czon-act006,Controller Procurement (CZ Online),internal,Procurement
+czon-act007,Clerk Procurement (CZ Online),internal,Risk and Compliance
+czon-act008,Specialist Logistics (CZ Online),internal,Customer Care
+czon-act009,Coordinator Retail Operations (CZ Online),internal,People
+czon-act010,Controller Finance (CZ Online),internal,Merchandising
+czon-act011,Associate Risk and Compliance (CZ Online),internal,Retail Operations
+czon-act012,Analyst Risk and Compliance (CZ Online),internal,Logistics
+czon-act013,Specialist Finance (CZ Online),internal,Finance
+czon-act014,Controller Technology (CZ Online),internal,Marketing
+czon-act015,Manager Retail Operations (CZ Online),internal,Technology
+czon-act016,Analyst Merchandising (CZ Online),internal,Procurement
+czon-act017,Analyst People (CZ Online),internal,Risk and Compliance
+czon-act018,Planner Procurement (CZ Online),internal,Customer Care
+czon-act019,Specialist Procurement (CZ Online),internal,People
+czon-act020,Coordinator Logistics (CZ Online),internal,Merchandising
+czon-act021,Advisor Procurement (CZ Online),internal,Retail Operations
+czon-act022,Associate Technology (CZ Online),internal,Logistics
+czon-act023,Planner Finance (CZ Online),internal,Finance
+czon-act024,Advisor Customer Care (CZ Online),internal,Marketing
+czon-act025,Analyst Customer Care (CZ Online),internal,Technology
+czwh-act001,Coordinator Logistics (CZ Wholesale),external,Retail Operations
+czwh-act002,Planner Risk and Compliance (CZ Wholesale),external,Logistics
+czwh-act003,Analyst Logistics (CZ Wholesale),external,Finance
+czwh-act004,Controller Risk and Compliance (CZ Wholesale),internal,Marketing
+czwh-act005,Clerk People (CZ Wholesale),internal,Technology
+czwh-act006,Advisor Technology (CZ Wholesale),internal,Procurement
+czwh-act007,Manager Risk and Compliance (CZ Wholesale),internal,Risk and Compliance
+czwh-act008,Planner Logistics (CZ Wholesale),internal,Customer Care
+czwh-act009,Clerk Logistics (CZ Wholesale),internal,People
+czwh-act010,Planner Finance (CZ Wholesale),internal,Merchandising
+czwh-act011,Planner Retail Operations (CZ Wholesale),internal,Retail Operations
+czwh-act012,Specialist Procurement (CZ Wholesale),internal,Logistics
+czwh-act013,Coordinator Technology (CZ Wholesale),internal,Finance
+czwh-act014,Planner Procurement (CZ Wholesale),internal,Marketing
+czwh-act015,Analyst Customer Care (CZ Wholesale),internal,Technology
+czwh-act016,Lead Technology (CZ Wholesale),internal,Procurement
+czwh-act017,Lead Logistics (CZ Wholesale),internal,Risk and Compliance
+czwh-act018,Advisor Procurement (CZ Wholesale),internal,Customer Care
+czwh-act019,Manager Procurement (CZ Wholesale),internal,People
+czwh-act020,Specialist Technology (CZ Wholesale),internal,Merchandising
+czwh-act021,Specialist Merchandising (CZ Wholesale),internal,Retail Operations
+czwh-act022,Associate Finance (CZ Wholesale),internal,Logistics
+czwh-act023,Manager Technology (CZ Wholesale),internal,Finance
+czwh-act024,Clerk Technology (CZ Wholesale),internal,Marketing
+czwh-act025,Planner Technology (CZ Wholesale),internal,Technology
+czlg-act001,Lead Retail Operations (CZ Logistics),external,Retail Operations
+czlg-act002,Coordinator Marketing (CZ Logistics),external,Logistics
+czlg-act003,Associate Merchandising (CZ Logistics),external,Finance
+czlg-act004,Controller Risk and Compliance (CZ Logistics),internal,Marketing
+czlg-act005,Manager Logistics (CZ Logistics),internal,Technology
+czlg-act006,Planner Technology (CZ Logistics),internal,Procurement
+czlg-act007,Manager Technology (CZ Logistics),internal,Risk and Compliance
+czlg-act008,Controller People (CZ Logistics),internal,Customer Care
+czlg-act009,Associate People (CZ Logistics),internal,People
+czlg-act010,Advisor Retail Operations (CZ Logistics),internal,Merchandising
+czlg-act011,Coordinator Risk and Compliance (CZ Logistics),internal,Retail Operations
+czlg-act012,Lead Marketing (CZ Logistics),internal,Logistics
+czlg-act013,Manager Finance (CZ Logistics),internal,Finance
+czlg-act014,Clerk Retail Operations (CZ Logistics),internal,Marketing
+czlg-act015,Associate Technology (CZ Logistics),internal,Technology
+czlg-act016,Clerk Marketing (CZ Logistics),internal,Procurement
+czlg-act017,Coordinator Retail Operations (CZ Logistics),internal,Risk and Compliance
+czlg-act018,Coordinator People (CZ Logistics),internal,Customer Care
+czlg-act019,Specialist Procurement (CZ Logistics),internal,People
+czlg-act020,Associate Risk and Compliance (CZ Logistics),internal,Merchandising
+czlg-act021,Specialist Customer Care (CZ Logistics),internal,Retail Operations
+czlg-act022,Coordinator Finance (CZ Logistics),internal,Logistics
+czlg-act023,Coordinator Technology (CZ Logistics),internal,Finance
+czlg-act024,Planner Customer Care (CZ Logistics),internal,Marketing
+czlg-act025,Planner Risk and Compliance (CZ Logistics),internal,Technology
+grst-act001,Specialist Risk and Compliance (GR Stores),external,Retail Operations
+grst-act002,Associate Technology (GR Stores),external,Logistics
+grst-act003,Planner Marketing (GR Stores),external,Finance
+grst-act004,Planner Procurement (GR Stores),internal,Marketing
+grst-act005,Associate Procurement (GR Stores),internal,Technology
+grst-act006,Analyst Procurement (GR Stores),internal,Procurement
+grst-act007,Lead Customer Care (GR Stores),internal,Risk and Compliance
+grst-act008,Analyst Merchandising (GR Stores),internal,Customer Care
+grst-act009,Controller Finance (GR Stores),internal,People
+grst-act010,Manager Retail Operations (GR Stores),internal,Merchandising
+grst-act011,Coordinator Logistics (GR Stores),internal,Retail Operations
+grst-act012,Controller Logistics (GR Stores),internal,Logistics
+grst-act013,Planner Logistics (GR Stores),internal,Finance
+grst-act014,Planner Customer Care (GR Stores),internal,Marketing
+grst-act015,Lead Technology (GR Stores),internal,Technology
+grst-act016,Controller Technology (GR Stores),internal,Procurement
+grst-act017,Lead Risk and Compliance (GR Stores),internal,Risk and Compliance
+grst-act018,Specialist People (GR Stores),internal,Customer Care
+grst-act019,Manager Marketing (GR Stores),internal,People
+grst-act020,Coordinator Marketing (GR Stores),internal,Merchandising
+grst-act021,Specialist Merchandising (GR Stores),internal,Retail Operations
+grst-act022,Coordinator Risk and Compliance (GR Stores),internal,Logistics
+grst-act023,Coordinator Retail Operations (GR Stores),internal,Finance
+grst-act024,Specialist Procurement (GR Stores),internal,Marketing
+grst-act025,Analyst Marketing (GR Stores),internal,Technology
+gron-act001,Planner Procurement (GR Online),external,Retail Operations
+gron-act002,Analyst Merchandising (GR Online),external,Logistics
+gron-act003,Advisor Finance (GR Online),external,Finance
+gron-act004,Associate Marketing (GR Online),internal,Marketing
+gron-act005,Coordinator Retail Operations (GR Online),internal,Technology
+gron-act006,Associate Procurement (GR Online),internal,Procurement
+gron-act007,Controller People (GR Online),internal,Risk and Compliance
+gron-act008,Manager Logistics (GR Online),internal,Customer Care
+gron-act009,Planner Logistics (GR Online),internal,People
+gron-act010,Associate Logistics (GR Online),internal,Merchandising
+gron-act011,Controller Marketing (GR Online),internal,Retail Operations
+gron-act012,Planner Retail Operations (GR Online),internal,Logistics
+gron-act013,Manager Risk and Compliance (GR Online),internal,Finance
+gron-act014,Clerk Marketing (GR Online),internal,Marketing
+gron-act015,Manager Technology (GR Online),internal,Technology
+gron-act016,Clerk Procurement (GR Online),internal,Procurement
+gron-act017,Advisor Merchandising (GR Online),internal,Risk and Compliance
+gron-act018,Lead Risk and Compliance (GR Online),internal,Customer Care
+gron-act019,Coordinator Customer Care (GR Online),internal,People
+gron-act020,Controller Procurement (GR Online),internal,Merchandising
+gron-act021,Associate Risk and Compliance (GR Online),internal,Retail Operations
+gron-act022,Clerk Merchandising (GR Online),internal,Logistics
+gron-act023,Controller Finance (GR Online),internal,Finance
+gron-act024,Clerk Finance (GR Online),internal,Marketing
+gron-act025,Lead Merchandising (GR Online),internal,Technology
+grwh-act001,Analyst Risk and Compliance (GR Wholesale),external,Retail Operations
+grwh-act002,Coordinator Retail Operations (GR Wholesale),external,Logistics
+grwh-act003,Controller Logistics (GR Wholesale),external,Finance
+grwh-act004,Manager Procurement (GR Wholesale),internal,Marketing
+grwh-act005,Associate Logistics (GR Wholesale),internal,Technology
+grwh-act006,Lead Merchandising (GR Wholesale),internal,Procurement
+grwh-act007,Controller Merchandising (GR Wholesale),internal,Risk and Compliance
+grwh-act008,Manager Logistics (GR Wholesale),internal,Customer Care
+grwh-act009,Controller People (GR Wholesale),internal,People
+grwh-act010,Lead Procurement (GR Wholesale),internal,Merchandising
+grwh-act011,Clerk Finance (GR Wholesale),internal,Retail Operations
+grwh-act012,Manager Retail Operations (GR Wholesale),internal,Logistics
+grwh-act013,Coordinator Technology (GR Wholesale),internal,Finance
+grwh-act014,Analyst People (GR Wholesale),internal,Marketing
+grwh-act015,Analyst Retail Operations (GR Wholesale),internal,Technology
+grwh-act016,Analyst Merchandising (GR Wholesale),internal,Procurement
+grwh-act017,Clerk People (GR Wholesale),internal,Risk and Compliance
+grwh-act018,Lead Finance (GR Wholesale),internal,Customer Care
+grwh-act019,Analyst Customer Care (GR Wholesale),internal,People
+grwh-act020,Lead Technology (GR Wholesale),internal,Merchandising
+grwh-act021,Clerk Customer Care (GR Wholesale),internal,Retail Operations
+grwh-act022,Specialist People (GR Wholesale),internal,Logistics
+grwh-act023,Manager Finance (GR Wholesale),internal,Finance
+grwh-act024,Coordinator Marketing (GR Wholesale),internal,Marketing
+grwh-act025,Coordinator Logistics (GR Wholesale),internal,Technology
+grlg-act001,Analyst Finance (GR Logistics),external,Retail Operations
+grlg-act002,Manager Customer Care (GR Logistics),external,Logistics
+grlg-act003,Clerk Risk and Compliance (GR Logistics),external,Finance
+grlg-act004,Clerk Logistics (GR Logistics),internal,Marketing
+grlg-act005,Specialist Retail Operations (GR Logistics),internal,Technology
+grlg-act006,Specialist Risk and Compliance (GR Logistics),internal,Procurement
+grlg-act007,Coordinator Retail Operations (GR Logistics),internal,Risk and Compliance
+grlg-act008,Coordinator People (GR Logistics),internal,Customer Care
+grlg-act009,Associate Finance (GR Logistics),internal,People
+grlg-act010,Clerk Technology (GR Logistics),internal,Merchandising
+grlg-act011,Planner Logistics (GR Logistics),internal,Retail Operations
+grlg-act012,Advisor Merchandising (GR Logistics),internal,Logistics
+grlg-act013,Coordinator Customer Care (GR Logistics),internal,Finance
+grlg-act014,Manager Technology (GR Logistics),internal,Marketing
+grlg-act015,Coordinator Logistics (GR Logistics),internal,Technology
+grlg-act016,Specialist Marketing (GR Logistics),internal,Procurement
+grlg-act017,Planner People (GR Logistics),internal,Risk and Compliance
+grlg-act018,Manager Marketing (GR Logistics),internal,Customer Care
+grlg-act019,Specialist People (GR Logistics),internal,People
+grlg-act020,Clerk Merchandising (GR Logistics),internal,Merchandising
+grlg-act021,Manager Merchandising (GR Logistics),internal,Retail Operations
+grlg-act022,Specialist Technology (GR Logistics),internal,Logistics
+grlg-act023,Controller Finance (GR Logistics),internal,Finance
+grlg-act024,Analyst Risk and Compliance (GR Logistics),internal,Marketing
+grlg-act025,Associate Risk and Compliance (GR Logistics),internal,Technology
+hust-act001,Coordinator Retail Operations (HU Stores),external,Retail Operations
+hust-act002,Clerk Retail Operations (HU Stores),external,Logistics
+hust-act003,Clerk Procurement (HU Stores),external,Finance
+hust-act004,Advisor Procurement (HU Stores),internal,Marketing
+hust-act005,Coordinator Risk and Compliance (HU Stores),internal,Technology
+hust-act006,Analyst Marketing (HU Stores),internal,Procurement
+hust-act007,Specialist Merchandising (HU Stores),internal,Risk and Compliance
+hust-act008,Planner Retail Operations (HU Stores),internal,Customer Care
+hust-act009,Lead Risk and Compliance (HU Stores),internal,People
+hust-act010,Manager Merchandising (HU Stores),internal,Merchandising
+hust-act011,Associate Marketing (HU Stores),internal,Retail Operations
+hust-act012,Coordinator Customer Care (HU Stores),internal,Logistics
+hust-act013,Analyst Retail Operations (HU Stores),internal,Finance
+hust-act014,Coordinator People (HU Stores),internal,Marketing
+hust-act015,Associate Procurement (HU Stores),internal,Technology
+hust-act016,Controller Retail Operations (HU Stores),internal,Procurement
+hust-act017,Controller Risk and Compliance (HU Stores),internal,Risk and Compliance
+hust-act018,Controller Procurement (HU Stores),internal,Customer Care
+hust-act019,Specialist Customer Care (HU Stores),internal,People
+hust-act020,Associate People (HU Stores),internal,Merchandising
+hust-act021,Lead Customer Care (HU Stores),internal,Retail Operations
+hust-act022,Advisor Merchandising (HU Stores),internal,Logistics
+hust-act023,Controller Technology (HU Stores),internal,Finance
+hust-act024,Associate Finance (HU Stores),internal,Marketing
+hust-act025,Clerk Technology (HU Stores),internal,Technology
+huon-act001,Controller Customer Care (HU Online),external,Retail Operations
+huon-act002,Controller Risk and Compliance (HU Online),external,Logistics
+huon-act003,Associate Retail Operations (HU Online),external,Finance
+huon-act004,Planner Risk and Compliance (HU Online),internal,Marketing
+huon-act005,Coordinator Retail Operations (HU Online),internal,Technology
+huon-act006,Associate Customer Care (HU Online),internal,Procurement
+huon-act007,Specialist Marketing (HU Online),internal,Risk and Compliance
+huon-act008,Clerk Risk and Compliance (HU Online),internal,Customer Care
+huon-act009,Manager Technology (HU Online),internal,People
+huon-act010,Clerk Customer Care (HU Online),internal,Merchandising
+huon-act011,Coordinator Procurement (HU Online),internal,Retail Operations
+huon-act012,Coordinator Customer Care (HU Online),internal,Logistics
+huon-act013,Manager Finance (HU Online),internal,Finance
+huon-act014,Advisor Procurement (HU Online),internal,Marketing
+huon-act015,Specialist Procurement (HU Online),internal,Technology
+huon-act016,Specialist Logistics (HU Online),internal,Procurement
+huon-act017,Coordinator Logistics (HU Online),internal,Risk and Compliance
+huon-act018,Planner Merchandising (HU Online),internal,Customer Care
+huon-act019,Controller Procurement (HU Online),internal,People
+huon-act020,Clerk Procurement (HU Online),internal,Merchandising
+huon-act021,Advisor Merchandising (HU Online),internal,Retail Operations
+huon-act022,Specialist Finance (HU Online),internal,Logistics
+huon-act023,Associate Technology (HU Online),internal,Finance
+huon-act024,Analyst Risk and Compliance (HU Online),internal,Marketing
+huon-act025,Planner Procurement (HU Online),internal,Technology
+huwh-act001,Clerk Merchandising (HU Wholesale),external,Retail Operations
+huwh-act002,Planner Retail Operations (HU Wholesale),external,Logistics
+huwh-act003,Lead Finance (HU Wholesale),external,Finance
+huwh-act004,Controller Procurement (HU Wholesale),internal,Marketing
+huwh-act005,Specialist Finance (HU Wholesale),internal,Technology
+huwh-act006,Specialist People (HU Wholesale),internal,Procurement
+huwh-act007,Analyst Technology (HU Wholesale),internal,Risk and Compliance
+huwh-act008,Planner Merchandising (HU Wholesale),internal,Customer Care
+huwh-act009,Associate Risk and Compliance (HU Wholesale),internal,People
+huwh-act010,Advisor People (HU Wholesale),internal,Merchandising
+huwh-act011,Analyst Risk and Compliance (HU Wholesale),internal,Retail Operations
+huwh-act012,Lead People (HU Wholesale),internal,Logistics
+huwh-act013,Manager Customer Care (HU Wholesale),internal,Finance
+huwh-act014,Associate Marketing (HU Wholesale),internal,Marketing
+huwh-act015,Specialist Marketing (HU Wholesale),internal,Technology
+huwh-act016,Associate Customer Care (HU Wholesale),internal,Procurement
+huwh-act017,Controller Logistics (HU Wholesale),internal,Risk and Compliance
+huwh-act018,Planner Finance (HU Wholesale),internal,Customer Care
+huwh-act019,Planner People (HU Wholesale),internal,People
+huwh-act020,Planner Logistics (HU Wholesale),internal,Merchandising
+huwh-act021,Associate Logistics (HU Wholesale),internal,Retail Operations
+huwh-act022,Associate People (HU Wholesale),internal,Logistics
+huwh-act023,Lead Retail Operations (HU Wholesale),internal,Finance
+huwh-act024,Coordinator Merchandising (HU Wholesale),internal,Marketing
+huwh-act025,Coordinator Customer Care (HU Wholesale),internal,Technology
+hulg-act001,Coordinator Merchandising (HU Logistics),external,Retail Operations
+hulg-act002,Controller Merchandising (HU Logistics),external,Logistics
+hulg-act003,Clerk Merchandising (HU Logistics),external,Finance
+hulg-act004,Planner Merchandising (HU Logistics),internal,Marketing
+hulg-act005,Lead Merchandising (HU Logistics),internal,Technology
+hulg-act006,Specialist Procurement (HU Logistics),internal,Procurement
+hulg-act007,Lead Technology (HU Logistics),internal,Risk and Compliance
+hulg-act008,Lead Risk and Compliance (HU Logistics),internal,Customer Care
+hulg-act009,Manager People (HU Logistics),internal,People
+hulg-act010,Manager Marketing (HU Logistics),internal,Merchandising
+hulg-act011,Coordinator Technology (HU Logistics),internal,Retail Operations
+hulg-act012,Lead Procurement (HU Logistics),internal,Logistics
+hulg-act013,Manager Technology (HU Logistics),internal,Finance
+hulg-act014,Coordinator People (HU Logistics),internal,Marketing
+hulg-act015,Specialist Customer Care (HU Logistics),internal,Technology
+hulg-act016,Specialist Merchandising (HU Logistics),internal,Procurement
+hulg-act017,Advisor Retail Operations (HU Logistics),internal,Risk and Compliance
+hulg-act018,Planner Risk and Compliance (HU Logistics),internal,Customer Care
+hulg-act019,Controller Customer Care (HU Logistics),internal,People
+hulg-act020,Planner Finance (HU Logistics),internal,Merchandising
+hulg-act021,Analyst Technology (HU Logistics),internal,Retail Operations
+hulg-act022,Clerk Logistics (HU Logistics),internal,Logistics
+hulg-act023,Manager Logistics (HU Logistics),internal,Finance
+hulg-act024,Coordinator Retail Operations (HU Logistics),internal,Marketing
+hulg-act025,Clerk Marketing (HU Logistics),internal,Technology
+rost-act001,Coordinator Technology (RO Stores),external,Retail Operations
+rost-act002,Planner Retail Operations (RO Stores),external,Logistics
+rost-act003,Specialist People (RO Stores),external,Finance
+rost-act004,Analyst Procurement (RO Stores),internal,Marketing
+rost-act005,Advisor Technology (RO Stores),internal,Technology
+rost-act006,Associate Risk and Compliance (RO Stores),internal,Procurement
+rost-act007,Controller Customer Care (RO Stores),internal,Risk and Compliance
+rost-act008,Advisor Risk and Compliance (RO Stores),internal,Customer Care
+rost-act009,Specialist Risk and Compliance (RO Stores),internal,People
+rost-act010,Controller Marketing (RO Stores),internal,Merchandising
+rost-act011,Specialist Logistics (RO Stores),internal,Retail Operations
+rost-act012,Coordinator Logistics (RO Stores),internal,Logistics
+rost-act013,Manager Procurement (RO Stores),internal,Finance
+rost-act014,Advisor Retail Operations (RO Stores),internal,Marketing
+rost-act015,Analyst Risk and Compliance (RO Stores),internal,Technology
+rost-act016,Analyst Retail Operations (RO Stores),internal,Procurement
+rost-act017,Lead Retail Operations (RO Stores),internal,Risk and Compliance
+rost-act018,Manager People (RO Stores),internal,Customer Care
+rost-act019,Analyst Marketing (RO Stores),internal,People
+rost-act020,Clerk People (RO Stores),internal,Merchandising
+rost-act021,Advisor Merchandising (RO Stores),internal,Retail Operations
+rost-act022,Associate Merchandising (RO Stores),internal,Logistics
+rost-act023,Analyst Finance (RO Stores),internal,Finance
+rost-act024,Controller Finance (RO Stores),internal,Marketing
+rost-act025,Controller Merchandising (RO Stores),internal,Technology
+roon-act001,Planner Retail Operations (RO Online),external,Retail Operations
+roon-act002,Advisor Procurement (RO Online),external,Logistics
+roon-act003,Advisor Merchandising (RO Online),external,Finance
+roon-act004,Coordinator Retail Operations (RO Online),internal,Marketing
+roon-act005,Controller Marketing (RO Online),internal,Technology
+roon-act006,Manager Merchandising (RO Online),internal,Procurement
+roon-act007,Clerk Finance (RO Online),internal,Risk and Compliance
+roon-act008,Associate Procurement (RO Online),internal,Customer Care
+roon-act009,Lead Retail Operations (RO Online),internal,People
+roon-act010,Manager Finance (RO Online),internal,Merchandising
+roon-act011,Lead Procurement (RO Online),internal,Retail Operations
+roon-act012,Lead Finance (RO Online),internal,Logistics
+roon-act013,Lead Marketing (RO Online),internal,Finance
+roon-act014,Associate Customer Care (RO Online),internal,Marketing
+roon-act015,Specialist Finance (RO Online),internal,Technology
+roon-act016,Analyst Procurement (RO Online),internal,Procurement
+roon-act017,Manager Procurement (RO Online),internal,Risk and Compliance
+roon-act018,Planner Technology (RO Online),internal,Customer Care
+roon-act019,Analyst Technology (RO Online),internal,People
+roon-act020,Specialist Risk and Compliance (RO Online),internal,Merchandising
+roon-act021,Coordinator Technology (RO Online),internal,Retail Operations
+roon-act022,Planner Customer Care (RO Online),internal,Logistics
+roon-act023,Analyst Finance (RO Online),internal,Finance
+roon-act024,Controller Technology (RO Online),internal,Marketing
+roon-act025,Planner Logistics (RO Online),internal,Technology
+rowh-act001,Specialist Risk and Compliance (RO Wholesale),external,Retail Operations
+rowh-act002,Specialist People (RO Wholesale),external,Logistics
+rowh-act003,Planner Risk and Compliance (RO Wholesale),external,Finance
+rowh-act004,Coordinator Finance (RO Wholesale),internal,Marketing
+rowh-act005,Manager Technology (RO Wholesale),internal,Technology
+rowh-act006,Planner Retail Operations (RO Wholesale),internal,Procurement
+rowh-act007,Specialist Marketing (RO Wholesale),internal,Risk and Compliance
+rowh-act008,Clerk Customer Care (RO Wholesale),internal,Customer Care
+rowh-act009,Analyst Technology (RO Wholesale),internal,People
+rowh-act010,Controller Procurement (RO Wholesale),internal,Merchandising
+rowh-act011,Clerk Procurement (RO Wholesale),internal,Retail Operations
+rowh-act012,Lead Procurement (RO Wholesale),internal,Logistics
+rowh-act013,Associate Customer Care (RO Wholesale),internal,Finance
+rowh-act014,Manager Marketing (RO Wholesale),internal,Marketing
+rowh-act015,Advisor Risk and Compliance (RO Wholesale),internal,Technology
+rowh-act016,Controller Marketing (RO Wholesale),internal,Procurement
+rowh-act017,Lead Customer Care (RO Wholesale),internal,Risk and Compliance
+rowh-act018,Specialist Logistics (RO Wholesale),internal,Customer Care
+rowh-act019,Advisor Retail Operations (RO Wholesale),internal,People
+rowh-act020,Manager Finance (RO Wholesale),internal,Merchandising
+rowh-act021,Specialist Finance (RO Wholesale),internal,Retail Operations
+rowh-act022,Controller People (RO Wholesale),internal,Logistics
+rowh-act023,Lead Logistics (RO Wholesale),internal,Finance
+rowh-act024,Advisor Finance (RO Wholesale),internal,Marketing
+rowh-act025,Lead Marketing (RO Wholesale),internal,Technology
+rolg-act001,Advisor Logistics (RO Logistics),external,Retail Operations
+rolg-act002,Advisor Risk and Compliance (RO Logistics),external,Logistics
+rolg-act003,Analyst Technology (RO Logistics),external,Finance
+rolg-act004,Controller Technology (RO Logistics),internal,Marketing
+rolg-act005,Advisor Marketing (RO Logistics),internal,Technology
+rolg-act006,Clerk Risk and Compliance (RO Logistics),internal,Procurement
+rolg-act007,Planner Customer Care (RO Logistics),internal,Risk and Compliance
+rolg-act008,Controller People (RO Logistics),internal,Customer Care
+rolg-act009,Lead Marketing (RO Logistics),internal,People
+rolg-act010,Clerk People (RO Logistics),internal,Merchandising
+rolg-act011,Associate Risk and Compliance (RO Logistics),internal,Retail Operations
+rolg-act012,Manager Merchandising (RO Logistics),internal,Logistics
+rolg-act013,Manager Retail Operations (RO Logistics),internal,Finance
+rolg-act014,Lead Logistics (RO Logistics),internal,Marketing
+rolg-act015,Manager Risk and Compliance (RO Logistics),internal,Technology
+rolg-act016,Clerk Technology (RO Logistics),internal,Procurement
+rolg-act017,Lead Risk and Compliance (RO Logistics),internal,Risk and Compliance
+rolg-act018,Lead People (RO Logistics),internal,Customer Care
+rolg-act019,Specialist Marketing (RO Logistics),internal,People
+rolg-act020,Planner Retail Operations (RO Logistics),internal,Merchandising
+rolg-act021,Analyst Merchandising (RO Logistics),internal,Retail Operations
+rolg-act022,Lead Customer Care (RO Logistics),internal,Logistics
+rolg-act023,Coordinator Retail Operations (RO Logistics),internal,Finance
+rolg-act024,Planner Marketing (RO Logistics),internal,Marketing
+rolg-act025,Manager Marketing (RO Logistics),internal,Technology
+hrst-act001,Planner Technology (HR Stores),external,Retail Operations
+hrst-act002,Clerk Retail Operations (HR Stores),external,Logistics
+hrst-act003,Advisor Merchandising (HR Stores),external,Finance
+hrst-act004,Planner Customer Care (HR Stores),internal,Marketing
+hrst-act005,Controller Finance (HR Stores),internal,Technology
+hrst-act006,Controller Risk and Compliance (HR Stores),internal,Procurement
+hrst-act007,Analyst Risk and Compliance (HR Stores),internal,Risk and Compliance
+hrst-act008,Lead Merchandising (HR Stores),internal,Customer Care
+hrst-act009,Specialist Risk and Compliance (HR Stores),internal,People
+hrst-act010,Associate Marketing (HR Stores),internal,Merchandising
+hrst-act011,Advisor Retail Operations (HR Stores),internal,Retail Operations
+hrst-act012,Specialist Finance (HR Stores),internal,Logistics
+hrst-act013,Lead Marketing (HR Stores),internal,Finance
+hrst-act014,Planner Procurement (HR Stores),internal,Marketing
+hrst-act015,Lead Risk and Compliance (HR Stores),internal,Technology
+hrst-act016,Controller Logistics (HR Stores),internal,Procurement
+hrst-act017,Analyst Technology (HR Stores),internal,Risk and Compliance
+hrst-act018,Planner Retail Operations (HR Stores),internal,Customer Care
+hrst-act019,Controller Procurement (HR Stores),internal,People
+hrst-act020,Associate Risk and Compliance (HR Stores),internal,Merchandising
+hrst-act021,Clerk Merchandising (HR Stores),internal,Retail Operations
+hrst-act022,Advisor Risk and Compliance (HR Stores),internal,Logistics
+hrst-act023,Analyst Merchandising (HR Stores),internal,Finance
+hrst-act024,Controller Technology (HR Stores),internal,Marketing
+hrst-act025,Advisor Marketing (HR Stores),internal,Technology
+hron-act001,Manager Retail Operations (HR Online),external,Retail Operations
+hron-act002,Advisor Procurement (HR Online),external,Logistics
+hron-act003,Clerk Merchandising (HR Online),external,Finance
+hron-act004,Controller Procurement (HR Online),internal,Marketing
+hron-act005,Associate Marketing (HR Online),internal,Technology
+hron-act006,Coordinator Logistics (HR Online),internal,Procurement
+hron-act007,Specialist Risk and Compliance (HR Online),internal,Risk and Compliance
+hron-act008,Advisor Customer Care (HR Online),internal,Customer Care
+hron-act009,Coordinator Merchandising (HR Online),internal,People
+hron-act010,Coordinator Risk and Compliance (HR Online),internal,Merchandising
+hron-act011,Clerk Marketing (HR Online),internal,Retail Operations
+hron-act012,Analyst People (HR Online),internal,Logistics
+hron-act013,Lead Marketing (HR Online),internal,Finance
+hron-act014,Lead Customer Care (HR Online),internal,Marketing
+hron-act015,Clerk Technology (HR Online),internal,Technology
+hron-act016,Associate Retail Operations (HR Online),internal,Procurement
+hron-act017,Planner Logistics (HR Online),internal,Risk and Compliance
+hron-act018,Analyst Marketing (HR Online),internal,Customer Care
+hron-act019,Coordinator Procurement (HR Online),internal,People
+hron-act020,Associate Finance (HR Online),internal,Merchandising
+hron-act021,Manager Merchandising (HR Online),internal,Retail Operations
+hron-act022,Clerk Risk and Compliance (HR Online),internal,Logistics
+hron-act023,Planner Risk and Compliance (HR Online),internal,Finance
+hron-act024,Manager Technology (HR Online),internal,Marketing
+hron-act025,Specialist Technology (HR Online),internal,Technology
+hrwh-act001,Advisor Marketing (HR Wholesale),external,Retail Operations
+hrwh-act002,Associate Procurement (HR Wholesale),external,Logistics
+hrwh-act003,Clerk Risk and Compliance (HR Wholesale),external,Finance
+hrwh-act004,Advisor Merchandising (HR Wholesale),internal,Marketing
+hrwh-act005,Associate Marketing (HR Wholesale),internal,Technology
+hrwh-act006,Coordinator Customer Care (HR Wholesale),internal,Procurement
+hrwh-act007,Lead Marketing (HR Wholesale),internal,Risk and Compliance
+hrwh-act008,Planner Logistics (HR Wholesale),internal,Customer Care
+hrwh-act009,Associate Customer Care (HR Wholesale),internal,People
+hrwh-act010,Planner Marketing (HR Wholesale),internal,Merchandising
+hrwh-act011,Associate Technology (HR Wholesale),internal,Retail Operations
+hrwh-act012,Lead Technology (HR Wholesale),internal,Logistics
+hrwh-act013,Planner Customer Care (HR Wholesale),internal,Finance
+hrwh-act014,Manager People (HR Wholesale),internal,Marketing
+hrwh-act015,Coordinator Logistics (HR Wholesale),internal,Technology
+hrwh-act016,Specialist Risk and Compliance (HR Wholesale),internal,Procurement
+hrwh-act017,Advisor Technology (HR Wholesale),internal,Risk and Compliance
+hrwh-act018,Specialist Procurement (HR Wholesale),internal,Customer Care
+hrwh-act019,Clerk People (HR Wholesale),internal,People
+hrwh-act020,Associate Merchandising (HR Wholesale),internal,Merchandising
+hrwh-act021,Advisor Finance (HR Wholesale),internal,Retail Operations
+hrwh-act022,Coordinator Marketing (HR Wholesale),internal,Logistics
+hrwh-act023,Analyst Risk and Compliance (HR Wholesale),internal,Finance
+hrwh-act024,Lead People (HR Wholesale),internal,Marketing
+hrwh-act025,Controller People (HR Wholesale),internal,Technology
+hrlg-act001,Coordinator People (HR Logistics),external,Retail Operations
+hrlg-act002,Planner Technology (HR Logistics),external,Logistics
+hrlg-act003,Planner Procurement (HR Logistics),external,Finance
+hrlg-act004,Analyst Finance (HR Logistics),internal,Marketing
+hrlg-act005,Manager Finance (HR Logistics),internal,Technology
+hrlg-act006,Coordinator Customer Care (HR Logistics),internal,Procurement
+hrlg-act007,Clerk Customer Care (HR Logistics),internal,Risk and Compliance
+hrlg-act008,Manager People (HR Logistics),internal,Customer Care
+hrlg-act009,Analyst Customer Care (HR Logistics),internal,People
+hrlg-act010,Clerk Technology (HR Logistics),internal,Merchandising
+hrlg-act011,Coordinator Technology (HR Logistics),internal,Retail Operations
+hrlg-act012,Lead Procurement (HR Logistics),internal,Logistics
+hrlg-act013,Specialist Customer Care (HR Logistics),internal,Finance
+hrlg-act014,Lead Risk and Compliance (HR Logistics),internal,Marketing
+hrlg-act015,Associate Customer Care (HR Logistics),internal,Technology
+hrlg-act016,Lead Logistics (HR Logistics),internal,Procurement
+hrlg-act017,Controller Marketing (HR Logistics),internal,Risk and Compliance
+hrlg-act018,Manager Risk and Compliance (HR Logistics),internal,Customer Care
+hrlg-act019,Planner Finance (HR Logistics),internal,People
+hrlg-act020,Associate Marketing (HR Logistics),internal,Merchandising
+hrlg-act021,Advisor Finance (HR Logistics),internal,Retail Operations
+hrlg-act022,Associate People (HR Logistics),internal,Logistics
+hrlg-act023,Analyst Retail Operations (HR Logistics),internal,Finance
+hrlg-act024,Associate Procurement (HR Logistics),internal,Marketing
+hrlg-act025,Associate Logistics (HR Logistics),internal,Technology
+skst-act001,Specialist Marketing (SK Stores),external,Retail Operations
+skst-act002,Coordinator Risk and Compliance (SK Stores),external,Logistics
+skst-act003,Analyst People (SK Stores),external,Finance
+skst-act004,Coordinator Logistics (SK Stores),internal,Marketing
+skst-act005,Associate Risk and Compliance (SK Stores),internal,Technology
+skst-act006,Clerk People (SK Stores),internal,Procurement
+skst-act007,Analyst Logistics (SK Stores),internal,Risk and Compliance
+skst-act008,Clerk Procurement (SK Stores),internal,Customer Care
+skst-act009,Advisor Retail Operations (SK Stores),internal,People
+skst-act010,Advisor Merchandising (SK Stores),internal,Merchandising
+skst-act011,Analyst Marketing (SK Stores),internal,Retail Operations
+skst-act012,Specialist Risk and Compliance (SK Stores),internal,Logistics
+skst-act013,Coordinator Merchandising (SK Stores),internal,Finance
+skst-act014,Controller Technology (SK Stores),internal,Marketing
+skst-act015,Lead Finance (SK Stores),internal,Technology
+skst-act016,Manager Technology (SK Stores),internal,Procurement
+skst-act017,Specialist Finance (SK Stores),internal,Risk and Compliance
+skst-act018,Planner Finance (SK Stores),internal,Customer Care
+skst-act019,Manager Merchandising (SK Stores),internal,People
+skst-act020,Analyst Customer Care (SK Stores),internal,Merchandising
+skst-act021,Lead Merchandising (SK Stores),internal,Retail Operations
+skst-act022,Associate Finance (SK Stores),internal,Logistics
+skst-act023,Manager Risk and Compliance (SK Stores),internal,Finance
+skst-act024,Lead Risk and Compliance (SK Stores),internal,Marketing
+skst-act025,Controller Risk and Compliance (SK Stores),internal,Technology
+skon-act001,Associate Retail Operations (SK Online),external,Retail Operations
+skon-act002,Planner Procurement (SK Online),external,Logistics
+skon-act003,Analyst Finance (SK Online),external,Finance
+skon-act004,Planner Retail Operations (SK Online),internal,Marketing
+skon-act005,Specialist Marketing (SK Online),internal,Technology
+skon-act006,Coordinator Procurement (SK Online),internal,Procurement
+skon-act007,Coordinator Merchandising (SK Online),internal,Risk and Compliance
+skon-act008,Lead Risk and Compliance (SK Online),internal,Customer Care
+skon-act009,Associate Merchandising (SK Online),internal,People
+skon-act010,Advisor People (SK Online),internal,Merchandising
+skon-act011,Planner Merchandising (SK Online),internal,Retail Operations
+skon-act012,Associate Technology (SK Online),internal,Logistics
+skon-act013,Planner Risk and Compliance (SK Online),internal,Finance
+skon-act014,Controller Customer Care (SK Online),internal,Marketing
+skon-act015,Planner Customer Care (SK Online),internal,Technology
+skon-act016,Analyst Procurement (SK Online),internal,Procurement
+skon-act017,Analyst Risk and Compliance (SK Online),internal,Risk and Compliance
+skon-act018,Specialist Finance (SK Online),internal,Customer Care
+skon-act019,Lead Finance (SK Online),internal,People
+skon-act020,Lead People (SK Online),internal,Merchandising
+skon-act021,Advisor Marketing (SK Online),internal,Retail Operations
+skon-act022,Manager Logistics (SK Online),internal,Logistics
+skon-act023,Analyst Merchandising (SK Online),internal,Finance
+skon-act024,Associate People (SK Online),internal,Marketing
+skon-act025,Associate Marketing (SK Online),internal,Technology
+skwh-act001,Specialist People (SK Wholesale),external,Retail Operations
+skwh-act002,Advisor Procurement (SK Wholesale),external,Logistics
+skwh-act003,Specialist Customer Care (SK Wholesale),external,Finance
+skwh-act004,Manager Retail Operations (SK Wholesale),internal,Marketing
+skwh-act005,Manager Customer Care (SK Wholesale),internal,Technology
+skwh-act006,Specialist Technology (SK Wholesale),internal,Procurement
+skwh-act007,Coordinator Marketing (SK Wholesale),internal,Risk and Compliance
+skwh-act008,Clerk Risk and Compliance (SK Wholesale),internal,Customer Care
+skwh-act009,Clerk Marketing (SK Wholesale),internal,People
+skwh-act010,Planner People (SK Wholesale),internal,Merchandising
+skwh-act011,Advisor Marketing (SK Wholesale),internal,Retail Operations
+skwh-act012,Specialist Finance (SK Wholesale),internal,Logistics
+skwh-act013,Controller Marketing (SK Wholesale),internal,Finance
+skwh-act014,Specialist Procurement (SK Wholesale),internal,Marketing
+skwh-act015,Specialist Risk and Compliance (SK Wholesale),internal,Technology
+skwh-act016,Lead Customer Care (SK Wholesale),internal,Procurement
+skwh-act017,Advisor Finance (SK Wholesale),internal,Risk and Compliance
+skwh-act018,Associate Procurement (SK Wholesale),internal,Customer Care
+skwh-act019,Advisor People (SK Wholesale),internal,People
+skwh-act020,Analyst Technology (SK Wholesale),internal,Merchandising
+skwh-act021,Advisor Retail Operations (SK Wholesale),internal,Retail Operations
+skwh-act022,Manager Marketing (SK Wholesale),internal,Logistics
+skwh-act023,Analyst Procurement (SK Wholesale),internal,Finance
+skwh-act024,Controller Merchandising (SK Wholesale),internal,Marketing
+skwh-act025,Clerk Procurement (SK Wholesale),internal,Technology
+sklg-act001,Associate People (SK Logistics),external,Retail Operations
+sklg-act002,Advisor People (SK Logistics),external,Logistics
+sklg-act003,Clerk Risk and Compliance (SK Logistics),external,Finance
+sklg-act004,Manager Risk and Compliance (SK Logistics),internal,Marketing
+sklg-act005,Clerk Marketing (SK Logistics),internal,Technology
+sklg-act006,Planner Risk and Compliance (SK Logistics),internal,Procurement
+sklg-act007,Controller Customer Care (SK Logistics),internal,Risk and Compliance
+sklg-act008,Controller People (SK Logistics),internal,Customer Care
+sklg-act009,Coordinator Finance (SK Logistics),internal,People
+sklg-act010,Analyst Logistics (SK Logistics),internal,Merchandising
+sklg-act011,Controller Merchandising (SK Logistics),internal,Retail Operations
+sklg-act012,Specialist Risk and Compliance (SK Logistics),internal,Logistics
+sklg-act013,Lead Technology (SK Logistics),internal,Finance
+sklg-act014,Planner Merchandising (SK Logistics),internal,Marketing
+sklg-act015,Manager Merchandising (SK Logistics),internal,Technology
+sklg-act016,Advisor Risk and Compliance (SK Logistics),internal,Procurement
+sklg-act017,Associate Merchandising (SK Logistics),internal,Risk and Compliance
+sklg-act018,Clerk Logistics (SK Logistics),internal,Customer Care
+sklg-act019,Coordinator People (SK Logistics),internal,People
+sklg-act020,Manager People (SK Logistics),internal,Merchandising
+sklg-act021,Manager Marketing (SK Logistics),internal,Retail Operations
+sklg-act022,Analyst Procurement (SK Logistics),internal,Logistics
+sklg-act023,Specialist People (SK Logistics),internal,Finance
+sklg-act024,Lead Procurement (SK Logistics),internal,Marketing
+sklg-act025,Lead Finance (SK Logistics),internal,Technology
+bgst-act001,Specialist Retail Operations (BG Stores),external,Retail Operations
+bgst-act002,Associate Merchandising (BG Stores),external,Logistics
+bgst-act003,Manager Technology (BG Stores),external,Finance
+bgst-act004,Coordinator Logistics (BG Stores),internal,Marketing
+bgst-act005,Coordinator Finance (BG Stores),internal,Technology
+bgst-act006,Analyst Customer Care (BG Stores),internal,Procurement
+bgst-act007,Manager People (BG Stores),internal,Risk and Compliance
+bgst-act008,Analyst Merchandising (BG Stores),internal,Customer Care
+bgst-act009,Manager Merchandising (BG Stores),internal,People
+bgst-act010,Specialist Marketing (BG Stores),internal,Merchandising
+bgst-act011,Planner Customer Care (BG Stores),internal,Retail Operations
+bgst-act012,Clerk Procurement (BG Stores),internal,Logistics
+bgst-act013,Controller Customer Care (BG Stores),internal,Finance
+bgst-act014,Advisor Marketing (BG Stores),internal,Marketing
+bgst-act015,Lead People (BG Stores),internal,Technology
+bgst-act016,Planner Finance (BG Stores),internal,Procurement
+bgst-act017,Analyst Technology (BG Stores),internal,Risk and Compliance
+bgst-act018,Planner People (BG Stores),internal,Customer Care
+bgst-act019,Lead Technology (BG Stores),internal,People
+bgst-act020,Specialist Procurement (BG Stores),internal,Merchandising
+bgst-act021,Analyst Logistics (BG Stores),internal,Retail Operations
+bgst-act022,Planner Technology (BG Stores),internal,Logistics
+bgst-act023,Specialist Customer Care (BG Stores),internal,Finance
+bgst-act024,Coordinator Risk and Compliance (BG Stores),internal,Marketing
+bgst-act025,Advisor Technology (BG Stores),internal,Technology
+bgon-act001,Manager Logistics (BG Online),external,Retail Operations
+bgon-act002,Lead Logistics (BG Online),external,Logistics
+bgon-act003,Analyst Finance (BG Online),external,Finance
+bgon-act004,Analyst Logistics (BG Online),internal,Marketing
+bgon-act005,Advisor Technology (BG Online),internal,Technology
+bgon-act006,Planner Customer Care (BG Online),internal,Procurement
+bgon-act007,Manager Technology (BG Online),internal,Risk and Compliance
+bgon-act008,Clerk Finance (BG Online),internal,Customer Care
+bgon-act009,Coordinator Procurement (BG Online),internal,People
+bgon-act010,Associate Logistics (BG Online),internal,Merchandising
+bgon-act011,Lead People (BG Online),internal,Retail Operations
+bgon-act012,Associate Customer Care (BG Online),internal,Logistics
+bgon-act013,Clerk Customer Care (BG Online),internal,Finance
+bgon-act014,Advisor Retail Operations (BG Online),internal,Marketing
+bgon-act015,Advisor Procurement (BG Online),internal,Technology
+bgon-act016,Specialist Retail Operations (BG Online),internal,Procurement
+bgon-act017,Clerk Logistics (BG Online),internal,Risk and Compliance
+bgon-act018,Planner Risk and Compliance (BG Online),internal,Customer Care
+bgon-act019,Analyst Risk and Compliance (BG Online),internal,People
+bgon-act020,Coordinator Marketing (BG Online),internal,Merchandising
+bgon-act021,Coordinator Finance (BG Online),internal,Retail Operations
+bgon-act022,Planner People (BG Online),internal,Logistics
+bgon-act023,Controller Retail Operations (BG Online),internal,Finance
+bgon-act024,Clerk Retail Operations (BG Online),internal,Marketing
+bgon-act025,Clerk Technology (BG Online),internal,Technology
+bgwh-act001,Advisor Logistics (BG Wholesale),external,Retail Operations
+bgwh-act002,Analyst Merchandising (BG Wholesale),external,Logistics
+bgwh-act003,Associate Procurement (BG Wholesale),external,Finance
+bgwh-act004,Specialist Retail Operations (BG Wholesale),internal,Marketing
+bgwh-act005,Specialist Customer Care (BG Wholesale),internal,Technology
+bgwh-act006,Lead Merchandising (BG Wholesale),internal,Procurement
+bgwh-act007,Coordinator Logistics (BG Wholesale),internal,Risk and Compliance
+bgwh-act008,Advisor Finance (BG Wholesale),internal,Customer Care
+bgwh-act009,Associate Retail Operations (BG Wholesale),internal,People
+bgwh-act010,Specialist People (BG Wholesale),internal,Merchandising
+bgwh-act011,Manager Retail Operations (BG Wholesale),internal,Retail Operations
+bgwh-act012,Planner Risk and Compliance (BG Wholesale),internal,Logistics
+bgwh-act013,Coordinator People (BG Wholesale),internal,Finance
+bgwh-act014,Analyst People (BG Wholesale),internal,Marketing
+bgwh-act015,Specialist Logistics (BG Wholesale),internal,Technology
+bgwh-act016,Controller Marketing (BG Wholesale),internal,Procurement
+bgwh-act017,Manager Merchandising (BG Wholesale),internal,Risk and Compliance
+bgwh-act018,Advisor People (BG Wholesale),internal,Customer Care
+bgwh-act019,Controller Logistics (BG Wholesale),internal,People
+bgwh-act020,Clerk Merchandising (BG Wholesale),internal,Merchandising
+bgwh-act021,Specialist Marketing (BG Wholesale),internal,Retail Operations
+bgwh-act022,Specialist Technology (BG Wholesale),internal,Logistics
+bgwh-act023,Specialist Risk and Compliance (BG Wholesale),internal,Finance
+bgwh-act024,Specialist Procurement (BG Wholesale),internal,Marketing
+bgwh-act025,Manager Logistics (BG Wholesale),internal,Technology
+bglg-act001,Manager People (BG Logistics),external,Retail Operations
+bglg-act002,Planner Retail Operations (BG Logistics),external,Logistics
+bglg-act003,Analyst Risk and Compliance (BG Logistics),external,Finance
+bglg-act004,Lead Merchandising (BG Logistics),internal,Marketing
+bglg-act005,Clerk Risk and Compliance (BG Logistics),internal,Technology
+bglg-act006,Clerk Logistics (BG Logistics),internal,Procurement
+bglg-act007,Coordinator Finance (BG Logistics),internal,Risk and Compliance
+bglg-act008,Specialist Procurement (BG Logistics),internal,Customer Care
+bglg-act009,Coordinator Merchandising (BG Logistics),internal,People
+bglg-act010,Manager Procurement (BG Logistics),internal,Merchandising
+bglg-act011,Manager Finance (BG Logistics),internal,Retail Operations
+bglg-act012,Planner Logistics (BG Logistics),internal,Logistics
+bglg-act013,Advisor Finance (BG Logistics),internal,Finance
+bglg-act014,Controller Technology (BG Logistics),internal,Marketing
+bglg-act015,Analyst Logistics (BG Logistics),internal,Technology
+bglg-act016,Controller Risk and Compliance (BG Logistics),internal,Procurement
+bglg-act017,Associate Retail Operations (BG Logistics),internal,Risk and Compliance
+bglg-act018,Lead People (BG Logistics),internal,Customer Care
+bglg-act019,Clerk Procurement (BG Logistics),internal,People
+bglg-act020,Associate Merchandising (BG Logistics),internal,Merchandising
+bglg-act021,Clerk Finance (BG Logistics),internal,Retail Operations
+bglg-act022,Clerk Marketing (BG Logistics),internal,Logistics
+bglg-act023,Specialist Technology (BG Logistics),internal,Finance
+bglg-act024,Controller People (BG Logistics),internal,Marketing
+bglg-act025,Associate Logistics (BG Logistics),internal,Technology
+ltst-act001,Clerk Finance (LT Stores),external,Retail Operations
+ltst-act002,Lead Retail Operations (LT Stores),external,Logistics
+ltst-act003,Clerk Risk and Compliance (LT Stores),external,Finance
+ltst-act004,Advisor Retail Operations (LT Stores),internal,Marketing
+ltst-act005,Clerk Merchandising (LT Stores),internal,Technology
+ltst-act006,Clerk Logistics (LT Stores),internal,Procurement
+ltst-act007,Controller Merchandising (LT Stores),internal,Risk and Compliance
+ltst-act008,Coordinator Logistics (LT Stores),internal,Customer Care
+ltst-act009,Controller Finance (LT Stores),internal,People
+ltst-act010,Coordinator People (LT Stores),internal,Merchandising
+ltst-act011,Analyst Marketing (LT Stores),internal,Retail Operations
+ltst-act012,Clerk Customer Care (LT Stores),internal,Logistics
+ltst-act013,Coordinator Risk and Compliance (LT Stores),internal,Finance
+ltst-act014,Controller Logistics (LT Stores),internal,Marketing
+ltst-act015,Clerk Technology (LT Stores),internal,Technology
+ltst-act016,Coordinator Finance (LT Stores),internal,Procurement
+ltst-act017,Planner People (LT Stores),internal,Risk and Compliance
+ltst-act018,Specialist Procurement (LT Stores),internal,Customer Care
+ltst-act019,Specialist Merchandising (LT Stores),internal,People
+ltst-act020,Specialist Finance (LT Stores),internal,Merchandising
+ltst-act021,Controller People (LT Stores),internal,Retail Operations
+ltst-act022,Associate Merchandising (LT Stores),internal,Logistics
+ltst-act023,Advisor Merchandising (LT Stores),internal,Finance
+ltst-act024,Associate Logistics (LT Stores),internal,Marketing
+ltst-act025,Manager Merchandising (LT Stores),internal,Technology
+lton-act001,Coordinator Procurement (LT Online),external,Retail Operations
+lton-act002,Controller Logistics (LT Online),external,Logistics
+lton-act003,Lead Customer Care (LT Online),external,Finance
+lton-act004,Analyst Logistics (LT Online),internal,Marketing
+lton-act005,Coordinator Finance (LT Online),internal,Technology
+lton-act006,Coordinator Retail Operations (LT Online),internal,Procurement
+lton-act007,Planner Customer Care (LT Online),internal,Risk and Compliance
+lton-act008,Lead Procurement (LT Online),internal,Customer Care
+lton-act009,Planner Procurement (LT Online),internal,People
+lton-act010,Analyst Marketing (LT Online),internal,Merchandising
+lton-act011,Clerk Customer Care (LT Online),internal,Retail Operations
+lton-act012,Coordinator Merchandising (LT Online),internal,Logistics
+lton-act013,Coordinator People (LT Online),internal,Finance
+lton-act014,Controller People (LT Online),internal,Marketing
+lton-act015,Clerk People (LT Online),internal,Technology
+lton-act016,Analyst Procurement (LT Online),internal,Procurement
+lton-act017,Coordinator Logistics (LT Online),internal,Risk and Compliance
+lton-act018,Associate Merchandising (LT Online),internal,Customer Care
+lton-act019,Lead People (LT Online),internal,People
+lton-act020,Clerk Technology (LT Online),internal,Merchandising
+lton-act021,Manager Finance (LT Online),internal,Retail Operations
+lton-act022,Lead Finance (LT Online),internal,Logistics
+lton-act023,Controller Risk and Compliance (LT Online),internal,Finance
+lton-act024,Manager Risk and Compliance (LT Online),internal,Marketing
+lton-act025,Coordinator Risk and Compliance (LT Online),internal,Technology
+ltwh-act001,Planner People (LT Wholesale),external,Retail Operations
+ltwh-act002,Coordinator Logistics (LT Wholesale),external,Logistics
+ltwh-act003,Advisor Logistics (LT Wholesale),external,Finance
+ltwh-act004,Manager People (LT Wholesale),internal,Marketing
+ltwh-act005,Manager Procurement (LT Wholesale),internal,Technology
+ltwh-act006,Specialist Procurement (LT Wholesale),internal,Procurement
+ltwh-act007,Lead Risk and Compliance (LT Wholesale),internal,Risk and Compliance
+ltwh-act008,Clerk Customer Care (LT Wholesale),internal,Customer Care
+ltwh-act009,Manager Finance (LT Wholesale),internal,People
+ltwh-act010,Clerk Risk and Compliance (LT Wholesale),internal,Merchandising
+ltwh-act011,Lead Customer Care (LT Wholesale),internal,Retail Operations
+ltwh-act012,Coordinator Risk and Compliance (LT Wholesale),internal,Logistics
+ltwh-act013,Specialist Finance (LT Wholesale),internal,Finance
+ltwh-act014,Specialist Retail Operations (LT Wholesale),internal,Marketing
+ltwh-act015,Advisor Finance (LT Wholesale),internal,Technology
+ltwh-act016,Analyst Marketing (LT Wholesale),internal,Procurement
+ltwh-act017,Manager Technology (LT Wholesale),internal,Risk and Compliance
+ltwh-act018,Manager Logistics (LT Wholesale),internal,Customer Care
+ltwh-act019,Analyst Finance (LT Wholesale),internal,People
+ltwh-act020,Manager Risk and Compliance (LT Wholesale),internal,Merchandising
+ltwh-act021,Analyst Technology (LT Wholesale),internal,Retail Operations
+ltwh-act022,Lead Marketing (LT Wholesale),internal,Logistics
+ltwh-act023,Coordinator Retail Operations (LT Wholesale),internal,Finance
+ltwh-act024,Controller People (LT Wholesale),internal,Marketing
+ltwh-act025,Associate Technology (LT Wholesale),internal,Technology
+ltlg-act001,Advisor Customer Care (LT Logistics),external,Retail Operations
+ltlg-act002,Advisor Risk and Compliance (LT Logistics),external,Logistics
+ltlg-act003,Associate Risk and Compliance (LT Logistics),external,Finance
+ltlg-act004,Advisor Merchandising (LT Logistics),internal,Marketing
+ltlg-act005,Manager Technology (LT Logistics),internal,Technology
+ltlg-act006,Clerk Procurement (LT Logistics),internal,Procurement
+ltlg-act007,Advisor Technology (LT Logistics),internal,Risk and Compliance
+ltlg-act008,Coordinator Logistics (LT Logistics),internal,Customer Care
+ltlg-act009,Manager Risk and Compliance (LT Logistics),internal,People
+ltlg-act010,Coordinator Procurement (LT Logistics),internal,Merchandising
+ltlg-act011,Controller Logistics (LT Logistics),internal,Retail Operations
+ltlg-act012,Associate Merchandising (LT Logistics),internal,Logistics
+ltlg-act013,Associate Marketing (LT Logistics),internal,Finance
+ltlg-act014,Coordinator Merchandising (LT Logistics),internal,Marketing
+ltlg-act015,Associate Finance (LT Logistics),internal,Technology
+ltlg-act016,Specialist Finance (LT Logistics),internal,Procurement
+ltlg-act017,Planner Risk and Compliance (LT Logistics),internal,Risk and Compliance
+ltlg-act018,Lead Logistics (LT Logistics),internal,Customer Care
+ltlg-act019,Coordinator Marketing (LT Logistics),internal,People
+ltlg-act020,Analyst Finance (LT Logistics),internal,Merchandising
+ltlg-act021,Controller Customer Care (LT Logistics),internal,Retail Operations
+ltlg-act022,Lead Technology (LT Logistics),internal,Logistics
+ltlg-act023,Associate Retail Operations (LT Logistics),internal,Finance
+ltlg-act024,Associate People (LT Logistics),internal,Marketing
+ltlg-act025,Coordinator Risk and Compliance (LT Logistics),internal,Technology
+lvst-act001,Associate Finance (LV Stores),external,Retail Operations
+lvst-act002,Specialist Merchandising (LV Stores),external,Logistics
+lvst-act003,Associate Logistics (LV Stores),external,Finance
+lvst-act004,Specialist Customer Care (LV Stores),internal,Marketing
+lvst-act005,Coordinator Procurement (LV Stores),internal,Technology
+lvst-act006,Specialist Technology (LV Stores),internal,Procurement
+lvst-act007,Controller Procurement (LV Stores),internal,Risk and Compliance
+lvst-act008,Manager Merchandising (LV Stores),internal,Customer Care
+lvst-act009,Advisor Technology (LV Stores),internal,People
+lvst-act010,Analyst Finance (LV Stores),internal,Merchandising
+lvst-act011,Controller Marketing (LV Stores),internal,Retail Operations
+lvst-act012,Advisor Procurement (LV Stores),internal,Logistics
+lvst-act013,Manager Technology (LV Stores),internal,Finance
+lvst-act014,Manager Retail Operations (LV Stores),internal,Marketing
+lvst-act015,Advisor Finance (LV Stores),internal,Technology
+lvst-act016,Analyst Logistics (LV Stores),internal,Procurement
+lvst-act017,Coordinator Risk and Compliance (LV Stores),internal,Risk and Compliance
+lvst-act018,Specialist Risk and Compliance (LV Stores),internal,Customer Care
+lvst-act019,Associate Retail Operations (LV Stores),internal,People
+lvst-act020,Lead Customer Care (LV Stores),internal,Merchandising
+lvst-act021,Specialist Marketing (LV Stores),internal,Retail Operations
+lvst-act022,Lead People (LV Stores),internal,Logistics
+lvst-act023,Advisor Marketing (LV Stores),internal,Finance
+lvst-act024,Controller Technology (LV Stores),internal,Marketing
+lvst-act025,Clerk People (LV Stores),internal,Technology
+lvon-act001,Coordinator Merchandising (LV Online),external,Retail Operations
+lvon-act002,Associate Finance (LV Online),external,Logistics
+lvon-act003,Planner People (LV Online),external,Finance
+lvon-act004,Associate Procurement (LV Online),internal,Marketing
+lvon-act005,Planner Merchandising (LV Online),internal,Technology
+lvon-act006,Associate Merchandising (LV Online),internal,Procurement
+lvon-act007,Manager Finance (LV Online),internal,Risk and Compliance
+lvon-act008,Clerk Merchandising (LV Online),internal,Customer Care
+lvon-act009,Controller Marketing (LV Online),internal,People
+lvon-act010,Clerk Risk and Compliance (LV Online),internal,Merchandising
+lvon-act011,Advisor Customer Care (LV Online),internal,Retail Operations
+lvon-act012,Clerk Customer Care (LV Online),internal,Logistics
+lvon-act013,Analyst Customer Care (LV Online),internal,Finance
+lvon-act014,Manager Procurement (LV Online),internal,Marketing
+lvon-act015,Manager Retail Operations (LV Online),internal,Technology
+lvon-act016,Clerk People (LV Online),internal,Procurement
+lvon-act017,Associate People (LV Online),internal,Risk and Compliance
+lvon-act018,Planner Procurement (LV Online),internal,Customer Care
+lvon-act019,Advisor Logistics (LV Online),internal,People
+lvon-act020,Manager People (LV Online),internal,Merchandising
+lvon-act021,Associate Marketing (LV Online),internal,Retail Operations
+lvon-act022,Associate Technology (LV Online),internal,Logistics
+lvon-act023,Controller Logistics (LV Online),internal,Finance
+lvon-act024,Specialist Procurement (LV Online),internal,Marketing
+lvon-act025,Advisor Technology (LV Online),internal,Technology
+lvwh-act001,Analyst Logistics (LV Wholesale),external,Retail Operations
+lvwh-act002,Analyst People (LV Wholesale),external,Logistics
+lvwh-act003,Specialist Procurement (LV Wholesale),external,Finance
+lvwh-act004,Planner People (LV Wholesale),internal,Marketing
+lvwh-act005,Specialist Marketing (LV Wholesale),internal,Technology
+lvwh-act006,Analyst Marketing (LV Wholesale),internal,Procurement
+lvwh-act007,Clerk Marketing (LV Wholesale),internal,Risk and Compliance
+lvwh-act008,Planner Technology (LV Wholesale),internal,Customer Care
+lvwh-act009,Specialist Technology (LV Wholesale),internal,People
+lvwh-act010,Coordinator Marketing (LV Wholesale),internal,Merchandising
+lvwh-act011,Analyst Finance (LV Wholesale),internal,Retail Operations
+lvwh-act012,Advisor Procurement (LV Wholesale),internal,Logistics
+lvwh-act013,Manager Risk and Compliance (LV Wholesale),internal,Finance
+lvwh-act014,Clerk Retail Operations (LV Wholesale),internal,Marketing
+lvwh-act015,Planner Logistics (LV Wholesale),internal,Technology
+lvwh-act016,Coordinator Risk and Compliance (LV Wholesale),internal,Procurement
+lvwh-act017,Planner Procurement (LV Wholesale),internal,Risk and Compliance
+lvwh-act018,Planner Marketing (LV Wholesale),internal,Customer Care
+lvwh-act019,Advisor Customer Care (LV Wholesale),internal,People
+lvwh-act020,Analyst Risk and Compliance (LV Wholesale),internal,Merchandising
+lvwh-act021,Clerk Logistics (LV Wholesale),internal,Retail Operations
+lvwh-act022,Coordinator Logistics (LV Wholesale),internal,Logistics
+lvwh-act023,Associate Risk and Compliance (LV Wholesale),internal,Finance
+lvwh-act024,Analyst Retail Operations (LV Wholesale),internal,Marketing
+lvwh-act025,Associate Customer Care (LV Wholesale),internal,Technology
+lvlg-act001,Specialist Risk and Compliance (LV Logistics),external,Retail Operations
+lvlg-act002,Associate Customer Care (LV Logistics),external,Logistics
+lvlg-act003,Clerk Finance (LV Logistics),external,Finance
+lvlg-act004,Analyst Merchandising (LV Logistics),internal,Marketing
+lvlg-act005,Associate Marketing (LV Logistics),internal,Technology
+lvlg-act006,Clerk Marketing (LV Logistics),internal,Procurement
+lvlg-act007,Lead Customer Care (LV Logistics),internal,Risk and Compliance
+lvlg-act008,Specialist Marketing (LV Logistics),internal,Customer Care
+lvlg-act009,Lead Procurement (LV Logistics),internal,People
+lvlg-act010,Planner Merchandising (LV Logistics),internal,Merchandising
+lvlg-act011,Controller Retail Operations (LV Logistics),internal,Retail Operations
+lvlg-act012,Manager Technology (LV Logistics),internal,Logistics
+lvlg-act013,Associate Technology (LV Logistics),internal,Finance
+lvlg-act014,Associate Procurement (LV Logistics),internal,Marketing
+lvlg-act015,Associate Merchandising (LV Logistics),internal,Technology
+lvlg-act016,Analyst Finance (LV Logistics),internal,Procurement
+lvlg-act017,Manager Retail Operations (LV Logistics),internal,Risk and Compliance
+lvlg-act018,Advisor People (LV Logistics),internal,Customer Care
+lvlg-act019,Lead Technology (LV Logistics),internal,People
+lvlg-act020,Associate Risk and Compliance (LV Logistics),internal,Merchandising
+lvlg-act021,Controller Merchandising (LV Logistics),internal,Retail Operations
+lvlg-act022,Manager Merchandising (LV Logistics),internal,Logistics
+lvlg-act023,Manager Procurement (LV Logistics),internal,Finance
+lvlg-act024,Advisor Risk and Compliance (LV Logistics),internal,Marketing
+lvlg-act025,Analyst Procurement (LV Logistics),internal,Technology

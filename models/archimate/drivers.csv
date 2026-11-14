@@ -1,0 +1,813 @@
+id,name,driver_type
+grp-drv001,Rising Energy Costs (Group),financial
+grp-drv002,Online Competition (Group),competitive
+grp-drv003,Data Protection Rules (Group),regulatory
+grp-drv004,Shifting Customer Habits (Group),customer
+grp-drv005,Supply Chain Volatility (Group),market
+grp-drv006,Labour Shortages (Group),market
+grp-drv007,Payments Regulation (Group),regulatory
+grp-drv008,Sustainability Targets (Group),regulatory
+grp-drv009,Price Pressure (Group),competitive
+grp-drv010,Faster Delivery Expectations (Group),customer
+grp-drv011,Cyber Threats (Group),technology
+grp-drv012,Ageing Platforms (Group),technology
+gbst-drv001,Supply Chain Volatility (GB Stores),market
+gbst-drv002,Payments Regulation (GB Stores),regulatory
+gbst-drv003,Cyber Threats (GB Stores),technology
+gbst-drv004,Ageing Platforms (GB Stores),technology
+gbst-drv005,Data Protection Rules (GB Stores),regulatory
+gbst-drv006,Faster Delivery Expectations (GB Stores),customer
+gbst-drv007,Labour Shortages (GB Stores),market
+gbst-drv008,Shifting Customer Habits (GB Stores),customer
+gbon-drv001,Shifting Customer Habits (GB Online),customer
+gbon-drv002,Supply Chain Volatility (GB Online),market
+gbon-drv003,Cyber Threats (GB Online),technology
+gbon-drv004,Faster Delivery Expectations (GB Online),customer
+gbon-drv005,Sustainability Targets (GB Online),regulatory
+gbon-drv006,Rising Energy Costs (GB Online),financial
+gbon-drv007,Data Protection Rules (GB Online),regulatory
+gbon-drv008,Online Competition (GB Online),competitive
+gbwh-drv001,Online Competition (GB Wholesale),competitive
+gbwh-drv002,Ageing Platforms (GB Wholesale),technology
+gbwh-drv003,Sustainability Targets (GB Wholesale),regulatory
+gbwh-drv004,Supply Chain Volatility (GB Wholesale),market
+gbwh-drv005,Labour Shortages (GB Wholesale),market
+gbwh-drv006,Payments Regulation (GB Wholesale),regulatory
+gbwh-drv007,Price Pressure (GB Wholesale),competitive
+gbwh-drv008,Rising Energy Costs (GB Wholesale),financial
+gblg-drv001,Faster Delivery Expectations (GB Logistics),customer
+gblg-drv002,Rising Energy Costs (GB Logistics),financial
+gblg-drv003,Cyber Threats (GB Logistics),technology
+gblg-drv004,Supply Chain Volatility (GB Logistics),market
+gblg-drv005,Sustainability Targets (GB Logistics),regulatory
+gblg-drv006,Data Protection Rules (GB Logistics),regulatory
+gblg-drv007,Price Pressure (GB Logistics),competitive
+gblg-drv008,Shifting Customer Habits (GB Logistics),customer
+iest-drv001,Ageing Platforms (IE Stores),technology
+iest-drv002,Shifting Customer Habits (IE Stores),customer
+iest-drv003,Labour Shortages (IE Stores),market
+iest-drv004,Payments Regulation (IE Stores),regulatory
+iest-drv005,Rising Energy Costs (IE Stores),financial
+iest-drv006,Faster Delivery Expectations (IE Stores),customer
+iest-drv007,Online Competition (IE Stores),competitive
+iest-drv008,Data Protection Rules (IE Stores),regulatory
+ieon-drv001,Cyber Threats (IE Online),technology
+ieon-drv002,Labour Shortages (IE Online),market
+ieon-drv003,Shifting Customer Habits (IE Online),customer
+ieon-drv004,Sustainability Targets (IE Online),regulatory
+ieon-drv005,Rising Energy Costs (IE Online),financial
+ieon-drv006,Data Protection Rules (IE Online),regulatory
+ieon-drv007,Payments Regulation (IE Online),regulatory
+ieon-drv008,Online Competition (IE Online),competitive
+iewh-drv001,Payments Regulation (IE Wholesale),regulatory
+iewh-drv002,Rising Energy Costs (IE Wholesale),financial
+iewh-drv003,Supply Chain Volatility (IE Wholesale),market
+iewh-drv004,Shifting Customer Habits (IE Wholesale),customer
+iewh-drv005,Sustainability Targets (IE Wholesale),regulatory
+iewh-drv006,Data Protection Rules (IE Wholesale),regulatory
+iewh-drv007,Labour Shortages (IE Wholesale),market
+iewh-drv008,Faster Delivery Expectations (IE Wholesale),customer
+ielg-drv001,Rising Energy Costs (IE Logistics),financial
+ielg-drv002,Online Competition (IE Logistics),competitive
+ielg-drv003,Faster Delivery Expectations (IE Logistics),customer
+ielg-drv004,Sustainability Targets (IE Logistics),regulatory
+ielg-drv005,Payments Regulation (IE Logistics),regulatory
+ielg-drv006,Labour Shortages (IE Logistics),market
+ielg-drv007,Shifting Customer Habits (IE Logistics),customer
+ielg-drv008,Data Protection Rules (IE Logistics),regulatory
+frst-drv001,Labour Shortages (FR Stores),market
+frst-drv002,Rising Energy Costs (FR Stores),financial
+frst-drv003,Supply Chain Volatility (FR Stores),market
+frst-drv004,Ageing Platforms (FR Stores),technology
+frst-drv005,Payments Regulation (FR Stores),regulatory
+frst-drv006,Sustainability Targets (FR Stores),regulatory
+frst-drv007,Faster Delivery Expectations (FR Stores),customer
+frst-drv008,Online Competition (FR Stores),competitive
+fron-drv001,Price Pressure (FR Online),competitive
+fron-drv002,Payments Regulation (FR Online),regulatory
+fron-drv003,Shifting Customer Habits (FR Online),customer
+fron-drv004,Faster Delivery Expectations (FR Online),customer
+fron-drv005,Rising Energy Costs (FR Online),financial
+fron-drv006,Data Protection Rules (FR Online),regulatory
+fron-drv007,Cyber Threats (FR Online),technology
+fron-drv008,Online Competition (FR Online),competitive
+frwh-drv001,Faster Delivery Expectations (FR Wholesale),customer
+frwh-drv002,Labour Shortages (FR Wholesale),market
+frwh-drv003,Payments Regulation (FR Wholesale),regulatory
+frwh-drv004,Sustainability Targets (FR Wholesale),regulatory
+frwh-drv005,Cyber Threats (FR Wholesale),technology
+frwh-drv006,Online Competition (FR Wholesale),competitive
+frwh-drv007,Shifting Customer Habits (FR Wholesale),customer
+frwh-drv008,Ageing Platforms (FR Wholesale),technology
+frlg-drv001,Rising Energy Costs (FR Logistics),financial
+frlg-drv002,Data Protection Rules (FR Logistics),regulatory
+frlg-drv003,Labour Shortages (FR Logistics),market
+frlg-drv004,Ageing Platforms (FR Logistics),technology
+frlg-drv005,Payments Regulation (FR Logistics),regulatory
+frlg-drv006,Sustainability Targets (FR Logistics),regulatory
+frlg-drv007,Faster Delivery Expectations (FR Logistics),customer
+frlg-drv008,Shifting Customer Habits (FR Logistics),customer
+dest-drv001,Online Competition (DE Stores),competitive
+dest-drv002,Sustainability Targets (DE Stores),regulatory
+dest-drv003,Cyber Threats (DE Stores),technology
+dest-drv004,Data Protection Rules (DE Stores),regulatory
+dest-drv005,Price Pressure (DE Stores),competitive
+dest-drv006,Rising Energy Costs (DE Stores),financial
+dest-drv007,Labour Shortages (DE Stores),market
+dest-drv008,Supply Chain Volatility (DE Stores),market
+deon-drv001,Supply Chain Volatility (DE Online),market
+deon-drv002,Shifting Customer Habits (DE Online),customer
+deon-drv003,Rising Energy Costs (DE Online),financial
+deon-drv004,Sustainability Targets (DE Online),regulatory
+deon-drv005,Ageing Platforms (DE Online),technology
+deon-drv006,Price Pressure (DE Online),competitive
+deon-drv007,Payments Regulation (DE Online),regulatory
+deon-drv008,Cyber Threats (DE Online),technology
+dewh-drv001,Sustainability Targets (DE Wholesale),regulatory
+dewh-drv002,Data Protection Rules (DE Wholesale),regulatory
+dewh-drv003,Supply Chain Volatility (DE Wholesale),market
+dewh-drv004,Shifting Customer Habits (DE Wholesale),customer
+dewh-drv005,Online Competition (DE Wholesale),competitive
+dewh-drv006,Rising Energy Costs (DE Wholesale),financial
+dewh-drv007,Cyber Threats (DE Wholesale),technology
+dewh-drv008,Labour Shortages (DE Wholesale),market
+delg-drv001,Sustainability Targets (DE Logistics),regulatory
+delg-drv002,Payments Regulation (DE Logistics),regulatory
+delg-drv003,Price Pressure (DE Logistics),competitive
+delg-drv004,Shifting Customer Habits (DE Logistics),customer
+delg-drv005,Cyber Threats (DE Logistics),technology
+delg-drv006,Rising Energy Costs (DE Logistics),financial
+delg-drv007,Online Competition (DE Logistics),competitive
+delg-drv008,Supply Chain Volatility (DE Logistics),market
+nlst-drv001,Online Competition (NL Stores),competitive
+nlst-drv002,Ageing Platforms (NL Stores),technology
+nlst-drv003,Payments Regulation (NL Stores),regulatory
+nlst-drv004,Price Pressure (NL Stores),competitive
+nlst-drv005,Rising Energy Costs (NL Stores),financial
+nlst-drv006,Data Protection Rules (NL Stores),regulatory
+nlst-drv007,Cyber Threats (NL Stores),technology
+nlst-drv008,Faster Delivery Expectations (NL Stores),customer
+nlon-drv001,Supply Chain Volatility (NL Online),market
+nlon-drv002,Payments Regulation (NL Online),regulatory
+nlon-drv003,Faster Delivery Expectations (NL Online),customer
+nlon-drv004,Price Pressure (NL Online),competitive
+nlon-drv005,Sustainability Targets (NL Online),regulatory
+nlon-drv006,Ageing Platforms (NL Online),technology
+nlon-drv007,Cyber Threats (NL Online),technology
+nlon-drv008,Data Protection Rules (NL Online),regulatory
+nlwh-drv001,Labour Shortages (NL Wholesale),market
+nlwh-drv002,Shifting Customer Habits (NL Wholesale),customer
+nlwh-drv003,Online Competition (NL Wholesale),competitive
+nlwh-drv004,Ageing Platforms (NL Wholesale),technology
+nlwh-drv005,Faster Delivery Expectations (NL Wholesale),customer
+nlwh-drv006,Supply Chain Volatility (NL Wholesale),market
+nlwh-drv007,Payments Regulation (NL Wholesale),regulatory
+nlwh-drv008,Price Pressure (NL Wholesale),competitive
+nllg-drv001,Online Competition (NL Logistics),competitive
+nllg-drv002,Rising Energy Costs (NL Logistics),financial
+nllg-drv003,Faster Delivery Expectations (NL Logistics),customer
+nllg-drv004,Supply Chain Volatility (NL Logistics),market
+nllg-drv005,Shifting Customer Habits (NL Logistics),customer
+nllg-drv006,Cyber Threats (NL Logistics),technology
+nllg-drv007,Sustainability Targets (NL Logistics),regulatory
+nllg-drv008,Payments Regulation (NL Logistics),regulatory
+best-drv001,Faster Delivery Expectations (BE Stores),customer
+best-drv002,Shifting Customer Habits (BE Stores),customer
+best-drv003,Labour Shortages (BE Stores),market
+best-drv004,Supply Chain Volatility (BE Stores),market
+best-drv005,Payments Regulation (BE Stores),regulatory
+best-drv006,Cyber Threats (BE Stores),technology
+best-drv007,Rising Energy Costs (BE Stores),financial
+best-drv008,Ageing Platforms (BE Stores),technology
+beon-drv001,Sustainability Targets (BE Online),regulatory
+beon-drv002,Payments Regulation (BE Online),regulatory
+beon-drv003,Rising Energy Costs (BE Online),financial
+beon-drv004,Data Protection Rules (BE Online),regulatory
+beon-drv005,Ageing Platforms (BE Online),technology
+beon-drv006,Supply Chain Volatility (BE Online),market
+beon-drv007,Labour Shortages (BE Online),market
+beon-drv008,Cyber Threats (BE Online),technology
+bewh-drv001,Sustainability Targets (BE Wholesale),regulatory
+bewh-drv002,Payments Regulation (BE Wholesale),regulatory
+bewh-drv003,Labour Shortages (BE Wholesale),market
+bewh-drv004,Ageing Platforms (BE Wholesale),technology
+bewh-drv005,Rising Energy Costs (BE Wholesale),financial
+bewh-drv006,Cyber Threats (BE Wholesale),technology
+bewh-drv007,Data Protection Rules (BE Wholesale),regulatory
+bewh-drv008,Faster Delivery Expectations (BE Wholesale),customer
+belg-drv001,Supply Chain Volatility (BE Logistics),market
+belg-drv002,Data Protection Rules (BE Logistics),regulatory
+belg-drv003,Cyber Threats (BE Logistics),technology
+belg-drv004,Ageing Platforms (BE Logistics),technology
+belg-drv005,Payments Regulation (BE Logistics),regulatory
+belg-drv006,Faster Delivery Expectations (BE Logistics),customer
+belg-drv007,Online Competition (BE Logistics),competitive
+belg-drv008,Shifting Customer Habits (BE Logistics),customer
+esst-drv001,Sustainability Targets (ES Stores),regulatory
+esst-drv002,Cyber Threats (ES Stores),technology
+esst-drv003,Online Competition (ES Stores),competitive
+esst-drv004,Rising Energy Costs (ES Stores),financial
+esst-drv005,Supply Chain Volatility (ES Stores),market
+esst-drv006,Ageing Platforms (ES Stores),technology
+esst-drv007,Data Protection Rules (ES Stores),regulatory
+esst-drv008,Payments Regulation (ES Stores),regulatory
+eson-drv001,Faster Delivery Expectations (ES Online),customer
+eson-drv002,Sustainability Targets (ES Online),regulatory
+eson-drv003,Price Pressure (ES Online),competitive
+eson-drv004,Rising Energy Costs (ES Online),financial
+eson-drv005,Payments Regulation (ES Online),regulatory
+eson-drv006,Online Competition (ES Online),competitive
+eson-drv007,Shifting Customer Habits (ES Online),customer
+eson-drv008,Ageing Platforms (ES Online),technology
+eswh-drv001,Shifting Customer Habits (ES Wholesale),customer
+eswh-drv002,Ageing Platforms (ES Wholesale),technology
+eswh-drv003,Sustainability Targets (ES Wholesale),regulatory
+eswh-drv004,Cyber Threats (ES Wholesale),technology
+eswh-drv005,Faster Delivery Expectations (ES Wholesale),customer
+eswh-drv006,Labour Shortages (ES Wholesale),market
+eswh-drv007,Supply Chain Volatility (ES Wholesale),market
+eswh-drv008,Online Competition (ES Wholesale),competitive
+eslg-drv001,Labour Shortages (ES Logistics),market
+eslg-drv002,Ageing Platforms (ES Logistics),technology
+eslg-drv003,Data Protection Rules (ES Logistics),regulatory
+eslg-drv004,Supply Chain Volatility (ES Logistics),market
+eslg-drv005,Sustainability Targets (ES Logistics),regulatory
+eslg-drv006,Faster Delivery Expectations (ES Logistics),customer
+eslg-drv007,Online Competition (ES Logistics),competitive
+eslg-drv008,Price Pressure (ES Logistics),competitive
+ptst-drv001,Data Protection Rules (PT Stores),regulatory
+ptst-drv002,Supply Chain Volatility (PT Stores),market
+ptst-drv003,Price Pressure (PT Stores),competitive
+ptst-drv004,Online Competition (PT Stores),competitive
+ptst-drv005,Rising Energy Costs (PT Stores),financial
+ptst-drv006,Payments Regulation (PT Stores),regulatory
+ptst-drv007,Cyber Threats (PT Stores),technology
+ptst-drv008,Faster Delivery Expectations (PT Stores),customer
+pton-drv001,Supply Chain Volatility (PT Online),market
+pton-drv002,Cyber Threats (PT Online),technology
+pton-drv003,Payments Regulation (PT Online),regulatory
+pton-drv004,Data Protection Rules (PT Online),regulatory
+pton-drv005,Sustainability Targets (PT Online),regulatory
+pton-drv006,Online Competition (PT Online),competitive
+pton-drv007,Ageing Platforms (PT Online),technology
+pton-drv008,Price Pressure (PT Online),competitive
+ptwh-drv001,Sustainability Targets (PT Wholesale),regulatory
+ptwh-drv002,Ageing Platforms (PT Wholesale),technology
+ptwh-drv003,Labour Shortages (PT Wholesale),market
+ptwh-drv004,Cyber Threats (PT Wholesale),technology
+ptwh-drv005,Rising Energy Costs (PT Wholesale),financial
+ptwh-drv006,Data Protection Rules (PT Wholesale),regulatory
+ptwh-drv007,Supply Chain Volatility (PT Wholesale),market
+ptwh-drv008,Online Competition (PT Wholesale),competitive
+ptlg-drv001,Ageing Platforms (PT Logistics),technology
+ptlg-drv002,Cyber Threats (PT Logistics),technology
+ptlg-drv003,Labour Shortages (PT Logistics),market
+ptlg-drv004,Price Pressure (PT Logistics),competitive
+ptlg-drv005,Shifting Customer Habits (PT Logistics),customer
+ptlg-drv006,Faster Delivery Expectations (PT Logistics),customer
+ptlg-drv007,Supply Chain Volatility (PT Logistics),market
+ptlg-drv008,Sustainability Targets (PT Logistics),regulatory
+itst-drv001,Faster Delivery Expectations (IT Stores),customer
+itst-drv002,Ageing Platforms (IT Stores),technology
+itst-drv003,Payments Regulation (IT Stores),regulatory
+itst-drv004,Data Protection Rules (IT Stores),regulatory
+itst-drv005,Shifting Customer Habits (IT Stores),customer
+itst-drv006,Rising Energy Costs (IT Stores),financial
+itst-drv007,Online Competition (IT Stores),competitive
+itst-drv008,Labour Shortages (IT Stores),market
+iton-drv001,Supply Chain Volatility (IT Online),market
+iton-drv002,Cyber Threats (IT Online),technology
+iton-drv003,Sustainability Targets (IT Online),regulatory
+iton-drv004,Labour Shortages (IT Online),market
+iton-drv005,Rising Energy Costs (IT Online),financial
+iton-drv006,Price Pressure (IT Online),competitive
+iton-drv007,Shifting Customer Habits (IT Online),customer
+iton-drv008,Ageing Platforms (IT Online),technology
+itwh-drv001,Labour Shortages (IT Wholesale),market
+itwh-drv002,Price Pressure (IT Wholesale),competitive
+itwh-drv003,Supply Chain Volatility (IT Wholesale),market
+itwh-drv004,Faster Delivery Expectations (IT Wholesale),customer
+itwh-drv005,Shifting Customer Habits (IT Wholesale),customer
+itwh-drv006,Sustainability Targets (IT Wholesale),regulatory
+itwh-drv007,Rising Energy Costs (IT Wholesale),financial
+itwh-drv008,Ageing Platforms (IT Wholesale),technology
+itlg-drv001,Supply Chain Volatility (IT Logistics),market
+itlg-drv002,Faster Delivery Expectations (IT Logistics),customer
+itlg-drv003,Ageing Platforms (IT Logistics),technology
+itlg-drv004,Payments Regulation (IT Logistics),regulatory
+itlg-drv005,Rising Energy Costs (IT Logistics),financial
+itlg-drv006,Price Pressure (IT Logistics),competitive
+itlg-drv007,Data Protection Rules (IT Logistics),regulatory
+itlg-drv008,Labour Shortages (IT Logistics),market
+chst-drv001,Labour Shortages (CH Stores),market
+chst-drv002,Data Protection Rules (CH Stores),regulatory
+chst-drv003,Ageing Platforms (CH Stores),technology
+chst-drv004,Online Competition (CH Stores),competitive
+chst-drv005,Payments Regulation (CH Stores),regulatory
+chst-drv006,Faster Delivery Expectations (CH Stores),customer
+chst-drv007,Sustainability Targets (CH Stores),regulatory
+chst-drv008,Price Pressure (CH Stores),competitive
+chon-drv001,Shifting Customer Habits (CH Online),customer
+chon-drv002,Faster Delivery Expectations (CH Online),customer
+chon-drv003,Online Competition (CH Online),competitive
+chon-drv004,Sustainability Targets (CH Online),regulatory
+chon-drv005,Cyber Threats (CH Online),technology
+chon-drv006,Payments Regulation (CH Online),regulatory
+chon-drv007,Ageing Platforms (CH Online),technology
+chon-drv008,Price Pressure (CH Online),competitive
+chwh-drv001,Data Protection Rules (CH Wholesale),regulatory
+chwh-drv002,Price Pressure (CH Wholesale),competitive
+chwh-drv003,Cyber Threats (CH Wholesale),technology
+chwh-drv004,Rising Energy Costs (CH Wholesale),financial
+chwh-drv005,Faster Delivery Expectations (CH Wholesale),customer
+chwh-drv006,Supply Chain Volatility (CH Wholesale),market
+chwh-drv007,Shifting Customer Habits (CH Wholesale),customer
+chwh-drv008,Payments Regulation (CH Wholesale),regulatory
+chlg-drv001,Price Pressure (CH Logistics),competitive
+chlg-drv002,Cyber Threats (CH Logistics),technology
+chlg-drv003,Supply Chain Volatility (CH Logistics),market
+chlg-drv004,Faster Delivery Expectations (CH Logistics),customer
+chlg-drv005,Ageing Platforms (CH Logistics),technology
+chlg-drv006,Sustainability Targets (CH Logistics),regulatory
+chlg-drv007,Labour Shortages (CH Logistics),market
+chlg-drv008,Payments Regulation (CH Logistics),regulatory
+atst-drv001,Payments Regulation (AT Stores),regulatory
+atst-drv002,Labour Shortages (AT Stores),market
+atst-drv003,Online Competition (AT Stores),competitive
+atst-drv004,Ageing Platforms (AT Stores),technology
+atst-drv005,Data Protection Rules (AT Stores),regulatory
+atst-drv006,Sustainability Targets (AT Stores),regulatory
+atst-drv007,Cyber Threats (AT Stores),technology
+atst-drv008,Supply Chain Volatility (AT Stores),market
+aton-drv001,Data Protection Rules (AT Online),regulatory
+aton-drv002,Payments Regulation (AT Online),regulatory
+aton-drv003,Sustainability Targets (AT Online),regulatory
+aton-drv004,Price Pressure (AT Online),competitive
+aton-drv005,Shifting Customer Habits (AT Online),customer
+aton-drv006,Cyber Threats (AT Online),technology
+aton-drv007,Supply Chain Volatility (AT Online),market
+aton-drv008,Online Competition (AT Online),competitive
+atwh-drv001,Payments Regulation (AT Wholesale),regulatory
+atwh-drv002,Data Protection Rules (AT Wholesale),regulatory
+atwh-drv003,Supply Chain Volatility (AT Wholesale),market
+atwh-drv004,Cyber Threats (AT Wholesale),technology
+atwh-drv005,Online Competition (AT Wholesale),competitive
+atwh-drv006,Price Pressure (AT Wholesale),competitive
+atwh-drv007,Labour Shortages (AT Wholesale),market
+atwh-drv008,Rising Energy Costs (AT Wholesale),financial
+atlg-drv001,Faster Delivery Expectations (AT Logistics),customer
+atlg-drv002,Online Competition (AT Logistics),competitive
+atlg-drv003,Sustainability Targets (AT Logistics),regulatory
+atlg-drv004,Payments Regulation (AT Logistics),regulatory
+atlg-drv005,Ageing Platforms (AT Logistics),technology
+atlg-drv006,Shifting Customer Habits (AT Logistics),customer
+atlg-drv007,Price Pressure (AT Logistics),competitive
+atlg-drv008,Supply Chain Volatility (AT Logistics),market
+plst-drv001,Labour Shortages (PL Stores),market
+plst-drv002,Cyber Threats (PL Stores),technology
+plst-drv003,Ageing Platforms (PL Stores),technology
+plst-drv004,Faster Delivery Expectations (PL Stores),customer
+plst-drv005,Sustainability Targets (PL Stores),regulatory
+plst-drv006,Price Pressure (PL Stores),competitive
+plst-drv007,Online Competition (PL Stores),competitive
+plst-drv008,Payments Regulation (PL Stores),regulatory
+plon-drv001,Data Protection Rules (PL Online),regulatory
+plon-drv002,Ageing Platforms (PL Online),technology
+plon-drv003,Sustainability Targets (PL Online),regulatory
+plon-drv004,Online Competition (PL Online),competitive
+plon-drv005,Cyber Threats (PL Online),technology
+plon-drv006,Faster Delivery Expectations (PL Online),customer
+plon-drv007,Rising Energy Costs (PL Online),financial
+plon-drv008,Supply Chain Volatility (PL Online),market
+plwh-drv001,Ageing Platforms (PL Wholesale),technology
+plwh-drv002,Rising Energy Costs (PL Wholesale),financial
+plwh-drv003,Labour Shortages (PL Wholesale),market
+plwh-drv004,Payments Regulation (PL Wholesale),regulatory
+plwh-drv005,Cyber Threats (PL Wholesale),technology
+plwh-drv006,Price Pressure (PL Wholesale),competitive
+plwh-drv007,Supply Chain Volatility (PL Wholesale),market
+plwh-drv008,Sustainability Targets (PL Wholesale),regulatory
+pllg-drv001,Rising Energy Costs (PL Logistics),financial
+pllg-drv002,Labour Shortages (PL Logistics),market
+pllg-drv003,Faster Delivery Expectations (PL Logistics),customer
+pllg-drv004,Price Pressure (PL Logistics),competitive
+pllg-drv005,Ageing Platforms (PL Logistics),technology
+pllg-drv006,Supply Chain Volatility (PL Logistics),market
+pllg-drv007,Data Protection Rules (PL Logistics),regulatory
+pllg-drv008,Cyber Threats (PL Logistics),technology
+sest-drv001,Sustainability Targets (SE Stores),regulatory
+sest-drv002,Ageing Platforms (SE Stores),technology
+sest-drv003,Payments Regulation (SE Stores),regulatory
+sest-drv004,Data Protection Rules (SE Stores),regulatory
+sest-drv005,Online Competition (SE Stores),competitive
+sest-drv006,Price Pressure (SE Stores),competitive
+sest-drv007,Rising Energy Costs (SE Stores),financial
+sest-drv008,Cyber Threats (SE Stores),technology
+seon-drv001,Data Protection Rules (SE Online),regulatory
+seon-drv002,Rising Energy Costs (SE Online),financial
+seon-drv003,Online Competition (SE Online),competitive
+seon-drv004,Payments Regulation (SE Online),regulatory
+seon-drv005,Price Pressure (SE Online),competitive
+seon-drv006,Sustainability Targets (SE Online),regulatory
+seon-drv007,Labour Shortages (SE Online),market
+seon-drv008,Faster Delivery Expectations (SE Online),customer
+sewh-drv001,Labour Shortages (SE Wholesale),market
+sewh-drv002,Payments Regulation (SE Wholesale),regulatory
+sewh-drv003,Sustainability Targets (SE Wholesale),regulatory
+sewh-drv004,Ageing Platforms (SE Wholesale),technology
+sewh-drv005,Faster Delivery Expectations (SE Wholesale),customer
+sewh-drv006,Cyber Threats (SE Wholesale),technology
+sewh-drv007,Rising Energy Costs (SE Wholesale),financial
+sewh-drv008,Price Pressure (SE Wholesale),competitive
+selg-drv001,Shifting Customer Habits (SE Logistics),customer
+selg-drv002,Supply Chain Volatility (SE Logistics),market
+selg-drv003,Labour Shortages (SE Logistics),market
+selg-drv004,Price Pressure (SE Logistics),competitive
+selg-drv005,Faster Delivery Expectations (SE Logistics),customer
+selg-drv006,Rising Energy Costs (SE Logistics),financial
+selg-drv007,Ageing Platforms (SE Logistics),technology
+selg-drv008,Payments Regulation (SE Logistics),regulatory
+nost-drv001,Labour Shortages (NO Stores),market
+nost-drv002,Supply Chain Volatility (NO Stores),market
+nost-drv003,Online Competition (NO Stores),competitive
+nost-drv004,Sustainability Targets (NO Stores),regulatory
+nost-drv005,Rising Energy Costs (NO Stores),financial
+nost-drv006,Data Protection Rules (NO Stores),regulatory
+nost-drv007,Cyber Threats (NO Stores),technology
+nost-drv008,Payments Regulation (NO Stores),regulatory
+noon-drv001,Payments Regulation (NO Online),regulatory
+noon-drv002,Faster Delivery Expectations (NO Online),customer
+noon-drv003,Cyber Threats (NO Online),technology
+noon-drv004,Price Pressure (NO Online),competitive
+noon-drv005,Rising Energy Costs (NO Online),financial
+noon-drv006,Supply Chain Volatility (NO Online),market
+noon-drv007,Labour Shortages (NO Online),market
+noon-drv008,Shifting Customer Habits (NO Online),customer
+nowh-drv001,Price Pressure (NO Wholesale),competitive
+nowh-drv002,Supply Chain Volatility (NO Wholesale),market
+nowh-drv003,Payments Regulation (NO Wholesale),regulatory
+nowh-drv004,Shifting Customer Habits (NO Wholesale),customer
+nowh-drv005,Ageing Platforms (NO Wholesale),technology
+nowh-drv006,Faster Delivery Expectations (NO Wholesale),customer
+nowh-drv007,Online Competition (NO Wholesale),competitive
+nowh-drv008,Cyber Threats (NO Wholesale),technology
+nolg-drv001,Sustainability Targets (NO Logistics),regulatory
+nolg-drv002,Faster Delivery Expectations (NO Logistics),customer
+nolg-drv003,Price Pressure (NO Logistics),competitive
+nolg-drv004,Ageing Platforms (NO Logistics),technology
+nolg-drv005,Online Competition (NO Logistics),competitive
+nolg-drv006,Payments Regulation (NO Logistics),regulatory
+nolg-drv007,Supply Chain Volatility (NO Logistics),market
+nolg-drv008,Cyber Threats (NO Logistics),technology
+dkst-drv001,Cyber Threats (DK Stores),technology
+dkst-drv002,Labour Shortages (DK Stores),market
+dkst-drv003,Ageing Platforms (DK Stores),technology
+dkst-drv004,Price Pressure (DK Stores),competitive
+dkst-drv005,Sustainability Targets (DK Stores),regulatory
+dkst-drv006,Rising Energy Costs (DK Stores),financial
+dkst-drv007,Payments Regulation (DK Stores),regulatory
+dkst-drv008,Shifting Customer Habits (DK Stores),customer
+dkon-drv001,Cyber Threats (DK Online),technology
+dkon-drv002,Data Protection Rules (DK Online),regulatory
+dkon-drv003,Ageing Platforms (DK Online),technology
+dkon-drv004,Shifting Customer Habits (DK Online),customer
+dkon-drv005,Payments Regulation (DK Online),regulatory
+dkon-drv006,Labour Shortages (DK Online),market
+dkon-drv007,Faster Delivery Expectations (DK Online),customer
+dkon-drv008,Rising Energy Costs (DK Online),financial
+dkwh-drv001,Faster Delivery Expectations (DK Wholesale),customer
+dkwh-drv002,Price Pressure (DK Wholesale),competitive
+dkwh-drv003,Cyber Threats (DK Wholesale),technology
+dkwh-drv004,Labour Shortages (DK Wholesale),market
+dkwh-drv005,Shifting Customer Habits (DK Wholesale),customer
+dkwh-drv006,Ageing Platforms (DK Wholesale),technology
+dkwh-drv007,Data Protection Rules (DK Wholesale),regulatory
+dkwh-drv008,Payments Regulation (DK Wholesale),regulatory
+dklg-drv001,Sustainability Targets (DK Logistics),regulatory
+dklg-drv002,Shifting Customer Habits (DK Logistics),customer
+dklg-drv003,Supply Chain Volatility (DK Logistics),market
+dklg-drv004,Payments Regulation (DK Logistics),regulatory
+dklg-drv005,Rising Energy Costs (DK Logistics),financial
+dklg-drv006,Data Protection Rules (DK Logistics),regulatory
+dklg-drv007,Labour Shortages (DK Logistics),market
+dklg-drv008,Faster Delivery Expectations (DK Logistics),customer
+fist-drv001,Sustainability Targets (FI Stores),regulatory
+fist-drv002,Price Pressure (FI Stores),competitive
+fist-drv003,Faster Delivery Expectations (FI Stores),customer
+fist-drv004,Rising Energy Costs (FI Stores),financial
+fist-drv005,Payments Regulation (FI Stores),regulatory
+fist-drv006,Labour Shortages (FI Stores),market
+fist-drv007,Cyber Threats (FI Stores),technology
+fist-drv008,Supply Chain Volatility (FI Stores),market
+fion-drv001,Supply Chain Volatility (FI Online),market
+fion-drv002,Labour Shortages (FI Online),market
+fion-drv003,Payments Regulation (FI Online),regulatory
+fion-drv004,Online Competition (FI Online),competitive
+fion-drv005,Sustainability Targets (FI Online),regulatory
+fion-drv006,Faster Delivery Expectations (FI Online),customer
+fion-drv007,Price Pressure (FI Online),competitive
+fion-drv008,Ageing Platforms (FI Online),technology
+fiwh-drv001,Price Pressure (FI Wholesale),competitive
+fiwh-drv002,Data Protection Rules (FI Wholesale),regulatory
+fiwh-drv003,Online Competition (FI Wholesale),competitive
+fiwh-drv004,Ageing Platforms (FI Wholesale),technology
+fiwh-drv005,Payments Regulation (FI Wholesale),regulatory
+fiwh-drv006,Shifting Customer Habits (FI Wholesale),customer
+fiwh-drv007,Labour Shortages (FI Wholesale),market
+fiwh-drv008,Cyber Threats (FI Wholesale),technology
+filg-drv001,Supply Chain Volatility (FI Logistics),market
+filg-drv002,Cyber Threats (FI Logistics),technology
+filg-drv003,Labour Shortages (FI Logistics),market
+filg-drv004,Online Competition (FI Logistics),competitive
+filg-drv005,Price Pressure (FI Logistics),competitive
+filg-drv006,Ageing Platforms (FI Logistics),technology
+filg-drv007,Shifting Customer Habits (FI Logistics),customer
+filg-drv008,Payments Regulation (FI Logistics),regulatory
+czst-drv001,Payments Regulation (CZ Stores),regulatory
+czst-drv002,Labour Shortages (CZ Stores),market
+czst-drv003,Price Pressure (CZ Stores),competitive
+czst-drv004,Ageing Platforms (CZ Stores),technology
+czst-drv005,Sustainability Targets (CZ Stores),regulatory
+czst-drv006,Data Protection Rules (CZ Stores),regulatory
+czst-drv007,Online Competition (CZ Stores),competitive
+czst-drv008,Shifting Customer Habits (CZ Stores),customer
+czon-drv001,Labour Shortages (CZ Online),market
+czon-drv002,Cyber Threats (CZ Online),technology
+czon-drv003,Supply Chain Volatility (CZ Online),market
+czon-drv004,Price Pressure (CZ Online),competitive
+czon-drv005,Ageing Platforms (CZ Online),technology
+czon-drv006,Data Protection Rules (CZ Online),regulatory
+czon-drv007,Sustainability Targets (CZ Online),regulatory
+czon-drv008,Faster Delivery Expectations (CZ Online),customer
+czwh-drv001,Price Pressure (CZ Wholesale),competitive
+czwh-drv002,Rising Energy Costs (CZ Wholesale),financial
+czwh-drv003,Labour Shortages (CZ Wholesale),market
+czwh-drv004,Shifting Customer Habits (CZ Wholesale),customer
+czwh-drv005,Online Competition (CZ Wholesale),competitive
+czwh-drv006,Ageing Platforms (CZ Wholesale),technology
+czwh-drv007,Payments Regulation (CZ Wholesale),regulatory
+czwh-drv008,Cyber Threats (CZ Wholesale),technology
+czlg-drv001,Price Pressure (CZ Logistics),competitive
+czlg-drv002,Data Protection Rules (CZ Logistics),regulatory
+czlg-drv003,Payments Regulation (CZ Logistics),regulatory
+czlg-drv004,Ageing Platforms (CZ Logistics),technology
+czlg-drv005,Rising Energy Costs (CZ Logistics),financial
+czlg-drv006,Sustainability Targets (CZ Logistics),regulatory
+czlg-drv007,Labour Shortages (CZ Logistics),market
+czlg-drv008,Faster Delivery Expectations (CZ Logistics),customer
+grst-drv001,Online Competition (GR Stores),competitive
+grst-drv002,Sustainability Targets (GR Stores),regulatory
+grst-drv003,Data Protection Rules (GR Stores),regulatory
+grst-drv004,Labour Shortages (GR Stores),market
+grst-drv005,Payments Regulation (GR Stores),regulatory
+grst-drv006,Ageing Platforms (GR Stores),technology
+grst-drv007,Cyber Threats (GR Stores),technology
+grst-drv008,Supply Chain Volatility (GR Stores),market
+gron-drv001,Ageing Platforms (GR Online),technology
+gron-drv002,Data Protection Rules (GR Online),regulatory
+gron-drv003,Online Competition (GR Online),competitive
+gron-drv004,Payments Regulation (GR Online),regulatory
+gron-drv005,Rising Energy Costs (GR Online),financial
+gron-drv006,Supply Chain Volatility (GR Online),market
+gron-drv007,Faster Delivery Expectations (GR Online),customer
+gron-drv008,Shifting Customer Habits (GR Online),customer
+grwh-drv001,Labour Shortages (GR Wholesale),market
+grwh-drv002,Shifting Customer Habits (GR Wholesale),customer
+grwh-drv003,Payments Regulation (GR Wholesale),regulatory
+grwh-drv004,Cyber Threats (GR Wholesale),technology
+grwh-drv005,Sustainability Targets (GR Wholesale),regulatory
+grwh-drv006,Ageing Platforms (GR Wholesale),technology
+grwh-drv007,Faster Delivery Expectations (GR Wholesale),customer
+grwh-drv008,Rising Energy Costs (GR Wholesale),financial
+grlg-drv001,Rising Energy Costs (GR Logistics),financial
+grlg-drv002,Faster Delivery Expectations (GR Logistics),customer
+grlg-drv003,Labour Shortages (GR Logistics),market
+grlg-drv004,Payments Regulation (GR Logistics),regulatory
+grlg-drv005,Cyber Threats (GR Logistics),technology
+grlg-drv006,Supply Chain Volatility (GR Logistics),market
+grlg-drv007,Online Competition (GR Logistics),competitive
+grlg-drv008,Sustainability Targets (GR Logistics),regulatory
+hust-drv001,Ageing Platforms (HU Stores),technology
+hust-drv002,Sustainability Targets (HU Stores),regulatory
+hust-drv003,Data Protection Rules (HU Stores),regulatory
+hust-drv004,Faster Delivery Expectations (HU Stores),customer
+hust-drv005,Rising Energy Costs (HU Stores),financial
+hust-drv006,Price Pressure (HU Stores),competitive
+hust-drv007,Labour Shortages (HU Stores),market
+hust-drv008,Supply Chain Volatility (HU Stores),market
+huon-drv001,Online Competition (HU Online),competitive
+huon-drv002,Ageing Platforms (HU Online),technology
+huon-drv003,Faster Delivery Expectations (HU Online),customer
+huon-drv004,Shifting Customer Habits (HU Online),customer
+huon-drv005,Data Protection Rules (HU Online),regulatory
+huon-drv006,Sustainability Targets (HU Online),regulatory
+huon-drv007,Cyber Threats (HU Online),technology
+huon-drv008,Payments Regulation (HU Online),regulatory
+huwh-drv001,Rising Energy Costs (HU Wholesale),financial
+huwh-drv002,Cyber Threats (HU Wholesale),technology
+huwh-drv003,Labour Shortages (HU Wholesale),market
+huwh-drv004,Data Protection Rules (HU Wholesale),regulatory
+huwh-drv005,Supply Chain Volatility (HU Wholesale),market
+huwh-drv006,Faster Delivery Expectations (HU Wholesale),customer
+huwh-drv007,Online Competition (HU Wholesale),competitive
+huwh-drv008,Ageing Platforms (HU Wholesale),technology
+hulg-drv001,Supply Chain Volatility (HU Logistics),market
+hulg-drv002,Sustainability Targets (HU Logistics),regulatory
+hulg-drv003,Ageing Platforms (HU Logistics),technology
+hulg-drv004,Cyber Threats (HU Logistics),technology
+hulg-drv005,Online Competition (HU Logistics),competitive
+hulg-drv006,Labour Shortages (HU Logistics),market
+hulg-drv007,Rising Energy Costs (HU Logistics),financial
+hulg-drv008,Faster Delivery Expectations (HU Logistics),customer
+rost-drv001,Shifting Customer Habits (RO Stores),customer
+rost-drv002,Faster Delivery Expectations (RO Stores),customer
+rost-drv003,Online Competition (RO Stores),competitive
+rost-drv004,Rising Energy Costs (RO Stores),financial
+rost-drv005,Ageing Platforms (RO Stores),technology
+rost-drv006,Payments Regulation (RO Stores),regulatory
+rost-drv007,Labour Shortages (RO Stores),market
+rost-drv008,Sustainability Targets (RO Stores),regulatory
+roon-drv001,Ageing Platforms (RO Online),technology
+roon-drv002,Shifting Customer Habits (RO Online),customer
+roon-drv003,Labour Shortages (RO Online),market
+roon-drv004,Faster Delivery Expectations (RO Online),customer
+roon-drv005,Supply Chain Volatility (RO Online),market
+roon-drv006,Online Competition (RO Online),competitive
+roon-drv007,Payments Regulation (RO Online),regulatory
+roon-drv008,Price Pressure (RO Online),competitive
+rowh-drv001,Data Protection Rules (RO Wholesale),regulatory
+rowh-drv002,Sustainability Targets (RO Wholesale),regulatory
+rowh-drv003,Cyber Threats (RO Wholesale),technology
+rowh-drv004,Faster Delivery Expectations (RO Wholesale),customer
+rowh-drv005,Price Pressure (RO Wholesale),competitive
+rowh-drv006,Shifting Customer Habits (RO Wholesale),customer
+rowh-drv007,Ageing Platforms (RO Wholesale),technology
+rowh-drv008,Labour Shortages (RO Wholesale),market
+rolg-drv001,Ageing Platforms (RO Logistics),technology
+rolg-drv002,Price Pressure (RO Logistics),competitive
+rolg-drv003,Rising Energy Costs (RO Logistics),financial
+rolg-drv004,Labour Shortages (RO Logistics),market
+rolg-drv005,Shifting Customer Habits (RO Logistics),customer
+rolg-drv006,Data Protection Rules (RO Logistics),regulatory
+rolg-drv007,Faster Delivery Expectations (RO Logistics),customer
+rolg-drv008,Supply Chain Volatility (RO Logistics),market
+hrst-drv001,Labour Shortages (HR Stores),market
+hrst-drv002,Price Pressure (HR Stores),competitive
+hrst-drv003,Rising Energy Costs (HR Stores),financial
+hrst-drv004,Cyber Threats (HR Stores),technology
+hrst-drv005,Sustainability Targets (HR Stores),regulatory
+hrst-drv006,Faster Delivery Expectations (HR Stores),customer
+hrst-drv007,Payments Regulation (HR Stores),regulatory
+hrst-drv008,Data Protection Rules (HR Stores),regulatory
+hron-drv001,Rising Energy Costs (HR Online),financial
+hron-drv002,Shifting Customer Habits (HR Online),customer
+hron-drv003,Sustainability Targets (HR Online),regulatory
+hron-drv004,Online Competition (HR Online),competitive
+hron-drv005,Labour Shortages (HR Online),market
+hron-drv006,Price Pressure (HR Online),competitive
+hron-drv007,Cyber Threats (HR Online),technology
+hron-drv008,Data Protection Rules (HR Online),regulatory
+hrwh-drv001,Supply Chain Volatility (HR Wholesale),market
+hrwh-drv002,Online Competition (HR Wholesale),competitive
+hrwh-drv003,Labour Shortages (HR Wholesale),market
+hrwh-drv004,Data Protection Rules (HR Wholesale),regulatory
+hrwh-drv005,Cyber Threats (HR Wholesale),technology
+hrwh-drv006,Rising Energy Costs (HR Wholesale),financial
+hrwh-drv007,Faster Delivery Expectations (HR Wholesale),customer
+hrwh-drv008,Sustainability Targets (HR Wholesale),regulatory
+hrlg-drv001,Supply Chain Volatility (HR Logistics),market
+hrlg-drv002,Faster Delivery Expectations (HR Logistics),customer
+hrlg-drv003,Ageing Platforms (HR Logistics),technology
+hrlg-drv004,Cyber Threats (HR Logistics),technology
+hrlg-drv005,Payments Regulation (HR Logistics),regulatory
+hrlg-drv006,Price Pressure (HR Logistics),competitive
+hrlg-drv007,Online Competition (HR Logistics),competitive
+hrlg-drv008,Sustainability Targets (HR Logistics),regulatory
+skst-drv001,Online Competition (SK Stores),competitive
+skst-drv002,Cyber Threats (SK Stores),technology
+skst-drv003,Faster Delivery Expectations (SK Stores),customer
+skst-drv004,Payments Regulation (SK Stores),regulatory
+skst-drv005,Labour Shortages (SK Stores),market
+skst-drv006,Ageing Platforms (SK Stores),technology
+skst-drv007,Shifting Customer Habits (SK Stores),customer
+skst-drv008,Data Protection Rules (SK Stores),regulatory
+skon-drv001,Ageing Platforms (SK Online),technology
+skon-drv002,Price Pressure (SK Online),competitive
+skon-drv003,Payments Regulation (SK Online),regulatory
+skon-drv004,Faster Delivery Expectations (SK Online),customer
+skon-drv005,Rising Energy Costs (SK Online),financial
+skon-drv006,Data Protection Rules (SK Online),regulatory
+skon-drv007,Shifting Customer Habits (SK Online),customer
+skon-drv008,Sustainability Targets (SK Online),regulatory
+skwh-drv001,Supply Chain Volatility (SK Wholesale),market
+skwh-drv002,Sustainability Targets (SK Wholesale),regulatory
+skwh-drv003,Faster Delivery Expectations (SK Wholesale),customer
+skwh-drv004,Data Protection Rules (SK Wholesale),regulatory
+skwh-drv005,Price Pressure (SK Wholesale),competitive
+skwh-drv006,Ageing Platforms (SK Wholesale),technology
+skwh-drv007,Cyber Threats (SK Wholesale),technology
+skwh-drv008,Rising Energy Costs (SK Wholesale),financial
+sklg-drv001,Price Pressure (SK Logistics),competitive
+sklg-drv002,Sustainability Targets (SK Logistics),regulatory
+sklg-drv003,Supply Chain Volatility (SK Logistics),market
+sklg-drv004,Faster Delivery Expectations (SK Logistics),customer
+sklg-drv005,Online Competition (SK Logistics),competitive
+sklg-drv006,Payments Regulation (SK Logistics),regulatory
+sklg-drv007,Labour Shortages (SK Logistics),market
+sklg-drv008,Rising Energy Costs (SK Logistics),financial
+bgst-drv001,Supply Chain Volatility (BG Stores),market
+bgst-drv002,Payments Regulation (BG Stores),regulatory
+bgst-drv003,Rising Energy Costs (BG Stores),financial
+bgst-drv004,Sustainability Targets (BG Stores),regulatory
+bgst-drv005,Cyber Threats (BG Stores),technology
+bgst-drv006,Price Pressure (BG Stores),competitive
+bgst-drv007,Labour Shortages (BG Stores),market
+bgst-drv008,Data Protection Rules (BG Stores),regulatory
+bgon-drv001,Ageing Platforms (BG Online),technology
+bgon-drv002,Online Competition (BG Online),competitive
+bgon-drv003,Price Pressure (BG Online),competitive
+bgon-drv004,Data Protection Rules (BG Online),regulatory
+bgon-drv005,Shifting Customer Habits (BG Online),customer
+bgon-drv006,Labour Shortages (BG Online),market
+bgon-drv007,Payments Regulation (BG Online),regulatory
+bgon-drv008,Rising Energy Costs (BG Online),financial
+bgwh-drv001,Labour Shortages (BG Wholesale),market
+bgwh-drv002,Sustainability Targets (BG Wholesale),regulatory
+bgwh-drv003,Faster Delivery Expectations (BG Wholesale),customer
+bgwh-drv004,Online Competition (BG Wholesale),competitive
+bgwh-drv005,Cyber Threats (BG Wholesale),technology
+bgwh-drv006,Supply Chain Volatility (BG Wholesale),market
+bgwh-drv007,Data Protection Rules (BG Wholesale),regulatory
+bgwh-drv008,Payments Regulation (BG Wholesale),regulatory
+bglg-drv001,Payments Regulation (BG Logistics),regulatory
+bglg-drv002,Cyber Threats (BG Logistics),technology
+bglg-drv003,Labour Shortages (BG Logistics),market
+bglg-drv004,Supply Chain Volatility (BG Logistics),market
+bglg-drv005,Online Competition (BG Logistics),competitive
+bglg-drv006,Sustainability Targets (BG Logistics),regulatory
+bglg-drv007,Data Protection Rules (BG Logistics),regulatory
+bglg-drv008,Shifting Customer Habits (BG Logistics),customer
+ltst-drv001,Shifting Customer Habits (LT Stores),customer
+ltst-drv002,Data Protection Rules (LT Stores),regulatory
+ltst-drv003,Rising Energy Costs (LT Stores),financial
+ltst-drv004,Faster Delivery Expectations (LT Stores),customer
+ltst-drv005,Sustainability Targets (LT Stores),regulatory
+ltst-drv006,Price Pressure (LT Stores),competitive
+ltst-drv007,Cyber Threats (LT Stores),technology
+ltst-drv008,Labour Shortages (LT Stores),market
+lton-drv001,Ageing Platforms (LT Online),technology
+lton-drv002,Rising Energy Costs (LT Online),financial
+lton-drv003,Sustainability Targets (LT Online),regulatory
+lton-drv004,Price Pressure (LT Online),competitive
+lton-drv005,Payments Regulation (LT Online),regulatory
+lton-drv006,Shifting Customer Habits (LT Online),customer
+lton-drv007,Labour Shortages (LT Online),market
+lton-drv008,Cyber Threats (LT Online),technology
+ltwh-drv001,Faster Delivery Expectations (LT Wholesale),customer
+ltwh-drv002,Rising Energy Costs (LT Wholesale),financial
+ltwh-drv003,Cyber Threats (LT Wholesale),technology
+ltwh-drv004,Payments Regulation (LT Wholesale),regulatory
+ltwh-drv005,Sustainability Targets (LT Wholesale),regulatory
+ltwh-drv006,Price Pressure (LT Wholesale),competitive
+ltwh-drv007,Shifting Customer Habits (LT Wholesale),customer
+ltwh-drv008,Supply Chain Volatility (LT Wholesale),market
+ltlg-drv001,Shifting Customer Habits (LT Logistics),customer
+ltlg-drv002,Sustainability Targets (LT Logistics),regulatory
+ltlg-drv003,Data Protection Rules (LT Logistics),regulatory
+ltlg-drv004,Cyber Threats (LT Logistics),technology
+ltlg-drv005,Supply Chain Volatility (LT Logistics),market
+ltlg-drv006,Faster Delivery Expectations (LT Logistics),customer
+ltlg-drv007,Online Competition (LT Logistics),competitive
+ltlg-drv008,Labour Shortages (LT Logistics),market
+lvst-drv001,Shifting Customer Habits (LV Stores),customer
+lvst-drv002,Online Competition (LV Stores),competitive
+lvst-drv003,Labour Shortages (LV Stores),market
+lvst-drv004,Data Protection Rules (LV Stores),regulatory
+lvst-drv005,Sustainability Targets (LV Stores),regulatory
+lvst-drv006,Supply Chain Volatility (LV Stores),market
+lvst-drv007,Payments Regulation (LV Stores),regulatory
+lvst-drv008,Faster Delivery Expectations (LV Stores),customer
+lvon-drv001,Price Pressure (LV Online),competitive
+lvon-drv002,Data Protection Rules (LV Online),regulatory
+lvon-drv003,Shifting Customer Habits (LV Online),customer
+lvon-drv004,Rising Energy Costs (LV Online),financial
+lvon-drv005,Ageing Platforms (LV Online),technology
+lvon-drv006,Sustainability Targets (LV Online),regulatory
+lvon-drv007,Faster Delivery Expectations (LV Online),customer
+lvon-drv008,Online Competition (LV Online),competitive
+lvwh-drv001,Online Competition (LV Wholesale),competitive
+lvwh-drv002,Faster Delivery Expectations (LV Wholesale),customer
+lvwh-drv003,Payments Regulation (LV Wholesale),regulatory
+lvwh-drv004,Labour Shortages (LV Wholesale),market
+lvwh-drv005,Ageing Platforms (LV Wholesale),technology
+lvwh-drv006,Cyber Threats (LV Wholesale),technology
+lvwh-drv007,Supply Chain Volatility (LV Wholesale),market
+lvwh-drv008,Sustainability Targets (LV Wholesale),regulatory
+lvlg-drv001,Price Pressure (LV Logistics),competitive
+lvlg-drv002,Online Competition (LV Logistics),competitive
+lvlg-drv003,Faster Delivery Expectations (LV Logistics),customer
+lvlg-drv004,Sustainability Targets (LV Logistics),regulatory
+lvlg-drv005,Shifting Customer Habits (LV Logistics),customer
+lvlg-drv006,Rising Energy Costs (LV Logistics),financial
+lvlg-drv007,Ageing Platforms (LV Logistics),technology
+lvlg-drv008,Labour Shortages (LV Logistics),market

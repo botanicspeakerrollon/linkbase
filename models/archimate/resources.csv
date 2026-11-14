@@ -1,0 +1,1511 @@
+id,name,resource_type
+grp-res001,Warehouse Space (Group),physical
+grp-res002,Delivery Fleet (Group),physical
+grp-res003,Store Estate (Group),physical
+grp-res004,Data Platform (Group),intangible
+grp-res005,Brand (Group),intangible
+grp-res006,Workforce Pool (Group),human
+grp-res007,Working Capital (Group),financial
+grp-res008,Supplier Network (Group),intangible
+grp-res009,Loyalty Base (Group),intangible
+grp-res010,Licence Portfolio (Group),intangible
+gbst-res001,Distribution Hubs (GB Stores),physical
+gbst-res002,Capital Budget (GB Stores),financial
+gbst-res003,Workforce Pool (GB Stores),human
+gbst-res004,Store Estate (GB Stores),physical
+gbst-res005,Delivery Fleet (GB Stores),physical
+gbst-res006,Warehouse Space (GB Stores),physical
+gbst-res007,Engineering Team (GB Stores),human
+gbst-res008,Loyalty Base (GB Stores),intangible
+gbst-res009,Licence Portfolio (GB Stores),intangible
+gbst-res010,Brand (GB Stores),intangible
+gbst-res011,Contact Centre Staff (GB Stores),human
+gbst-res012,Supplier Network (GB Stores),intangible
+gbst-res013,Cloud Capacity (GB Stores),physical
+gbst-res014,Working Capital (GB Stores),financial
+gbst-res015,Data Platform (GB Stores),intangible
+gbon-res001,Store Estate (GB Online),physical
+gbon-res002,Licence Portfolio (GB Online),intangible
+gbon-res003,Cloud Capacity (GB Online),physical
+gbon-res004,Delivery Fleet (GB Online),physical
+gbon-res005,Contact Centre Staff (GB Online),human
+gbon-res006,Engineering Team (GB Online),human
+gbon-res007,Data Platform (GB Online),intangible
+gbon-res008,Working Capital (GB Online),financial
+gbon-res009,Workforce Pool (GB Online),human
+gbon-res010,Warehouse Space (GB Online),physical
+gbon-res011,Brand (GB Online),intangible
+gbon-res012,Capital Budget (GB Online),financial
+gbon-res013,Loyalty Base (GB Online),intangible
+gbon-res014,Supplier Network (GB Online),intangible
+gbon-res015,Distribution Hubs (GB Online),physical
+gbwh-res001,Loyalty Base (GB Wholesale),intangible
+gbwh-res002,Brand (GB Wholesale),intangible
+gbwh-res003,Working Capital (GB Wholesale),financial
+gbwh-res004,Delivery Fleet (GB Wholesale),physical
+gbwh-res005,Contact Centre Staff (GB Wholesale),human
+gbwh-res006,Data Platform (GB Wholesale),intangible
+gbwh-res007,Workforce Pool (GB Wholesale),human
+gbwh-res008,Supplier Network (GB Wholesale),intangible
+gbwh-res009,Capital Budget (GB Wholesale),financial
+gbwh-res010,Warehouse Space (GB Wholesale),physical
+gbwh-res011,Licence Portfolio (GB Wholesale),intangible
+gbwh-res012,Cloud Capacity (GB Wholesale),physical
+gbwh-res013,Engineering Team (GB Wholesale),human
+gbwh-res014,Store Estate (GB Wholesale),physical
+gbwh-res015,Distribution Hubs (GB Wholesale),physical
+gblg-res001,Engineering Team (GB Logistics),human
+gblg-res002,Contact Centre Staff (GB Logistics),human
+gblg-res003,Distribution Hubs (GB Logistics),physical
+gblg-res004,Licence Portfolio (GB Logistics),intangible
+gblg-res005,Working Capital (GB Logistics),financial
+gblg-res006,Data Platform (GB Logistics),intangible
+gblg-res007,Delivery Fleet (GB Logistics),physical
+gblg-res008,Loyalty Base (GB Logistics),intangible
+gblg-res009,Supplier Network (GB Logistics),intangible
+gblg-res010,Store Estate (GB Logistics),physical
+gblg-res011,Workforce Pool (GB Logistics),human
+gblg-res012,Cloud Capacity (GB Logistics),physical
+gblg-res013,Capital Budget (GB Logistics),financial
+gblg-res014,Warehouse Space (GB Logistics),physical
+gblg-res015,Brand (GB Logistics),intangible
+iest-res001,Data Platform (IE Stores),intangible
+iest-res002,Brand (IE Stores),intangible
+iest-res003,Capital Budget (IE Stores),financial
+iest-res004,Working Capital (IE Stores),financial
+iest-res005,Loyalty Base (IE Stores),intangible
+iest-res006,Engineering Team (IE Stores),human
+iest-res007,Supplier Network (IE Stores),intangible
+iest-res008,Licence Portfolio (IE Stores),intangible
+iest-res009,Store Estate (IE Stores),physical
+iest-res010,Contact Centre Staff (IE Stores),human
+iest-res011,Warehouse Space (IE Stores),physical
+iest-res012,Workforce Pool (IE Stores),human
+iest-res013,Cloud Capacity (IE Stores),physical
+iest-res014,Delivery Fleet (IE Stores),physical
+iest-res015,Distribution Hubs (IE Stores),physical
+ieon-res001,Licence Portfolio (IE Online),intangible
+ieon-res002,Capital Budget (IE Online),financial
+ieon-res003,Brand (IE Online),intangible
+ieon-res004,Loyalty Base (IE Online),intangible
+ieon-res005,Store Estate (IE Online),physical
+ieon-res006,Workforce Pool (IE Online),human
+ieon-res007,Delivery Fleet (IE Online),physical
+ieon-res008,Distribution Hubs (IE Online),physical
+ieon-res009,Contact Centre Staff (IE Online),human
+ieon-res010,Working Capital (IE Online),financial
+ieon-res011,Warehouse Space (IE Online),physical
+ieon-res012,Cloud Capacity (IE Online),physical
+ieon-res013,Engineering Team (IE Online),human
+ieon-res014,Supplier Network (IE Online),intangible
+ieon-res015,Data Platform (IE Online),intangible
+iewh-res001,Working Capital (IE Wholesale),financial
+iewh-res002,Delivery Fleet (IE Wholesale),physical
+iewh-res003,Capital Budget (IE Wholesale),financial
+iewh-res004,Brand (IE Wholesale),intangible
+iewh-res005,Distribution Hubs (IE Wholesale),physical
+iewh-res006,Warehouse Space (IE Wholesale),physical
+iewh-res007,Loyalty Base (IE Wholesale),intangible
+iewh-res008,Supplier Network (IE Wholesale),intangible
+iewh-res009,Licence Portfolio (IE Wholesale),intangible
+iewh-res010,Store Estate (IE Wholesale),physical
+iewh-res011,Engineering Team (IE Wholesale),human
+iewh-res012,Data Platform (IE Wholesale),intangible
+iewh-res013,Workforce Pool (IE Wholesale),human
+iewh-res014,Contact Centre Staff (IE Wholesale),human
+iewh-res015,Cloud Capacity (IE Wholesale),physical
+ielg-res001,Working Capital (IE Logistics),financial
+ielg-res002,Loyalty Base (IE Logistics),intangible
+ielg-res003,Engineering Team (IE Logistics),human
+ielg-res004,Cloud Capacity (IE Logistics),physical
+ielg-res005,Warehouse Space (IE Logistics),physical
+ielg-res006,Capital Budget (IE Logistics),financial
+ielg-res007,Delivery Fleet (IE Logistics),physical
+ielg-res008,Contact Centre Staff (IE Logistics),human
+ielg-res009,Workforce Pool (IE Logistics),human
+ielg-res010,Brand (IE Logistics),intangible
+ielg-res011,Licence Portfolio (IE Logistics),intangible
+ielg-res012,Store Estate (IE Logistics),physical
+ielg-res013,Supplier Network (IE Logistics),intangible
+ielg-res014,Data Platform (IE Logistics),intangible
+ielg-res015,Distribution Hubs (IE Logistics),physical
+frst-res001,Supplier Network (FR Stores),intangible
+frst-res002,Data Platform (FR Stores),intangible
+frst-res003,Delivery Fleet (FR Stores),physical
+frst-res004,Distribution Hubs (FR Stores),physical
+frst-res005,Licence Portfolio (FR Stores),intangible
+frst-res006,Capital Budget (FR Stores),financial
+frst-res007,Contact Centre Staff (FR Stores),human
+frst-res008,Loyalty Base (FR Stores),intangible
+frst-res009,Cloud Capacity (FR Stores),physical
+frst-res010,Working Capital (FR Stores),financial
+frst-res011,Workforce Pool (FR Stores),human
+frst-res012,Brand (FR Stores),intangible
+frst-res013,Engineering Team (FR Stores),human
+frst-res014,Store Estate (FR Stores),physical
+frst-res015,Warehouse Space (FR Stores),physical
+fron-res001,Capital Budget (FR Online),financial
+fron-res002,Contact Centre Staff (FR Online),human
+fron-res003,Supplier Network (FR Online),intangible
+fron-res004,Workforce Pool (FR Online),human
+fron-res005,Working Capital (FR Online),financial
+fron-res006,Delivery Fleet (FR Online),physical
+fron-res007,Cloud Capacity (FR Online),physical
+fron-res008,Licence Portfolio (FR Online),intangible
+fron-res009,Engineering Team (FR Online),human
+fron-res010,Warehouse Space (FR Online),physical
+fron-res011,Store Estate (FR Online),physical
+fron-res012,Loyalty Base (FR Online),intangible
+fron-res013,Data Platform (FR Online),intangible
+fron-res014,Distribution Hubs (FR Online),physical
+fron-res015,Brand (FR Online),intangible
+frwh-res001,Contact Centre Staff (FR Wholesale),human
+frwh-res002,Cloud Capacity (FR Wholesale),physical
+frwh-res003,Distribution Hubs (FR Wholesale),physical
+frwh-res004,Engineering Team (FR Wholesale),human
+frwh-res005,Warehouse Space (FR Wholesale),physical
+frwh-res006,Workforce Pool (FR Wholesale),human
+frwh-res007,Delivery Fleet (FR Wholesale),physical
+frwh-res008,Store Estate (FR Wholesale),physical
+frwh-res009,Brand (FR Wholesale),intangible
+frwh-res010,Loyalty Base (FR Wholesale),intangible
+frwh-res011,Working Capital (FR Wholesale),financial
+frwh-res012,Licence Portfolio (FR Wholesale),intangible
+frwh-res013,Supplier Network (FR Wholesale),intangible
+frwh-res014,Capital Budget (FR Wholesale),financial
+frwh-res015,Data Platform (FR Wholesale),intangible
+frlg-res001,Delivery Fleet (FR Logistics),physical
+frlg-res002,Working Capital (FR Logistics),financial
+frlg-res003,Loyalty Base (FR Logistics),intangible
+frlg-res004,Engineering Team (FR Logistics),human
+frlg-res005,Cloud Capacity (FR Logistics),physical
+frlg-res006,Capital Budget (FR Logistics),financial
+frlg-res007,Data Platform (FR Logistics),intangible
+frlg-res008,Warehouse Space (FR Logistics),physical
+frlg-res009,Licence Portfolio (FR Logistics),intangible
+frlg-res010,Workforce Pool (FR Logistics),human
+frlg-res011,Supplier Network (FR Logistics),intangible
+frlg-res012,Brand (FR Logistics),intangible
+frlg-res013,Store Estate (FR Logistics),physical
+frlg-res014,Contact Centre Staff (FR Logistics),human
+frlg-res015,Distribution Hubs (FR Logistics),physical
+dest-res001,Data Platform (DE Stores),intangible
+dest-res002,Capital Budget (DE Stores),financial
+dest-res003,Cloud Capacity (DE Stores),physical
+dest-res004,Engineering Team (DE Stores),human
+dest-res005,Licence Portfolio (DE Stores),intangible
+dest-res006,Supplier Network (DE Stores),intangible
+dest-res007,Distribution Hubs (DE Stores),physical
+dest-res008,Delivery Fleet (DE Stores),physical
+dest-res009,Brand (DE Stores),intangible
+dest-res010,Warehouse Space (DE Stores),physical
+dest-res011,Contact Centre Staff (DE Stores),human
+dest-res012,Store Estate (DE Stores),physical
+dest-res013,Loyalty Base (DE Stores),intangible
+dest-res014,Working Capital (DE Stores),financial
+dest-res015,Workforce Pool (DE Stores),human
+deon-res001,Cloud Capacity (DE Online),physical
+deon-res002,Brand (DE Online),intangible
+deon-res003,Store Estate (DE Online),physical
+deon-res004,Licence Portfolio (DE Online),intangible
+deon-res005,Warehouse Space (DE Online),physical
+deon-res006,Working Capital (DE Online),financial
+deon-res007,Data Platform (DE Online),intangible
+deon-res008,Contact Centre Staff (DE Online),human
+deon-res009,Delivery Fleet (DE Online),physical
+deon-res010,Workforce Pool (DE Online),human
+deon-res011,Engineering Team (DE Online),human
+deon-res012,Capital Budget (DE Online),financial
+deon-res013,Supplier Network (DE Online),intangible
+deon-res014,Loyalty Base (DE Online),intangible
+deon-res015,Distribution Hubs (DE Online),physical
+dewh-res001,Licence Portfolio (DE Wholesale),intangible
+dewh-res002,Working Capital (DE Wholesale),financial
+dewh-res003,Warehouse Space (DE Wholesale),physical
+dewh-res004,Supplier Network (DE Wholesale),intangible
+dewh-res005,Workforce Pool (DE Wholesale),human
+dewh-res006,Brand (DE Wholesale),intangible
+dewh-res007,Capital Budget (DE Wholesale),financial
+dewh-res008,Delivery Fleet (DE Wholesale),physical
+dewh-res009,Store Estate (DE Wholesale),physical
+dewh-res010,Distribution Hubs (DE Wholesale),physical
+dewh-res011,Engineering Team (DE Wholesale),human
+dewh-res012,Data Platform (DE Wholesale),intangible
+dewh-res013,Contact Centre Staff (DE Wholesale),human
+dewh-res014,Cloud Capacity (DE Wholesale),physical
+dewh-res015,Loyalty Base (DE Wholesale),intangible
+delg-res001,Contact Centre Staff (DE Logistics),human
+delg-res002,Supplier Network (DE Logistics),intangible
+delg-res003,Workforce Pool (DE Logistics),human
+delg-res004,Distribution Hubs (DE Logistics),physical
+delg-res005,Working Capital (DE Logistics),financial
+delg-res006,Data Platform (DE Logistics),intangible
+delg-res007,Brand (DE Logistics),intangible
+delg-res008,Engineering Team (DE Logistics),human
+delg-res009,Licence Portfolio (DE Logistics),intangible
+delg-res010,Capital Budget (DE Logistics),financial
+delg-res011,Delivery Fleet (DE Logistics),physical
+delg-res012,Cloud Capacity (DE Logistics),physical
+delg-res013,Loyalty Base (DE Logistics),intangible
+delg-res014,Store Estate (DE Logistics),physical
+delg-res015,Warehouse Space (DE Logistics),physical
+nlst-res001,Contact Centre Staff (NL Stores),human
+nlst-res002,Supplier Network (NL Stores),intangible
+nlst-res003,Working Capital (NL Stores),financial
+nlst-res004,Workforce Pool (NL Stores),human
+nlst-res005,Capital Budget (NL Stores),financial
+nlst-res006,Warehouse Space (NL Stores),physical
+nlst-res007,Brand (NL Stores),intangible
+nlst-res008,Store Estate (NL Stores),physical
+nlst-res009,Loyalty Base (NL Stores),intangible
+nlst-res010,Data Platform (NL Stores),intangible
+nlst-res011,Engineering Team (NL Stores),human
+nlst-res012,Delivery Fleet (NL Stores),physical
+nlst-res013,Distribution Hubs (NL Stores),physical
+nlst-res014,Cloud Capacity (NL Stores),physical
+nlst-res015,Licence Portfolio (NL Stores),intangible
+nlon-res001,Warehouse Space (NL Online),physical
+nlon-res002,Working Capital (NL Online),financial
+nlon-res003,Cloud Capacity (NL Online),physical
+nlon-res004,Store Estate (NL Online),physical
+nlon-res005,Contact Centre Staff (NL Online),human
+nlon-res006,Engineering Team (NL Online),human
+nlon-res007,Supplier Network (NL Online),intangible
+nlon-res008,Loyalty Base (NL Online),intangible
+nlon-res009,Workforce Pool (NL Online),human
+nlon-res010,Delivery Fleet (NL Online),physical
+nlon-res011,Capital Budget (NL Online),financial
+nlon-res012,Data Platform (NL Online),intangible
+nlon-res013,Brand (NL Online),intangible
+nlon-res014,Distribution Hubs (NL Online),physical
+nlon-res015,Licence Portfolio (NL Online),intangible
+nlwh-res001,Capital Budget (NL Wholesale),financial
+nlwh-res002,Supplier Network (NL Wholesale),intangible
+nlwh-res003,Loyalty Base (NL Wholesale),intangible
+nlwh-res004,Contact Centre Staff (NL Wholesale),human
+nlwh-res005,Data Platform (NL Wholesale),intangible
+nlwh-res006,Warehouse Space (NL Wholesale),physical
+nlwh-res007,Working Capital (NL Wholesale),financial
+nlwh-res008,Brand (NL Wholesale),intangible
+nlwh-res009,Distribution Hubs (NL Wholesale),physical
+nlwh-res010,Cloud Capacity (NL Wholesale),physical
+nlwh-res011,Delivery Fleet (NL Wholesale),physical
+nlwh-res012,Workforce Pool (NL Wholesale),human
+nlwh-res013,Engineering Team (NL Wholesale),human
+nlwh-res014,Store Estate (NL Wholesale),physical
+nlwh-res015,Licence Portfolio (NL Wholesale),intangible
+nllg-res001,Brand (NL Logistics),intangible
+nllg-res002,Licence Portfolio (NL Logistics),intangible
+nllg-res003,Supplier Network (NL Logistics),intangible
+nllg-res004,Contact Centre Staff (NL Logistics),human
+nllg-res005,Working Capital (NL Logistics),financial
+nllg-res006,Store Estate (NL Logistics),physical
+nllg-res007,Loyalty Base (NL Logistics),intangible
+nllg-res008,Cloud Capacity (NL Logistics),physical
+nllg-res009,Engineering Team (NL Logistics),human
+nllg-res010,Delivery Fleet (NL Logistics),physical
+nllg-res011,Distribution Hubs (NL Logistics),physical
+nllg-res012,Workforce Pool (NL Logistics),human
+nllg-res013,Capital Budget (NL Logistics),financial
+nllg-res014,Warehouse Space (NL Logistics),physical
+nllg-res015,Data Platform (NL Logistics),intangible
+best-res001,Data Platform (BE Stores),intangible
+best-res002,Delivery Fleet (BE Stores),physical
+best-res003,Supplier Network (BE Stores),intangible
+best-res004,Warehouse Space (BE Stores),physical
+best-res005,Brand (BE Stores),intangible
+best-res006,Engineering Team (BE Stores),human
+best-res007,Distribution Hubs (BE Stores),physical
+best-res008,Contact Centre Staff (BE Stores),human
+best-res009,Licence Portfolio (BE Stores),intangible
+best-res010,Cloud Capacity (BE Stores),physical
+best-res011,Loyalty Base (BE Stores),intangible
+best-res012,Workforce Pool (BE Stores),human
+best-res013,Capital Budget (BE Stores),financial
+best-res014,Working Capital (BE Stores),financial
+best-res015,Store Estate (BE Stores),physical
+beon-res001,Capital Budget (BE Online),financial
+beon-res002,Brand (BE Online),intangible
+beon-res003,Warehouse Space (BE Online),physical
+beon-res004,Store Estate (BE Online),physical
+beon-res005,Distribution Hubs (BE Online),physical
+beon-res006,Workforce Pool (BE Online),human
+beon-res007,Supplier Network (BE Online),intangible
+beon-res008,Contact Centre Staff (BE Online),human
+beon-res009,Cloud Capacity (BE Online),physical
+beon-res010,Delivery Fleet (BE Online),physical
+beon-res011,Working Capital (BE Online),financial
+beon-res012,Licence Portfolio (BE Online),intangible
+beon-res013,Data Platform (BE Online),intangible
+beon-res014,Engineering Team (BE Online),human
+beon-res015,Loyalty Base (BE Online),intangible
+bewh-res001,Data Platform (BE Wholesale),intangible
+bewh-res002,Engineering Team (BE Wholesale),human
+bewh-res003,Capital Budget (BE Wholesale),financial
+bewh-res004,Distribution Hubs (BE Wholesale),physical
+bewh-res005,Supplier Network (BE Wholesale),intangible
+bewh-res006,Store Estate (BE Wholesale),physical
+bewh-res007,Warehouse Space (BE Wholesale),physical
+bewh-res008,Workforce Pool (BE Wholesale),human
+bewh-res009,Delivery Fleet (BE Wholesale),physical
+bewh-res010,Licence Portfolio (BE Wholesale),intangible
+bewh-res011,Cloud Capacity (BE Wholesale),physical
+bewh-res012,Loyalty Base (BE Wholesale),intangible
+bewh-res013,Brand (BE Wholesale),intangible
+bewh-res014,Working Capital (BE Wholesale),financial
+bewh-res015,Contact Centre Staff (BE Wholesale),human
+belg-res001,Engineering Team (BE Logistics),human
+belg-res002,Working Capital (BE Logistics),financial
+belg-res003,Licence Portfolio (BE Logistics),intangible
+belg-res004,Store Estate (BE Logistics),physical
+belg-res005,Warehouse Space (BE Logistics),physical
+belg-res006,Cloud Capacity (BE Logistics),physical
+belg-res007,Distribution Hubs (BE Logistics),physical
+belg-res008,Brand (BE Logistics),intangible
+belg-res009,Contact Centre Staff (BE Logistics),human
+belg-res010,Data Platform (BE Logistics),intangible
+belg-res011,Supplier Network (BE Logistics),intangible
+belg-res012,Loyalty Base (BE Logistics),intangible
+belg-res013,Capital Budget (BE Logistics),financial
+belg-res014,Delivery Fleet (BE Logistics),physical
+belg-res015,Workforce Pool (BE Logistics),human
+esst-res001,Store Estate (ES Stores),physical
+esst-res002,Supplier Network (ES Stores),intangible
+esst-res003,Engineering Team (ES Stores),human
+esst-res004,Contact Centre Staff (ES Stores),human
+esst-res005,Delivery Fleet (ES Stores),physical
+esst-res006,Capital Budget (ES Stores),financial
+esst-res007,Cloud Capacity (ES Stores),physical
+esst-res008,Brand (ES Stores),intangible
+esst-res009,Distribution Hubs (ES Stores),physical
+esst-res010,Loyalty Base (ES Stores),intangible
+esst-res011,Working Capital (ES Stores),financial
+esst-res012,Licence Portfolio (ES Stores),intangible
+esst-res013,Data Platform (ES Stores),intangible
+esst-res014,Warehouse Space (ES Stores),physical
+esst-res015,Workforce Pool (ES Stores),human
+eson-res001,Cloud Capacity (ES Online),physical
+eson-res002,Distribution Hubs (ES Online),physical
+eson-res003,Loyalty Base (ES Online),intangible
+eson-res004,Brand (ES Online),intangible
+eson-res005,Workforce Pool (ES Online),human
+eson-res006,Working Capital (ES Online),financial
+eson-res007,Store Estate (ES Online),physical
+eson-res008,Engineering Team (ES Online),human
+eson-res009,Contact Centre Staff (ES Online),human
+eson-res010,Licence Portfolio (ES Online),intangible
+eson-res011,Capital Budget (ES Online),financial
+eson-res012,Supplier Network (ES Online),intangible
+eson-res013,Data Platform (ES Online),intangible
+eson-res014,Warehouse Space (ES Online),physical
+eson-res015,Delivery Fleet (ES Online),physical
+eswh-res001,Loyalty Base (ES Wholesale),intangible
+eswh-res002,Working Capital (ES Wholesale),financial
+eswh-res003,Cloud Capacity (ES Wholesale),physical
+eswh-res004,Delivery Fleet (ES Wholesale),physical
+eswh-res005,Capital Budget (ES Wholesale),financial
+eswh-res006,Data Platform (ES Wholesale),intangible
+eswh-res007,Distribution Hubs (ES Wholesale),physical
+eswh-res008,Licence Portfolio (ES Wholesale),intangible
+eswh-res009,Workforce Pool (ES Wholesale),human
+eswh-res010,Warehouse Space (ES Wholesale),physical
+eswh-res011,Brand (ES Wholesale),intangible
+eswh-res012,Supplier Network (ES Wholesale),intangible
+eswh-res013,Engineering Team (ES Wholesale),human
+eswh-res014,Contact Centre Staff (ES Wholesale),human
+eswh-res015,Store Estate (ES Wholesale),physical
+eslg-res001,Store Estate (ES Logistics),physical
+eslg-res002,Working Capital (ES Logistics),financial
+eslg-res003,Supplier Network (ES Logistics),intangible
+eslg-res004,Data Platform (ES Logistics),intangible
+eslg-res005,Cloud Capacity (ES Logistics),physical
+eslg-res006,Warehouse Space (ES Logistics),physical
+eslg-res007,Loyalty Base (ES Logistics),intangible
+eslg-res008,Workforce Pool (ES Logistics),human
+eslg-res009,Capital Budget (ES Logistics),financial
+eslg-res010,Brand (ES Logistics),intangible
+eslg-res011,Distribution Hubs (ES Logistics),physical
+eslg-res012,Licence Portfolio (ES Logistics),intangible
+eslg-res013,Contact Centre Staff (ES Logistics),human
+eslg-res014,Delivery Fleet (ES Logistics),physical
+eslg-res015,Engineering Team (ES Logistics),human
+ptst-res001,Licence Portfolio (PT Stores),intangible
+ptst-res002,Store Estate (PT Stores),physical
+ptst-res003,Data Platform (PT Stores),intangible
+ptst-res004,Loyalty Base (PT Stores),intangible
+ptst-res005,Contact Centre Staff (PT Stores),human
+ptst-res006,Cloud Capacity (PT Stores),physical
+ptst-res007,Supplier Network (PT Stores),intangible
+ptst-res008,Brand (PT Stores),intangible
+ptst-res009,Engineering Team (PT Stores),human
+ptst-res010,Distribution Hubs (PT Stores),physical
+ptst-res011,Workforce Pool (PT Stores),human
+ptst-res012,Working Capital (PT Stores),financial
+ptst-res013,Warehouse Space (PT Stores),physical
+ptst-res014,Delivery Fleet (PT Stores),physical
+ptst-res015,Capital Budget (PT Stores),financial
+pton-res001,Licence Portfolio (PT Online),intangible
+pton-res002,Contact Centre Staff (PT Online),human
+pton-res003,Supplier Network (PT Online),intangible
+pton-res004,Data Platform (PT Online),intangible
+pton-res005,Workforce Pool (PT Online),human
+pton-res006,Capital Budget (PT Online),financial
+pton-res007,Brand (PT Online),intangible
+pton-res008,Cloud Capacity (PT Online),physical
+pton-res009,Warehouse Space (PT Online),physical
+pton-res010,Working Capital (PT Online),financial
+pton-res011,Engineering Team (PT Online),human
+pton-res012,Store Estate (PT Online),physical
+pton-res013,Loyalty Base (PT Online),intangible
+pton-res014,Distribution Hubs (PT Online),physical
+pton-res015,Delivery Fleet (PT Online),physical
+ptwh-res001,Loyalty Base (PT Wholesale),intangible
+ptwh-res002,Delivery Fleet (PT Wholesale),physical
+ptwh-res003,Store Estate (PT Wholesale),physical
+ptwh-res004,Contact Centre Staff (PT Wholesale),human
+ptwh-res005,Warehouse Space (PT Wholesale),physical
+ptwh-res006,Capital Budget (PT Wholesale),financial
+ptwh-res007,Cloud Capacity (PT Wholesale),physical
+ptwh-res008,Distribution Hubs (PT Wholesale),physical
+ptwh-res009,Data Platform (PT Wholesale),intangible
+ptwh-res010,Supplier Network (PT Wholesale),intangible
+ptwh-res011,Engineering Team (PT Wholesale),human
+ptwh-res012,Working Capital (PT Wholesale),financial
+ptwh-res013,Licence Portfolio (PT Wholesale),intangible
+ptwh-res014,Brand (PT Wholesale),intangible
+ptwh-res015,Workforce Pool (PT Wholesale),human
+ptlg-res001,Distribution Hubs (PT Logistics),physical
+ptlg-res002,Data Platform (PT Logistics),intangible
+ptlg-res003,Licence Portfolio (PT Logistics),intangible
+ptlg-res004,Engineering Team (PT Logistics),human
+ptlg-res005,Contact Centre Staff (PT Logistics),human
+ptlg-res006,Working Capital (PT Logistics),financial
+ptlg-res007,Warehouse Space (PT Logistics),physical
+ptlg-res008,Cloud Capacity (PT Logistics),physical
+ptlg-res009,Store Estate (PT Logistics),physical
+ptlg-res010,Supplier Network (PT Logistics),intangible
+ptlg-res011,Workforce Pool (PT Logistics),human
+ptlg-res012,Loyalty Base (PT Logistics),intangible
+ptlg-res013,Capital Budget (PT Logistics),financial
+ptlg-res014,Brand (PT Logistics),intangible
+ptlg-res015,Delivery Fleet (PT Logistics),physical
+itst-res001,Cloud Capacity (IT Stores),physical
+itst-res002,Capital Budget (IT Stores),financial
+itst-res003,Delivery Fleet (IT Stores),physical
+itst-res004,Store Estate (IT Stores),physical
+itst-res005,Distribution Hubs (IT Stores),physical
+itst-res006,Working Capital (IT Stores),financial
+itst-res007,Workforce Pool (IT Stores),human
+itst-res008,Warehouse Space (IT Stores),physical
+itst-res009,Contact Centre Staff (IT Stores),human
+itst-res010,Engineering Team (IT Stores),human
+itst-res011,Licence Portfolio (IT Stores),intangible
+itst-res012,Loyalty Base (IT Stores),intangible
+itst-res013,Supplier Network (IT Stores),intangible
+itst-res014,Data Platform (IT Stores),intangible
+itst-res015,Brand (IT Stores),intangible
+iton-res001,Capital Budget (IT Online),financial
+iton-res002,Store Estate (IT Online),physical
+iton-res003,Supplier Network (IT Online),intangible
+iton-res004,Contact Centre Staff (IT Online),human
+iton-res005,Cloud Capacity (IT Online),physical
+iton-res006,Loyalty Base (IT Online),intangible
+iton-res007,Engineering Team (IT Online),human
+iton-res008,Data Platform (IT Online),intangible
+iton-res009,Delivery Fleet (IT Online),physical
+iton-res010,Workforce Pool (IT Online),human
+iton-res011,Distribution Hubs (IT Online),physical
+iton-res012,Warehouse Space (IT Online),physical
+iton-res013,Licence Portfolio (IT Online),intangible
+iton-res014,Brand (IT Online),intangible
+iton-res015,Working Capital (IT Online),financial
+itwh-res001,Licence Portfolio (IT Wholesale),intangible
+itwh-res002,Engineering Team (IT Wholesale),human
+itwh-res003,Store Estate (IT Wholesale),physical
+itwh-res004,Data Platform (IT Wholesale),intangible
+itwh-res005,Working Capital (IT Wholesale),financial
+itwh-res006,Delivery Fleet (IT Wholesale),physical
+itwh-res007,Capital Budget (IT Wholesale),financial
+itwh-res008,Loyalty Base (IT Wholesale),intangible
+itwh-res009,Warehouse Space (IT Wholesale),physical
+itwh-res010,Contact Centre Staff (IT Wholesale),human
+itwh-res011,Brand (IT Wholesale),intangible
+itwh-res012,Workforce Pool (IT Wholesale),human
+itwh-res013,Distribution Hubs (IT Wholesale),physical
+itwh-res014,Cloud Capacity (IT Wholesale),physical
+itwh-res015,Supplier Network (IT Wholesale),intangible
+itlg-res001,Licence Portfolio (IT Logistics),intangible
+itlg-res002,Cloud Capacity (IT Logistics),physical
+itlg-res003,Loyalty Base (IT Logistics),intangible
+itlg-res004,Brand (IT Logistics),intangible
+itlg-res005,Warehouse Space (IT Logistics),physical
+itlg-res006,Distribution Hubs (IT Logistics),physical
+itlg-res007,Capital Budget (IT Logistics),financial
+itlg-res008,Delivery Fleet (IT Logistics),physical
+itlg-res009,Engineering Team (IT Logistics),human
+itlg-res010,Contact Centre Staff (IT Logistics),human
+itlg-res011,Supplier Network (IT Logistics),intangible
+itlg-res012,Store Estate (IT Logistics),physical
+itlg-res013,Data Platform (IT Logistics),intangible
+itlg-res014,Workforce Pool (IT Logistics),human
+itlg-res015,Working Capital (IT Logistics),financial
+chst-res001,Delivery Fleet (CH Stores),physical
+chst-res002,Licence Portfolio (CH Stores),intangible
+chst-res003,Contact Centre Staff (CH Stores),human
+chst-res004,Capital Budget (CH Stores),financial
+chst-res005,Data Platform (CH Stores),intangible
+chst-res006,Distribution Hubs (CH Stores),physical
+chst-res007,Supplier Network (CH Stores),intangible
+chst-res008,Brand (CH Stores),intangible
+chst-res009,Loyalty Base (CH Stores),intangible
+chst-res010,Warehouse Space (CH Stores),physical
+chst-res011,Working Capital (CH Stores),financial
+chst-res012,Store Estate (CH Stores),physical
+chst-res013,Cloud Capacity (CH Stores),physical
+chst-res014,Engineering Team (CH Stores),human
+chst-res015,Workforce Pool (CH Stores),human
+chon-res001,Delivery Fleet (CH Online),physical
+chon-res002,Store Estate (CH Online),physical
+chon-res003,Licence Portfolio (CH Online),intangible
+chon-res004,Engineering Team (CH Online),human
+chon-res005,Working Capital (CH Online),financial
+chon-res006,Cloud Capacity (CH Online),physical
+chon-res007,Supplier Network (CH Online),intangible
+chon-res008,Capital Budget (CH Online),financial
+chon-res009,Warehouse Space (CH Online),physical
+chon-res010,Distribution Hubs (CH Online),physical
+chon-res011,Contact Centre Staff (CH Online),human
+chon-res012,Workforce Pool (CH Online),human
+chon-res013,Brand (CH Online),intangible
+chon-res014,Loyalty Base (CH Online),intangible
+chon-res015,Data Platform (CH Online),intangible
+chwh-res001,Engineering Team (CH Wholesale),human
+chwh-res002,Working Capital (CH Wholesale),financial
+chwh-res003,Licence Portfolio (CH Wholesale),intangible
+chwh-res004,Contact Centre Staff (CH Wholesale),human
+chwh-res005,Brand (CH Wholesale),intangible
+chwh-res006,Workforce Pool (CH Wholesale),human
+chwh-res007,Store Estate (CH Wholesale),physical
+chwh-res008,Cloud Capacity (CH Wholesale),physical
+chwh-res009,Capital Budget (CH Wholesale),financial
+chwh-res010,Loyalty Base (CH Wholesale),intangible
+chwh-res011,Distribution Hubs (CH Wholesale),physical
+chwh-res012,Delivery Fleet (CH Wholesale),physical
+chwh-res013,Warehouse Space (CH Wholesale),physical
+chwh-res014,Supplier Network (CH Wholesale),intangible
+chwh-res015,Data Platform (CH Wholesale),intangible
+chlg-res001,Warehouse Space (CH Logistics),physical
+chlg-res002,Licence Portfolio (CH Logistics),intangible
+chlg-res003,Store Estate (CH Logistics),physical
+chlg-res004,Capital Budget (CH Logistics),financial
+chlg-res005,Distribution Hubs (CH Logistics),physical
+chlg-res006,Supplier Network (CH Logistics),intangible
+chlg-res007,Cloud Capacity (CH Logistics),physical
+chlg-res008,Brand (CH Logistics),intangible
+chlg-res009,Working Capital (CH Logistics),financial
+chlg-res010,Workforce Pool (CH Logistics),human
+chlg-res011,Delivery Fleet (CH Logistics),physical
+chlg-res012,Data Platform (CH Logistics),intangible
+chlg-res013,Engineering Team (CH Logistics),human
+chlg-res014,Loyalty Base (CH Logistics),intangible
+chlg-res015,Contact Centre Staff (CH Logistics),human
+atst-res001,Delivery Fleet (AT Stores),physical
+atst-res002,Store Estate (AT Stores),physical
+atst-res003,Capital Budget (AT Stores),financial
+atst-res004,Workforce Pool (AT Stores),human
+atst-res005,Cloud Capacity (AT Stores),physical
+atst-res006,Loyalty Base (AT Stores),intangible
+atst-res007,Supplier Network (AT Stores),intangible
+atst-res008,Data Platform (AT Stores),intangible
+atst-res009,Working Capital (AT Stores),financial
+atst-res010,Licence Portfolio (AT Stores),intangible
+atst-res011,Engineering Team (AT Stores),human
+atst-res012,Warehouse Space (AT Stores),physical
+atst-res013,Brand (AT Stores),intangible
+atst-res014,Distribution Hubs (AT Stores),physical
+atst-res015,Contact Centre Staff (AT Stores),human
+aton-res001,Working Capital (AT Online),financial
+aton-res002,Licence Portfolio (AT Online),intangible
+aton-res003,Warehouse Space (AT Online),physical
+aton-res004,Brand (AT Online),intangible
+aton-res005,Supplier Network (AT Online),intangible
+aton-res006,Delivery Fleet (AT Online),physical
+aton-res007,Distribution Hubs (AT Online),physical
+aton-res008,Engineering Team (AT Online),human
+aton-res009,Capital Budget (AT Online),financial
+aton-res010,Store Estate (AT Online),physical
+aton-res011,Workforce Pool (AT Online),human
+aton-res012,Cloud Capacity (AT Online),physical
+aton-res013,Contact Centre Staff (AT Online),human
+aton-res014,Data Platform (AT Online),intangible
+aton-res015,Loyalty Base (AT Online),intangible
+atwh-res001,Engineering Team (AT Wholesale),human
+atwh-res002,Distribution Hubs (AT Wholesale),physical
+atwh-res003,Loyalty Base (AT Wholesale),intangible
+atwh-res004,Delivery Fleet (AT Wholesale),physical
+atwh-res005,Brand (AT Wholesale),intangible
+atwh-res006,Data Platform (AT Wholesale),intangible
+atwh-res007,Store Estate (AT Wholesale),physical
+atwh-res008,Warehouse Space (AT Wholesale),physical
+atwh-res009,Capital Budget (AT Wholesale),financial
+atwh-res010,Workforce Pool (AT Wholesale),human
+atwh-res011,Contact Centre Staff (AT Wholesale),human
+atwh-res012,Licence Portfolio (AT Wholesale),intangible
+atwh-res013,Supplier Network (AT Wholesale),intangible
+atwh-res014,Cloud Capacity (AT Wholesale),physical
+atwh-res015,Working Capital (AT Wholesale),financial
+atlg-res001,Capital Budget (AT Logistics),financial
+atlg-res002,Loyalty Base (AT Logistics),intangible
+atlg-res003,Contact Centre Staff (AT Logistics),human
+atlg-res004,Delivery Fleet (AT Logistics),physical
+atlg-res005,Data Platform (AT Logistics),intangible
+atlg-res006,Cloud Capacity (AT Logistics),physical
+atlg-res007,Distribution Hubs (AT Logistics),physical
+atlg-res008,Warehouse Space (AT Logistics),physical
+atlg-res009,Supplier Network (AT Logistics),intangible
+atlg-res010,Store Estate (AT Logistics),physical
+atlg-res011,Working Capital (AT Logistics),financial
+atlg-res012,Licence Portfolio (AT Logistics),intangible
+atlg-res013,Engineering Team (AT Logistics),human
+atlg-res014,Brand (AT Logistics),intangible
+atlg-res015,Workforce Pool (AT Logistics),human
+plst-res001,Capital Budget (PL Stores),financial
+plst-res002,Supplier Network (PL Stores),intangible
+plst-res003,Loyalty Base (PL Stores),intangible
+plst-res004,Store Estate (PL Stores),physical
+plst-res005,Distribution Hubs (PL Stores),physical
+plst-res006,Brand (PL Stores),intangible
+plst-res007,Warehouse Space (PL Stores),physical
+plst-res008,Data Platform (PL Stores),intangible
+plst-res009,Working Capital (PL Stores),financial
+plst-res010,Contact Centre Staff (PL Stores),human
+plst-res011,Delivery Fleet (PL Stores),physical
+plst-res012,Cloud Capacity (PL Stores),physical
+plst-res013,Engineering Team (PL Stores),human
+plst-res014,Workforce Pool (PL Stores),human
+plst-res015,Licence Portfolio (PL Stores),intangible
+plon-res001,Engineering Team (PL Online),human
+plon-res002,Data Platform (PL Online),intangible
+plon-res003,Supplier Network (PL Online),intangible
+plon-res004,Delivery Fleet (PL Online),physical
+plon-res005,Store Estate (PL Online),physical
+plon-res006,Working Capital (PL Online),financial
+plon-res007,Brand (PL Online),intangible
+plon-res008,Workforce Pool (PL Online),human
+plon-res009,Warehouse Space (PL Online),physical
+plon-res010,Contact Centre Staff (PL Online),human
+plon-res011,Distribution Hubs (PL Online),physical
+plon-res012,Capital Budget (PL Online),financial
+plon-res013,Loyalty Base (PL Online),intangible
+plon-res014,Cloud Capacity (PL Online),physical
+plon-res015,Licence Portfolio (PL Online),intangible
+plwh-res001,Capital Budget (PL Wholesale),financial
+plwh-res002,Licence Portfolio (PL Wholesale),intangible
+plwh-res003,Engineering Team (PL Wholesale),human
+plwh-res004,Data Platform (PL Wholesale),intangible
+plwh-res005,Supplier Network (PL Wholesale),intangible
+plwh-res006,Distribution Hubs (PL Wholesale),physical
+plwh-res007,Brand (PL Wholesale),intangible
+plwh-res008,Cloud Capacity (PL Wholesale),physical
+plwh-res009,Delivery Fleet (PL Wholesale),physical
+plwh-res010,Warehouse Space (PL Wholesale),physical
+plwh-res011,Working Capital (PL Wholesale),financial
+plwh-res012,Contact Centre Staff (PL Wholesale),human
+plwh-res013,Store Estate (PL Wholesale),physical
+plwh-res014,Loyalty Base (PL Wholesale),intangible
+plwh-res015,Workforce Pool (PL Wholesale),human
+pllg-res001,Workforce Pool (PL Logistics),human
+pllg-res002,Delivery Fleet (PL Logistics),physical
+pllg-res003,Store Estate (PL Logistics),physical
+pllg-res004,Data Platform (PL Logistics),intangible
+pllg-res005,Contact Centre Staff (PL Logistics),human
+pllg-res006,Distribution Hubs (PL Logistics),physical
+pllg-res007,Capital Budget (PL Logistics),financial
+pllg-res008,Brand (PL Logistics),intangible
+pllg-res009,Working Capital (PL Logistics),financial
+pllg-res010,Warehouse Space (PL Logistics),physical
+pllg-res011,Supplier Network (PL Logistics),intangible
+pllg-res012,Cloud Capacity (PL Logistics),physical
+pllg-res013,Loyalty Base (PL Logistics),intangible
+pllg-res014,Engineering Team (PL Logistics),human
+pllg-res015,Licence Portfolio (PL Logistics),intangible
+sest-res001,Engineering Team (SE Stores),human
+sest-res002,Cloud Capacity (SE Stores),physical
+sest-res003,Data Platform (SE Stores),intangible
+sest-res004,Contact Centre Staff (SE Stores),human
+sest-res005,Working Capital (SE Stores),financial
+sest-res006,Distribution Hubs (SE Stores),physical
+sest-res007,Capital Budget (SE Stores),financial
+sest-res008,Warehouse Space (SE Stores),physical
+sest-res009,Workforce Pool (SE Stores),human
+sest-res010,Supplier Network (SE Stores),intangible
+sest-res011,Store Estate (SE Stores),physical
+sest-res012,Delivery Fleet (SE Stores),physical
+sest-res013,Brand (SE Stores),intangible
+sest-res014,Loyalty Base (SE Stores),intangible
+sest-res015,Licence Portfolio (SE Stores),intangible
+seon-res001,Store Estate (SE Online),physical
+seon-res002,Engineering Team (SE Online),human
+seon-res003,Capital Budget (SE Online),financial
+seon-res004,Delivery Fleet (SE Online),physical
+seon-res005,Distribution Hubs (SE Online),physical
+seon-res006,Loyalty Base (SE Online),intangible
+seon-res007,Brand (SE Online),intangible
+seon-res008,Working Capital (SE Online),financial
+seon-res009,Data Platform (SE Online),intangible
+seon-res010,Licence Portfolio (SE Online),intangible
+seon-res011,Workforce Pool (SE Online),human
+seon-res012,Cloud Capacity (SE Online),physical
+seon-res013,Warehouse Space (SE Online),physical
+seon-res014,Supplier Network (SE Online),intangible
+seon-res015,Contact Centre Staff (SE Online),human
+sewh-res001,Cloud Capacity (SE Wholesale),physical
+sewh-res002,Licence Portfolio (SE Wholesale),intangible
+sewh-res003,Capital Budget (SE Wholesale),financial
+sewh-res004,Working Capital (SE Wholesale),financial
+sewh-res005,Contact Centre Staff (SE Wholesale),human
+sewh-res006,Store Estate (SE Wholesale),physical
+sewh-res007,Workforce Pool (SE Wholesale),human
+sewh-res008,Warehouse Space (SE Wholesale),physical
+sewh-res009,Brand (SE Wholesale),intangible
+sewh-res010,Distribution Hubs (SE Wholesale),physical
+sewh-res011,Data Platform (SE Wholesale),intangible
+sewh-res012,Supplier Network (SE Wholesale),intangible
+sewh-res013,Loyalty Base (SE Wholesale),intangible
+sewh-res014,Delivery Fleet (SE Wholesale),physical
+sewh-res015,Engineering Team (SE Wholesale),human
+selg-res001,Supplier Network (SE Logistics),intangible
+selg-res002,Engineering Team (SE Logistics),human
+selg-res003,Warehouse Space (SE Logistics),physical
+selg-res004,Licence Portfolio (SE Logistics),intangible
+selg-res005,Contact Centre Staff (SE Logistics),human
+selg-res006,Data Platform (SE Logistics),intangible
+selg-res007,Loyalty Base (SE Logistics),intangible
+selg-res008,Delivery Fleet (SE Logistics),physical
+selg-res009,Distribution Hubs (SE Logistics),physical
+selg-res010,Working Capital (SE Logistics),financial
+selg-res011,Store Estate (SE Logistics),physical
+selg-res012,Brand (SE Logistics),intangible
+selg-res013,Capital Budget (SE Logistics),financial
+selg-res014,Workforce Pool (SE Logistics),human
+selg-res015,Cloud Capacity (SE Logistics),physical
+nost-res001,Cloud Capacity (NO Stores),physical
+nost-res002,Loyalty Base (NO Stores),intangible
+nost-res003,Licence Portfolio (NO Stores),intangible
+nost-res004,Delivery Fleet (NO Stores),physical
+nost-res005,Distribution Hubs (NO Stores),physical
+nost-res006,Capital Budget (NO Stores),financial
+nost-res007,Warehouse Space (NO Stores),physical
+nost-res008,Supplier Network (NO Stores),intangible
+nost-res009,Brand (NO Stores),intangible
+nost-res010,Engineering Team (NO Stores),human
+nost-res011,Store Estate (NO Stores),physical
+nost-res012,Working Capital (NO Stores),financial
+nost-res013,Workforce Pool (NO Stores),human
+nost-res014,Contact Centre Staff (NO Stores),human
+nost-res015,Data Platform (NO Stores),intangible
+noon-res001,Workforce Pool (NO Online),human
+noon-res002,Cloud Capacity (NO Online),physical
+noon-res003,Store Estate (NO Online),physical
+noon-res004,Brand (NO Online),intangible
+noon-res005,Working Capital (NO Online),financial
+noon-res006,Loyalty Base (NO Online),intangible
+noon-res007,Delivery Fleet (NO Online),physical
+noon-res008,Data Platform (NO Online),intangible
+noon-res009,Contact Centre Staff (NO Online),human
+noon-res010,Distribution Hubs (NO Online),physical
+noon-res011,Capital Budget (NO Online),financial
+noon-res012,Warehouse Space (NO Online),physical
+noon-res013,Licence Portfolio (NO Online),intangible
+noon-res014,Engineering Team (NO Online),human
+noon-res015,Supplier Network (NO Online),intangible
+nowh-res001,Supplier Network (NO Wholesale),intangible
+nowh-res002,Engineering Team (NO Wholesale),human
+nowh-res003,Distribution Hubs (NO Wholesale),physical
+nowh-res004,Workforce Pool (NO Wholesale),human
+nowh-res005,Delivery Fleet (NO Wholesale),physical
+nowh-res006,Capital Budget (NO Wholesale),financial
+nowh-res007,Warehouse Space (NO Wholesale),physical
+nowh-res008,Data Platform (NO Wholesale),intangible
+nowh-res009,Licence Portfolio (NO Wholesale),intangible
+nowh-res010,Contact Centre Staff (NO Wholesale),human
+nowh-res011,Working Capital (NO Wholesale),financial
+nowh-res012,Brand (NO Wholesale),intangible
+nowh-res013,Store Estate (NO Wholesale),physical
+nowh-res014,Cloud Capacity (NO Wholesale),physical
+nowh-res015,Loyalty Base (NO Wholesale),intangible
+nolg-res001,Warehouse Space (NO Logistics),physical
+nolg-res002,Distribution Hubs (NO Logistics),physical
+nolg-res003,Data Platform (NO Logistics),intangible
+nolg-res004,Delivery Fleet (NO Logistics),physical
+nolg-res005,Cloud Capacity (NO Logistics),physical
+nolg-res006,Supplier Network (NO Logistics),intangible
+nolg-res007,Working Capital (NO Logistics),financial
+nolg-res008,Licence Portfolio (NO Logistics),intangible
+nolg-res009,Capital Budget (NO Logistics),financial
+nolg-res010,Workforce Pool (NO Logistics),human
+nolg-res011,Contact Centre Staff (NO Logistics),human
+nolg-res012,Store Estate (NO Logistics),physical
+nolg-res013,Loyalty Base (NO Logistics),intangible
+nolg-res014,Brand (NO Logistics),intangible
+nolg-res015,Engineering Team (NO Logistics),human
+dkst-res001,Capital Budget (DK Stores),financial
+dkst-res002,Licence Portfolio (DK Stores),intangible
+dkst-res003,Brand (DK Stores),intangible
+dkst-res004,Working Capital (DK Stores),financial
+dkst-res005,Contact Centre Staff (DK Stores),human
+dkst-res006,Store Estate (DK Stores),physical
+dkst-res007,Workforce Pool (DK Stores),human
+dkst-res008,Delivery Fleet (DK Stores),physical
+dkst-res009,Loyalty Base (DK Stores),intangible
+dkst-res010,Data Platform (DK Stores),intangible
+dkst-res011,Supplier Network (DK Stores),intangible
+dkst-res012,Distribution Hubs (DK Stores),physical
+dkst-res013,Cloud Capacity (DK Stores),physical
+dkst-res014,Engineering Team (DK Stores),human
+dkst-res015,Warehouse Space (DK Stores),physical
+dkon-res001,Engineering Team (DK Online),human
+dkon-res002,Licence Portfolio (DK Online),intangible
+dkon-res003,Store Estate (DK Online),physical
+dkon-res004,Capital Budget (DK Online),financial
+dkon-res005,Brand (DK Online),intangible
+dkon-res006,Loyalty Base (DK Online),intangible
+dkon-res007,Delivery Fleet (DK Online),physical
+dkon-res008,Supplier Network (DK Online),intangible
+dkon-res009,Cloud Capacity (DK Online),physical
+dkon-res010,Workforce Pool (DK Online),human
+dkon-res011,Working Capital (DK Online),financial
+dkon-res012,Data Platform (DK Online),intangible
+dkon-res013,Distribution Hubs (DK Online),physical
+dkon-res014,Warehouse Space (DK Online),physical
+dkon-res015,Contact Centre Staff (DK Online),human
+dkwh-res001,Engineering Team (DK Wholesale),human
+dkwh-res002,Supplier Network (DK Wholesale),intangible
+dkwh-res003,Workforce Pool (DK Wholesale),human
+dkwh-res004,Delivery Fleet (DK Wholesale),physical
+dkwh-res005,Loyalty Base (DK Wholesale),intangible
+dkwh-res006,Capital Budget (DK Wholesale),financial
+dkwh-res007,Contact Centre Staff (DK Wholesale),human
+dkwh-res008,Brand (DK Wholesale),intangible
+dkwh-res009,Warehouse Space (DK Wholesale),physical
+dkwh-res010,Distribution Hubs (DK Wholesale),physical
+dkwh-res011,Working Capital (DK Wholesale),financial
+dkwh-res012,Store Estate (DK Wholesale),physical
+dkwh-res013,Cloud Capacity (DK Wholesale),physical
+dkwh-res014,Licence Portfolio (DK Wholesale),intangible
+dkwh-res015,Data Platform (DK Wholesale),intangible
+dklg-res001,Distribution Hubs (DK Logistics),physical
+dklg-res002,Loyalty Base (DK Logistics),intangible
+dklg-res003,Contact Centre Staff (DK Logistics),human
+dklg-res004,Licence Portfolio (DK Logistics),intangible
+dklg-res005,Working Capital (DK Logistics),financial
+dklg-res006,Cloud Capacity (DK Logistics),physical
+dklg-res007,Delivery Fleet (DK Logistics),physical
+dklg-res008,Warehouse Space (DK Logistics),physical
+dklg-res009,Workforce Pool (DK Logistics),human
+dklg-res010,Supplier Network (DK Logistics),intangible
+dklg-res011,Capital Budget (DK Logistics),financial
+dklg-res012,Brand (DK Logistics),intangible
+dklg-res013,Engineering Team (DK Logistics),human
+dklg-res014,Store Estate (DK Logistics),physical
+dklg-res015,Data Platform (DK Logistics),intangible
+fist-res001,Engineering Team (FI Stores),human
+fist-res002,Distribution Hubs (FI Stores),physical
+fist-res003,Data Platform (FI Stores),intangible
+fist-res004,Brand (FI Stores),intangible
+fist-res005,Workforce Pool (FI Stores),human
+fist-res006,Contact Centre Staff (FI Stores),human
+fist-res007,Cloud Capacity (FI Stores),physical
+fist-res008,Loyalty Base (FI Stores),intangible
+fist-res009,Delivery Fleet (FI Stores),physical
+fist-res010,Licence Portfolio (FI Stores),intangible
+fist-res011,Store Estate (FI Stores),physical
+fist-res012,Warehouse Space (FI Stores),physical
+fist-res013,Capital Budget (FI Stores),financial
+fist-res014,Working Capital (FI Stores),financial
+fist-res015,Supplier Network (FI Stores),intangible
+fion-res001,Warehouse Space (FI Online),physical
+fion-res002,Loyalty Base (FI Online),intangible
+fion-res003,Cloud Capacity (FI Online),physical
+fion-res004,Data Platform (FI Online),intangible
+fion-res005,Working Capital (FI Online),financial
+fion-res006,Capital Budget (FI Online),financial
+fion-res007,Supplier Network (FI Online),intangible
+fion-res008,Delivery Fleet (FI Online),physical
+fion-res009,Brand (FI Online),intangible
+fion-res010,Workforce Pool (FI Online),human
+fion-res011,Engineering Team (FI Online),human
+fion-res012,Store Estate (FI Online),physical
+fion-res013,Contact Centre Staff (FI Online),human
+fion-res014,Licence Portfolio (FI Online),intangible
+fion-res015,Distribution Hubs (FI Online),physical
+fiwh-res001,Brand (FI Wholesale),intangible
+fiwh-res002,Warehouse Space (FI Wholesale),physical
+fiwh-res003,Supplier Network (FI Wholesale),intangible
+fiwh-res004,Licence Portfolio (FI Wholesale),intangible
+fiwh-res005,Store Estate (FI Wholesale),physical
+fiwh-res006,Cloud Capacity (FI Wholesale),physical
+fiwh-res007,Contact Centre Staff (FI Wholesale),human
+fiwh-res008,Workforce Pool (FI Wholesale),human
+fiwh-res009,Working Capital (FI Wholesale),financial
+fiwh-res010,Data Platform (FI Wholesale),intangible
+fiwh-res011,Engineering Team (FI Wholesale),human
+fiwh-res012,Capital Budget (FI Wholesale),financial
+fiwh-res013,Loyalty Base (FI Wholesale),intangible
+fiwh-res014,Delivery Fleet (FI Wholesale),physical
+fiwh-res015,Distribution Hubs (FI Wholesale),physical
+filg-res001,Working Capital (FI Logistics),financial
+filg-res002,Delivery Fleet (FI Logistics),physical
+filg-res003,Store Estate (FI Logistics),physical
+filg-res004,Warehouse Space (FI Logistics),physical
+filg-res005,Distribution Hubs (FI Logistics),physical
+filg-res006,Licence Portfolio (FI Logistics),intangible
+filg-res007,Loyalty Base (FI Logistics),intangible
+filg-res008,Engineering Team (FI Logistics),human
+filg-res009,Workforce Pool (FI Logistics),human
+filg-res010,Data Platform (FI Logistics),intangible
+filg-res011,Contact Centre Staff (FI Logistics),human
+filg-res012,Capital Budget (FI Logistics),financial
+filg-res013,Brand (FI Logistics),intangible
+filg-res014,Supplier Network (FI Logistics),intangible
+filg-res015,Cloud Capacity (FI Logistics),physical
+czst-res001,Data Platform (CZ Stores),intangible
+czst-res002,Brand (CZ Stores),intangible
+czst-res003,Licence Portfolio (CZ Stores),intangible
+czst-res004,Warehouse Space (CZ Stores),physical
+czst-res005,Loyalty Base (CZ Stores),intangible
+czst-res006,Working Capital (CZ Stores),financial
+czst-res007,Cloud Capacity (CZ Stores),physical
+czst-res008,Capital Budget (CZ Stores),financial
+czst-res009,Supplier Network (CZ Stores),intangible
+czst-res010,Contact Centre Staff (CZ Stores),human
+czst-res011,Workforce Pool (CZ Stores),human
+czst-res012,Distribution Hubs (CZ Stores),physical
+czst-res013,Delivery Fleet (CZ Stores),physical
+czst-res014,Store Estate (CZ Stores),physical
+czst-res015,Engineering Team (CZ Stores),human
+czon-res001,Workforce Pool (CZ Online),human
+czon-res002,Distribution Hubs (CZ Online),physical
+czon-res003,Cloud Capacity (CZ Online),physical
+czon-res004,Capital Budget (CZ Online),financial
+czon-res005,Licence Portfolio (CZ Online),intangible
+czon-res006,Loyalty Base (CZ Online),intangible
+czon-res007,Supplier Network (CZ Online),intangible
+czon-res008,Brand (CZ Online),intangible
+czon-res009,Warehouse Space (CZ Online),physical
+czon-res010,Delivery Fleet (CZ Online),physical
+czon-res011,Engineering Team (CZ Online),human
+czon-res012,Contact Centre Staff (CZ Online),human
+czon-res013,Store Estate (CZ Online),physical
+czon-res014,Working Capital (CZ Online),financial
+czon-res015,Data Platform (CZ Online),intangible
+czwh-res001,Engineering Team (CZ Wholesale),human
+czwh-res002,Distribution Hubs (CZ Wholesale),physical
+czwh-res003,Capital Budget (CZ Wholesale),financial
+czwh-res004,Contact Centre Staff (CZ Wholesale),human
+czwh-res005,Licence Portfolio (CZ Wholesale),intangible
+czwh-res006,Data Platform (CZ Wholesale),intangible
+czwh-res007,Loyalty Base (CZ Wholesale),intangible
+czwh-res008,Supplier Network (CZ Wholesale),intangible
+czwh-res009,Workforce Pool (CZ Wholesale),human
+czwh-res010,Cloud Capacity (CZ Wholesale),physical
+czwh-res011,Store Estate (CZ Wholesale),physical
+czwh-res012,Brand (CZ Wholesale),intangible
+czwh-res013,Working Capital (CZ Wholesale),financial
+czwh-res014,Delivery Fleet (CZ Wholesale),physical
+czwh-res015,Warehouse Space (CZ Wholesale),physical
+czlg-res001,Supplier Network (CZ Logistics),intangible
+czlg-res002,Engineering Team (CZ Logistics),human
+czlg-res003,Workforce Pool (CZ Logistics),human
+czlg-res004,Working Capital (CZ Logistics),financial
+czlg-res005,Loyalty Base (CZ Logistics),intangible
+czlg-res006,Distribution Hubs (CZ Logistics),physical
+czlg-res007,Contact Centre Staff (CZ Logistics),human
+czlg-res008,Cloud Capacity (CZ Logistics),physical
+czlg-res009,Store Estate (CZ Logistics),physical
+czlg-res010,Data Platform (CZ Logistics),intangible
+czlg-res011,Delivery Fleet (CZ Logistics),physical
+czlg-res012,Licence Portfolio (CZ Logistics),intangible
+czlg-res013,Brand (CZ Logistics),intangible
+czlg-res014,Capital Budget (CZ Logistics),financial
+czlg-res015,Warehouse Space (CZ Logistics),physical
+grst-res001,Working Capital (GR Stores),financial
+grst-res002,Workforce Pool (GR Stores),human
+grst-res003,Loyalty Base (GR Stores),intangible
+grst-res004,Supplier Network (GR Stores),intangible
+grst-res005,Distribution Hubs (GR Stores),physical
+grst-res006,Engineering Team (GR Stores),human
+grst-res007,Brand (GR Stores),intangible
+grst-res008,Warehouse Space (GR Stores),physical
+grst-res009,Capital Budget (GR Stores),financial
+grst-res010,Licence Portfolio (GR Stores),intangible
+grst-res011,Delivery Fleet (GR Stores),physical
+grst-res012,Contact Centre Staff (GR Stores),human
+grst-res013,Store Estate (GR Stores),physical
+grst-res014,Cloud Capacity (GR Stores),physical
+grst-res015,Data Platform (GR Stores),intangible
+gron-res001,Supplier Network (GR Online),intangible
+gron-res002,Distribution Hubs (GR Online),physical
+gron-res003,Brand (GR Online),intangible
+gron-res004,Licence Portfolio (GR Online),intangible
+gron-res005,Loyalty Base (GR Online),intangible
+gron-res006,Workforce Pool (GR Online),human
+gron-res007,Store Estate (GR Online),physical
+gron-res008,Working Capital (GR Online),financial
+gron-res009,Capital Budget (GR Online),financial
+gron-res010,Engineering Team (GR Online),human
+gron-res011,Delivery Fleet (GR Online),physical
+gron-res012,Contact Centre Staff (GR Online),human
+gron-res013,Data Platform (GR Online),intangible
+gron-res014,Cloud Capacity (GR Online),physical
+gron-res015,Warehouse Space (GR Online),physical
+grwh-res001,Licence Portfolio (GR Wholesale),intangible
+grwh-res002,Distribution Hubs (GR Wholesale),physical
+grwh-res003,Data Platform (GR Wholesale),intangible
+grwh-res004,Working Capital (GR Wholesale),financial
+grwh-res005,Supplier Network (GR Wholesale),intangible
+grwh-res006,Loyalty Base (GR Wholesale),intangible
+grwh-res007,Workforce Pool (GR Wholesale),human
+grwh-res008,Capital Budget (GR Wholesale),financial
+grwh-res009,Delivery Fleet (GR Wholesale),physical
+grwh-res010,Warehouse Space (GR Wholesale),physical
+grwh-res011,Engineering Team (GR Wholesale),human
+grwh-res012,Brand (GR Wholesale),intangible
+grwh-res013,Store Estate (GR Wholesale),physical
+grwh-res014,Contact Centre Staff (GR Wholesale),human
+grwh-res015,Cloud Capacity (GR Wholesale),physical
+grlg-res001,Delivery Fleet (GR Logistics),physical
+grlg-res002,Data Platform (GR Logistics),intangible
+grlg-res003,Distribution Hubs (GR Logistics),physical
+grlg-res004,Cloud Capacity (GR Logistics),physical
+grlg-res005,Workforce Pool (GR Logistics),human
+grlg-res006,Capital Budget (GR Logistics),financial
+grlg-res007,Warehouse Space (GR Logistics),physical
+grlg-res008,Contact Centre Staff (GR Logistics),human
+grlg-res009,Working Capital (GR Logistics),financial
+grlg-res010,Brand (GR Logistics),intangible
+grlg-res011,Engineering Team (GR Logistics),human
+grlg-res012,Loyalty Base (GR Logistics),intangible
+grlg-res013,Store Estate (GR Logistics),physical
+grlg-res014,Licence Portfolio (GR Logistics),intangible
+grlg-res015,Supplier Network (GR Logistics),intangible
+hust-res001,Contact Centre Staff (HU Stores),human
+hust-res002,Data Platform (HU Stores),intangible
+hust-res003,Distribution Hubs (HU Stores),physical
+hust-res004,Store Estate (HU Stores),physical
+hust-res005,Warehouse Space (HU Stores),physical
+hust-res006,Working Capital (HU Stores),financial
+hust-res007,Brand (HU Stores),intangible
+hust-res008,Loyalty Base (HU Stores),intangible
+hust-res009,Engineering Team (HU Stores),human
+hust-res010,Cloud Capacity (HU Stores),physical
+hust-res011,Supplier Network (HU Stores),intangible
+hust-res012,Capital Budget (HU Stores),financial
+hust-res013,Workforce Pool (HU Stores),human
+hust-res014,Licence Portfolio (HU Stores),intangible
+hust-res015,Delivery Fleet (HU Stores),physical
+huon-res001,Capital Budget (HU Online),financial
+huon-res002,Store Estate (HU Online),physical
+huon-res003,Engineering Team (HU Online),human
+huon-res004,Contact Centre Staff (HU Online),human
+huon-res005,Warehouse Space (HU Online),physical
+huon-res006,Licence Portfolio (HU Online),intangible
+huon-res007,Workforce Pool (HU Online),human
+huon-res008,Working Capital (HU Online),financial
+huon-res009,Loyalty Base (HU Online),intangible
+huon-res010,Cloud Capacity (HU Online),physical
+huon-res011,Supplier Network (HU Online),intangible
+huon-res012,Brand (HU Online),intangible
+huon-res013,Data Platform (HU Online),intangible
+huon-res014,Delivery Fleet (HU Online),physical
+huon-res015,Distribution Hubs (HU Online),physical
+huwh-res001,Contact Centre Staff (HU Wholesale),human
+huwh-res002,Data Platform (HU Wholesale),intangible
+huwh-res003,Loyalty Base (HU Wholesale),intangible
+huwh-res004,Store Estate (HU Wholesale),physical
+huwh-res005,Engineering Team (HU Wholesale),human
+huwh-res006,Capital Budget (HU Wholesale),financial
+huwh-res007,Workforce Pool (HU Wholesale),human
+huwh-res008,Brand (HU Wholesale),intangible
+huwh-res009,Distribution Hubs (HU Wholesale),physical
+huwh-res010,Licence Portfolio (HU Wholesale),intangible
+huwh-res011,Supplier Network (HU Wholesale),intangible
+huwh-res012,Working Capital (HU Wholesale),financial
+huwh-res013,Warehouse Space (HU Wholesale),physical
+huwh-res014,Cloud Capacity (HU Wholesale),physical
+huwh-res015,Delivery Fleet (HU Wholesale),physical
+hulg-res001,Distribution Hubs (HU Logistics),physical
+hulg-res002,Store Estate (HU Logistics),physical
+hulg-res003,Warehouse Space (HU Logistics),physical
+hulg-res004,Engineering Team (HU Logistics),human
+hulg-res005,Loyalty Base (HU Logistics),intangible
+hulg-res006,Brand (HU Logistics),intangible
+hulg-res007,Supplier Network (HU Logistics),intangible
+hulg-res008,Contact Centre Staff (HU Logistics),human
+hulg-res009,Capital Budget (HU Logistics),financial
+hulg-res010,Delivery Fleet (HU Logistics),physical
+hulg-res011,Working Capital (HU Logistics),financial
+hulg-res012,Cloud Capacity (HU Logistics),physical
+hulg-res013,Workforce Pool (HU Logistics),human
+hulg-res014,Licence Portfolio (HU Logistics),intangible
+hulg-res015,Data Platform (HU Logistics),intangible
+rost-res001,Engineering Team (RO Stores),human
+rost-res002,Data Platform (RO Stores),intangible
+rost-res003,Contact Centre Staff (RO Stores),human
+rost-res004,Licence Portfolio (RO Stores),intangible
+rost-res005,Working Capital (RO Stores),financial
+rost-res006,Warehouse Space (RO Stores),physical
+rost-res007,Workforce Pool (RO Stores),human
+rost-res008,Capital Budget (RO Stores),financial
+rost-res009,Brand (RO Stores),intangible
+rost-res010,Store Estate (RO Stores),physical
+rost-res011,Cloud Capacity (RO Stores),physical
+rost-res012,Distribution Hubs (RO Stores),physical
+rost-res013,Delivery Fleet (RO Stores),physical
+rost-res014,Supplier Network (RO Stores),intangible
+rost-res015,Loyalty Base (RO Stores),intangible
+roon-res001,Brand (RO Online),intangible
+roon-res002,Warehouse Space (RO Online),physical
+roon-res003,Store Estate (RO Online),physical
+roon-res004,Supplier Network (RO Online),intangible
+roon-res005,Engineering Team (RO Online),human
+roon-res006,Distribution Hubs (RO Online),physical
+roon-res007,Working Capital (RO Online),financial
+roon-res008,Data Platform (RO Online),intangible
+roon-res009,Cloud Capacity (RO Online),physical
+roon-res010,Loyalty Base (RO Online),intangible
+roon-res011,Delivery Fleet (RO Online),physical
+roon-res012,Contact Centre Staff (RO Online),human
+roon-res013,Capital Budget (RO Online),financial
+roon-res014,Licence Portfolio (RO Online),intangible
+roon-res015,Workforce Pool (RO Online),human
+rowh-res001,Licence Portfolio (RO Wholesale),intangible
+rowh-res002,Capital Budget (RO Wholesale),financial
+rowh-res003,Delivery Fleet (RO Wholesale),physical
+rowh-res004,Warehouse Space (RO Wholesale),physical
+rowh-res005,Distribution Hubs (RO Wholesale),physical
+rowh-res006,Store Estate (RO Wholesale),physical
+rowh-res007,Cloud Capacity (RO Wholesale),physical
+rowh-res008,Workforce Pool (RO Wholesale),human
+rowh-res009,Brand (RO Wholesale),intangible
+rowh-res010,Contact Centre Staff (RO Wholesale),human
+rowh-res011,Loyalty Base (RO Wholesale),intangible
+rowh-res012,Supplier Network (RO Wholesale),intangible
+rowh-res013,Working Capital (RO Wholesale),financial
+rowh-res014,Data Platform (RO Wholesale),intangible
+rowh-res015,Engineering Team (RO Wholesale),human
+rolg-res001,Engineering Team (RO Logistics),human
+rolg-res002,Data Platform (RO Logistics),intangible
+rolg-res003,Capital Budget (RO Logistics),financial
+rolg-res004,Loyalty Base (RO Logistics),intangible
+rolg-res005,Delivery Fleet (RO Logistics),physical
+rolg-res006,Supplier Network (RO Logistics),intangible
+rolg-res007,Cloud Capacity (RO Logistics),physical
+rolg-res008,Warehouse Space (RO Logistics),physical
+rolg-res009,Distribution Hubs (RO Logistics),physical
+rolg-res010,Licence Portfolio (RO Logistics),intangible
+rolg-res011,Workforce Pool (RO Logistics),human
+rolg-res012,Store Estate (RO Logistics),physical
+rolg-res013,Contact Centre Staff (RO Logistics),human
+rolg-res014,Brand (RO Logistics),intangible
+rolg-res015,Working Capital (RO Logistics),financial
+hrst-res001,Licence Portfolio (HR Stores),intangible
+hrst-res002,Brand (HR Stores),intangible
+hrst-res003,Store Estate (HR Stores),physical
+hrst-res004,Contact Centre Staff (HR Stores),human
+hrst-res005,Engineering Team (HR Stores),human
+hrst-res006,Capital Budget (HR Stores),financial
+hrst-res007,Delivery Fleet (HR Stores),physical
+hrst-res008,Loyalty Base (HR Stores),intangible
+hrst-res009,Distribution Hubs (HR Stores),physical
+hrst-res010,Working Capital (HR Stores),financial
+hrst-res011,Supplier Network (HR Stores),intangible
+hrst-res012,Cloud Capacity (HR Stores),physical
+hrst-res013,Workforce Pool (HR Stores),human
+hrst-res014,Warehouse Space (HR Stores),physical
+hrst-res015,Data Platform (HR Stores),intangible
+hron-res001,Brand (HR Online),intangible
+hron-res002,Contact Centre Staff (HR Online),human
+hron-res003,Data Platform (HR Online),intangible
+hron-res004,Cloud Capacity (HR Online),physical
+hron-res005,Store Estate (HR Online),physical
+hron-res006,Loyalty Base (HR Online),intangible
+hron-res007,Licence Portfolio (HR Online),intangible
+hron-res008,Warehouse Space (HR Online),physical
+hron-res009,Delivery Fleet (HR Online),physical
+hron-res010,Working Capital (HR Online),financial
+hron-res011,Capital Budget (HR Online),financial
+hron-res012,Supplier Network (HR Online),intangible
+hron-res013,Engineering Team (HR Online),human
+hron-res014,Distribution Hubs (HR Online),physical
+hron-res015,Workforce Pool (HR Online),human
+hrwh-res001,Brand (HR Wholesale),intangible
+hrwh-res002,Warehouse Space (HR Wholesale),physical
+hrwh-res003,Delivery Fleet (HR Wholesale),physical
+hrwh-res004,Workforce Pool (HR Wholesale),human
+hrwh-res005,Distribution Hubs (HR Wholesale),physical
+hrwh-res006,Engineering Team (HR Wholesale),human
+hrwh-res007,Data Platform (HR Wholesale),intangible
+hrwh-res008,Loyalty Base (HR Wholesale),intangible
+hrwh-res009,Supplier Network (HR Wholesale),intangible
+hrwh-res010,Capital Budget (HR Wholesale),financial
+hrwh-res011,Contact Centre Staff (HR Wholesale),human
+hrwh-res012,Store Estate (HR Wholesale),physical
+hrwh-res013,Cloud Capacity (HR Wholesale),physical
+hrwh-res014,Licence Portfolio (HR Wholesale),intangible
+hrwh-res015,Working Capital (HR Wholesale),financial
+hrlg-res001,Store Estate (HR Logistics),physical
+hrlg-res002,Contact Centre Staff (HR Logistics),human
+hrlg-res003,Supplier Network (HR Logistics),intangible
+hrlg-res004,Loyalty Base (HR Logistics),intangible
+hrlg-res005,Warehouse Space (HR Logistics),physical
+hrlg-res006,Distribution Hubs (HR Logistics),physical
+hrlg-res007,Brand (HR Logistics),intangible
+hrlg-res008,Delivery Fleet (HR Logistics),physical
+hrlg-res009,Licence Portfolio (HR Logistics),intangible
+hrlg-res010,Engineering Team (HR Logistics),human
+hrlg-res011,Cloud Capacity (HR Logistics),physical
+hrlg-res012,Working Capital (HR Logistics),financial
+hrlg-res013,Capital Budget (HR Logistics),financial
+hrlg-res014,Workforce Pool (HR Logistics),human
+hrlg-res015,Data Platform (HR Logistics),intangible
+skst-res001,Loyalty Base (SK Stores),intangible
+skst-res002,Delivery Fleet (SK Stores),physical
+skst-res003,Supplier Network (SK Stores),intangible
+skst-res004,Workforce Pool (SK Stores),human
+skst-res005,Cloud Capacity (SK Stores),physical
+skst-res006,Engineering Team (SK Stores),human
+skst-res007,Contact Centre Staff (SK Stores),human
+skst-res008,Licence Portfolio (SK Stores),intangible
+skst-res009,Brand (SK Stores),intangible
+skst-res010,Store Estate (SK Stores),physical
+skst-res011,Capital Budget (SK Stores),financial
+skst-res012,Distribution Hubs (SK Stores),physical
+skst-res013,Warehouse Space (SK Stores),physical
+skst-res014,Working Capital (SK Stores),financial
+skst-res015,Data Platform (SK Stores),intangible
+skon-res001,Cloud Capacity (SK Online),physical
+skon-res002,Working Capital (SK Online),financial
+skon-res003,Data Platform (SK Online),intangible
+skon-res004,Supplier Network (SK Online),intangible
+skon-res005,Capital Budget (SK Online),financial
+skon-res006,Warehouse Space (SK Online),physical
+skon-res007,Distribution Hubs (SK Online),physical
+skon-res008,Loyalty Base (SK Online),intangible
+skon-res009,Delivery Fleet (SK Online),physical
+skon-res010,Engineering Team (SK Online),human
+skon-res011,Workforce Pool (SK Online),human
+skon-res012,Store Estate (SK Online),physical
+skon-res013,Licence Portfolio (SK Online),intangible
+skon-res014,Brand (SK Online),intangible
+skon-res015,Contact Centre Staff (SK Online),human
+skwh-res001,Capital Budget (SK Wholesale),financial
+skwh-res002,Warehouse Space (SK Wholesale),physical
+skwh-res003,Delivery Fleet (SK Wholesale),physical
+skwh-res004,Contact Centre Staff (SK Wholesale),human
+skwh-res005,Brand (SK Wholesale),intangible
+skwh-res006,Working Capital (SK Wholesale),financial
+skwh-res007,Loyalty Base (SK Wholesale),intangible
+skwh-res008,Engineering Team (SK Wholesale),human
+skwh-res009,Data Platform (SK Wholesale),intangible
+skwh-res010,Licence Portfolio (SK Wholesale),intangible
+skwh-res011,Distribution Hubs (SK Wholesale),physical
+skwh-res012,Cloud Capacity (SK Wholesale),physical
+skwh-res013,Supplier Network (SK Wholesale),intangible
+skwh-res014,Store Estate (SK Wholesale),physical
+skwh-res015,Workforce Pool (SK Wholesale),human
+sklg-res001,Data Platform (SK Logistics),intangible
+sklg-res002,Brand (SK Logistics),intangible
+sklg-res003,Distribution Hubs (SK Logistics),physical
+sklg-res004,Workforce Pool (SK Logistics),human
+sklg-res005,Contact Centre Staff (SK Logistics),human
+sklg-res006,Loyalty Base (SK Logistics),intangible
+sklg-res007,Store Estate (SK Logistics),physical
+sklg-res008,Warehouse Space (SK Logistics),physical
+sklg-res009,Delivery Fleet (SK Logistics),physical
+sklg-res010,Engineering Team (SK Logistics),human
+sklg-res011,Working Capital (SK Logistics),financial
+sklg-res012,Cloud Capacity (SK Logistics),physical
+sklg-res013,Licence Portfolio (SK Logistics),intangible
+sklg-res014,Capital Budget (SK Logistics),financial
+sklg-res015,Supplier Network (SK Logistics),intangible
+bgst-res001,Delivery Fleet (BG Stores),physical
+bgst-res002,Loyalty Base (BG Stores),intangible
+bgst-res003,Engineering Team (BG Stores),human
+bgst-res004,Store Estate (BG Stores),physical
+bgst-res005,Distribution Hubs (BG Stores),physical
+bgst-res006,Brand (BG Stores),intangible
+bgst-res007,Contact Centre Staff (BG Stores),human
+bgst-res008,Workforce Pool (BG Stores),human
+bgst-res009,Licence Portfolio (BG Stores),intangible
+bgst-res010,Supplier Network (BG Stores),intangible
+bgst-res011,Cloud Capacity (BG Stores),physical
+bgst-res012,Warehouse Space (BG Stores),physical
+bgst-res013,Data Platform (BG Stores),intangible
+bgst-res014,Working Capital (BG Stores),financial
+bgst-res015,Capital Budget (BG Stores),financial
+bgon-res001,Contact Centre Staff (BG Online),human
+bgon-res002,Licence Portfolio (BG Online),intangible
+bgon-res003,Workforce Pool (BG Online),human
+bgon-res004,Warehouse Space (BG Online),physical
+bgon-res005,Brand (BG Online),intangible
+bgon-res006,Engineering Team (BG Online),human
+bgon-res007,Store Estate (BG Online),physical
+bgon-res008,Delivery Fleet (BG Online),physical
+bgon-res009,Working Capital (BG Online),financial
+bgon-res010,Capital Budget (BG Online),financial
+bgon-res011,Loyalty Base (BG Online),intangible
+bgon-res012,Distribution Hubs (BG Online),physical
+bgon-res013,Data Platform (BG Online),intangible
+bgon-res014,Cloud Capacity (BG Online),physical
+bgon-res015,Supplier Network (BG Online),intangible
+bgwh-res001,Supplier Network (BG Wholesale),intangible
+bgwh-res002,Capital Budget (BG Wholesale),financial
+bgwh-res003,Working Capital (BG Wholesale),financial
+bgwh-res004,Engineering Team (BG Wholesale),human
+bgwh-res005,Brand (BG Wholesale),intangible
+bgwh-res006,Data Platform (BG Wholesale),intangible
+bgwh-res007,Distribution Hubs (BG Wholesale),physical
+bgwh-res008,Licence Portfolio (BG Wholesale),intangible
+bgwh-res009,Loyalty Base (BG Wholesale),intangible
+bgwh-res010,Workforce Pool (BG Wholesale),human
+bgwh-res011,Cloud Capacity (BG Wholesale),physical
+bgwh-res012,Contact Centre Staff (BG Wholesale),human
+bgwh-res013,Delivery Fleet (BG Wholesale),physical
+bgwh-res014,Warehouse Space (BG Wholesale),physical
+bgwh-res015,Store Estate (BG Wholesale),physical
+bglg-res001,Cloud Capacity (BG Logistics),physical
+bglg-res002,Licence Portfolio (BG Logistics),intangible
+bglg-res003,Supplier Network (BG Logistics),intangible
+bglg-res004,Brand (BG Logistics),intangible
+bglg-res005,Data Platform (BG Logistics),intangible
+bglg-res006,Loyalty Base (BG Logistics),intangible
+bglg-res007,Capital Budget (BG Logistics),financial
+bglg-res008,Distribution Hubs (BG Logistics),physical
+bglg-res009,Working Capital (BG Logistics),financial
+bglg-res010,Delivery Fleet (BG Logistics),physical
+bglg-res011,Warehouse Space (BG Logistics),physical
+bglg-res012,Engineering Team (BG Logistics),human
+bglg-res013,Workforce Pool (BG Logistics),human
+bglg-res014,Contact Centre Staff (BG Logistics),human
+bglg-res015,Store Estate (BG Logistics),physical
+ltst-res001,Engineering Team (LT Stores),human
+ltst-res002,Contact Centre Staff (LT Stores),human
+ltst-res003,Warehouse Space (LT Stores),physical
+ltst-res004,Licence Portfolio (LT Stores),intangible
+ltst-res005,Loyalty Base (LT Stores),intangible
+ltst-res006,Store Estate (LT Stores),physical
+ltst-res007,Data Platform (LT Stores),intangible
+ltst-res008,Working Capital (LT Stores),financial
+ltst-res009,Workforce Pool (LT Stores),human
+ltst-res010,Distribution Hubs (LT Stores),physical
+ltst-res011,Delivery Fleet (LT Stores),physical
+ltst-res012,Cloud Capacity (LT Stores),physical
+ltst-res013,Brand (LT Stores),intangible
+ltst-res014,Capital Budget (LT Stores),financial
+ltst-res015,Supplier Network (LT Stores),intangible
+lton-res001,Licence Portfolio (LT Online),intangible
+lton-res002,Delivery Fleet (LT Online),physical
+lton-res003,Working Capital (LT Online),financial
+lton-res004,Loyalty Base (LT Online),intangible
+lton-res005,Workforce Pool (LT Online),human
+lton-res006,Store Estate (LT Online),physical
+lton-res007,Data Platform (LT Online),intangible
+lton-res008,Warehouse Space (LT Online),physical
+lton-res009,Contact Centre Staff (LT Online),human
+lton-res010,Distribution Hubs (LT Online),physical
+lton-res011,Engineering Team (LT Online),human
+lton-res012,Brand (LT Online),intangible
+lton-res013,Capital Budget (LT Online),financial
+lton-res014,Cloud Capacity (LT Online),physical
+lton-res015,Supplier Network (LT Online),intangible
+ltwh-res001,Cloud Capacity (LT Wholesale),physical
+ltwh-res002,Capital Budget (LT Wholesale),financial
+ltwh-res003,Engineering Team (LT Wholesale),human
+ltwh-res004,Data Platform (LT Wholesale),intangible
+ltwh-res005,Delivery Fleet (LT Wholesale),physical
+ltwh-res006,Distribution Hubs (LT Wholesale),physical
+ltwh-res007,Contact Centre Staff (LT Wholesale),human
+ltwh-res008,Licence Portfolio (LT Wholesale),intangible
+ltwh-res009,Working Capital (LT Wholesale),financial
+ltwh-res010,Store Estate (LT Wholesale),physical
+ltwh-res011,Workforce Pool (LT Wholesale),human
+ltwh-res012,Loyalty Base (LT Wholesale),intangible
+ltwh-res013,Supplier Network (LT Wholesale),intangible
+ltwh-res014,Brand (LT Wholesale),intangible
+ltwh-res015,Warehouse Space (LT Wholesale),physical
+ltlg-res001,Cloud Capacity (LT Logistics),physical
+ltlg-res002,Workforce Pool (LT Logistics),human
+ltlg-res003,Data Platform (LT Logistics),intangible
+ltlg-res004,Store Estate (LT Logistics),physical
+ltlg-res005,Distribution Hubs (LT Logistics),physical
+ltlg-res006,Working Capital (LT Logistics),financial
+ltlg-res007,Capital Budget (LT Logistics),financial
+ltlg-res008,Supplier Network (LT Logistics),intangible
+ltlg-res009,Contact Centre Staff (LT Logistics),human
+ltlg-res010,Delivery Fleet (LT Logistics),physical
+ltlg-res011,Engineering Team (LT Logistics),human
+ltlg-res012,Brand (LT Logistics),intangible
+ltlg-res013,Warehouse Space (LT Logistics),physical
+ltlg-res014,Loyalty Base (LT Logistics),intangible
+ltlg-res015,Licence Portfolio (LT Logistics),intangible
+lvst-res001,Warehouse Space (LV Stores),physical
+lvst-res002,Distribution Hubs (LV Stores),physical
+lvst-res003,Supplier Network (LV Stores),intangible
+lvst-res004,Cloud Capacity (LV Stores),physical
+lvst-res005,Loyalty Base (LV Stores),intangible
+lvst-res006,Workforce Pool (LV Stores),human
+lvst-res007,Contact Centre Staff (LV Stores),human
+lvst-res008,Licence Portfolio (LV Stores),intangible
+lvst-res009,Working Capital (LV Stores),financial
+lvst-res010,Data Platform (LV Stores),intangible
+lvst-res011,Engineering Team (LV Stores),human
+lvst-res012,Capital Budget (LV Stores),financial
+lvst-res013,Delivery Fleet (LV Stores),physical
+lvst-res014,Brand (LV Stores),intangible
+lvst-res015,Store Estate (LV Stores),physical
+lvon-res001,Workforce Pool (LV Online),human
+lvon-res002,Delivery Fleet (LV Online),physical
+lvon-res003,Capital Budget (LV Online),financial
+lvon-res004,Contact Centre Staff (LV Online),human
+lvon-res005,Licence Portfolio (LV Online),intangible
+lvon-res006,Cloud Capacity (LV Online),physical
+lvon-res007,Working Capital (LV Online),financial
+lvon-res008,Distribution Hubs (LV Online),physical
+lvon-res009,Warehouse Space (LV Online),physical
+lvon-res010,Store Estate (LV Online),physical
+lvon-res011,Supplier Network (LV Online),intangible
+lvon-res012,Loyalty Base (LV Online),intangible
+lvon-res013,Brand (LV Online),intangible
+lvon-res014,Engineering Team (LV Online),human
+lvon-res015,Data Platform (LV Online),intangible
+lvwh-res001,Distribution Hubs (LV Wholesale),physical
+lvwh-res002,Data Platform (LV Wholesale),intangible
+lvwh-res003,Loyalty Base (LV Wholesale),intangible
+lvwh-res004,Brand (LV Wholesale),intangible
+lvwh-res005,Engineering Team (LV Wholesale),human
+lvwh-res006,Delivery Fleet (LV Wholesale),physical
+lvwh-res007,Capital Budget (LV Wholesale),financial
+lvwh-res008,Licence Portfolio (LV Wholesale),intangible
+lvwh-res009,Supplier Network (LV Wholesale),intangible
+lvwh-res010,Warehouse Space (LV Wholesale),physical
+lvwh-res011,Workforce Pool (LV Wholesale),human
+lvwh-res012,Store Estate (LV Wholesale),physical
+lvwh-res013,Working Capital (LV Wholesale),financial
+lvwh-res014,Contact Centre Staff (LV Wholesale),human
+lvwh-res015,Cloud Capacity (LV Wholesale),physical
+lvlg-res001,Delivery Fleet (LV Logistics),physical
+lvlg-res002,Store Estate (LV Logistics),physical
+lvlg-res003,Supplier Network (LV Logistics),intangible
+lvlg-res004,Engineering Team (LV Logistics),human
+lvlg-res005,Warehouse Space (LV Logistics),physical
+lvlg-res006,Data Platform (LV Logistics),intangible
+lvlg-res007,Distribution Hubs (LV Logistics),physical
+lvlg-res008,Cloud Capacity (LV Logistics),physical
+lvlg-res009,Contact Centre Staff (LV Logistics),human
+lvlg-res010,Brand (LV Logistics),intangible
+lvlg-res011,Loyalty Base (LV Logistics),intangible
+lvlg-res012,Workforce Pool (LV Logistics),human
+lvlg-res013,Capital Budget (LV Logistics),financial
+lvlg-res014,Working Capital (LV Logistics),financial
+lvlg-res015,Licence Portfolio (LV Logistics),intangible

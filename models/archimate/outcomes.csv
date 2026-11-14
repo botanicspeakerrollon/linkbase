@@ -1,0 +1,1201 @@
+id,name,target_date
+gbst-out001,Cut Supplier handling time by 10% (GB Stores),2029-04-20
+gbst-out002,Raise Returns accuracy to 15% (GB Stores),2027-08-29
+gbst-out003,Lower Delivery cost by 15% (GB Stores),2027-06-30
+gbst-out004,Reach 5% of Supplier done without help (GB Stores),2027-10-28
+gbst-out005,Cut Customer handling time by 15% (GB Stores),2027-01-31
+gbst-out006,Raise Delivery accuracy to 30% (GB Stores),2028-05-25
+gbst-out007,Lower Fraud cost by 25% (GB Stores),2029-05-20
+gbst-out008,Reach 20% of Payment done without help (GB Stores),2027-07-30
+gbst-out009,Cut Returns handling time by 40% (GB Stores),2028-06-24
+gbst-out010,Raise Fraud accuracy to 20% (GB Stores),2028-11-21
+gbst-out011,Lower Pricing cost by 25% (GB Stores),2029-07-19
+gbst-out012,Reach 15% of Returns done without help (GB Stores),2029-10-17
+gbon-out001,Cut Promotion handling time by 5% (GB Online),2028-03-26
+gbon-out002,Raise Pricing accuracy to 20% (GB Online),2028-05-25
+gbon-out003,Lower Delivery cost by 20% (GB Online),2027-11-27
+gbon-out004,Reach 20% of Stock done without help (GB Online),2029-02-19
+gbon-out005,Cut Supplier handling time by 15% (GB Online),2028-09-22
+gbon-out006,Raise Delivery accuracy to 40% (GB Online),2029-12-16
+gbon-out007,Lower Payment cost by 5% (GB Online),2029-12-16
+gbon-out008,Reach 25% of Delivery done without help (GB Online),2028-01-26
+gbon-out009,Cut Returns handling time by 5% (GB Online),2027-08-29
+gbon-out010,Raise Stock accuracy to 20% (GB Online),2027-06-30
+gbon-out011,Lower Order cost by 5% (GB Online),2027-09-28
+gbon-out012,Reach 30% of Delivery done without help (GB Online),2027-10-28
+gbwh-out001,Cut Payment handling time by 15% (GB Wholesale),2029-02-19
+gbwh-out002,Raise Supplier accuracy to 30% (GB Wholesale),2028-02-25
+gbwh-out003,Lower Supplier cost by 5% (GB Wholesale),2029-05-20
+gbwh-out004,Reach 30% of Payment done without help (GB Wholesale),2027-01-31
+gbwh-out005,Cut Order handling time by 5% (GB Wholesale),2027-04-01
+gbwh-out006,Raise Stock accuracy to 15% (GB Wholesale),2027-08-29
+gbwh-out007,Lower Promotion cost by 10% (GB Wholesale),2027-08-29
+gbwh-out008,Reach 40% of Order done without help (GB Wholesale),2028-07-24
+gbwh-out009,Cut Stock handling time by 5% (GB Wholesale),2027-07-30
+gbwh-out010,Raise Promotion accuracy to 30% (GB Wholesale),2028-01-26
+gbwh-out011,Lower Pricing cost by 15% (GB Wholesale),2028-11-21
+gbwh-out012,Reach 15% of Supplier done without help (GB Wholesale),2028-02-25
+gblg-out001,Cut Customer handling time by 15% (GB Logistics),2027-05-31
+gblg-out002,Raise Delivery accuracy to 30% (GB Logistics),2028-05-25
+gblg-out003,Lower Delivery cost by 40% (GB Logistics),2027-11-27
+gblg-out004,Reach 10% of Fraud done without help (GB Logistics),2027-04-01
+gblg-out005,Cut Promotion handling time by 20% (GB Logistics),2028-04-25
+gblg-out006,Raise Returns accuracy to 10% (GB Logistics),2029-03-21
+gblg-out007,Lower Supplier cost by 40% (GB Logistics),2027-11-27
+gblg-out008,Reach 30% of Returns done without help (GB Logistics),2028-08-23
+gblg-out009,Cut Payment handling time by 30% (GB Logistics),2027-05-31
+gblg-out010,Raise Customer accuracy to 10% (GB Logistics),2029-04-20
+gblg-out011,Lower Pricing cost by 15% (GB Logistics),2029-11-16
+gblg-out012,Reach 10% of Returns done without help (GB Logistics),2027-05-31
+iest-out001,Cut Payment handling time by 30% (IE Stores),2027-04-01
+iest-out002,Raise Customer accuracy to 20% (IE Stores),2029-12-16
+iest-out003,Lower Returns cost by 40% (IE Stores),2028-08-23
+iest-out004,Reach 20% of Delivery done without help (IE Stores),2028-03-26
+iest-out005,Cut Delivery handling time by 20% (IE Stores),2028-11-21
+iest-out006,Raise Order accuracy to 20% (IE Stores),2027-11-27
+iest-out007,Lower Returns cost by 10% (IE Stores),2027-07-30
+iest-out008,Reach 15% of Pricing done without help (IE Stores),2029-05-20
+iest-out009,Cut Pricing handling time by 40% (IE Stores),2027-05-01
+iest-out010,Raise Order accuracy to 25% (IE Stores),2027-07-30
+iest-out011,Lower Fraud cost by 5% (IE Stores),2029-09-17
+iest-out012,Reach 25% of Order done without help (IE Stores),2027-06-30
+ieon-out001,Cut Fraud handling time by 15% (IE Online),2028-02-25
+ieon-out002,Raise Returns accuracy to 5% (IE Online),2027-09-28
+ieon-out003,Lower Pricing cost by 5% (IE Online),2028-04-25
+ieon-out004,Reach 30% of Customer done without help (IE Online),2029-02-19
+ieon-out005,Cut Fraud handling time by 30% (IE Online),2028-12-21
+ieon-out006,Raise Pricing accuracy to 10% (IE Online),2029-01-20
+ieon-out007,Lower Promotion cost by 5% (IE Online),2029-01-20
+ieon-out008,Reach 30% of Supplier done without help (IE Online),2028-07-24
+ieon-out009,Cut Delivery handling time by 15% (IE Online),2028-12-21
+ieon-out010,Raise Stock accuracy to 15% (IE Online),2028-10-22
+ieon-out011,Lower Payment cost by 40% (IE Online),2027-12-27
+ieon-out012,Reach 40% of Returns done without help (IE Online),2028-02-25
+iewh-out001,Cut Stock handling time by 10% (IE Wholesale),2029-12-16
+iewh-out002,Raise Stock accuracy to 5% (IE Wholesale),2027-05-01
+iewh-out003,Lower Delivery cost by 40% (IE Wholesale),2028-08-23
+iewh-out004,Reach 5% of Fraud done without help (IE Wholesale),2027-08-29
+iewh-out005,Cut Fraud handling time by 15% (IE Wholesale),2028-08-23
+iewh-out006,Raise Stock accuracy to 15% (IE Wholesale),2028-06-24
+iewh-out007,Lower Payment cost by 25% (IE Wholesale),2028-10-22
+iewh-out008,Reach 25% of Order done without help (IE Wholesale),2028-12-21
+iewh-out009,Cut Payment handling time by 25% (IE Wholesale),2027-07-30
+iewh-out010,Raise Customer accuracy to 25% (IE Wholesale),2028-09-22
+iewh-out011,Lower Payment cost by 15% (IE Wholesale),2027-12-27
+iewh-out012,Reach 25% of Payment done without help (IE Wholesale),2029-06-19
+ielg-out001,Cut Stock handling time by 5% (IE Logistics),2027-11-27
+ielg-out002,Raise Delivery accuracy to 25% (IE Logistics),2028-04-25
+ielg-out003,Lower Returns cost by 40% (IE Logistics),2028-09-22
+ielg-out004,Reach 30% of Pricing done without help (IE Logistics),2027-09-28
+ielg-out005,Cut Pricing handling time by 25% (IE Logistics),2029-05-20
+ielg-out006,Raise Supplier accuracy to 30% (IE Logistics),2027-12-27
+ielg-out007,Lower Order cost by 10% (IE Logistics),2028-02-25
+ielg-out008,Reach 20% of Supplier done without help (IE Logistics),2029-06-19
+ielg-out009,Cut Fraud handling time by 30% (IE Logistics),2027-07-30
+ielg-out010,Raise Supplier accuracy to 30% (IE Logistics),2028-05-25
+ielg-out011,Lower Returns cost by 5% (IE Logistics),2029-07-19
+ielg-out012,Reach 40% of Pricing done without help (IE Logistics),2029-01-20
+frst-out001,Cut Fraud handling time by 15% (FR Stores),2028-01-26
+frst-out002,Raise Fraud accuracy to 20% (FR Stores),2027-05-01
+frst-out003,Lower Customer cost by 10% (FR Stores),2028-11-21
+frst-out004,Reach 30% of Returns done without help (FR Stores),2028-11-21
+frst-out005,Cut Order handling time by 20% (FR Stores),2028-03-26
+frst-out006,Raise Supplier accuracy to 15% (FR Stores),2028-12-21
+frst-out007,Lower Fraud cost by 5% (FR Stores),2027-06-30
+frst-out008,Reach 10% of Customer done without help (FR Stores),2028-03-26
+frst-out009,Cut Supplier handling time by 25% (FR Stores),2028-05-25
+frst-out010,Raise Promotion accuracy to 15% (FR Stores),2029-04-20
+frst-out011,Lower Returns cost by 20% (FR Stores),2028-02-25
+frst-out012,Reach 25% of Pricing done without help (FR Stores),2027-11-27
+fron-out001,Cut Stock handling time by 15% (FR Online),2027-01-31
+fron-out002,Raise Stock accuracy to 20% (FR Online),2027-09-28
+fron-out003,Lower Promotion cost by 25% (FR Online),2029-08-18
+fron-out004,Reach 30% of Supplier done without help (FR Online),2028-09-22
+fron-out005,Cut Delivery handling time by 40% (FR Online),2028-09-22
+fron-out006,Raise Fraud accuracy to 5% (FR Online),2028-06-24
+fron-out007,Lower Pricing cost by 40% (FR Online),2028-08-23
+fron-out008,Reach 20% of Delivery done without help (FR Online),2028-10-22
+fron-out009,Cut Order handling time by 25% (FR Online),2027-09-28
+fron-out010,Raise Pricing accuracy to 40% (FR Online),2028-09-22
+fron-out011,Lower Promotion cost by 5% (FR Online),2029-01-20
+fron-out012,Reach 25% of Promotion done without help (FR Online),2027-06-30
+frwh-out001,Cut Order handling time by 5% (FR Wholesale),2028-02-25
+frwh-out002,Raise Delivery accuracy to 25% (FR Wholesale),2027-06-30
+frwh-out003,Lower Returns cost by 15% (FR Wholesale),2027-07-30
+frwh-out004,Reach 10% of Customer done without help (FR Wholesale),2028-08-23
+frwh-out005,Cut Supplier handling time by 40% (FR Wholesale),2028-06-24
+frwh-out006,Raise Payment accuracy to 10% (FR Wholesale),2028-12-21
+frwh-out007,Lower Customer cost by 40% (FR Wholesale),2028-04-25
+frwh-out008,Reach 40% of Payment done without help (FR Wholesale),2028-05-25
+frwh-out009,Cut Returns handling time by 25% (FR Wholesale),2029-02-19
+frwh-out010,Raise Supplier accuracy to 10% (FR Wholesale),2029-11-16
+frwh-out011,Lower Delivery cost by 10% (FR Wholesale),2027-04-01
+frwh-out012,Reach 5% of Promotion done without help (FR Wholesale),2029-02-19
+frlg-out001,Cut Fraud handling time by 40% (FR Logistics),2027-11-27
+frlg-out002,Raise Returns accuracy to 25% (FR Logistics),2028-06-24
+frlg-out003,Lower Stock cost by 10% (FR Logistics),2027-08-29
+frlg-out004,Reach 5% of Stock done without help (FR Logistics),2029-07-19
+frlg-out005,Cut Delivery handling time by 15% (FR Logistics),2027-07-30
+frlg-out006,Raise Delivery accuracy to 10% (FR Logistics),2029-07-19
+frlg-out007,Lower Supplier cost by 15% (FR Logistics),2027-05-31
+frlg-out008,Reach 40% of Order done without help (FR Logistics),2027-05-01
+frlg-out009,Cut Order handling time by 10% (FR Logistics),2027-03-02
+frlg-out010,Raise Pricing accuracy to 30% (FR Logistics),2029-05-20
+frlg-out011,Lower Delivery cost by 15% (FR Logistics),2028-10-22
+frlg-out012,Reach 40% of Returns done without help (FR Logistics),2028-11-21
+dest-out001,Cut Fraud handling time by 10% (DE Stores),2029-05-20
+dest-out002,Raise Delivery accuracy to 25% (DE Stores),2028-02-25
+dest-out003,Lower Payment cost by 10% (DE Stores),2029-08-18
+dest-out004,Reach 10% of Promotion done without help (DE Stores),2028-09-22
+dest-out005,Cut Returns handling time by 10% (DE Stores),2027-05-01
+dest-out006,Raise Customer accuracy to 5% (DE Stores),2029-04-20
+dest-out007,Lower Customer cost by 15% (DE Stores),2028-03-26
+dest-out008,Reach 30% of Customer done without help (DE Stores),2029-06-19
+dest-out009,Cut Pricing handling time by 5% (DE Stores),2028-11-21
+dest-out010,Raise Delivery accuracy to 40% (DE Stores),2028-11-21
+dest-out011,Lower Delivery cost by 15% (DE Stores),2029-04-20
+dest-out012,Reach 10% of Promotion done without help (DE Stores),2029-12-16
+deon-out001,Cut Delivery handling time by 20% (DE Online),2028-06-24
+deon-out002,Raise Customer accuracy to 5% (DE Online),2028-06-24
+deon-out003,Lower Delivery cost by 5% (DE Online),2027-12-27
+deon-out004,Reach 15% of Delivery done without help (DE Online),2029-02-19
+deon-out005,Cut Payment handling time by 40% (DE Online),2028-04-25
+deon-out006,Raise Supplier accuracy to 25% (DE Online),2028-10-22
+deon-out007,Lower Returns cost by 20% (DE Online),2027-05-31
+deon-out008,Reach 40% of Order done without help (DE Online),2027-09-28
+deon-out009,Cut Customer handling time by 15% (DE Online),2027-01-31
+deon-out010,Raise Customer accuracy to 25% (DE Online),2027-06-30
+deon-out011,Lower Delivery cost by 30% (DE Online),2029-04-20
+deon-out012,Reach 15% of Payment done without help (DE Online),2027-03-02
+dewh-out001,Cut Returns handling time by 25% (DE Wholesale),2029-10-17
+dewh-out002,Raise Delivery accuracy to 15% (DE Wholesale),2027-12-27
+dewh-out003,Lower Stock cost by 25% (DE Wholesale),2028-12-21
+dewh-out004,Reach 20% of Customer done without help (DE Wholesale),2029-07-19
+dewh-out005,Cut Customer handling time by 25% (DE Wholesale),2029-12-16
+dewh-out006,Raise Pricing accuracy to 5% (DE Wholesale),2027-12-27
+dewh-out007,Lower Stock cost by 40% (DE Wholesale),2028-03-26
+dewh-out008,Reach 20% of Supplier done without help (DE Wholesale),2029-04-20
+dewh-out009,Cut Payment handling time by 40% (DE Wholesale),2028-06-24
+dewh-out010,Raise Supplier accuracy to 5% (DE Wholesale),2028-06-24
+dewh-out011,Lower Payment cost by 30% (DE Wholesale),2028-03-26
+dewh-out012,Reach 15% of Returns done without help (DE Wholesale),2029-03-21
+delg-out001,Cut Pricing handling time by 15% (DE Logistics),2027-10-28
+delg-out002,Raise Customer accuracy to 40% (DE Logistics),2029-04-20
+delg-out003,Lower Stock cost by 20% (DE Logistics),2028-07-24
+delg-out004,Reach 20% of Order done without help (DE Logistics),2029-06-19
+delg-out005,Cut Supplier handling time by 15% (DE Logistics),2027-05-31
+delg-out006,Raise Pricing accuracy to 5% (DE Logistics),2028-09-22
+delg-out007,Lower Delivery cost by 40% (DE Logistics),2028-06-24
+delg-out008,Reach 25% of Supplier done without help (DE Logistics),2029-04-20
+delg-out009,Cut Stock handling time by 20% (DE Logistics),2027-06-30
+delg-out010,Raise Payment accuracy to 20% (DE Logistics),2027-08-29
+delg-out011,Lower Customer cost by 10% (DE Logistics),2028-01-26
+delg-out012,Reach 15% of Fraud done without help (DE Logistics),2028-07-24
+nlst-out001,Cut Fraud handling time by 5% (NL Stores),2027-12-27
+nlst-out002,Raise Delivery accuracy to 10% (NL Stores),2028-08-23
+nlst-out003,Lower Fraud cost by 30% (NL Stores),2028-10-22
+nlst-out004,Reach 5% of Returns done without help (NL Stores),2029-10-17
+nlst-out005,Cut Delivery handling time by 25% (NL Stores),2028-07-24
+nlst-out006,Raise Order accuracy to 5% (NL Stores),2028-02-25
+nlst-out007,Lower Customer cost by 20% (NL Stores),2028-09-22
+nlst-out008,Reach 5% of Payment done without help (NL Stores),2028-12-21
+nlst-out009,Cut Customer handling time by 25% (NL Stores),2029-02-19
+nlst-out010,Raise Customer accuracy to 20% (NL Stores),2028-09-22
+nlst-out011,Lower Customer cost by 10% (NL Stores),2027-03-02
+nlst-out012,Reach 5% of Delivery done without help (NL Stores),2029-10-17
+nlon-out001,Cut Payment handling time by 10% (NL Online),2029-09-17
+nlon-out002,Raise Customer accuracy to 15% (NL Online),2029-11-16
+nlon-out003,Lower Stock cost by 25% (NL Online),2027-10-28
+nlon-out004,Reach 25% of Returns done without help (NL Online),2027-06-30
+nlon-out005,Cut Customer handling time by 5% (NL Online),2028-04-25
+nlon-out006,Raise Pricing accuracy to 15% (NL Online),2028-01-26
+nlon-out007,Lower Fraud cost by 15% (NL Online),2029-03-21
+nlon-out008,Reach 15% of Pricing done without help (NL Online),2027-08-29
+nlon-out009,Cut Fraud handling time by 25% (NL Online),2029-06-19
+nlon-out010,Raise Promotion accuracy to 40% (NL Online),2028-05-25
+nlon-out011,Lower Pricing cost by 40% (NL Online),2027-04-01
+nlon-out012,Reach 15% of Supplier done without help (NL Online),2029-03-21
+nlwh-out001,Cut Order handling time by 25% (NL Wholesale),2028-07-24
+nlwh-out002,Raise Supplier accuracy to 25% (NL Wholesale),2028-05-25
+nlwh-out003,Lower Order cost by 40% (NL Wholesale),2027-03-02
+nlwh-out004,Reach 40% of Returns done without help (NL Wholesale),2029-07-19
+nlwh-out005,Cut Supplier handling time by 10% (NL Wholesale),2028-10-22
+nlwh-out006,Raise Promotion accuracy to 10% (NL Wholesale),2027-03-02
+nlwh-out007,Lower Customer cost by 40% (NL Wholesale),2028-12-21
+nlwh-out008,Reach 15% of Fraud done without help (NL Wholesale),2028-12-21
+nlwh-out009,Cut Order handling time by 5% (NL Wholesale),2029-01-20
+nlwh-out010,Raise Fraud accuracy to 10% (NL Wholesale),2028-11-21
+nlwh-out011,Lower Order cost by 25% (NL Wholesale),2027-07-30
+nlwh-out012,Reach 5% of Order done without help (NL Wholesale),2029-05-20
+nllg-out001,Cut Stock handling time by 40% (NL Logistics),2028-03-26
+nllg-out002,Raise Pricing accuracy to 10% (NL Logistics),2028-11-21
+nllg-out003,Lower Customer cost by 5% (NL Logistics),2029-05-20
+nllg-out004,Reach 10% of Delivery done without help (NL Logistics),2028-02-25
+nllg-out005,Cut Stock handling time by 20% (NL Logistics),2027-01-31
+nllg-out006,Raise Delivery accuracy to 10% (NL Logistics),2028-06-24
+nllg-out007,Lower Payment cost by 25% (NL Logistics),2027-04-01
+nllg-out008,Reach 15% of Promotion done without help (NL Logistics),2029-12-16
+nllg-out009,Cut Pricing handling time by 15% (NL Logistics),2028-06-24
+nllg-out010,Raise Supplier accuracy to 15% (NL Logistics),2028-05-25
+nllg-out011,Lower Stock cost by 25% (NL Logistics),2029-06-19
+nllg-out012,Reach 15% of Promotion done without help (NL Logistics),2028-07-24
+best-out001,Cut Customer handling time by 40% (BE Stores),2027-10-28
+best-out002,Raise Stock accuracy to 30% (BE Stores),2029-02-19
+best-out003,Lower Delivery cost by 10% (BE Stores),2029-12-16
+best-out004,Reach 15% of Fraud done without help (BE Stores),2027-09-28
+best-out005,Cut Customer handling time by 40% (BE Stores),2028-07-24
+best-out006,Raise Stock accuracy to 20% (BE Stores),2027-05-31
+best-out007,Lower Payment cost by 15% (BE Stores),2027-11-27
+best-out008,Reach 5% of Promotion done without help (BE Stores),2029-09-17
+best-out009,Cut Fraud handling time by 40% (BE Stores),2028-05-25
+best-out010,Raise Supplier accuracy to 20% (BE Stores),2027-08-29
+best-out011,Lower Order cost by 25% (BE Stores),2029-09-17
+best-out012,Reach 5% of Promotion done without help (BE Stores),2028-03-26
+beon-out001,Cut Fraud handling time by 25% (BE Online),2028-04-25
+beon-out002,Raise Pricing accuracy to 15% (BE Online),2028-05-25
+beon-out003,Lower Order cost by 5% (BE Online),2029-08-18
+beon-out004,Reach 5% of Supplier done without help (BE Online),2029-01-20
+beon-out005,Cut Pricing handling time by 5% (BE Online),2029-11-16
+beon-out006,Raise Promotion accuracy to 30% (BE Online),2027-08-29
+beon-out007,Lower Customer cost by 40% (BE Online),2027-11-27
+beon-out008,Reach 10% of Returns done without help (BE Online),2029-01-20
+beon-out009,Cut Payment handling time by 25% (BE Online),2027-05-01
+beon-out010,Raise Stock accuracy to 25% (BE Online),2027-11-27
+beon-out011,Lower Returns cost by 30% (BE Online),2028-10-22
+beon-out012,Reach 25% of Promotion done without help (BE Online),2028-01-26
+bewh-out001,Cut Payment handling time by 30% (BE Wholesale),2028-08-23
+bewh-out002,Raise Delivery accuracy to 10% (BE Wholesale),2027-10-28
+bewh-out003,Lower Payment cost by 30% (BE Wholesale),2027-08-29
+bewh-out004,Reach 30% of Supplier done without help (BE Wholesale),2028-08-23
+bewh-out005,Cut Payment handling time by 20% (BE Wholesale),2028-10-22
+bewh-out006,Raise Returns accuracy to 30% (BE Wholesale),2029-08-18
+bewh-out007,Lower Payment cost by 5% (BE Wholesale),2028-11-21
+bewh-out008,Reach 20% of Delivery done without help (BE Wholesale),2027-06-30
+bewh-out009,Cut Promotion handling time by 20% (BE Wholesale),2027-05-31
+bewh-out010,Raise Promotion accuracy to 40% (BE Wholesale),2029-07-19
+bewh-out011,Lower Customer cost by 40% (BE Wholesale),2027-07-30
+bewh-out012,Reach 15% of Customer done without help (BE Wholesale),2027-05-01
+belg-out001,Cut Customer handling time by 10% (BE Logistics),2027-12-27
+belg-out002,Raise Customer accuracy to 25% (BE Logistics),2027-09-28
+belg-out003,Lower Delivery cost by 30% (BE Logistics),2029-09-17
+belg-out004,Reach 15% of Stock done without help (BE Logistics),2028-09-22
+belg-out005,Cut Stock handling time by 15% (BE Logistics),2027-06-30
+belg-out006,Raise Fraud accuracy to 40% (BE Logistics),2029-12-16
+belg-out007,Lower Delivery cost by 20% (BE Logistics),2029-01-20
+belg-out008,Reach 30% of Fraud done without help (BE Logistics),2028-11-21
+belg-out009,Cut Supplier handling time by 20% (BE Logistics),2027-06-30
+belg-out010,Raise Fraud accuracy to 15% (BE Logistics),2028-10-22
+belg-out011,Lower Order cost by 15% (BE Logistics),2028-05-25
+belg-out012,Reach 5% of Stock done without help (BE Logistics),2029-02-19
+esst-out001,Cut Pricing handling time by 5% (ES Stores),2028-09-22
+esst-out002,Raise Returns accuracy to 15% (ES Stores),2028-03-26
+esst-out003,Lower Stock cost by 15% (ES Stores),2028-09-22
+esst-out004,Reach 5% of Fraud done without help (ES Stores),2029-01-20
+esst-out005,Cut Customer handling time by 15% (ES Stores),2029-12-16
+esst-out006,Raise Supplier accuracy to 20% (ES Stores),2027-05-01
+esst-out007,Lower Supplier cost by 30% (ES Stores),2029-12-16
+esst-out008,Reach 10% of Order done without help (ES Stores),2029-04-20
+esst-out009,Cut Payment handling time by 40% (ES Stores),2028-07-24
+esst-out010,Raise Stock accuracy to 25% (ES Stores),2029-06-19
+esst-out011,Lower Returns cost by 30% (ES Stores),2027-08-29
+esst-out012,Reach 25% of Customer done without help (ES Stores),2028-07-24
+eson-out001,Cut Promotion handling time by 15% (ES Online),2028-04-25
+eson-out002,Raise Promotion accuracy to 15% (ES Online),2027-09-28
+eson-out003,Lower Returns cost by 25% (ES Online),2028-12-21
+eson-out004,Reach 5% of Delivery done without help (ES Online),2028-09-22
+eson-out005,Cut Customer handling time by 25% (ES Online),2027-03-02
+eson-out006,Raise Returns accuracy to 10% (ES Online),2027-11-27
+eson-out007,Lower Customer cost by 40% (ES Online),2027-08-29
+eson-out008,Reach 30% of Promotion done without help (ES Online),2029-09-17
+eson-out009,Cut Promotion handling time by 25% (ES Online),2029-03-21
+eson-out010,Raise Stock accuracy to 25% (ES Online),2028-11-21
+eson-out011,Lower Returns cost by 25% (ES Online),2027-12-27
+eson-out012,Reach 10% of Promotion done without help (ES Online),2029-08-18
+eswh-out001,Cut Customer handling time by 20% (ES Wholesale),2029-03-21
+eswh-out002,Raise Promotion accuracy to 15% (ES Wholesale),2029-05-20
+eswh-out003,Lower Fraud cost by 20% (ES Wholesale),2028-01-26
+eswh-out004,Reach 30% of Fraud done without help (ES Wholesale),2028-07-24
+eswh-out005,Cut Supplier handling time by 10% (ES Wholesale),2029-10-17
+eswh-out006,Raise Returns accuracy to 20% (ES Wholesale),2029-12-16
+eswh-out007,Lower Payment cost by 10% (ES Wholesale),2028-01-26
+eswh-out008,Reach 25% of Stock done without help (ES Wholesale),2029-01-20
+eswh-out009,Cut Payment handling time by 40% (ES Wholesale),2028-03-26
+eswh-out010,Raise Payment accuracy to 15% (ES Wholesale),2027-05-01
+eswh-out011,Lower Stock cost by 40% (ES Wholesale),2027-06-30
+eswh-out012,Reach 30% of Stock done without help (ES Wholesale),2029-09-17
+eslg-out001,Cut Supplier handling time by 10% (ES Logistics),2029-04-20
+eslg-out002,Raise Stock accuracy to 40% (ES Logistics),2027-07-30
+eslg-out003,Lower Supplier cost by 15% (ES Logistics),2028-03-26
+eslg-out004,Reach 25% of Returns done without help (ES Logistics),2029-12-16
+eslg-out005,Cut Returns handling time by 15% (ES Logistics),2028-01-26
+eslg-out006,Raise Returns accuracy to 10% (ES Logistics),2027-03-02
+eslg-out007,Lower Fraud cost by 30% (ES Logistics),2028-09-22
+eslg-out008,Reach 5% of Pricing done without help (ES Logistics),2027-08-29
+eslg-out009,Cut Fraud handling time by 40% (ES Logistics),2029-02-19
+eslg-out010,Raise Pricing accuracy to 30% (ES Logistics),2029-10-17
+eslg-out011,Lower Order cost by 15% (ES Logistics),2028-09-22
+eslg-out012,Reach 25% of Pricing done without help (ES Logistics),2029-04-20
+ptst-out001,Cut Pricing handling time by 30% (PT Stores),2027-09-28
+ptst-out002,Raise Order accuracy to 20% (PT Stores),2029-05-20
+ptst-out003,Lower Delivery cost by 15% (PT Stores),2029-08-18
+ptst-out004,Reach 25% of Fraud done without help (PT Stores),2029-05-20
+ptst-out005,Cut Returns handling time by 40% (PT Stores),2029-07-19
+ptst-out006,Raise Order accuracy to 25% (PT Stores),2027-10-28
+ptst-out007,Lower Returns cost by 5% (PT Stores),2027-10-28
+ptst-out008,Reach 25% of Customer done without help (PT Stores),2028-07-24
+ptst-out009,Cut Returns handling time by 10% (PT Stores),2029-06-19
+ptst-out010,Raise Supplier accuracy to 25% (PT Stores),2027-07-30
+ptst-out011,Lower Order cost by 40% (PT Stores),2029-06-19
+ptst-out012,Reach 5% of Fraud done without help (PT Stores),2028-11-21
+pton-out001,Cut Customer handling time by 15% (PT Online),2027-12-27
+pton-out002,Raise Returns accuracy to 5% (PT Online),2028-01-26
+pton-out003,Lower Stock cost by 5% (PT Online),2028-11-21
+pton-out004,Reach 15% of Fraud done without help (PT Online),2029-08-18
+pton-out005,Cut Order handling time by 30% (PT Online),2028-03-26
+pton-out006,Raise Stock accuracy to 25% (PT Online),2027-04-01
+pton-out007,Lower Pricing cost by 30% (PT Online),2029-01-20
+pton-out008,Reach 30% of Customer done without help (PT Online),2029-05-20
+pton-out009,Cut Customer handling time by 40% (PT Online),2028-12-21
+pton-out010,Raise Customer accuracy to 20% (PT Online),2027-03-02
+pton-out011,Lower Delivery cost by 20% (PT Online),2028-12-21
+pton-out012,Reach 30% of Promotion done without help (PT Online),2029-03-21
+ptwh-out001,Cut Promotion handling time by 25% (PT Wholesale),2029-11-16
+ptwh-out002,Raise Customer accuracy to 10% (PT Wholesale),2028-01-26
+ptwh-out003,Lower Payment cost by 30% (PT Wholesale),2029-10-17
+ptwh-out004,Reach 5% of Pricing done without help (PT Wholesale),2027-05-31
+ptwh-out005,Cut Order handling time by 5% (PT Wholesale),2027-07-30
+ptwh-out006,Raise Returns accuracy to 15% (PT Wholesale),2027-12-27
+ptwh-out007,Lower Promotion cost by 30% (PT Wholesale),2027-04-01
+ptwh-out008,Reach 40% of Promotion done without help (PT Wholesale),2028-04-25
+ptwh-out009,Cut Payment handling time by 25% (PT Wholesale),2028-10-22
+ptwh-out010,Raise Pricing accuracy to 30% (PT Wholesale),2028-10-22
+ptwh-out011,Lower Returns cost by 20% (PT Wholesale),2029-01-20
+ptwh-out012,Reach 25% of Stock done without help (PT Wholesale),2029-03-21
+ptlg-out001,Cut Pricing handling time by 15% (PT Logistics),2028-04-25
+ptlg-out002,Raise Returns accuracy to 30% (PT Logistics),2027-05-31
+ptlg-out003,Lower Delivery cost by 15% (PT Logistics),2027-01-31
+ptlg-out004,Reach 10% of Pricing done without help (PT Logistics),2027-07-30
+ptlg-out005,Cut Pricing handling time by 30% (PT Logistics),2027-04-01
+ptlg-out006,Raise Delivery accuracy to 40% (PT Logistics),2028-10-22
+ptlg-out007,Lower Supplier cost by 40% (PT Logistics),2028-10-22
+ptlg-out008,Reach 10% of Pricing done without help (PT Logistics),2028-06-24
+ptlg-out009,Cut Payment handling time by 20% (PT Logistics),2027-06-30
+ptlg-out010,Raise Fraud accuracy to 10% (PT Logistics),2027-09-28
+ptlg-out011,Lower Stock cost by 10% (PT Logistics),2029-08-18
+ptlg-out012,Reach 20% of Stock done without help (PT Logistics),2028-11-21
+itst-out001,Cut Pricing handling time by 30% (IT Stores),2029-08-18
+itst-out002,Raise Customer accuracy to 25% (IT Stores),2029-12-16
+itst-out003,Lower Delivery cost by 40% (IT Stores),2027-04-01
+itst-out004,Reach 10% of Promotion done without help (IT Stores),2028-11-21
+itst-out005,Cut Promotion handling time by 15% (IT Stores),2027-10-28
+itst-out006,Raise Customer accuracy to 5% (IT Stores),2029-07-19
+itst-out007,Lower Returns cost by 25% (IT Stores),2029-04-20
+itst-out008,Reach 10% of Customer done without help (IT Stores),2028-06-24
+itst-out009,Cut Customer handling time by 10% (IT Stores),2027-05-31
+itst-out010,Raise Returns accuracy to 15% (IT Stores),2028-04-25
+itst-out011,Lower Fraud cost by 15% (IT Stores),2027-01-31
+itst-out012,Reach 5% of Stock done without help (IT Stores),2028-11-21
+iton-out001,Cut Promotion handling time by 10% (IT Online),2028-07-24
+iton-out002,Raise Customer accuracy to 5% (IT Online),2028-08-23
+iton-out003,Lower Promotion cost by 5% (IT Online),2028-12-21
+iton-out004,Reach 5% of Promotion done without help (IT Online),2028-03-26
+iton-out005,Cut Promotion handling time by 40% (IT Online),2028-12-21
+iton-out006,Raise Fraud accuracy to 15% (IT Online),2027-04-01
+iton-out007,Lower Delivery cost by 5% (IT Online),2028-01-26
+iton-out008,Reach 20% of Promotion done without help (IT Online),2028-08-23
+iton-out009,Cut Stock handling time by 10% (IT Online),2029-12-16
+iton-out010,Raise Supplier accuracy to 15% (IT Online),2028-06-24
+iton-out011,Lower Payment cost by 10% (IT Online),2028-12-21
+iton-out012,Reach 5% of Pricing done without help (IT Online),2027-07-30
+itwh-out001,Cut Delivery handling time by 40% (IT Wholesale),2028-05-25
+itwh-out002,Raise Customer accuracy to 40% (IT Wholesale),2027-10-28
+itwh-out003,Lower Supplier cost by 40% (IT Wholesale),2027-09-28
+itwh-out004,Reach 10% of Order done without help (IT Wholesale),2028-06-24
+itwh-out005,Cut Stock handling time by 40% (IT Wholesale),2029-08-18
+itwh-out006,Raise Fraud accuracy to 25% (IT Wholesale),2029-08-18
+itwh-out007,Lower Delivery cost by 25% (IT Wholesale),2027-08-29
+itwh-out008,Reach 5% of Returns done without help (IT Wholesale),2029-06-19
+itwh-out009,Cut Order handling time by 10% (IT Wholesale),2027-01-31
+itwh-out010,Raise Returns accuracy to 10% (IT Wholesale),2029-02-19
+itwh-out011,Lower Order cost by 30% (IT Wholesale),2028-12-21
+itwh-out012,Reach 20% of Promotion done without help (IT Wholesale),2029-09-17
+itlg-out001,Cut Payment handling time by 25% (IT Logistics),2029-10-17
+itlg-out002,Raise Payment accuracy to 20% (IT Logistics),2027-08-29
+itlg-out003,Lower Supplier cost by 20% (IT Logistics),2028-02-25
+itlg-out004,Reach 15% of Promotion done without help (IT Logistics),2029-10-17
+itlg-out005,Cut Returns handling time by 40% (IT Logistics),2028-07-24
+itlg-out006,Raise Delivery accuracy to 25% (IT Logistics),2028-12-21
+itlg-out007,Lower Delivery cost by 5% (IT Logistics),2029-12-16
+itlg-out008,Reach 30% of Promotion done without help (IT Logistics),2028-09-22
+itlg-out009,Cut Stock handling time by 40% (IT Logistics),2029-08-18
+itlg-out010,Raise Returns accuracy to 30% (IT Logistics),2029-12-16
+itlg-out011,Lower Returns cost by 40% (IT Logistics),2029-06-19
+itlg-out012,Reach 25% of Stock done without help (IT Logistics),2027-01-31
+chst-out001,Cut Supplier handling time by 40% (CH Stores),2029-11-16
+chst-out002,Raise Fraud accuracy to 40% (CH Stores),2027-10-28
+chst-out003,Lower Promotion cost by 40% (CH Stores),2029-01-20
+chst-out004,Reach 20% of Payment done without help (CH Stores),2028-04-25
+chst-out005,Cut Returns handling time by 5% (CH Stores),2028-07-24
+chst-out006,Raise Payment accuracy to 30% (CH Stores),2028-11-21
+chst-out007,Lower Customer cost by 10% (CH Stores),2027-05-31
+chst-out008,Reach 10% of Customer done without help (CH Stores),2029-07-19
+chst-out009,Cut Returns handling time by 30% (CH Stores),2028-03-26
+chst-out010,Raise Fraud accuracy to 5% (CH Stores),2028-11-21
+chst-out011,Lower Fraud cost by 15% (CH Stores),2029-08-18
+chst-out012,Reach 40% of Stock done without help (CH Stores),2029-12-16
+chon-out001,Cut Stock handling time by 5% (CH Online),2027-05-01
+chon-out002,Raise Supplier accuracy to 25% (CH Online),2027-10-28
+chon-out003,Lower Delivery cost by 15% (CH Online),2028-08-23
+chon-out004,Reach 20% of Order done without help (CH Online),2027-11-27
+chon-out005,Cut Stock handling time by 20% (CH Online),2029-09-17
+chon-out006,Raise Payment accuracy to 5% (CH Online),2029-10-17
+chon-out007,Lower Customer cost by 5% (CH Online),2028-10-22
+chon-out008,Reach 5% of Order done without help (CH Online),2027-01-31
+chon-out009,Cut Payment handling time by 5% (CH Online),2027-01-31
+chon-out010,Raise Pricing accuracy to 25% (CH Online),2029-04-20
+chon-out011,Lower Customer cost by 25% (CH Online),2028-11-21
+chon-out012,Reach 40% of Stock done without help (CH Online),2027-03-02
+chwh-out001,Cut Order handling time by 25% (CH Wholesale),2027-10-28
+chwh-out002,Raise Payment accuracy to 5% (CH Wholesale),2028-05-25
+chwh-out003,Lower Promotion cost by 15% (CH Wholesale),2029-12-16
+chwh-out004,Reach 30% of Returns done without help (CH Wholesale),2028-09-22
+chwh-out005,Cut Payment handling time by 5% (CH Wholesale),2029-08-18
+chwh-out006,Raise Stock accuracy to 25% (CH Wholesale),2029-01-20
+chwh-out007,Lower Fraud cost by 30% (CH Wholesale),2029-01-20
+chwh-out008,Reach 10% of Fraud done without help (CH Wholesale),2028-04-25
+chwh-out009,Cut Returns handling time by 10% (CH Wholesale),2028-03-26
+chwh-out010,Raise Returns accuracy to 10% (CH Wholesale),2029-10-17
+chwh-out011,Lower Fraud cost by 5% (CH Wholesale),2029-10-17
+chwh-out012,Reach 25% of Promotion done without help (CH Wholesale),2028-04-25
+chlg-out001,Cut Delivery handling time by 40% (CH Logistics),2028-03-26
+chlg-out002,Raise Supplier accuracy to 5% (CH Logistics),2028-01-26
+chlg-out003,Lower Promotion cost by 10% (CH Logistics),2027-06-30
+chlg-out004,Reach 5% of Pricing done without help (CH Logistics),2027-10-28
+chlg-out005,Cut Order handling time by 20% (CH Logistics),2027-07-30
+chlg-out006,Raise Payment accuracy to 40% (CH Logistics),2029-10-17
+chlg-out007,Lower Returns cost by 25% (CH Logistics),2029-01-20
+chlg-out008,Reach 20% of Fraud done without help (CH Logistics),2029-11-16
+chlg-out009,Cut Supplier handling time by 20% (CH Logistics),2028-02-25
+chlg-out010,Raise Delivery accuracy to 30% (CH Logistics),2028-05-25
+chlg-out011,Lower Promotion cost by 5% (CH Logistics),2027-07-30
+chlg-out012,Reach 10% of Delivery done without help (CH Logistics),2028-05-25
+atst-out001,Cut Customer handling time by 40% (AT Stores),2028-03-26
+atst-out002,Raise Payment accuracy to 10% (AT Stores),2028-01-26
+atst-out003,Lower Returns cost by 20% (AT Stores),2029-08-18
+atst-out004,Reach 15% of Order done without help (AT Stores),2029-06-19
+atst-out005,Cut Payment handling time by 40% (AT Stores),2028-05-25
+atst-out006,Raise Stock accuracy to 10% (AT Stores),2027-11-27
+atst-out007,Lower Stock cost by 15% (AT Stores),2027-04-01
+atst-out008,Reach 25% of Returns done without help (AT Stores),2028-07-24
+atst-out009,Cut Order handling time by 20% (AT Stores),2028-06-24
+atst-out010,Raise Supplier accuracy to 30% (AT Stores),2029-06-19
+atst-out011,Lower Fraud cost by 10% (AT Stores),2027-11-27
+atst-out012,Reach 40% of Returns done without help (AT Stores),2028-06-24
+aton-out001,Cut Order handling time by 15% (AT Online),2028-05-25
+aton-out002,Raise Payment accuracy to 25% (AT Online),2027-10-28
+aton-out003,Lower Order cost by 15% (AT Online),2027-05-01
+aton-out004,Reach 30% of Customer done without help (AT Online),2027-05-01
+aton-out005,Cut Delivery handling time by 5% (AT Online),2028-05-25
+aton-out006,Raise Customer accuracy to 40% (AT Online),2027-08-29
+aton-out007,Lower Payment cost by 25% (AT Online),2027-03-02
+aton-out008,Reach 10% of Supplier done without help (AT Online),2028-04-25
+aton-out009,Cut Delivery handling time by 5% (AT Online),2029-07-19
+aton-out010,Raise Pricing accuracy to 40% (AT Online),2027-04-01
+aton-out011,Lower Payment cost by 20% (AT Online),2029-02-19
+aton-out012,Reach 30% of Promotion done without help (AT Online),2029-09-17
+atwh-out001,Cut Fraud handling time by 30% (AT Wholesale),2028-11-21
+atwh-out002,Raise Stock accuracy to 10% (AT Wholesale),2027-06-30
+atwh-out003,Lower Pricing cost by 15% (AT Wholesale),2029-10-17
+atwh-out004,Reach 25% of Supplier done without help (AT Wholesale),2028-06-24
+atwh-out005,Cut Order handling time by 40% (AT Wholesale),2029-01-20
+atwh-out006,Raise Order accuracy to 5% (AT Wholesale),2027-04-01
+atwh-out007,Lower Fraud cost by 5% (AT Wholesale),2028-03-26
+atwh-out008,Reach 5% of Payment done without help (AT Wholesale),2028-04-25
+atwh-out009,Cut Fraud handling time by 30% (AT Wholesale),2028-07-24
+atwh-out010,Raise Fraud accuracy to 25% (AT Wholesale),2029-08-18
+atwh-out011,Lower Stock cost by 30% (AT Wholesale),2027-11-27
+atwh-out012,Reach 30% of Payment done without help (AT Wholesale),2029-04-20
+atlg-out001,Cut Returns handling time by 25% (AT Logistics),2029-01-20
+atlg-out002,Raise Customer accuracy to 15% (AT Logistics),2028-09-22
+atlg-out003,Lower Payment cost by 40% (AT Logistics),2027-01-31
+atlg-out004,Reach 30% of Supplier done without help (AT Logistics),2029-06-19
+atlg-out005,Cut Pricing handling time by 30% (AT Logistics),2028-12-21
+atlg-out006,Raise Payment accuracy to 10% (AT Logistics),2028-07-24
+atlg-out007,Lower Stock cost by 40% (AT Logistics),2029-03-21
+atlg-out008,Reach 40% of Returns done without help (AT Logistics),2028-12-21
+atlg-out009,Cut Customer handling time by 5% (AT Logistics),2029-07-19
+atlg-out010,Raise Fraud accuracy to 15% (AT Logistics),2028-03-26
+atlg-out011,Lower Stock cost by 30% (AT Logistics),2028-06-24
+atlg-out012,Reach 30% of Delivery done without help (AT Logistics),2027-11-27
+plst-out001,Cut Fraud handling time by 40% (PL Stores),2027-09-28
+plst-out002,Raise Fraud accuracy to 30% (PL Stores),2029-09-17
+plst-out003,Lower Customer cost by 10% (PL Stores),2029-02-19
+plst-out004,Reach 5% of Order done without help (PL Stores),2027-01-31
+plst-out005,Cut Order handling time by 10% (PL Stores),2028-02-25
+plst-out006,Raise Payment accuracy to 15% (PL Stores),2029-12-16
+plst-out007,Lower Promotion cost by 15% (PL Stores),2027-07-30
+plst-out008,Reach 40% of Pricing done without help (PL Stores),2028-05-25
+plst-out009,Cut Payment handling time by 20% (PL Stores),2027-07-30
+plst-out010,Raise Order accuracy to 30% (PL Stores),2029-05-20
+plst-out011,Lower Stock cost by 30% (PL Stores),2028-10-22
+plst-out012,Reach 25% of Supplier done without help (PL Stores),2027-01-31
+plon-out001,Cut Supplier handling time by 10% (PL Online),2028-12-21
+plon-out002,Raise Order accuracy to 20% (PL Online),2028-09-22
+plon-out003,Lower Order cost by 30% (PL Online),2028-05-25
+plon-out004,Reach 5% of Supplier done without help (PL Online),2029-04-20
+plon-out005,Cut Delivery handling time by 25% (PL Online),2029-02-19
+plon-out006,Raise Supplier accuracy to 30% (PL Online),2027-01-31
+plon-out007,Lower Order cost by 40% (PL Online),2029-12-16
+plon-out008,Reach 30% of Delivery done without help (PL Online),2027-05-31
+plon-out009,Cut Customer handling time by 30% (PL Online),2027-08-29
+plon-out010,Raise Delivery accuracy to 10% (PL Online),2029-04-20
+plon-out011,Lower Delivery cost by 30% (PL Online),2029-03-21
+plon-out012,Reach 10% of Customer done without help (PL Online),2027-12-27
+plwh-out001,Cut Payment handling time by 20% (PL Wholesale),2027-07-30
+plwh-out002,Raise Supplier accuracy to 20% (PL Wholesale),2029-12-16
+plwh-out003,Lower Pricing cost by 10% (PL Wholesale),2029-06-19
+plwh-out004,Reach 10% of Returns done without help (PL Wholesale),2028-04-25
+plwh-out005,Cut Supplier handling time by 10% (PL Wholesale),2029-09-17
+plwh-out006,Raise Order accuracy to 20% (PL Wholesale),2029-03-21
+plwh-out007,Lower Returns cost by 40% (PL Wholesale),2029-09-17
+plwh-out008,Reach 10% of Promotion done without help (PL Wholesale),2028-02-25
+plwh-out009,Cut Delivery handling time by 5% (PL Wholesale),2027-01-31
+plwh-out010,Raise Supplier accuracy to 20% (PL Wholesale),2027-05-01
+plwh-out011,Lower Customer cost by 15% (PL Wholesale),2028-02-25
+plwh-out012,Reach 15% of Payment done without help (PL Wholesale),2028-05-25
+pllg-out001,Cut Stock handling time by 25% (PL Logistics),2027-03-02
+pllg-out002,Raise Pricing accuracy to 20% (PL Logistics),2028-06-24
+pllg-out003,Lower Promotion cost by 30% (PL Logistics),2028-11-21
+pllg-out004,Reach 40% of Stock done without help (PL Logistics),2029-01-20
+pllg-out005,Cut Returns handling time by 10% (PL Logistics),2029-11-16
+pllg-out006,Raise Returns accuracy to 30% (PL Logistics),2028-12-21
+pllg-out007,Lower Order cost by 25% (PL Logistics),2029-08-18
+pllg-out008,Reach 25% of Fraud done without help (PL Logistics),2027-08-29
+pllg-out009,Cut Pricing handling time by 10% (PL Logistics),2027-10-28
+pllg-out010,Raise Pricing accuracy to 25% (PL Logistics),2027-03-02
+pllg-out011,Lower Stock cost by 40% (PL Logistics),2027-12-27
+pllg-out012,Reach 15% of Delivery done without help (PL Logistics),2027-03-02
+sest-out001,Cut Fraud handling time by 15% (SE Stores),2028-08-23
+sest-out002,Raise Stock accuracy to 20% (SE Stores),2028-06-24
+sest-out003,Lower Stock cost by 5% (SE Stores),2027-07-30
+sest-out004,Reach 30% of Order done without help (SE Stores),2028-07-24
+sest-out005,Cut Order handling time by 10% (SE Stores),2028-12-21
+sest-out006,Raise Promotion accuracy to 5% (SE Stores),2027-09-28
+sest-out007,Lower Customer cost by 40% (SE Stores),2027-11-27
+sest-out008,Reach 20% of Pricing done without help (SE Stores),2028-06-24
+sest-out009,Cut Returns handling time by 30% (SE Stores),2028-10-22
+sest-out010,Raise Delivery accuracy to 30% (SE Stores),2029-05-20
+sest-out011,Lower Pricing cost by 30% (SE Stores),2029-05-20
+sest-out012,Reach 10% of Customer done without help (SE Stores),2029-11-16
+seon-out001,Cut Order handling time by 15% (SE Online),2027-11-27
+seon-out002,Raise Customer accuracy to 15% (SE Online),2027-12-27
+seon-out003,Lower Returns cost by 5% (SE Online),2029-06-19
+seon-out004,Reach 15% of Order done without help (SE Online),2029-12-16
+seon-out005,Cut Promotion handling time by 15% (SE Online),2028-11-21
+seon-out006,Raise Customer accuracy to 20% (SE Online),2028-02-25
+seon-out007,Lower Stock cost by 20% (SE Online),2029-03-21
+seon-out008,Reach 30% of Customer done without help (SE Online),2028-06-24
+seon-out009,Cut Promotion handling time by 15% (SE Online),2029-11-16
+seon-out010,Raise Fraud accuracy to 15% (SE Online),2029-02-19
+seon-out011,Lower Order cost by 5% (SE Online),2027-11-27
+seon-out012,Reach 5% of Fraud done without help (SE Online),2027-10-28
+sewh-out001,Cut Supplier handling time by 20% (SE Wholesale),2029-12-16
+sewh-out002,Raise Delivery accuracy to 40% (SE Wholesale),2029-11-16
+sewh-out003,Lower Pricing cost by 10% (SE Wholesale),2028-12-21
+sewh-out004,Reach 40% of Stock done without help (SE Wholesale),2028-06-24
+sewh-out005,Cut Delivery handling time by 5% (SE Wholesale),2027-05-31
+sewh-out006,Raise Customer accuracy to 15% (SE Wholesale),2027-07-30
+sewh-out007,Lower Returns cost by 15% (SE Wholesale),2028-07-24
+sewh-out008,Reach 25% of Payment done without help (SE Wholesale),2028-12-21
+sewh-out009,Cut Stock handling time by 20% (SE Wholesale),2029-05-20
+sewh-out010,Raise Customer accuracy to 25% (SE Wholesale),2028-11-21
+sewh-out011,Lower Stock cost by 30% (SE Wholesale),2029-02-19
+sewh-out012,Reach 40% of Fraud done without help (SE Wholesale),2028-07-24
+selg-out001,Cut Supplier handling time by 5% (SE Logistics),2029-09-17
+selg-out002,Raise Stock accuracy to 15% (SE Logistics),2029-10-17
+selg-out003,Lower Stock cost by 25% (SE Logistics),2027-12-27
+selg-out004,Reach 30% of Promotion done without help (SE Logistics),2027-08-29
+selg-out005,Cut Returns handling time by 20% (SE Logistics),2029-04-20
+selg-out006,Raise Promotion accuracy to 5% (SE Logistics),2027-09-28
+selg-out007,Lower Payment cost by 25% (SE Logistics),2028-06-24
+selg-out008,Reach 15% of Returns done without help (SE Logistics),2028-02-25
+selg-out009,Cut Customer handling time by 30% (SE Logistics),2027-07-30
+selg-out010,Raise Payment accuracy to 30% (SE Logistics),2028-06-24
+selg-out011,Lower Customer cost by 25% (SE Logistics),2029-10-17
+selg-out012,Reach 20% of Order done without help (SE Logistics),2027-08-29
+nost-out001,Cut Order handling time by 25% (NO Stores),2029-02-19
+nost-out002,Raise Stock accuracy to 5% (NO Stores),2028-08-23
+nost-out003,Lower Stock cost by 5% (NO Stores),2029-10-17
+nost-out004,Reach 20% of Stock done without help (NO Stores),2028-10-22
+nost-out005,Cut Promotion handling time by 10% (NO Stores),2027-10-28
+nost-out006,Raise Payment accuracy to 5% (NO Stores),2029-12-16
+nost-out007,Lower Delivery cost by 30% (NO Stores),2028-09-22
+nost-out008,Reach 20% of Order done without help (NO Stores),2028-06-24
+nost-out009,Cut Stock handling time by 25% (NO Stores),2027-06-30
+nost-out010,Raise Promotion accuracy to 20% (NO Stores),2028-11-21
+nost-out011,Lower Order cost by 20% (NO Stores),2028-02-25
+nost-out012,Reach 5% of Returns done without help (NO Stores),2027-04-01
+noon-out001,Cut Returns handling time by 30% (NO Online),2029-02-19
+noon-out002,Raise Fraud accuracy to 10% (NO Online),2029-01-20
+noon-out003,Lower Pricing cost by 10% (NO Online),2027-01-31
+noon-out004,Reach 10% of Supplier done without help (NO Online),2029-04-20
+noon-out005,Cut Returns handling time by 15% (NO Online),2028-03-26
+noon-out006,Raise Returns accuracy to 5% (NO Online),2028-03-26
+noon-out007,Lower Promotion cost by 25% (NO Online),2029-10-17
+noon-out008,Reach 25% of Order done without help (NO Online),2028-06-24
+noon-out009,Cut Returns handling time by 40% (NO Online),2029-09-17
+noon-out010,Raise Fraud accuracy to 25% (NO Online),2028-03-26
+noon-out011,Lower Promotion cost by 10% (NO Online),2027-10-28
+noon-out012,Reach 5% of Fraud done without help (NO Online),2029-05-20
+nowh-out001,Cut Stock handling time by 5% (NO Wholesale),2029-01-20
+nowh-out002,Raise Promotion accuracy to 15% (NO Wholesale),2027-05-01
+nowh-out003,Lower Payment cost by 10% (NO Wholesale),2028-03-26
+nowh-out004,Reach 25% of Supplier done without help (NO Wholesale),2028-01-26
+nowh-out005,Cut Payment handling time by 5% (NO Wholesale),2027-10-28
+nowh-out006,Raise Fraud accuracy to 20% (NO Wholesale),2027-01-31
+nowh-out007,Lower Promotion cost by 25% (NO Wholesale),2029-06-19
+nowh-out008,Reach 15% of Customer done without help (NO Wholesale),2028-06-24
+nowh-out009,Cut Promotion handling time by 40% (NO Wholesale),2028-07-24
+nowh-out010,Raise Payment accuracy to 10% (NO Wholesale),2027-06-30
+nowh-out011,Lower Promotion cost by 10% (NO Wholesale),2029-08-18
+nowh-out012,Reach 30% of Pricing done without help (NO Wholesale),2028-09-22
+nolg-out001,Cut Order handling time by 15% (NO Logistics),2029-05-20
+nolg-out002,Raise Returns accuracy to 30% (NO Logistics),2027-10-28
+nolg-out003,Lower Returns cost by 40% (NO Logistics),2027-08-29
+nolg-out004,Reach 40% of Customer done without help (NO Logistics),2027-01-31
+nolg-out005,Cut Returns handling time by 20% (NO Logistics),2028-10-22
+nolg-out006,Raise Fraud accuracy to 15% (NO Logistics),2027-05-31
+nolg-out007,Lower Fraud cost by 40% (NO Logistics),2028-08-23
+nolg-out008,Reach 10% of Pricing done without help (NO Logistics),2028-01-26
+nolg-out009,Cut Supplier handling time by 30% (NO Logistics),2028-04-25
+nolg-out010,Raise Pricing accuracy to 20% (NO Logistics),2027-08-29
+nolg-out011,Lower Returns cost by 25% (NO Logistics),2028-07-24
+nolg-out012,Reach 15% of Pricing done without help (NO Logistics),2027-11-27
+dkst-out001,Cut Payment handling time by 15% (DK Stores),2029-06-19
+dkst-out002,Raise Fraud accuracy to 15% (DK Stores),2028-12-21
+dkst-out003,Lower Stock cost by 30% (DK Stores),2028-12-21
+dkst-out004,Reach 40% of Stock done without help (DK Stores),2029-02-19
+dkst-out005,Cut Delivery handling time by 10% (DK Stores),2029-03-21
+dkst-out006,Raise Supplier accuracy to 25% (DK Stores),2029-09-17
+dkst-out007,Lower Order cost by 25% (DK Stores),2029-05-20
+dkst-out008,Reach 30% of Pricing done without help (DK Stores),2029-01-20
+dkst-out009,Cut Pricing handling time by 15% (DK Stores),2027-10-28
+dkst-out010,Raise Payment accuracy to 10% (DK Stores),2027-08-29
+dkst-out011,Lower Returns cost by 30% (DK Stores),2028-09-22
+dkst-out012,Reach 10% of Returns done without help (DK Stores),2029-12-16
+dkon-out001,Cut Returns handling time by 30% (DK Online),2028-12-21
+dkon-out002,Raise Customer accuracy to 30% (DK Online),2029-06-19
+dkon-out003,Lower Supplier cost by 10% (DK Online),2028-12-21
+dkon-out004,Reach 5% of Fraud done without help (DK Online),2029-04-20
+dkon-out005,Cut Customer handling time by 20% (DK Online),2028-02-25
+dkon-out006,Raise Promotion accuracy to 30% (DK Online),2028-12-21
+dkon-out007,Lower Order cost by 10% (DK Online),2029-07-19
+dkon-out008,Reach 20% of Stock done without help (DK Online),2027-05-31
+dkon-out009,Cut Stock handling time by 15% (DK Online),2027-11-27
+dkon-out010,Raise Fraud accuracy to 30% (DK Online),2029-12-16
+dkon-out011,Lower Fraud cost by 5% (DK Online),2029-07-19
+dkon-out012,Reach 10% of Promotion done without help (DK Online),2028-02-25
+dkwh-out001,Cut Customer handling time by 30% (DK Wholesale),2028-10-22
+dkwh-out002,Raise Fraud accuracy to 5% (DK Wholesale),2029-09-17
+dkwh-out003,Lower Promotion cost by 25% (DK Wholesale),2027-05-01
+dkwh-out004,Reach 20% of Order done without help (DK Wholesale),2029-10-17
+dkwh-out005,Cut Promotion handling time by 10% (DK Wholesale),2028-04-25
+dkwh-out006,Raise Supplier accuracy to 30% (DK Wholesale),2028-10-22
+dkwh-out007,Lower Order cost by 30% (DK Wholesale),2029-10-17
+dkwh-out008,Reach 20% of Delivery done without help (DK Wholesale),2029-06-19
+dkwh-out009,Cut Promotion handling time by 40% (DK Wholesale),2028-03-26
+dkwh-out010,Raise Fraud accuracy to 10% (DK Wholesale),2027-07-30
+dkwh-out011,Lower Customer cost by 5% (DK Wholesale),2029-09-17
+dkwh-out012,Reach 15% of Fraud done without help (DK Wholesale),2028-04-25
+dklg-out001,Cut Stock handling time by 40% (DK Logistics),2029-08-18
+dklg-out002,Raise Payment accuracy to 40% (DK Logistics),2029-05-20
+dklg-out003,Lower Supplier cost by 25% (DK Logistics),2028-12-21
+dklg-out004,Reach 15% of Supplier done without help (DK Logistics),2029-06-19
+dklg-out005,Cut Returns handling time by 40% (DK Logistics),2029-02-19
+dklg-out006,Raise Stock accuracy to 25% (DK Logistics),2027-05-31
+dklg-out007,Lower Delivery cost by 5% (DK Logistics),2028-05-25
+dklg-out008,Reach 25% of Returns done without help (DK Logistics),2029-06-19
+dklg-out009,Cut Order handling time by 20% (DK Logistics),2027-09-28
+dklg-out010,Raise Customer accuracy to 15% (DK Logistics),2027-04-01
+dklg-out011,Lower Order cost by 40% (DK Logistics),2029-05-20
+dklg-out012,Reach 5% of Supplier done without help (DK Logistics),2029-02-19
+fist-out001,Cut Delivery handling time by 30% (FI Stores),2029-12-16
+fist-out002,Raise Promotion accuracy to 20% (FI Stores),2027-05-01
+fist-out003,Lower Stock cost by 10% (FI Stores),2027-11-27
+fist-out004,Reach 10% of Stock done without help (FI Stores),2028-07-24
+fist-out005,Cut Supplier handling time by 5% (FI Stores),2029-06-19
+fist-out006,Raise Supplier accuracy to 40% (FI Stores),2027-06-30
+fist-out007,Lower Pricing cost by 15% (FI Stores),2027-08-29
+fist-out008,Reach 20% of Order done without help (FI Stores),2027-08-29
+fist-out009,Cut Order handling time by 10% (FI Stores),2028-11-21
+fist-out010,Raise Order accuracy to 10% (FI Stores),2028-03-26
+fist-out011,Lower Stock cost by 25% (FI Stores),2027-10-28
+fist-out012,Reach 25% of Payment done without help (FI Stores),2029-03-21
+fion-out001,Cut Pricing handling time by 25% (FI Online),2029-02-19
+fion-out002,Raise Order accuracy to 25% (FI Online),2029-07-19
+fion-out003,Lower Fraud cost by 15% (FI Online),2029-03-21
+fion-out004,Reach 10% of Customer done without help (FI Online),2027-01-31
+fion-out005,Cut Fraud handling time by 40% (FI Online),2027-01-31
+fion-out006,Raise Stock accuracy to 20% (FI Online),2028-12-21
+fion-out007,Lower Stock cost by 20% (FI Online),2028-04-25
+fion-out008,Reach 20% of Returns done without help (FI Online),2027-04-01
+fion-out009,Cut Payment handling time by 40% (FI Online),2027-05-31
+fion-out010,Raise Pricing accuracy to 15% (FI Online),2027-08-29
+fion-out011,Lower Pricing cost by 30% (FI Online),2028-08-23
+fion-out012,Reach 15% of Stock done without help (FI Online),2029-05-20
+fiwh-out001,Cut Supplier handling time by 40% (FI Wholesale),2027-05-31
+fiwh-out002,Raise Promotion accuracy to 15% (FI Wholesale),2027-04-01
+fiwh-out003,Lower Stock cost by 30% (FI Wholesale),2027-05-01
+fiwh-out004,Reach 10% of Stock done without help (FI Wholesale),2029-01-20
+fiwh-out005,Cut Fraud handling time by 5% (FI Wholesale),2028-10-22
+fiwh-out006,Raise Pricing accuracy to 20% (FI Wholesale),2027-03-02
+fiwh-out007,Lower Customer cost by 20% (FI Wholesale),2029-09-17
+fiwh-out008,Reach 15% of Returns done without help (FI Wholesale),2028-03-26
+fiwh-out009,Cut Returns handling time by 40% (FI Wholesale),2027-03-02
+fiwh-out010,Raise Fraud accuracy to 5% (FI Wholesale),2028-11-21
+fiwh-out011,Lower Payment cost by 40% (FI Wholesale),2027-07-30
+fiwh-out012,Reach 20% of Stock done without help (FI Wholesale),2029-04-20
+filg-out001,Cut Payment handling time by 25% (FI Logistics),2028-02-25
+filg-out002,Raise Pricing accuracy to 5% (FI Logistics),2028-11-21
+filg-out003,Lower Promotion cost by 15% (FI Logistics),2028-06-24
+filg-out004,Reach 25% of Returns done without help (FI Logistics),2029-07-19
+filg-out005,Cut Order handling time by 25% (FI Logistics),2028-11-21
+filg-out006,Raise Payment accuracy to 40% (FI Logistics),2028-04-25
+filg-out007,Lower Stock cost by 20% (FI Logistics),2027-12-27
+filg-out008,Reach 5% of Promotion done without help (FI Logistics),2029-09-17
+filg-out009,Cut Supplier handling time by 5% (FI Logistics),2028-09-22
+filg-out010,Raise Payment accuracy to 20% (FI Logistics),2027-08-29
+filg-out011,Lower Payment cost by 25% (FI Logistics),2028-10-22
+filg-out012,Reach 15% of Fraud done without help (FI Logistics),2028-12-21
+czst-out001,Cut Promotion handling time by 40% (CZ Stores),2027-05-31
+czst-out002,Raise Customer accuracy to 5% (CZ Stores),2027-05-01
+czst-out003,Lower Fraud cost by 30% (CZ Stores),2028-05-25
+czst-out004,Reach 20% of Stock done without help (CZ Stores),2027-09-28
+czst-out005,Cut Payment handling time by 25% (CZ Stores),2027-04-01
+czst-out006,Raise Returns accuracy to 15% (CZ Stores),2027-01-31
+czst-out007,Lower Returns cost by 15% (CZ Stores),2028-04-25
+czst-out008,Reach 40% of Stock done without help (CZ Stores),2029-06-19
+czst-out009,Cut Customer handling time by 5% (CZ Stores),2029-05-20
+czst-out010,Raise Returns accuracy to 25% (CZ Stores),2028-11-21
+czst-out011,Lower Order cost by 5% (CZ Stores),2027-07-30
+czst-out012,Reach 5% of Delivery done without help (CZ Stores),2029-11-16
+czon-out001,Cut Customer handling time by 20% (CZ Online),2029-07-19
+czon-out002,Raise Delivery accuracy to 15% (CZ Online),2029-07-19
+czon-out003,Lower Order cost by 25% (CZ Online),2028-08-23
+czon-out004,Reach 40% of Payment done without help (CZ Online),2029-01-20
+czon-out005,Cut Payment handling time by 25% (CZ Online),2027-09-28
+czon-out006,Raise Payment accuracy to 25% (CZ Online),2028-07-24
+czon-out007,Lower Supplier cost by 25% (CZ Online),2029-02-19
+czon-out008,Reach 5% of Pricing done without help (CZ Online),2029-10-17
+czon-out009,Cut Payment handling time by 20% (CZ Online),2027-07-30
+czon-out010,Raise Promotion accuracy to 5% (CZ Online),2028-10-22
+czon-out011,Lower Promotion cost by 5% (CZ Online),2028-10-22
+czon-out012,Reach 5% of Fraud done without help (CZ Online),2028-04-25
+czwh-out001,Cut Promotion handling time by 25% (CZ Wholesale),2028-08-23
+czwh-out002,Raise Customer accuracy to 5% (CZ Wholesale),2029-07-19
+czwh-out003,Lower Pricing cost by 5% (CZ Wholesale),2029-09-17
+czwh-out004,Reach 30% of Customer done without help (CZ Wholesale),2027-04-01
+czwh-out005,Cut Returns handling time by 40% (CZ Wholesale),2028-07-24
+czwh-out006,Raise Promotion accuracy to 25% (CZ Wholesale),2027-06-30
+czwh-out007,Lower Pricing cost by 15% (CZ Wholesale),2028-11-21
+czwh-out008,Reach 40% of Payment done without help (CZ Wholesale),2028-01-26
+czwh-out009,Cut Delivery handling time by 20% (CZ Wholesale),2029-11-16
+czwh-out010,Raise Promotion accuracy to 5% (CZ Wholesale),2027-06-30
+czwh-out011,Lower Pricing cost by 5% (CZ Wholesale),2029-02-19
+czwh-out012,Reach 40% of Supplier done without help (CZ Wholesale),2029-04-20
+czlg-out001,Cut Fraud handling time by 25% (CZ Logistics),2027-08-29
+czlg-out002,Raise Returns accuracy to 5% (CZ Logistics),2028-03-26
+czlg-out003,Lower Payment cost by 40% (CZ Logistics),2027-05-31
+czlg-out004,Reach 40% of Customer done without help (CZ Logistics),2027-03-02
+czlg-out005,Cut Supplier handling time by 20% (CZ Logistics),2028-05-25
+czlg-out006,Raise Delivery accuracy to 5% (CZ Logistics),2029-12-16
+czlg-out007,Lower Payment cost by 25% (CZ Logistics),2028-03-26
+czlg-out008,Reach 5% of Customer done without help (CZ Logistics),2027-08-29
+czlg-out009,Cut Payment handling time by 20% (CZ Logistics),2029-11-16
+czlg-out010,Raise Returns accuracy to 15% (CZ Logistics),2027-04-01
+czlg-out011,Lower Customer cost by 20% (CZ Logistics),2029-05-20
+czlg-out012,Reach 25% of Customer done without help (CZ Logistics),2027-09-28
+grst-out001,Cut Order handling time by 40% (GR Stores),2027-06-30
+grst-out002,Raise Delivery accuracy to 40% (GR Stores),2027-04-01
+grst-out003,Lower Order cost by 30% (GR Stores),2027-09-28
+grst-out004,Reach 10% of Payment done without help (GR Stores),2027-07-30
+grst-out005,Cut Stock handling time by 15% (GR Stores),2028-06-24
+grst-out006,Raise Fraud accuracy to 10% (GR Stores),2027-05-01
+grst-out007,Lower Customer cost by 25% (GR Stores),2028-01-26
+grst-out008,Reach 15% of Order done without help (GR Stores),2027-06-30
+grst-out009,Cut Delivery handling time by 30% (GR Stores),2027-07-30
+grst-out010,Raise Order accuracy to 5% (GR Stores),2027-03-02
+grst-out011,Lower Fraud cost by 20% (GR Stores),2029-02-19
+grst-out012,Reach 40% of Fraud done without help (GR Stores),2028-03-26
+gron-out001,Cut Payment handling time by 25% (GR Online),2027-08-29
+gron-out002,Raise Fraud accuracy to 25% (GR Online),2027-12-27
+gron-out003,Lower Customer cost by 10% (GR Online),2029-01-20
+gron-out004,Reach 25% of Supplier done without help (GR Online),2028-10-22
+gron-out005,Cut Customer handling time by 30% (GR Online),2029-06-19
+gron-out006,Raise Delivery accuracy to 25% (GR Online),2029-02-19
+gron-out007,Lower Fraud cost by 30% (GR Online),2028-11-21
+gron-out008,Reach 15% of Fraud done without help (GR Online),2028-03-26
+gron-out009,Cut Promotion handling time by 30% (GR Online),2028-02-25
+gron-out010,Raise Payment accuracy to 5% (GR Online),2029-02-19
+gron-out011,Lower Fraud cost by 10% (GR Online),2027-05-01
+gron-out012,Reach 20% of Supplier done without help (GR Online),2027-05-01
+grwh-out001,Cut Stock handling time by 15% (GR Wholesale),2028-08-23
+grwh-out002,Raise Stock accuracy to 15% (GR Wholesale),2028-10-22
+grwh-out003,Lower Promotion cost by 5% (GR Wholesale),2029-05-20
+grwh-out004,Reach 15% of Order done without help (GR Wholesale),2028-09-22
+grwh-out005,Cut Payment handling time by 30% (GR Wholesale),2029-03-21
+grwh-out006,Raise Pricing accuracy to 15% (GR Wholesale),2029-02-19
+grwh-out007,Lower Stock cost by 25% (GR Wholesale),2027-09-28
+grwh-out008,Reach 25% of Customer done without help (GR Wholesale),2028-09-22
+grwh-out009,Cut Pricing handling time by 20% (GR Wholesale),2028-10-22
+grwh-out010,Raise Order accuracy to 5% (GR Wholesale),2029-10-17
+grwh-out011,Lower Delivery cost by 40% (GR Wholesale),2027-07-30
+grwh-out012,Reach 20% of Returns done without help (GR Wholesale),2027-08-29
+grlg-out001,Cut Payment handling time by 5% (GR Logistics),2028-12-21
+grlg-out002,Raise Order accuracy to 20% (GR Logistics),2027-07-30
+grlg-out003,Lower Returns cost by 20% (GR Logistics),2027-11-27
+grlg-out004,Reach 20% of Delivery done without help (GR Logistics),2028-03-26
+grlg-out005,Cut Customer handling time by 30% (GR Logistics),2028-09-22
+grlg-out006,Raise Payment accuracy to 10% (GR Logistics),2028-03-26
+grlg-out007,Lower Promotion cost by 15% (GR Logistics),2029-09-17
+grlg-out008,Reach 10% of Returns done without help (GR Logistics),2028-08-23
+grlg-out009,Cut Promotion handling time by 30% (GR Logistics),2029-06-19
+grlg-out010,Raise Promotion accuracy to 20% (GR Logistics),2029-12-16
+grlg-out011,Lower Promotion cost by 40% (GR Logistics),2029-05-20
+grlg-out012,Reach 30% of Delivery done without help (GR Logistics),2028-04-25
+hust-out001,Cut Delivery handling time by 25% (HU Stores),2028-01-26
+hust-out002,Raise Payment accuracy to 25% (HU Stores),2029-06-19
+hust-out003,Lower Delivery cost by 40% (HU Stores),2027-05-01
+hust-out004,Reach 40% of Order done without help (HU Stores),2028-07-24
+hust-out005,Cut Promotion handling time by 25% (HU Stores),2028-11-21
+hust-out006,Raise Fraud accuracy to 15% (HU Stores),2028-04-25
+hust-out007,Lower Supplier cost by 5% (HU Stores),2029-07-19
+hust-out008,Reach 25% of Payment done without help (HU Stores),2029-08-18
+hust-out009,Cut Payment handling time by 25% (HU Stores),2028-01-26
+hust-out010,Raise Pricing accuracy to 15% (HU Stores),2027-10-28
+hust-out011,Lower Returns cost by 20% (HU Stores),2029-08-18
+hust-out012,Reach 30% of Returns done without help (HU Stores),2029-03-21
+huon-out001,Cut Pricing handling time by 30% (HU Online),2027-01-31
+huon-out002,Raise Delivery accuracy to 10% (HU Online),2028-03-26
+huon-out003,Lower Order cost by 25% (HU Online),2029-01-20
+huon-out004,Reach 25% of Pricing done without help (HU Online),2028-12-21
+huon-out005,Cut Pricing handling time by 30% (HU Online),2027-10-28
+huon-out006,Raise Fraud accuracy to 15% (HU Online),2028-02-25
+huon-out007,Lower Supplier cost by 20% (HU Online),2028-04-25
+huon-out008,Reach 30% of Stock done without help (HU Online),2028-06-24
+huon-out009,Cut Promotion handling time by 10% (HU Online),2029-08-18
+huon-out010,Raise Pricing accuracy to 30% (HU Online),2028-10-22
+huon-out011,Lower Returns cost by 25% (HU Online),2029-02-19
+huon-out012,Reach 5% of Order done without help (HU Online),2029-10-17
+huwh-out001,Cut Delivery handling time by 40% (HU Wholesale),2029-07-19
+huwh-out002,Raise Returns accuracy to 15% (HU Wholesale),2029-01-20
+huwh-out003,Lower Customer cost by 40% (HU Wholesale),2029-06-19
+huwh-out004,Reach 25% of Customer done without help (HU Wholesale),2029-04-20
+huwh-out005,Cut Fraud handling time by 15% (HU Wholesale),2027-05-01
+huwh-out006,Raise Payment accuracy to 10% (HU Wholesale),2028-11-21
+huwh-out007,Lower Supplier cost by 20% (HU Wholesale),2028-08-23
+huwh-out008,Reach 25% of Returns done without help (HU Wholesale),2028-06-24
+huwh-out009,Cut Delivery handling time by 20% (HU Wholesale),2028-09-22
+huwh-out010,Raise Supplier accuracy to 5% (HU Wholesale),2027-10-28
+huwh-out011,Lower Delivery cost by 25% (HU Wholesale),2027-08-29
+huwh-out012,Reach 5% of Order done without help (HU Wholesale),2028-07-24
+hulg-out001,Cut Returns handling time by 40% (HU Logistics),2029-03-21
+hulg-out002,Raise Payment accuracy to 15% (HU Logistics),2029-06-19
+hulg-out003,Lower Returns cost by 30% (HU Logistics),2028-04-25
+hulg-out004,Reach 15% of Delivery done without help (HU Logistics),2029-10-17
+hulg-out005,Cut Customer handling time by 15% (HU Logistics),2027-03-02
+hulg-out006,Raise Stock accuracy to 40% (HU Logistics),2028-11-21
+hulg-out007,Lower Promotion cost by 40% (HU Logistics),2029-04-20
+hulg-out008,Reach 25% of Supplier done without help (HU Logistics),2027-08-29
+hulg-out009,Cut Promotion handling time by 10% (HU Logistics),2027-08-29
+hulg-out010,Raise Returns accuracy to 40% (HU Logistics),2029-03-21
+hulg-out011,Lower Order cost by 40% (HU Logistics),2028-08-23
+hulg-out012,Reach 25% of Supplier done without help (HU Logistics),2028-06-24
+rost-out001,Cut Payment handling time by 25% (RO Stores),2027-05-31
+rost-out002,Raise Supplier accuracy to 5% (RO Stores),2028-12-21
+rost-out003,Lower Payment cost by 10% (RO Stores),2027-12-27
+rost-out004,Reach 15% of Customer done without help (RO Stores),2028-07-24
+rost-out005,Cut Supplier handling time by 10% (RO Stores),2029-01-20
+rost-out006,Raise Returns accuracy to 30% (RO Stores),2027-06-30
+rost-out007,Lower Pricing cost by 15% (RO Stores),2028-05-25
+rost-out008,Reach 30% of Stock done without help (RO Stores),2029-06-19
+rost-out009,Cut Returns handling time by 15% (RO Stores),2029-07-19
+rost-out010,Raise Stock accuracy to 15% (RO Stores),2027-11-27
+rost-out011,Lower Pricing cost by 40% (RO Stores),2029-01-20
+rost-out012,Reach 20% of Delivery done without help (RO Stores),2029-08-18
+roon-out001,Cut Returns handling time by 20% (RO Online),2027-08-29
+roon-out002,Raise Fraud accuracy to 40% (RO Online),2028-09-22
+roon-out003,Lower Payment cost by 20% (RO Online),2027-01-31
+roon-out004,Reach 5% of Returns done without help (RO Online),2028-07-24
+roon-out005,Cut Customer handling time by 40% (RO Online),2027-11-27
+roon-out006,Raise Delivery accuracy to 40% (RO Online),2027-04-01
+roon-out007,Lower Pricing cost by 30% (RO Online),2027-01-31
+roon-out008,Reach 20% of Stock done without help (RO Online),2027-11-27
+roon-out009,Cut Returns handling time by 40% (RO Online),2029-03-21
+roon-out010,Raise Customer accuracy to 15% (RO Online),2027-09-28
+roon-out011,Lower Delivery cost by 25% (RO Online),2028-03-26
+roon-out012,Reach 25% of Payment done without help (RO Online),2029-11-16
+rowh-out001,Cut Returns handling time by 10% (RO Wholesale),2028-01-26
+rowh-out002,Raise Pricing accuracy to 15% (RO Wholesale),2027-05-01
+rowh-out003,Lower Payment cost by 10% (RO Wholesale),2029-06-19
+rowh-out004,Reach 30% of Order done without help (RO Wholesale),2027-07-30
+rowh-out005,Cut Pricing handling time by 40% (RO Wholesale),2027-01-31
+rowh-out006,Raise Pricing accuracy to 15% (RO Wholesale),2029-06-19
+rowh-out007,Lower Returns cost by 15% (RO Wholesale),2028-06-24
+rowh-out008,Reach 40% of Payment done without help (RO Wholesale),2029-08-18
+rowh-out009,Cut Stock handling time by 25% (RO Wholesale),2028-04-25
+rowh-out010,Raise Pricing accuracy to 10% (RO Wholesale),2027-12-27
+rowh-out011,Lower Order cost by 30% (RO Wholesale),2027-06-30
+rowh-out012,Reach 20% of Customer done without help (RO Wholesale),2029-10-17
+rolg-out001,Cut Promotion handling time by 10% (RO Logistics),2028-04-25
+rolg-out002,Raise Order accuracy to 15% (RO Logistics),2027-01-31
+rolg-out003,Lower Payment cost by 40% (RO Logistics),2028-04-25
+rolg-out004,Reach 10% of Customer done without help (RO Logistics),2028-09-22
+rolg-out005,Cut Payment handling time by 40% (RO Logistics),2027-05-01
+rolg-out006,Raise Payment accuracy to 5% (RO Logistics),2029-06-19
+rolg-out007,Lower Customer cost by 10% (RO Logistics),2028-06-24
+rolg-out008,Reach 30% of Fraud done without help (RO Logistics),2027-04-01
+rolg-out009,Cut Supplier handling time by 40% (RO Logistics),2028-12-21
+rolg-out010,Raise Fraud accuracy to 30% (RO Logistics),2029-08-18
+rolg-out011,Lower Fraud cost by 40% (RO Logistics),2028-08-23
+rolg-out012,Reach 40% of Order done without help (RO Logistics),2029-08-18
+hrst-out001,Cut Supplier handling time by 15% (HR Stores),2028-10-22
+hrst-out002,Raise Supplier accuracy to 15% (HR Stores),2028-03-26
+hrst-out003,Lower Stock cost by 15% (HR Stores),2028-01-26
+hrst-out004,Reach 25% of Fraud done without help (HR Stores),2027-07-30
+hrst-out005,Cut Pricing handling time by 40% (HR Stores),2029-03-21
+hrst-out006,Raise Order accuracy to 40% (HR Stores),2029-04-20
+hrst-out007,Lower Order cost by 40% (HR Stores),2027-01-31
+hrst-out008,Reach 20% of Promotion done without help (HR Stores),2029-11-16
+hrst-out009,Cut Order handling time by 30% (HR Stores),2028-06-24
+hrst-out010,Raise Fraud accuracy to 40% (HR Stores),2027-05-31
+hrst-out011,Lower Delivery cost by 30% (HR Stores),2029-08-18
+hrst-out012,Reach 20% of Supplier done without help (HR Stores),2029-01-20
+hron-out001,Cut Promotion handling time by 10% (HR Online),2027-08-29
+hron-out002,Raise Delivery accuracy to 10% (HR Online),2028-07-24
+hron-out003,Lower Payment cost by 20% (HR Online),2029-11-16
+hron-out004,Reach 40% of Pricing done without help (HR Online),2027-03-02
+hron-out005,Cut Returns handling time by 30% (HR Online),2027-06-30
+hron-out006,Raise Supplier accuracy to 25% (HR Online),2028-06-24
+hron-out007,Lower Payment cost by 25% (HR Online),2028-11-21
+hron-out008,Reach 20% of Promotion done without help (HR Online),2027-08-29
+hron-out009,Cut Returns handling time by 30% (HR Online),2027-05-01
+hron-out010,Raise Pricing accuracy to 5% (HR Online),2028-05-25
+hron-out011,Lower Pricing cost by 20% (HR Online),2028-12-21
+hron-out012,Reach 20% of Supplier done without help (HR Online),2027-01-31
+hrwh-out001,Cut Returns handling time by 20% (HR Wholesale),2027-03-02
+hrwh-out002,Raise Supplier accuracy to 10% (HR Wholesale),2027-05-01
+hrwh-out003,Lower Promotion cost by 25% (HR Wholesale),2028-03-26
+hrwh-out004,Reach 20% of Payment done without help (HR Wholesale),2028-08-23
+hrwh-out005,Cut Fraud handling time by 25% (HR Wholesale),2027-03-02
+hrwh-out006,Raise Customer accuracy to 20% (HR Wholesale),2028-10-22
+hrwh-out007,Lower Customer cost by 30% (HR Wholesale),2028-04-25
+hrwh-out008,Reach 20% of Delivery done without help (HR Wholesale),2027-06-30
+hrwh-out009,Cut Pricing handling time by 25% (HR Wholesale),2028-10-22
+hrwh-out010,Raise Order accuracy to 20% (HR Wholesale),2027-03-02
+hrwh-out011,Lower Supplier cost by 20% (HR Wholesale),2028-09-22
+hrwh-out012,Reach 25% of Delivery done without help (HR Wholesale),2029-08-18
+hrlg-out001,Cut Fraud handling time by 15% (HR Logistics),2029-02-19
+hrlg-out002,Raise Pricing accuracy to 5% (HR Logistics),2028-08-23
+hrlg-out003,Lower Delivery cost by 25% (HR Logistics),2028-05-25
+hrlg-out004,Reach 40% of Payment done without help (HR Logistics),2027-12-27
+hrlg-out005,Cut Stock handling time by 40% (HR Logistics),2029-10-17
+hrlg-out006,Raise Delivery accuracy to 20% (HR Logistics),2027-01-31
+hrlg-out007,Lower Returns cost by 25% (HR Logistics),2029-03-21
+hrlg-out008,Reach 30% of Pricing done without help (HR Logistics),2027-09-28
+hrlg-out009,Cut Promotion handling time by 15% (HR Logistics),2029-12-16
+hrlg-out010,Raise Order accuracy to 40% (HR Logistics),2029-08-18
+hrlg-out011,Lower Stock cost by 25% (HR Logistics),2028-03-26
+hrlg-out012,Reach 10% of Payment done without help (HR Logistics),2028-03-26
+skst-out001,Cut Delivery handling time by 10% (SK Stores),2027-10-28
+skst-out002,Raise Delivery accuracy to 30% (SK Stores),2029-07-19
+skst-out003,Lower Supplier cost by 20% (SK Stores),2029-07-19
+skst-out004,Reach 25% of Supplier done without help (SK Stores),2028-03-26
+skst-out005,Cut Supplier handling time by 5% (SK Stores),2029-12-16
+skst-out006,Raise Order accuracy to 15% (SK Stores),2029-12-16
+skst-out007,Lower Order cost by 5% (SK Stores),2028-08-23
+skst-out008,Reach 15% of Returns done without help (SK Stores),2028-02-25
+skst-out009,Cut Order handling time by 25% (SK Stores),2028-06-24
+skst-out010,Raise Payment accuracy to 10% (SK Stores),2029-08-18
+skst-out011,Lower Delivery cost by 20% (SK Stores),2029-11-16
+skst-out012,Reach 5% of Order done without help (SK Stores),2028-12-21
+skon-out001,Cut Pricing handling time by 10% (SK Online),2028-02-25
+skon-out002,Raise Returns accuracy to 40% (SK Online),2027-08-29
+skon-out003,Lower Supplier cost by 20% (SK Online),2028-02-25
+skon-out004,Reach 5% of Payment done without help (SK Online),2027-03-02
+skon-out005,Cut Supplier handling time by 20% (SK Online),2028-11-21
+skon-out006,Raise Fraud accuracy to 5% (SK Online),2027-06-30
+skon-out007,Lower Delivery cost by 40% (SK Online),2027-08-29
+skon-out008,Reach 20% of Returns done without help (SK Online),2027-12-27
+skon-out009,Cut Delivery handling time by 40% (SK Online),2027-05-31
+skon-out010,Raise Pricing accuracy to 25% (SK Online),2028-02-25
+skon-out011,Lower Customer cost by 15% (SK Online),2028-08-23
+skon-out012,Reach 15% of Delivery done without help (SK Online),2029-01-20
+skwh-out001,Cut Promotion handling time by 10% (SK Wholesale),2029-12-16
+skwh-out002,Raise Payment accuracy to 40% (SK Wholesale),2029-08-18
+skwh-out003,Lower Delivery cost by 10% (SK Wholesale),2029-11-16
+skwh-out004,Reach 25% of Order done without help (SK Wholesale),2028-11-21
+skwh-out005,Cut Returns handling time by 40% (SK Wholesale),2028-11-21
+skwh-out006,Raise Promotion accuracy to 25% (SK Wholesale),2029-05-20
+skwh-out007,Lower Delivery cost by 20% (SK Wholesale),2027-08-29
+skwh-out008,Reach 20% of Supplier done without help (SK Wholesale),2027-01-31
+skwh-out009,Cut Payment handling time by 10% (SK Wholesale),2029-12-16
+skwh-out010,Raise Returns accuracy to 30% (SK Wholesale),2027-08-29
+skwh-out011,Lower Returns cost by 30% (SK Wholesale),2027-01-31
+skwh-out012,Reach 20% of Returns done without help (SK Wholesale),2028-07-24
+sklg-out001,Cut Order handling time by 15% (SK Logistics),2028-10-22
+sklg-out002,Raise Delivery accuracy to 5% (SK Logistics),2028-06-24
+sklg-out003,Lower Supplier cost by 25% (SK Logistics),2028-04-25
+sklg-out004,Reach 15% of Returns done without help (SK Logistics),2029-08-18
+sklg-out005,Cut Fraud handling time by 40% (SK Logistics),2029-11-16
+sklg-out006,Raise Returns accuracy to 20% (SK Logistics),2027-10-28
+sklg-out007,Lower Supplier cost by 15% (SK Logistics),2027-12-27
+sklg-out008,Reach 20% of Order done without help (SK Logistics),2029-09-17
+sklg-out009,Cut Order handling time by 10% (SK Logistics),2028-06-24
+sklg-out010,Raise Delivery accuracy to 40% (SK Logistics),2027-09-28
+sklg-out011,Lower Customer cost by 5% (SK Logistics),2029-03-21
+sklg-out012,Reach 5% of Stock done without help (SK Logistics),2028-06-24
+bgst-out001,Cut Returns handling time by 10% (BG Stores),2027-11-27
+bgst-out002,Raise Returns accuracy to 10% (BG Stores),2028-03-26
+bgst-out003,Lower Supplier cost by 15% (BG Stores),2029-09-17
+bgst-out004,Reach 10% of Promotion done without help (BG Stores),2028-06-24
+bgst-out005,Cut Delivery handling time by 20% (BG Stores),2029-06-19
+bgst-out006,Raise Supplier accuracy to 20% (BG Stores),2029-08-18
+bgst-out007,Lower Stock cost by 30% (BG Stores),2029-05-20
+bgst-out008,Reach 20% of Stock done without help (BG Stores),2028-02-25
+bgst-out009,Cut Pricing handling time by 15% (BG Stores),2027-05-31
+bgst-out010,Raise Order accuracy to 40% (BG Stores),2028-02-25
+bgst-out011,Lower Fraud cost by 10% (BG Stores),2029-10-17
+bgst-out012,Reach 20% of Returns done without help (BG Stores),2029-01-20
+bgon-out001,Cut Supplier handling time by 5% (BG Online),2028-05-25
+bgon-out002,Raise Payment accuracy to 30% (BG Online),2027-05-31
+bgon-out003,Lower Pricing cost by 5% (BG Online),2029-12-16
+bgon-out004,Reach 25% of Fraud done without help (BG Online),2027-05-31
+bgon-out005,Cut Customer handling time by 5% (BG Online),2029-11-16
+bgon-out006,Raise Returns accuracy to 40% (BG Online),2028-05-25
+bgon-out007,Lower Order cost by 5% (BG Online),2028-03-26
+bgon-out008,Reach 5% of Stock done without help (BG Online),2027-03-02
+bgon-out009,Cut Delivery handling time by 40% (BG Online),2029-04-20
+bgon-out010,Raise Supplier accuracy to 25% (BG Online),2027-03-02
+bgon-out011,Lower Payment cost by 40% (BG Online),2028-08-23
+bgon-out012,Reach 10% of Delivery done without help (BG Online),2027-12-27
+bgwh-out001,Cut Fraud handling time by 20% (BG Wholesale),2027-09-28
+bgwh-out002,Raise Promotion accuracy to 40% (BG Wholesale),2027-05-31
+bgwh-out003,Lower Order cost by 30% (BG Wholesale),2029-04-20
+bgwh-out004,Reach 40% of Delivery done without help (BG Wholesale),2028-04-25
+bgwh-out005,Cut Delivery handling time by 10% (BG Wholesale),2027-03-02
+bgwh-out006,Raise Payment accuracy to 20% (BG Wholesale),2029-05-20
+bgwh-out007,Lower Promotion cost by 30% (BG Wholesale),2029-06-19
+bgwh-out008,Reach 20% of Promotion done without help (BG Wholesale),2028-07-24
+bgwh-out009,Cut Returns handling time by 20% (BG Wholesale),2027-09-28
+bgwh-out010,Raise Stock accuracy to 15% (BG Wholesale),2029-01-20
+bgwh-out011,Lower Customer cost by 20% (BG Wholesale),2029-03-21
+bgwh-out012,Reach 10% of Customer done without help (BG Wholesale),2027-07-30
+bglg-out001,Cut Pricing handling time by 5% (BG Logistics),2029-11-16
+bglg-out002,Raise Supplier accuracy to 40% (BG Logistics),2029-12-16
+bglg-out003,Lower Returns cost by 25% (BG Logistics),2027-01-31
+bglg-out004,Reach 30% of Fraud done without help (BG Logistics),2029-08-18
+bglg-out005,Cut Delivery handling time by 15% (BG Logistics),2027-05-01
+bglg-out006,Raise Stock accuracy to 30% (BG Logistics),2028-03-26
+bglg-out007,Lower Fraud cost by 20% (BG Logistics),2027-08-29
+bglg-out008,Reach 5% of Supplier done without help (BG Logistics),2027-04-01
+bglg-out009,Cut Supplier handling time by 30% (BG Logistics),2028-04-25
+bglg-out010,Raise Returns accuracy to 5% (BG Logistics),2028-01-26
+bglg-out011,Lower Payment cost by 15% (BG Logistics),2027-05-31
+bglg-out012,Reach 5% of Supplier done without help (BG Logistics),2029-12-16
+ltst-out001,Cut Pricing handling time by 30% (LT Stores),2029-10-17
+ltst-out002,Raise Payment accuracy to 10% (LT Stores),2029-04-20
+ltst-out003,Lower Pricing cost by 40% (LT Stores),2027-04-01
+ltst-out004,Reach 15% of Customer done without help (LT Stores),2028-11-21
+ltst-out005,Cut Delivery handling time by 15% (LT Stores),2029-09-17
+ltst-out006,Raise Payment accuracy to 10% (LT Stores),2027-11-27
+ltst-out007,Lower Stock cost by 10% (LT Stores),2027-08-29
+ltst-out008,Reach 10% of Delivery done without help (LT Stores),2029-09-17
+ltst-out009,Cut Fraud handling time by 40% (LT Stores),2029-10-17
+ltst-out010,Raise Stock accuracy to 20% (LT Stores),2028-01-26
+ltst-out011,Lower Delivery cost by 40% (LT Stores),2027-08-29
+ltst-out012,Reach 20% of Fraud done without help (LT Stores),2027-05-01
+lton-out001,Cut Fraud handling time by 25% (LT Online),2028-10-22
+lton-out002,Raise Order accuracy to 30% (LT Online),2029-02-19
+lton-out003,Lower Supplier cost by 15% (LT Online),2028-01-26
+lton-out004,Reach 5% of Fraud done without help (LT Online),2028-10-22
+lton-out005,Cut Customer handling time by 10% (LT Online),2027-03-02
+lton-out006,Raise Pricing accuracy to 5% (LT Online),2027-03-02
+lton-out007,Lower Fraud cost by 10% (LT Online),2027-07-30
+lton-out008,Reach 30% of Customer done without help (LT Online),2027-11-27
+lton-out009,Cut Supplier handling time by 25% (LT Online),2029-06-19
+lton-out010,Raise Promotion accuracy to 30% (LT Online),2028-09-22
+lton-out011,Lower Returns cost by 15% (LT Online),2027-05-31
+lton-out012,Reach 15% of Delivery done without help (LT Online),2029-05-20
+ltwh-out001,Cut Order handling time by 15% (LT Wholesale),2029-11-16
+ltwh-out002,Raise Supplier accuracy to 30% (LT Wholesale),2029-08-18
+ltwh-out003,Lower Promotion cost by 30% (LT Wholesale),2028-10-22
+ltwh-out004,Reach 10% of Order done without help (LT Wholesale),2027-09-28
+ltwh-out005,Cut Customer handling time by 10% (LT Wholesale),2029-06-19
+ltwh-out006,Raise Promotion accuracy to 20% (LT Wholesale),2029-03-21
+ltwh-out007,Lower Supplier cost by 20% (LT Wholesale),2028-12-21
+ltwh-out008,Reach 40% of Promotion done without help (LT Wholesale),2027-07-30
+ltwh-out009,Cut Payment handling time by 20% (LT Wholesale),2029-12-16
+ltwh-out010,Raise Fraud accuracy to 10% (LT Wholesale),2028-12-21
+ltwh-out011,Lower Returns cost by 25% (LT Wholesale),2028-09-22
+ltwh-out012,Reach 25% of Promotion done without help (LT Wholesale),2027-03-02
+ltlg-out001,Cut Stock handling time by 10% (LT Logistics),2027-09-28
+ltlg-out002,Raise Supplier accuracy to 15% (LT Logistics),2029-04-20
+ltlg-out003,Lower Payment cost by 5% (LT Logistics),2029-03-21
+ltlg-out004,Reach 30% of Order done without help (LT Logistics),2028-03-26
+ltlg-out005,Cut Stock handling time by 15% (LT Logistics),2027-06-30
+ltlg-out006,Raise Supplier accuracy to 40% (LT Logistics),2027-01-31
+ltlg-out007,Lower Customer cost by 25% (LT Logistics),2027-05-31
+ltlg-out008,Reach 25% of Fraud done without help (LT Logistics),2028-10-22
+ltlg-out009,Cut Stock handling time by 15% (LT Logistics),2029-03-21
+ltlg-out010,Raise Pricing accuracy to 30% (LT Logistics),2027-07-30
+ltlg-out011,Lower Delivery cost by 30% (LT Logistics),2028-02-25
+ltlg-out012,Reach 25% of Returns done without help (LT Logistics),2029-01-20
+lvst-out001,Cut Fraud handling time by 10% (LV Stores),2028-11-21
+lvst-out002,Raise Customer accuracy to 10% (LV Stores),2029-02-19
+lvst-out003,Lower Customer cost by 10% (LV Stores),2027-03-02
+lvst-out004,Reach 10% of Payment done without help (LV Stores),2029-09-17
+lvst-out005,Cut Pricing handling time by 40% (LV Stores),2029-10-17
+lvst-out006,Raise Order accuracy to 30% (LV Stores),2027-10-28
+lvst-out007,Lower Promotion cost by 15% (LV Stores),2028-02-25
+lvst-out008,Reach 40% of Fraud done without help (LV Stores),2027-08-29
+lvst-out009,Cut Promotion handling time by 20% (LV Stores),2028-12-21
+lvst-out010,Raise Payment accuracy to 25% (LV Stores),2029-04-20
+lvst-out011,Lower Order cost by 20% (LV Stores),2027-03-02
+lvst-out012,Reach 5% of Stock done without help (LV Stores),2029-11-16
+lvon-out001,Cut Delivery handling time by 5% (LV Online),2029-03-21
+lvon-out002,Raise Order accuracy to 10% (LV Online),2029-06-19
+lvon-out003,Lower Fraud cost by 40% (LV Online),2028-04-25
+lvon-out004,Reach 25% of Pricing done without help (LV Online),2027-03-02
+lvon-out005,Cut Payment handling time by 40% (LV Online),2029-10-17
+lvon-out006,Raise Fraud accuracy to 25% (LV Online),2027-05-01
+lvon-out007,Lower Stock cost by 5% (LV Online),2027-11-27
+lvon-out008,Reach 30% of Returns done without help (LV Online),2029-06-19
+lvon-out009,Cut Returns handling time by 15% (LV Online),2027-05-31
+lvon-out010,Raise Payment accuracy to 15% (LV Online),2027-08-29
+lvon-out011,Lower Returns cost by 25% (LV Online),2029-06-19
+lvon-out012,Reach 40% of Pricing done without help (LV Online),2029-01-20
+lvwh-out001,Cut Delivery handling time by 5% (LV Wholesale),2028-04-25
+lvwh-out002,Raise Fraud accuracy to 30% (LV Wholesale),2028-12-21
+lvwh-out003,Lower Supplier cost by 30% (LV Wholesale),2028-09-22
+lvwh-out004,Reach 30% of Supplier done without help (LV Wholesale),2027-05-01
+lvwh-out005,Cut Pricing handling time by 10% (LV Wholesale),2029-11-16
+lvwh-out006,Raise Supplier accuracy to 25% (LV Wholesale),2029-05-20
+lvwh-out007,Lower Returns cost by 40% (LV Wholesale),2027-03-02
+lvwh-out008,Reach 30% of Customer done without help (LV Wholesale),2029-08-18
+lvwh-out009,Cut Customer handling time by 25% (LV Wholesale),2027-05-01
+lvwh-out010,Raise Fraud accuracy to 25% (LV Wholesale),2028-12-21
+lvwh-out011,Lower Delivery cost by 10% (LV Wholesale),2027-09-28
+lvwh-out012,Reach 30% of Order done without help (LV Wholesale),2029-06-19
+lvlg-out001,Cut Promotion handling time by 20% (LV Logistics),2027-12-27
+lvlg-out002,Raise Order accuracy to 40% (LV Logistics),2027-09-28
+lvlg-out003,Lower Promotion cost by 10% (LV Logistics),2029-01-20
+lvlg-out004,Reach 20% of Stock done without help (LV Logistics),2028-01-26
+lvlg-out005,Cut Order handling time by 5% (LV Logistics),2027-04-01
+lvlg-out006,Raise Fraud accuracy to 5% (LV Logistics),2027-07-30
+lvlg-out007,Lower Fraud cost by 10% (LV Logistics),2027-05-01
+lvlg-out008,Reach 20% of Payment done without help (LV Logistics),2028-10-22
+lvlg-out009,Cut Stock handling time by 15% (LV Logistics),2028-08-23
+lvlg-out010,Raise Pricing accuracy to 15% (LV Logistics),2029-04-20
+lvlg-out011,Lower Returns cost by 40% (LV Logistics),2028-06-24
+lvlg-out012,Reach 10% of Pricing done without help (LV Logistics),2027-04-01
