@@ -69,7 +69,57 @@ public sealed class PatternBuilder(GraphSchema schema)
     public GraphPattern? ToPattern() =>
         IsEmpty
             ? null
-            : new GraphPattern(_nodes.Select(n => new PatternNode(n.Label, n.Filters.ToList())).ToList(), _rels.ToList());
+            : new GraphPattern(_nodes.Select(n => new PatternNode(n.Label, n.Filters.ToList())).ToList(), _rels.ToList()) { Rank = _rank };
+
+    // A ranking that came from a question, kept while the phrase is edited. It points at steps of the chain, so it goes if
+    // either step does.
+    private PatternRank? _rank;
+
+    public PatternRank? Rank => _rank;
+
+    // The steps a ranking can point at, named by type. A type that appears twice, or any type, says which step it is.
+    public IReadOnlyList<string> StepNames => _nodes
+        .Select((node, i) =>
+        {
+            var name = node.Label ?? "Anything";
+            return _nodes.Count(n => n.Label == node.Label) > 1 ? $"{name} (step {i + 1})" : name;
+        })
+        .ToList();
+
+    public void SetRankTop(int top)
+    {
+        if (_rank is { } rank)
+        {
+            _rank = rank with { Top = Math.Clamp(top, 1, PatternRank.MaxTop) };
+        }
+    }
+
+    // Choosing the step the other end already uses swaps them, so the two are never the same.
+    public void SetRankGroup(int step)
+    {
+        if (_rank is { } rank && step >= 0 && step < _nodes.Count)
+        {
+            _rank = step == rank.Count ? rank with { Group = step, Count = rank.Group } : rank with { Group = step };
+        }
+    }
+
+    public void SetRankCount(int step)
+    {
+        if (_rank is { } rank && step >= 0 && step < _nodes.Count)
+        {
+            _rank = step == rank.Group ? rank with { Count = step, Group = rank.Count } : rank with { Count = step };
+        }
+    }
+
+    public void RemoveRank() => _rank = null;
+
+    private void KeepRankOnlyIfItFits()
+    {
+        if (_rank is { } rank && (rank.Group >= _nodes.Count || rank.Count >= _nodes.Count))
+        {
+            _rank = null;
+        }
+    }
 
     public IReadOnlyList<PatternSuggestion> Suggest(string text, IReadOnlyList<PropertyMatch> matches, IReadOnlyList<string> values)
     {
@@ -173,6 +223,12 @@ public sealed class PatternBuilder(GraphSchema schema)
     // Steps back one condition or node, as Backspace does in an empty search box.
     public void RemoveLast()
     {
+        RemoveLastCore();
+        KeepRankOnlyIfItFits();
+    }
+
+    private void RemoveLastCore()
+    {
         if (_pendingOperator is not null)
         {
             _pendingOperator = null;
@@ -227,12 +283,15 @@ public sealed class PatternBuilder(GraphSchema schema)
         }
 
         _rels.AddRange(pattern.Rels);
+        _rank = pattern.Rank;
+        KeepRankOnlyIfItFits();
     }
 
     public void Clear()
     {
         _nodes.Clear();
         _rels.Clear();
+        _rank = null;
         _pendingKey = null;
         _pendingOperator = null;
         _focus = null;

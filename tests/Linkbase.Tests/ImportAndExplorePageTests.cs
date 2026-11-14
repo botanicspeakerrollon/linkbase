@@ -286,7 +286,8 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         cut.WaitForAssertion(() => Assert.Contains("Ranking of the search", cut.Markup));
         Sees(cut, s.Crag);
-        Sees(cut, "Distinct");
+        Sees(cut, "Different Route records");
+        Sees(cut, "reach the most different Route records");
     }
 
     private static GraphPattern NamedRoute(string name) =>
@@ -1052,6 +1053,38 @@ public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture
         Assert.Contains("AT →", cut.Markup);
         Assert.Contains("Sun", cut.Markup);
         Assert.Null(_ran);
+    }
+
+    private static GraphPattern RankedRoutes() => new(
+        [new PatternNode("Route", []), new PatternNode("Crag", [])],
+        [new PatternRel("AT", true)])
+    {
+        Rank = new PatternRank(1, 0, 5),
+    };
+
+    [Fact]
+    public async Task A_ranking_shows_in_the_bar_where_it_can_be_changed_run_and_removed()
+    {
+        var cut = Bar();
+        await cut.InvokeAsync(() => cut.Instance.ShowPattern(RankedRoutes()));
+
+        Assert.Contains("by most different", cut.Markup);
+        cut.Find("select[aria-label='How many to show']").Change("3");
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Search").Click();
+        Assert.Equal(new PatternRank(1, 0, 3), _ran?.Rank);
+
+        cut.Find("button[aria-label='Remove the ranking']").Click();
+        Assert.DoesNotContain("by most different", cut.Markup);
+    }
+
+    [Fact]
+    public async Task A_plain_search_shows_no_ranking_in_the_bar()
+    {
+        var cut = Bar();
+        await cut.InvokeAsync(() => cut.Instance.ShowPattern(new GraphPattern([new PatternNode("Crag", [])], [])));
+
+        Assert.DoesNotContain("by most different", cut.Markup);
+        Assert.Empty(cut.FindAll(".pattern-rank"));
     }
 
     private sealed class SearchInput(IRenderedComponent<PatternSearchBar> cut)

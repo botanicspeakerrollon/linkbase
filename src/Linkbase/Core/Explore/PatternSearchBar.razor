@@ -32,6 +32,35 @@
                 }
             </span>
         }
+        @* A ranking from a question is shown, and can be changed or removed, so nothing it does is hidden. It is only here when there is one. *@
+        @if (_builder?.Rank is { } rank)
+        {
+            var steps = _builder.StepNames;
+            <span class="pattern-rank" role="group" aria-label="Ranking" @onclick="@(() => { })" @onclick:stopPropagation="true">
+                <span>Top</span>
+                <select aria-label="How many to show" @onchange="@(e => ChangeRank(() => _builder.SetRankTop(int.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))))">
+                    @foreach (var size in RankSizes)
+                    {
+                        <option value="@size" selected="@(size == rank.Top)">@size</option>
+                    }
+                </select>
+                <select aria-label="Which records to rank" @onchange="@(e => ChangeRank(() => _builder.SetRankGroup(int.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))))">
+                    @for (var i = 0; i < steps.Count; i++)
+                    {
+                        <option value="@i" selected="@(i == rank.Group)">@steps[i]</option>
+                    }
+                </select>
+                <span>by most different</span>
+                <select aria-label="Which records to count" @onchange="@(e => ChangeRank(() => _builder.SetRankCount(int.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))))">
+                    @for (var i = 0; i < steps.Count; i++)
+                    {
+                        <option value="@i" selected="@(i == rank.Count)">@steps[i]</option>
+                    }
+                </select>
+                <button type="button" class="pattern-filter-remove" aria-label="Remove the ranking"
+                        @onclick="@(() => ChangeRank(_builder.RemoveRank))" @onclick:stopPropagation="true">×</button>
+            </span>
+        }
         <input @ref="_input" @key="_inputKey"
                @oninput="OnInputAsync"
                @onkeydown="OnKeyDownAsync"
@@ -86,6 +115,11 @@
 
     // ARIA wants the words true and false, which a C# bool doesn't render as. hotkeys.js reads this too.
     private bool SuggestionsShown => _open && _suggestions.Count > 0;
+
+    private static readonly int[] RankSizes = [1, 3, 5, 10, PatternRank.MaxTop];
+
+    // A change to the ranking waits for Search, like every other change to the phrase.
+    private void ChangeRank(Action change) => change();
 
     private bool _autoFocused;
     private bool _quietFocus;

@@ -33,9 +33,10 @@
         @if (_ranking is { Count: > 0 })
         {
             <div class="explore-summary mt-2" role="region" aria-label="Ranking of the search">
+                <MudText Typo="Typo.body2" Class="explore-rank-sentence">@RankSentence</MudText>
                 <MudSimpleTable Dense="true" Elevation="0">
                     <thead>
-                        <tr><th>#</th><th>@RankGrouped</th><th class="text-right">Distinct @RankCounted records</th></tr>
+                        <tr><th>#</th><th>@RankGrouped</th><th class="text-right">Different @RankCounted records</th></tr>
                     </thead>
                     <tbody>
                         @for (var i = 0; i < _ranking.Count; i++)
@@ -49,7 +50,7 @@
                         }
                     </tbody>
                 </MudSimpleTable>
-                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Ranked over every match of the search. Records with no match aren't listed. Right-click one on the graph to expand it.</MudText>
+                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Right-click a record on the graph to expand it.</MudText>
             </div>
         }
 

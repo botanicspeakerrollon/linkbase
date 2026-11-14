@@ -147,6 +147,7 @@ Each requirement is independently testable. "Record" and "link" are as defined i
 | FUN-13 | C | A named "scene" (canvas layout only) may be saved and reloaded. | Met |
 | FUN-14 | S | The canvas's nodes and links shall be exportable as CSV (nodes), CSV (links), combined JSON, or a PNG image. | Met |
 | FUN-15 | C | The selected node's own page shall open from Explore by keyboard, in the same tab or a new one. | Met |
+| FUN-16 | C | A natural-language question about "the most" of something shall be answerable as a ranking: the records of one type with the most distinct linked records of another, counted in the database over every match of the search, shown with a plain-words description, and kept as a visible, editable part of the search phrase. A search with no ranking shall look and behave as before. | Met |
 
 ### 3.3 Records and editing (REC)
 
