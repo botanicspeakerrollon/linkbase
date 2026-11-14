@@ -14,7 +14,7 @@ because it loads the example data.
 
 ## What it creates
 
-One resource group (`rg-linkbase-demo` in `newzealandnorth`; `-ResourceGroup` and `-Location` change them):
+One resource group (`rg-linkbase` in `newzealandnorth`; `-ResourceGroup` and `-Location` change them):
 
 | Resource | Why | Rough cost a month |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ One resource group (`rg-linkbase-demo` in `newzealandnorth`; `-ResourceGroup` an
 | Log Analytics | The app's logs | pennies at demo volume |
 | Managed identity | How the app reaches the vault and registry, so no password does that job | free |
 
-`az group delete --name rg-linkbase-demo` removes everything and stops the charges. The vault is then soft-deleted for
+`az group delete --name rg-linkbase` removes everything and stops the charges. The vault is then soft-deleted for
 seven days, holding its name; the next `deploy.ps1` purges it for you. Each run also deletes all but the newest three images
 from the registry, so repeated deploys leave one app, one database and one vault, not a pile.
 
@@ -67,7 +67,7 @@ nothing from anyone who has the address, so it is not access control.
 
 The Container App is named `linkbase`, so the address starts `linkbase.` rather than with the random hash the other
 resources carry. Changing the name makes the next deploy create a new Container App; delete the old one
-(`az containerapp delete --name <old name> --resource-group rg-linkbase-demo`) and the new address replaces the old.
+(`az containerapp delete --name <old name> --resource-group rg-linkbase`) and the new address replaces the old.
 
 ## Notes and limits
 
@@ -81,6 +81,6 @@ resources carry. Changing the name makes the next deploy create a new Container 
 - `main.bicep` and `deploy.ps1` compile cleanly with `az bicep build` but haven't been run against a real subscription yet: expect to fix a detail or two the first time.
 - **Region.** Blazor Server sends every keystroke and click to the server and waits for the reply, so the app feels slow to
   anyone far from it (about 280 ms a round trip between New Zealand and the UK). Pick the region nearest the people using
-  it with `-Location`. A region can't be changed in place: delete the group (`az group delete --name rg-linkbase-demo --yes`,
+  it with `-Location`. A region can't be changed in place: delete the group (`az group delete --name rg-linkbase --yes`,
   which removes the data and secrets, so the key is asked for again) and run the script again. Colleagues on other continents will
   still feel the distance; one region is all this script sets up.

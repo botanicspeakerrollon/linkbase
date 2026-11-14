@@ -21,7 +21,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $ResourceGroup = 'rg-linkbase-demo',
+    [string] $ResourceGroup = 'rg-linkbase',
     [string] $Location = 'newzealandnorth',
     [string[]] $AllowedCidr,
     [switch] $AllowAnyone,
