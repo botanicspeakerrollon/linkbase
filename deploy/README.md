@@ -12,6 +12,7 @@ Examples to copy, for any Kubernetes or OpenShift cluster, with or without Argo 
 | `kustomize/overlays/dev` | Adds a throwaway Postgres and its Secret, for trying it in an empty cluster. Never for real data |
 | `helm/linkbase` | The same as a Helm chart: Route or Ingress by values |
 | `argocd` | An Argo CD `Application` for the OpenShift overlay, and one for the Helm chart |
+| `azure` | The demo on Azure Container Apps with a Key Vault, from one script. See [its README](azure/README.md) |
 
 ## Before deploying
 

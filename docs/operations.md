@@ -135,8 +135,8 @@ access to them; encrypting them with a certificate given to every pod is possibl
 
 `Security__Identity=demo` (set in `appsettings.Demo.json`, used by `docker-compose.demo.yml`) shows row security to colleagues:
 open `/signin`, pick a person, and compare what each sees. It has **no password**, so anyone who reaches the host can be
-anyone. When hosting it (for example on Azure), put the host behind its own sign-in (App Service authentication with Entra
-"require authentication") or an IP allowlist, and load only made-up data. The consultancy model sets `Models__consultancy__RowSecurity=true`
+anyone. When hosting it, put the host behind its own sign-in (Entra "require authentication") or an IP allowlist, and load
+only made-up data. [deploy/azure](../deploy/azure/README.md) does this on Azure with an IP allowlist. The consultancy model sets `Models__consultancy__RowSecurity=true`
 (`"RowSecurity": true` in its entry under `Models`), so `model setup` turns row security on after loading it. Real sign-in
 needs `principal` and an authentication package, which this repo doesn't ship.
 
@@ -161,6 +161,9 @@ each one back.
 | The setting a model's `tokenSetting` names, such as `Security:DirectoryToken` | A bearer token for the directory that holds people's security grants | Only for a security part whose source is `api` | Ask the directory's owner for a new one |
 
 `POSTGRES_PASSWORD` in `.env` is the other secret. It sets the password when the database volume is first created.
+
+The Azure demo keeps its secrets in a Key Vault instead, by these names: `anthropic-api-key`, `postgres-password` and the
+four `cs-*` connection strings. `deploy/azure/deploy.ps1` writes them, and `-ReplaceAnthropicKey` changes the Anthropic one.
 
 To see which secrets are set, without printing their values:
 
