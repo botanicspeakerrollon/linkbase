@@ -4,7 +4,7 @@ Load any connected data, such as people and projects, suppliers, a rail network 
 graph and edit it, with no query language and no graph database. One ASP.NET Core app (Blazor Interactive Server) and
 Postgres, with a database per model.
 
-It started as a personal climbing logbook, which is still its one model with code of its own. See
+It started as a climbing logbook, which is still its one model with code of its own. See
 [models](docs/models.md) for the rest.
 
 ## Try the demo

@@ -38,7 +38,7 @@ crags = [
  ("clogwyn","Clogwyn y Grochan","llanb","Rhyolite",53.107,-4.108),
  ("gimmer-crag","Gimmer Crag","gimmer","Rhyolite",54.449,-3.101),
  ("raven","Raven Crag","gimmer","Rhyolite",54.436,-3.075),
- ("shepherds","Shepherds Crag","borrow","Volcanic",54.557,-3.151),
+ ("shepherds","Borrowdale Crag","borrow","Volcanic",54.557,-3.151),
  ("portland-cave","The Cuttings","portland","Limestone",50.541,-2.440),
  ("portland-bill","Blacknor","portland","Limestone",50.532,-2.457),
  ("dancing","Dancing Ledge","swanage","Limestone",50.594,-2.003),
