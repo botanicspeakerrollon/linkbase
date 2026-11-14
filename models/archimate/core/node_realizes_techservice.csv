@@ -1,0 +1,9 @@
+node,service
+order-platform-cluster,compute-hosting-service
+pos-terminal-fleet,network-connectivity-service
+payment-processing-server,identity-and-access-service
+warehouse-edge-server,message-queue-service
+crm-database-server,relational-database-service
+supplier-portal-web-server,file-storage-service
+analytics-data-warehouse,relational-database-service
+fraud-detection-gpu-cluster,message-queue-service

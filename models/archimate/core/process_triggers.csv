@@ -1,0 +1,11 @@
+from,to
+capture-order,check-stock-availability
+check-stock-availability,process-payment
+process-payment,pick-and-pack-order
+pick-and-pack-order,arrange-delivery
+arrange-delivery,reconcile-daily-takings
+handle-return,reconcile-daily-takings
+resolve-customer-complaint,review-fraud-alert
+replenish-stock,set-retail-pricing
+negotiate-supplier-contract,onboard-new-supplier
+run-promotional-campaign,capture-order

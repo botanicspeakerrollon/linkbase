@@ -1,0 +1,14 @@
+component,service
+order-management-system,order-capture-service
+order-management-system,stock-lookup-service
+point-of-sale-system,payment-authorisation-service
+payment-gateway-adapter,payment-authorisation-service
+warehouse-management-system,stock-lookup-service
+delivery-scheduling-app,delivery-scheduling-service
+customer-relationship-management-system,customer-record-service
+supplier-portal,supplier-onboarding-service
+pricing-engine,price-calculation-service
+loyalty-rewards-app,loyalty-points-service
+fraud-detection-system,fraud-scoring-service
+reporting-dashboard,sales-reporting-service
+returns-processing-app,customer-record-service

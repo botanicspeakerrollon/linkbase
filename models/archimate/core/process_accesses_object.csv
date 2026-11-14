@@ -1,0 +1,15 @@
+process,object,access_type
+capture-order,customer-order,write
+check-stock-availability,customer-order,read
+process-payment,payment-receipt,write
+pick-and-pack-order,delivery-note,write
+arrange-delivery,delivery-note,read_write
+handle-return,return-request,write
+resolve-customer-complaint,customer-complaint,write
+replenish-stock,supplier-contract,read
+negotiate-supplier-contract,supplier-contract,write
+onboard-new-supplier,supplier-contract,write
+set-retail-pricing,price-list,write
+run-promotional-campaign,price-list,read
+reconcile-daily-takings,payment-receipt,read
+review-fraud-alert,fraud-case,write

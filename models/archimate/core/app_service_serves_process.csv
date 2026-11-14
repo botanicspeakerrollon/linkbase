@@ -1,0 +1,15 @@
+service,process
+order-capture-service,capture-order
+stock-lookup-service,check-stock-availability
+payment-authorisation-service,process-payment
+delivery-scheduling-service,arrange-delivery
+delivery-scheduling-service,pick-and-pack-order
+customer-record-service,resolve-customer-complaint
+customer-record-service,handle-return
+supplier-onboarding-service,onboard-new-supplier
+supplier-onboarding-service,negotiate-supplier-contract
+price-calculation-service,set-retail-pricing
+price-calculation-service,run-promotional-campaign
+loyalty-points-service,run-promotional-campaign
+fraud-scoring-service,review-fraud-alert
+sales-reporting-service,reconcile-daily-takings

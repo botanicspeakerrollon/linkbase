@@ -1,0 +1,15 @@
+id,name,frequency,owner_department
+capture-order,Capture Order,continuous,Retail Operations
+check-stock-availability,Check Stock Availability,continuous,Logistics
+process-payment,Process Payment,continuous,Finance
+pick-and-pack-order,Pick and Pack Order,continuous,Logistics
+arrange-delivery,Arrange Delivery,daily,Logistics
+handle-return,Handle Return,daily,Retail Operations
+resolve-customer-complaint,Resolve Customer Complaint,daily,Retail Operations
+replenish-stock,Replenish Stock,weekly,Logistics
+negotiate-supplier-contract,Negotiate Supplier Contract,ad_hoc,Procurement
+onboard-new-supplier,Onboard New Supplier,ad_hoc,Procurement
+set-retail-pricing,Set Retail Pricing,weekly,Marketing
+run-promotional-campaign,Run Promotional Campaign,monthly,Marketing
+reconcile-daily-takings,Reconcile Daily Takings,daily,Finance
+review-fraud-alert,Review Fraud Alert,daily,Risk and Compliance

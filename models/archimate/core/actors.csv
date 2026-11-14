@@ -1,0 +1,11 @@
+id,name,actor_type,department
+customer,Customer,external,
+store-manager,Store Manager,internal,Retail Operations
+store-associate,Store Associate,internal,Retail Operations
+warehouse-operator,Warehouse Operator,internal,Logistics
+finance-clerk,Finance Clerk,internal,Finance
+marketing-lead,Marketing Lead,internal,Marketing
+it-support-analyst,IT Support Analyst,internal,Technology
+supplier-account-manager,Supplier Account Manager,internal,Procurement
+regional-director,Regional Director,internal,Retail Operations
+compliance-officer,Compliance Officer,internal,Risk and Compliance

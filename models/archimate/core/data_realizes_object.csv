@@ -1,0 +1,7 @@
+data,object
+order-record,customer-order
+payment-transaction,payment-receipt
+delivery-schedule,delivery-note
+supplier-record,supplier-contract
+price-table,price-list
+fraud-score,fraud-case
