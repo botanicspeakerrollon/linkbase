@@ -32,7 +32,7 @@ public static class AnthropicCall
         }
         catch (AnthropicBadRequestException ex)
         {
-            throw new ExtractionFailedException($"The Anthropic API rejected the request. Check Anthropic:Model ({model}). {ex.Message}");
+            throw new ExtractionFailedException($"The Anthropic API rejected the request. Check Anthropic:Model ({model}). {ex.Message} {ex.ResponseBody}".TrimEnd());
         }
         catch (Anthropic5xxException)
         {
