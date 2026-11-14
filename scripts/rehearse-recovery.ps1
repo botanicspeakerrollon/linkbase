@@ -30,6 +30,19 @@ function Get-Counts([string]$Container, [string]$Database = '$POSTGRES_DB') {
 
 # Every ascent as text, so a difference in any field shows up, whatever the ids are.
 $digestSql = @'
+WITH RECURSIVE chain AS (
+    SELECT l.source_id AS crag_id, l.target_id AS area_id, 1 AS depth
+    FROM node_link l JOIN node c ON c.id = l.source_id AND c.type = 'Crag'
+    WHERE l.rel_type = 'IN'
+    UNION ALL
+    SELECT ch.crag_id, l.target_id, ch.depth + 1
+    FROM chain ch JOIN node_link l ON l.source_id = ch.area_id AND l.rel_type = 'IN'
+    WHERE ch.depth < 50
+), climbing_crag_country AS (
+    SELECT DISTINCT ON (chain.crag_id) chain.crag_id, a.name AS country
+    FROM chain JOIN node a ON a.id = chain.area_id
+    ORDER BY chain.crag_id, chain.depth DESC
+)
 SELECT md5(string_agg(line, E'\n' ORDER BY line)) FROM (
     SELECT concat_ws('|', cc.country, crag.name, r.name, r.props->>'grade', r.props->>'grade_system', r.props->>'discipline',
                      r.props->>'length_m', r.props->>'pitches', a.props->>'date', a.props->>'date_precision', a.props->>'style',

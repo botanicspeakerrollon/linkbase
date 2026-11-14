@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Linkbase.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,14 +36,15 @@ public sealed record TwoDayTripRow(string Name, DateOnly? StartDate, DateOnly? E
 
 public sealed record OnThisDayRow(int Year, string RouteId, string Route, string? Grade, string CragId, string Crag, string Style, string[] Partners, string? Notes);
 
-// Reads the climbing records in the generic store through views (see ClimbingInsightsOnGenericStore). climbing_ascent_facts adds each
-// ascent's country and season.
+// Reads the climbing records in the generic store. Each query starts with the WITH clause in ClimbingInsightsSql, which gives it
+// climbing_ascent_facts (each ascent's place, trip, country and season) and the other shapes as if they were tables.
 public sealed class InsightsRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
     private async Task<List<T>> QueryAsync<T>(FormattableString sql, CancellationToken cancellationToken)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        return await db.Database.SqlQuery<T>(sql).ToListAsync(cancellationToken);
+        var withShapes = FormattableStringFactory.Create(ClimbingInsightsSql.With + sql.Format, sql.GetArguments());
+        return await db.Database.SqlQuery<T>(withShapes).ToListAsync(cancellationToken);
     }
 
     // Newest first. A partial date is stored as the first of its month or year, so only exact days count here.

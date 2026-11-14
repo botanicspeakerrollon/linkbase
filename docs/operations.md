@@ -85,7 +85,7 @@ It only reads from the real database.
 It exits non-zero if anything differs. Once ascents have been added or edited in the app, step 2 will report differences,
 which is correct: they show what a rebuild would lose, and that only a backup keeps them.
 
-Last run on 4 November 2026, against 2,318 ascents: the restore took about 1 second and the rebuild about 35 seconds, and
+Last run on 4 November 2026, against a logbook of a few thousand ascents: the restore took about 1 second and the rebuild about 35 seconds, and
 both matched exactly.
 
 The restore into the real database hasn't been run for real, on purpose. The rehearsal runs the same script against the

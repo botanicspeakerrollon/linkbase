@@ -1,0 +1,9 @@
+id,name,channel
+online-ordering-service,Online Ordering Service,online
+in-store-checkout-service,In-Store Checkout Service,in_store
+customer-support-service,Customer Support Service,any
+returns-service,Returns Service,any
+delivery-tracking-service,Delivery Tracking Service,online
+supplier-procurement-service,Supplier Procurement Service,phone
+pricing-service,Pricing Service,any
+loyalty-programme-service,Loyalty Programme Service,any

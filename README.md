@@ -4,7 +4,7 @@ Load any connected data, such as people and projects, suppliers, a rail network 
 graph and edit it, with no query language and no graph database. One ASP.NET Core app (Blazor Interactive Server) and
 Postgres, with a database per model.
 
-It started as a personal climbing logbook, which is still its one model with code of its own. See
+It started as a climbing logbook, which is still its one model with code of its own. See
 [models](docs/models.md) for the rest.
 
 ## Try the demo
@@ -16,8 +16,8 @@ docker compose -f docker-compose.demo.yml up --build
 ```
 
 Open <http://localhost:8080>. A fresh Postgres starts, a setup step creates a database for each example model, applies the
-migrations and loads the data (the demo climbing logbook, the example consultancy, a map of this code base and an ArchiMate model, about
-a minute the first time), and then the app starts. The four models are in the switcher by the model's name. Running `up`
+migrations and loads the data (the demo climbing logbook, the example consultancy, a map of this code base and a large ArchiMate model of about 540,000 links, a few
+minutes the first time), and then the app starts. The four models are in the switcher by the model's name. Running `up`
 again keeps what's there, and `docker compose -f docker-compose.demo.yml down -v` deletes the demo's data. It's a project
 of its own, so it never touches the database the Prerequisites below set up. Reading text with AI is off, as there's no key.
 The requirements specification is in the demo's rail, under Requirements, so you can read what the app is meant to do.

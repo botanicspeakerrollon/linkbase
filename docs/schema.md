@@ -291,13 +291,11 @@ Written as raw SQL in the migration, because the EF model can't describe them.
 | --- | --- |
 | `graph_nodes` | `node_id`, `user_id`, `label` (the node type), `name`, `props`, `search_text`, from `node` |
 | `graph_edges` | `source_id`, `target_id`, `rel_type`, `props`, from `node_link` |
-| `climbing_crag_country` | each Crag and the top-level area above it (follows `IN` links up to 50 levels) |
-| `climbing_ascent_facts` | one row per Ascent: date, precision, year, month, trip, route, discipline, crag, country and southern-hemisphere-aware season |
-| `climbing_ascent_partner` | Ascent to Partner pairs (`WITH` links) |
-| `climbing_partner` | Partner nodes: `id`, `name` |
-| `climbing_trip` | Trip nodes with `start_date`, `end_date`, `sort_date`, `abroad`, `home` |
 
-The `climbing_*` views belong to the climbing domain, but they are created in every model's database.
+Climbing's Insights shapes (`climbing_ascent_facts`, `climbing_trip` and the others) are not views. They are a `WITH` clause in
+`ClimbingInsightsSql`, put in front of each Insights query, so no model's database carries climbing SQL and the queries read
+`node` and `node_link` as the viewer, through their row policies. `InitialCreate` still creates the old `climbing_*` views and
+`DropClimbingViews` drops them.
 
 ## Migration history
 

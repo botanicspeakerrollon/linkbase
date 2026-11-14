@@ -1,0 +1,601 @@
+id,name,status,horizon
+gbst-coa001,Consolidate Customer Platforms (GB Stores),approved,later
+gbst-coa002,Automate Pricing (GB Stores),in_flight,later
+gbst-coa003,Consolidate Stock Platforms (GB Stores),in_flight,later
+gbst-coa004,Retire Legacy Promotion (GB Stores),proposed,next
+gbst-coa005,Retire Legacy Payment (GB Stores),approved,now
+gbst-coa006,Outsource Supplier (GB Stores),proposed,later
+gbon-coa001,Outsource Stock (GB Online),approved,next
+gbon-coa002,Outsource Payment (GB Online),proposed,next
+gbon-coa003,Expand Order Self-Service (GB Online),in_flight,now
+gbon-coa004,Expand Payment Self-Service (GB Online),approved,now
+gbon-coa005,Consolidate Payment Platforms (GB Online),approved,later
+gbon-coa006,Automate Returns (GB Online),proposed,now
+gbwh-coa001,Automate Customer (GB Wholesale),approved,later
+gbwh-coa002,Consolidate Pricing Platforms (GB Wholesale),in_flight,now
+gbwh-coa003,Retire Legacy Stock (GB Wholesale),proposed,now
+gbwh-coa004,Modernise Promotion (GB Wholesale),in_flight,now
+gbwh-coa005,Outsource Returns (GB Wholesale),in_flight,next
+gbwh-coa006,Outsource Delivery (GB Wholesale),in_flight,next
+gblg-coa001,Outsource Pricing (GB Logistics),approved,now
+gblg-coa002,Modernise Delivery (GB Logistics),done,next
+gblg-coa003,Modernise Stock (GB Logistics),in_flight,later
+gblg-coa004,Modernise Pricing (GB Logistics),proposed,next
+gblg-coa005,Automate Payment (GB Logistics),done,now
+gblg-coa006,Outsource Delivery (GB Logistics),done,later
+iest-coa001,Retire Legacy Promotion (IE Stores),in_flight,later
+iest-coa002,Outsource Order (IE Stores),proposed,later
+iest-coa003,Modernise Customer (IE Stores),proposed,next
+iest-coa004,Modernise Order (IE Stores),in_flight,later
+iest-coa005,Expand Returns Self-Service (IE Stores),in_flight,later
+iest-coa006,Consolidate Delivery Platforms (IE Stores),approved,now
+ieon-coa001,Outsource Promotion (IE Online),done,next
+ieon-coa002,Automate Supplier (IE Online),in_flight,later
+ieon-coa003,Outsource Order (IE Online),in_flight,next
+ieon-coa004,Modernise Fraud (IE Online),in_flight,later
+ieon-coa005,Outsource Fraud (IE Online),approved,later
+ieon-coa006,Consolidate Supplier Platforms (IE Online),approved,now
+iewh-coa001,Consolidate Supplier Platforms (IE Wholesale),done,next
+iewh-coa002,Retire Legacy Stock (IE Wholesale),proposed,later
+iewh-coa003,Modernise Supplier (IE Wholesale),in_flight,later
+iewh-coa004,Modernise Customer (IE Wholesale),proposed,now
+iewh-coa005,Automate Pricing (IE Wholesale),done,later
+iewh-coa006,Automate Fraud (IE Wholesale),approved,next
+ielg-coa001,Outsource Customer (IE Logistics),proposed,next
+ielg-coa002,Outsource Fraud (IE Logistics),proposed,later
+ielg-coa003,Expand Payment Self-Service (IE Logistics),done,now
+ielg-coa004,Outsource Promotion (IE Logistics),in_flight,later
+ielg-coa005,Modernise Stock (IE Logistics),approved,later
+ielg-coa006,Modernise Returns (IE Logistics),done,later
+frst-coa001,Expand Payment Self-Service (FR Stores),in_flight,next
+frst-coa002,Modernise Promotion (FR Stores),done,now
+frst-coa003,Expand Pricing Self-Service (FR Stores),in_flight,later
+frst-coa004,Modernise Order (FR Stores),done,next
+frst-coa005,Outsource Promotion (FR Stores),approved,next
+frst-coa006,Consolidate Fraud Platforms (FR Stores),in_flight,later
+fron-coa001,Modernise Payment (FR Online),approved,now
+fron-coa002,Consolidate Order Platforms (FR Online),in_flight,now
+fron-coa003,Retire Legacy Supplier (FR Online),approved,now
+fron-coa004,Consolidate Supplier Platforms (FR Online),approved,now
+fron-coa005,Modernise Supplier (FR Online),proposed,next
+fron-coa006,Modernise Order (FR Online),in_flight,later
+frwh-coa001,Automate Promotion (FR Wholesale),in_flight,later
+frwh-coa002,Modernise Returns (FR Wholesale),approved,later
+frwh-coa003,Outsource Returns (FR Wholesale),proposed,now
+frwh-coa004,Automate Supplier (FR Wholesale),proposed,later
+frwh-coa005,Outsource Customer (FR Wholesale),done,now
+frwh-coa006,Outsource Fraud (FR Wholesale),approved,now
+frlg-coa001,Outsource Stock (FR Logistics),done,now
+frlg-coa002,Automate Supplier (FR Logistics),approved,later
+frlg-coa003,Expand Payment Self-Service (FR Logistics),in_flight,next
+frlg-coa004,Automate Stock (FR Logistics),done,next
+frlg-coa005,Expand Order Self-Service (FR Logistics),approved,next
+frlg-coa006,Expand Stock Self-Service (FR Logistics),done,later
+dest-coa001,Expand Customer Self-Service (DE Stores),in_flight,next
+dest-coa002,Modernise Promotion (DE Stores),in_flight,later
+dest-coa003,Automate Promotion (DE Stores),approved,later
+dest-coa004,Consolidate Returns Platforms (DE Stores),in_flight,now
+dest-coa005,Outsource Delivery (DE Stores),proposed,later
+dest-coa006,Modernise Returns (DE Stores),done,later
+deon-coa001,Expand Stock Self-Service (DE Online),in_flight,next
+deon-coa002,Expand Supplier Self-Service (DE Online),done,now
+deon-coa003,Retire Legacy Pricing (DE Online),done,next
+deon-coa004,Automate Stock (DE Online),in_flight,next
+deon-coa005,Retire Legacy Stock (DE Online),approved,now
+deon-coa006,Expand Customer Self-Service (DE Online),in_flight,next
+dewh-coa001,Modernise Returns (DE Wholesale),in_flight,later
+dewh-coa002,Modernise Supplier (DE Wholesale),in_flight,later
+dewh-coa003,Consolidate Returns Platforms (DE Wholesale),approved,now
+dewh-coa004,Automate Stock (DE Wholesale),in_flight,next
+dewh-coa005,Automate Delivery (DE Wholesale),in_flight,later
+dewh-coa006,Retire Legacy Stock (DE Wholesale),proposed,next
+delg-coa001,Consolidate Pricing Platforms (DE Logistics),done,now
+delg-coa002,Automate Order (DE Logistics),approved,now
+delg-coa003,Expand Pricing Self-Service (DE Logistics),approved,next
+delg-coa004,Outsource Supplier (DE Logistics),approved,now
+delg-coa005,Expand Payment Self-Service (DE Logistics),proposed,next
+delg-coa006,Retire Legacy Delivery (DE Logistics),in_flight,now
+nlst-coa001,Expand Returns Self-Service (NL Stores),in_flight,next
+nlst-coa002,Automate Delivery (NL Stores),in_flight,next
+nlst-coa003,Outsource Supplier (NL Stores),proposed,next
+nlst-coa004,Consolidate Order Platforms (NL Stores),done,later
+nlst-coa005,Modernise Promotion (NL Stores),done,now
+nlst-coa006,Automate Supplier (NL Stores),proposed,later
+nlon-coa001,Expand Returns Self-Service (NL Online),done,later
+nlon-coa002,Automate Pricing (NL Online),proposed,later
+nlon-coa003,Automate Order (NL Online),approved,next
+nlon-coa004,Expand Fraud Self-Service (NL Online),proposed,later
+nlon-coa005,Automate Promotion (NL Online),in_flight,later
+nlon-coa006,Modernise Supplier (NL Online),approved,later
+nlwh-coa001,Outsource Fraud (NL Wholesale),in_flight,later
+nlwh-coa002,Consolidate Delivery Platforms (NL Wholesale),in_flight,now
+nlwh-coa003,Expand Promotion Self-Service (NL Wholesale),in_flight,next
+nlwh-coa004,Outsource Delivery (NL Wholesale),in_flight,later
+nlwh-coa005,Retire Legacy Fraud (NL Wholesale),proposed,next
+nlwh-coa006,Retire Legacy Returns (NL Wholesale),proposed,now
+nllg-coa001,Expand Customer Self-Service (NL Logistics),done,next
+nllg-coa002,Modernise Customer (NL Logistics),proposed,now
+nllg-coa003,Outsource Customer (NL Logistics),approved,now
+nllg-coa004,Modernise Promotion (NL Logistics),in_flight,now
+nllg-coa005,Modernise Returns (NL Logistics),approved,next
+nllg-coa006,Consolidate Fraud Platforms (NL Logistics),in_flight,next
+best-coa001,Consolidate Order Platforms (BE Stores),in_flight,now
+best-coa002,Retire Legacy Customer (BE Stores),proposed,later
+best-coa003,Retire Legacy Pricing (BE Stores),proposed,next
+best-coa004,Modernise Pricing (BE Stores),in_flight,next
+best-coa005,Retire Legacy Promotion (BE Stores),proposed,later
+best-coa006,Outsource Payment (BE Stores),approved,later
+beon-coa001,Modernise Returns (BE Online),proposed,now
+beon-coa002,Automate Customer (BE Online),in_flight,later
+beon-coa003,Outsource Order (BE Online),in_flight,later
+beon-coa004,Retire Legacy Pricing (BE Online),in_flight,next
+beon-coa005,Retire Legacy Fraud (BE Online),in_flight,later
+beon-coa006,Automate Supplier (BE Online),approved,now
+bewh-coa001,Outsource Pricing (BE Wholesale),approved,next
+bewh-coa002,Outsource Promotion (BE Wholesale),in_flight,later
+bewh-coa003,Consolidate Delivery Platforms (BE Wholesale),in_flight,later
+bewh-coa004,Automate Order (BE Wholesale),approved,now
+bewh-coa005,Outsource Stock (BE Wholesale),done,next
+bewh-coa006,Consolidate Fraud Platforms (BE Wholesale),in_flight,later
+belg-coa001,Expand Stock Self-Service (BE Logistics),in_flight,later
+belg-coa002,Consolidate Order Platforms (BE Logistics),approved,now
+belg-coa003,Modernise Returns (BE Logistics),in_flight,now
+belg-coa004,Expand Delivery Self-Service (BE Logistics),done,now
+belg-coa005,Retire Legacy Promotion (BE Logistics),in_flight,now
+belg-coa006,Automate Returns (BE Logistics),done,now
+esst-coa001,Consolidate Fraud Platforms (ES Stores),proposed,now
+esst-coa002,Outsource Pricing (ES Stores),approved,later
+esst-coa003,Outsource Returns (ES Stores),done,now
+esst-coa004,Automate Order (ES Stores),approved,next
+esst-coa005,Outsource Supplier (ES Stores),in_flight,now
+esst-coa006,Expand Supplier Self-Service (ES Stores),proposed,later
+eson-coa001,Automate Payment (ES Online),in_flight,now
+eson-coa002,Modernise Payment (ES Online),approved,now
+eson-coa003,Modernise Supplier (ES Online),done,later
+eson-coa004,Expand Promotion Self-Service (ES Online),proposed,later
+eson-coa005,Expand Payment Self-Service (ES Online),proposed,later
+eson-coa006,Outsource Supplier (ES Online),proposed,next
+eswh-coa001,Modernise Fraud (ES Wholesale),in_flight,next
+eswh-coa002,Retire Legacy Customer (ES Wholesale),approved,later
+eswh-coa003,Retire Legacy Returns (ES Wholesale),done,later
+eswh-coa004,Modernise Customer (ES Wholesale),proposed,next
+eswh-coa005,Expand Order Self-Service (ES Wholesale),approved,next
+eswh-coa006,Modernise Order (ES Wholesale),proposed,now
+eslg-coa001,Automate Customer (ES Logistics),in_flight,later
+eslg-coa002,Retire Legacy Returns (ES Logistics),proposed,later
+eslg-coa003,Retire Legacy Promotion (ES Logistics),proposed,later
+eslg-coa004,Consolidate Promotion Platforms (ES Logistics),in_flight,next
+eslg-coa005,Expand Customer Self-Service (ES Logistics),done,next
+eslg-coa006,Consolidate Customer Platforms (ES Logistics),in_flight,now
+ptst-coa001,Consolidate Returns Platforms (PT Stores),done,now
+ptst-coa002,Modernise Supplier (PT Stores),in_flight,later
+ptst-coa003,Outsource Fraud (PT Stores),proposed,now
+ptst-coa004,Modernise Promotion (PT Stores),proposed,next
+ptst-coa005,Automate Payment (PT Stores),done,next
+ptst-coa006,Outsource Payment (PT Stores),done,next
+pton-coa001,Consolidate Returns Platforms (PT Online),approved,later
+pton-coa002,Retire Legacy Pricing (PT Online),approved,now
+pton-coa003,Expand Promotion Self-Service (PT Online),done,now
+pton-coa004,Consolidate Order Platforms (PT Online),approved,later
+pton-coa005,Outsource Fraud (PT Online),approved,later
+pton-coa006,Modernise Promotion (PT Online),in_flight,next
+ptwh-coa001,Consolidate Customer Platforms (PT Wholesale),approved,later
+ptwh-coa002,Outsource Customer (PT Wholesale),approved,later
+ptwh-coa003,Modernise Promotion (PT Wholesale),approved,now
+ptwh-coa004,Modernise Fraud (PT Wholesale),in_flight,later
+ptwh-coa005,Modernise Pricing (PT Wholesale),in_flight,now
+ptwh-coa006,Expand Pricing Self-Service (PT Wholesale),in_flight,next
+ptlg-coa001,Automate Payment (PT Logistics),in_flight,now
+ptlg-coa002,Consolidate Promotion Platforms (PT Logistics),proposed,now
+ptlg-coa003,Automate Pricing (PT Logistics),proposed,later
+ptlg-coa004,Modernise Supplier (PT Logistics),approved,later
+ptlg-coa005,Retire Legacy Returns (PT Logistics),in_flight,next
+ptlg-coa006,Retire Legacy Supplier (PT Logistics),in_flight,now
+itst-coa001,Outsource Supplier (IT Stores),proposed,next
+itst-coa002,Expand Supplier Self-Service (IT Stores),in_flight,now
+itst-coa003,Expand Promotion Self-Service (IT Stores),done,later
+itst-coa004,Expand Stock Self-Service (IT Stores),proposed,next
+itst-coa005,Automate Payment (IT Stores),in_flight,now
+itst-coa006,Automate Returns (IT Stores),proposed,later
+iton-coa001,Retire Legacy Order (IT Online),done,now
+iton-coa002,Automate Supplier (IT Online),approved,next
+iton-coa003,Expand Pricing Self-Service (IT Online),proposed,next
+iton-coa004,Outsource Supplier (IT Online),proposed,now
+iton-coa005,Automate Promotion (IT Online),done,next
+iton-coa006,Consolidate Delivery Platforms (IT Online),done,next
+itwh-coa001,Expand Customer Self-Service (IT Wholesale),approved,next
+itwh-coa002,Retire Legacy Pricing (IT Wholesale),proposed,later
+itwh-coa003,Outsource Returns (IT Wholesale),done,now
+itwh-coa004,Retire Legacy Payment (IT Wholesale),in_flight,later
+itwh-coa005,Modernise Order (IT Wholesale),done,now
+itwh-coa006,Modernise Delivery (IT Wholesale),approved,later
+itlg-coa001,Expand Delivery Self-Service (IT Logistics),done,next
+itlg-coa002,Automate Pricing (IT Logistics),in_flight,now
+itlg-coa003,Expand Fraud Self-Service (IT Logistics),in_flight,now
+itlg-coa004,Automate Delivery (IT Logistics),proposed,next
+itlg-coa005,Retire Legacy Customer (IT Logistics),in_flight,now
+itlg-coa006,Automate Fraud (IT Logistics),done,later
+chst-coa001,Automate Payment (CH Stores),approved,now
+chst-coa002,Retire Legacy Customer (CH Stores),in_flight,later
+chst-coa003,Consolidate Pricing Platforms (CH Stores),proposed,now
+chst-coa004,Consolidate Order Platforms (CH Stores),proposed,now
+chst-coa005,Consolidate Returns Platforms (CH Stores),done,next
+chst-coa006,Retire Legacy Returns (CH Stores),in_flight,later
+chon-coa001,Retire Legacy Supplier (CH Online),done,next
+chon-coa002,Consolidate Fraud Platforms (CH Online),done,later
+chon-coa003,Automate Pricing (CH Online),done,next
+chon-coa004,Expand Payment Self-Service (CH Online),in_flight,later
+chon-coa005,Outsource Delivery (CH Online),done,later
+chon-coa006,Modernise Returns (CH Online),in_flight,later
+chwh-coa001,Modernise Pricing (CH Wholesale),proposed,next
+chwh-coa002,Modernise Returns (CH Wholesale),done,later
+chwh-coa003,Automate Payment (CH Wholesale),in_flight,next
+chwh-coa004,Expand Supplier Self-Service (CH Wholesale),done,later
+chwh-coa005,Modernise Promotion (CH Wholesale),in_flight,next
+chwh-coa006,Expand Payment Self-Service (CH Wholesale),proposed,now
+chlg-coa001,Expand Delivery Self-Service (CH Logistics),done,later
+chlg-coa002,Retire Legacy Customer (CH Logistics),done,now
+chlg-coa003,Modernise Payment (CH Logistics),approved,later
+chlg-coa004,Consolidate Customer Platforms (CH Logistics),in_flight,now
+chlg-coa005,Retire Legacy Returns (CH Logistics),in_flight,later
+chlg-coa006,Automate Pricing (CH Logistics),proposed,later
+atst-coa001,Consolidate Customer Platforms (AT Stores),in_flight,later
+atst-coa002,Outsource Fraud (AT Stores),in_flight,now
+atst-coa003,Modernise Promotion (AT Stores),in_flight,next
+atst-coa004,Retire Legacy Fraud (AT Stores),proposed,later
+atst-coa005,Retire Legacy Supplier (AT Stores),in_flight,later
+atst-coa006,Automate Promotion (AT Stores),done,next
+aton-coa001,Outsource Promotion (AT Online),in_flight,later
+aton-coa002,Retire Legacy Fraud (AT Online),in_flight,next
+aton-coa003,Consolidate Payment Platforms (AT Online),in_flight,now
+aton-coa004,Consolidate Delivery Platforms (AT Online),approved,later
+aton-coa005,Automate Promotion (AT Online),in_flight,next
+aton-coa006,Consolidate Stock Platforms (AT Online),in_flight,next
+atwh-coa001,Retire Legacy Order (AT Wholesale),proposed,next
+atwh-coa002,Retire Legacy Returns (AT Wholesale),in_flight,next
+atwh-coa003,Consolidate Fraud Platforms (AT Wholesale),approved,next
+atwh-coa004,Consolidate Returns Platforms (AT Wholesale),in_flight,now
+atwh-coa005,Automate Order (AT Wholesale),approved,later
+atwh-coa006,Retire Legacy Stock (AT Wholesale),done,now
+atlg-coa001,Outsource Delivery (AT Logistics),in_flight,later
+atlg-coa002,Modernise Customer (AT Logistics),in_flight,later
+atlg-coa003,Modernise Order (AT Logistics),approved,next
+atlg-coa004,Retire Legacy Stock (AT Logistics),proposed,next
+atlg-coa005,Retire Legacy Returns (AT Logistics),proposed,later
+atlg-coa006,Modernise Fraud (AT Logistics),done,later
+plst-coa001,Consolidate Supplier Platforms (PL Stores),in_flight,next
+plst-coa002,Outsource Stock (PL Stores),approved,later
+plst-coa003,Consolidate Payment Platforms (PL Stores),approved,next
+plst-coa004,Automate Stock (PL Stores),proposed,later
+plst-coa005,Outsource Customer (PL Stores),approved,next
+plst-coa006,Expand Pricing Self-Service (PL Stores),in_flight,now
+plon-coa001,Expand Stock Self-Service (PL Online),proposed,now
+plon-coa002,Retire Legacy Stock (PL Online),approved,now
+plon-coa003,Outsource Fraud (PL Online),in_flight,next
+plon-coa004,Retire Legacy Fraud (PL Online),done,now
+plon-coa005,Outsource Delivery (PL Online),in_flight,later
+plon-coa006,Consolidate Supplier Platforms (PL Online),approved,later
+plwh-coa001,Retire Legacy Stock (PL Wholesale),in_flight,now
+plwh-coa002,Outsource Fraud (PL Wholesale),approved,later
+plwh-coa003,Outsource Delivery (PL Wholesale),proposed,next
+plwh-coa004,Automate Supplier (PL Wholesale),in_flight,later
+plwh-coa005,Consolidate Returns Platforms (PL Wholesale),approved,now
+plwh-coa006,Consolidate Pricing Platforms (PL Wholesale),proposed,later
+pllg-coa001,Automate Customer (PL Logistics),done,next
+pllg-coa002,Modernise Customer (PL Logistics),proposed,now
+pllg-coa003,Expand Supplier Self-Service (PL Logistics),done,next
+pllg-coa004,Modernise Order (PL Logistics),proposed,later
+pllg-coa005,Retire Legacy Customer (PL Logistics),proposed,now
+pllg-coa006,Automate Pricing (PL Logistics),proposed,later
+sest-coa001,Modernise Payment (SE Stores),proposed,later
+sest-coa002,Automate Returns (SE Stores),approved,now
+sest-coa003,Automate Delivery (SE Stores),approved,next
+sest-coa004,Expand Payment Self-Service (SE Stores),done,later
+sest-coa005,Consolidate Supplier Platforms (SE Stores),in_flight,later
+sest-coa006,Automate Fraud (SE Stores),in_flight,now
+seon-coa001,Automate Delivery (SE Online),approved,later
+seon-coa002,Modernise Promotion (SE Online),done,later
+seon-coa003,Automate Promotion (SE Online),done,now
+seon-coa004,Automate Order (SE Online),done,later
+seon-coa005,Consolidate Delivery Platforms (SE Online),proposed,later
+seon-coa006,Consolidate Customer Platforms (SE Online),done,later
+sewh-coa001,Outsource Pricing (SE Wholesale),approved,now
+sewh-coa002,Automate Order (SE Wholesale),done,now
+sewh-coa003,Modernise Stock (SE Wholesale),proposed,now
+sewh-coa004,Expand Returns Self-Service (SE Wholesale),done,next
+sewh-coa005,Modernise Returns (SE Wholesale),done,later
+sewh-coa006,Expand Order Self-Service (SE Wholesale),done,now
+selg-coa001,Outsource Stock (SE Logistics),done,next
+selg-coa002,Consolidate Fraud Platforms (SE Logistics),done,later
+selg-coa003,Consolidate Payment Platforms (SE Logistics),in_flight,next
+selg-coa004,Consolidate Order Platforms (SE Logistics),approved,now
+selg-coa005,Automate Delivery (SE Logistics),proposed,now
+selg-coa006,Expand Order Self-Service (SE Logistics),approved,next
+nost-coa001,Outsource Order (NO Stores),approved,later
+nost-coa002,Modernise Customer (NO Stores),done,later
+nost-coa003,Expand Order Self-Service (NO Stores),in_flight,next
+nost-coa004,Automate Stock (NO Stores),approved,later
+nost-coa005,Modernise Stock (NO Stores),in_flight,next
+nost-coa006,Outsource Delivery (NO Stores),in_flight,next
+noon-coa001,Retire Legacy Supplier (NO Online),done,later
+noon-coa002,Retire Legacy Stock (NO Online),approved,now
+noon-coa003,Modernise Fraud (NO Online),done,next
+noon-coa004,Automate Stock (NO Online),done,now
+noon-coa005,Modernise Customer (NO Online),approved,next
+noon-coa006,Consolidate Customer Platforms (NO Online),approved,now
+nowh-coa001,Outsource Returns (NO Wholesale),approved,next
+nowh-coa002,Consolidate Fraud Platforms (NO Wholesale),done,later
+nowh-coa003,Expand Pricing Self-Service (NO Wholesale),proposed,next
+nowh-coa004,Outsource Pricing (NO Wholesale),in_flight,now
+nowh-coa005,Consolidate Stock Platforms (NO Wholesale),approved,now
+nowh-coa006,Consolidate Customer Platforms (NO Wholesale),in_flight,now
+nolg-coa001,Modernise Payment (NO Logistics),proposed,next
+nolg-coa002,Automate Customer (NO Logistics),approved,next
+nolg-coa003,Consolidate Supplier Platforms (NO Logistics),done,later
+nolg-coa004,Outsource Fraud (NO Logistics),approved,next
+nolg-coa005,Expand Customer Self-Service (NO Logistics),in_flight,now
+nolg-coa006,Modernise Fraud (NO Logistics),in_flight,later
+dkst-coa001,Consolidate Payment Platforms (DK Stores),approved,next
+dkst-coa002,Modernise Stock (DK Stores),in_flight,later
+dkst-coa003,Outsource Returns (DK Stores),done,next
+dkst-coa004,Modernise Payment (DK Stores),in_flight,now
+dkst-coa005,Modernise Returns (DK Stores),done,now
+dkst-coa006,Expand Payment Self-Service (DK Stores),proposed,now
+dkon-coa001,Retire Legacy Fraud (DK Online),approved,now
+dkon-coa002,Outsource Supplier (DK Online),done,now
+dkon-coa003,Expand Promotion Self-Service (DK Online),approved,next
+dkon-coa004,Modernise Delivery (DK Online),approved,now
+dkon-coa005,Expand Customer Self-Service (DK Online),done,later
+dkon-coa006,Automate Promotion (DK Online),proposed,now
+dkwh-coa001,Consolidate Supplier Platforms (DK Wholesale),proposed,later
+dkwh-coa002,Consolidate Stock Platforms (DK Wholesale),approved,later
+dkwh-coa003,Outsource Payment (DK Wholesale),done,next
+dkwh-coa004,Retire Legacy Supplier (DK Wholesale),done,now
+dkwh-coa005,Expand Supplier Self-Service (DK Wholesale),proposed,later
+dkwh-coa006,Outsource Stock (DK Wholesale),approved,now
+dklg-coa001,Automate Promotion (DK Logistics),in_flight,later
+dklg-coa002,Consolidate Returns Platforms (DK Logistics),in_flight,now
+dklg-coa003,Expand Payment Self-Service (DK Logistics),done,later
+dklg-coa004,Retire Legacy Returns (DK Logistics),done,now
+dklg-coa005,Modernise Payment (DK Logistics),proposed,next
+dklg-coa006,Expand Customer Self-Service (DK Logistics),in_flight,later
+fist-coa001,Automate Order (FI Stores),in_flight,next
+fist-coa002,Outsource Promotion (FI Stores),in_flight,now
+fist-coa003,Outsource Stock (FI Stores),proposed,later
+fist-coa004,Automate Promotion (FI Stores),done,next
+fist-coa005,Retire Legacy Customer (FI Stores),in_flight,now
+fist-coa006,Retire Legacy Order (FI Stores),proposed,next
+fion-coa001,Automate Customer (FI Online),done,now
+fion-coa002,Automate Order (FI Online),done,next
+fion-coa003,Consolidate Returns Platforms (FI Online),approved,next
+fion-coa004,Retire Legacy Fraud (FI Online),proposed,now
+fion-coa005,Retire Legacy Promotion (FI Online),proposed,later
+fion-coa006,Retire Legacy Stock (FI Online),in_flight,later
+fiwh-coa001,Retire Legacy Order (FI Wholesale),approved,now
+fiwh-coa002,Expand Fraud Self-Service (FI Wholesale),in_flight,now
+fiwh-coa003,Modernise Promotion (FI Wholesale),in_flight,later
+fiwh-coa004,Modernise Returns (FI Wholesale),proposed,now
+fiwh-coa005,Automate Delivery (FI Wholesale),done,later
+fiwh-coa006,Modernise Fraud (FI Wholesale),in_flight,now
+filg-coa001,Modernise Pricing (FI Logistics),in_flight,next
+filg-coa002,Automate Delivery (FI Logistics),approved,next
+filg-coa003,Expand Pricing Self-Service (FI Logistics),approved,next
+filg-coa004,Retire Legacy Pricing (FI Logistics),proposed,next
+filg-coa005,Outsource Payment (FI Logistics),proposed,next
+filg-coa006,Outsource Promotion (FI Logistics),proposed,later
+czst-coa001,Automate Order (CZ Stores),approved,later
+czst-coa002,Expand Pricing Self-Service (CZ Stores),approved,now
+czst-coa003,Modernise Returns (CZ Stores),in_flight,next
+czst-coa004,Consolidate Supplier Platforms (CZ Stores),in_flight,now
+czst-coa005,Modernise Promotion (CZ Stores),proposed,later
+czst-coa006,Outsource Customer (CZ Stores),proposed,later
+czon-coa001,Outsource Delivery (CZ Online),approved,later
+czon-coa002,Modernise Pricing (CZ Online),in_flight,now
+czon-coa003,Retire Legacy Supplier (CZ Online),done,now
+czon-coa004,Outsource Stock (CZ Online),done,later
+czon-coa005,Consolidate Stock Platforms (CZ Online),done,later
+czon-coa006,Expand Order Self-Service (CZ Online),approved,now
+czwh-coa001,Automate Stock (CZ Wholesale),approved,now
+czwh-coa002,Expand Stock Self-Service (CZ Wholesale),done,next
+czwh-coa003,Consolidate Fraud Platforms (CZ Wholesale),in_flight,now
+czwh-coa004,Expand Payment Self-Service (CZ Wholesale),done,now
+czwh-coa005,Consolidate Supplier Platforms (CZ Wholesale),in_flight,now
+czwh-coa006,Retire Legacy Fraud (CZ Wholesale),in_flight,next
+czlg-coa001,Expand Customer Self-Service (CZ Logistics),approved,later
+czlg-coa002,Expand Payment Self-Service (CZ Logistics),in_flight,now
+czlg-coa003,Automate Customer (CZ Logistics),in_flight,next
+czlg-coa004,Expand Promotion Self-Service (CZ Logistics),in_flight,next
+czlg-coa005,Automate Fraud (CZ Logistics),proposed,next
+czlg-coa006,Modernise Payment (CZ Logistics),done,now
+grst-coa001,Automate Returns (GR Stores),approved,now
+grst-coa002,Outsource Customer (GR Stores),approved,later
+grst-coa003,Consolidate Delivery Platforms (GR Stores),approved,next
+grst-coa004,Consolidate Promotion Platforms (GR Stores),in_flight,later
+grst-coa005,Automate Pricing (GR Stores),done,next
+grst-coa006,Automate Promotion (GR Stores),proposed,later
+gron-coa001,Modernise Promotion (GR Online),in_flight,next
+gron-coa002,Modernise Returns (GR Online),proposed,next
+gron-coa003,Expand Delivery Self-Service (GR Online),approved,now
+gron-coa004,Consolidate Customer Platforms (GR Online),proposed,later
+gron-coa005,Expand Order Self-Service (GR Online),in_flight,now
+gron-coa006,Outsource Supplier (GR Online),proposed,next
+grwh-coa001,Outsource Fraud (GR Wholesale),done,next
+grwh-coa002,Consolidate Payment Platforms (GR Wholesale),approved,now
+grwh-coa003,Automate Payment (GR Wholesale),proposed,later
+grwh-coa004,Retire Legacy Order (GR Wholesale),done,now
+grwh-coa005,Consolidate Customer Platforms (GR Wholesale),approved,next
+grwh-coa006,Expand Returns Self-Service (GR Wholesale),proposed,later
+grlg-coa001,Expand Delivery Self-Service (GR Logistics),proposed,now
+grlg-coa002,Automate Fraud (GR Logistics),done,now
+grlg-coa003,Outsource Stock (GR Logistics),proposed,later
+grlg-coa004,Modernise Customer (GR Logistics),approved,next
+grlg-coa005,Expand Supplier Self-Service (GR Logistics),proposed,now
+grlg-coa006,Modernise Stock (GR Logistics),approved,later
+hust-coa001,Modernise Customer (HU Stores),approved,now
+hust-coa002,Outsource Payment (HU Stores),in_flight,next
+hust-coa003,Expand Order Self-Service (HU Stores),approved,now
+hust-coa004,Consolidate Stock Platforms (HU Stores),in_flight,next
+hust-coa005,Consolidate Payment Platforms (HU Stores),in_flight,later
+hust-coa006,Automate Customer (HU Stores),approved,now
+huon-coa001,Automate Delivery (HU Online),approved,later
+huon-coa002,Expand Stock Self-Service (HU Online),done,now
+huon-coa003,Modernise Delivery (HU Online),proposed,later
+huon-coa004,Expand Payment Self-Service (HU Online),approved,later
+huon-coa005,Retire Legacy Returns (HU Online),done,next
+huon-coa006,Automate Customer (HU Online),proposed,next
+huwh-coa001,Consolidate Delivery Platforms (HU Wholesale),in_flight,now
+huwh-coa002,Consolidate Fraud Platforms (HU Wholesale),proposed,later
+huwh-coa003,Modernise Delivery (HU Wholesale),in_flight,next
+huwh-coa004,Expand Returns Self-Service (HU Wholesale),proposed,later
+huwh-coa005,Retire Legacy Pricing (HU Wholesale),approved,now
+huwh-coa006,Modernise Pricing (HU Wholesale),approved,now
+hulg-coa001,Outsource Order (HU Logistics),proposed,later
+hulg-coa002,Retire Legacy Pricing (HU Logistics),done,next
+hulg-coa003,Retire Legacy Promotion (HU Logistics),approved,now
+hulg-coa004,Automate Stock (HU Logistics),approved,now
+hulg-coa005,Retire Legacy Order (HU Logistics),done,now
+hulg-coa006,Expand Fraud Self-Service (HU Logistics),done,next
+rost-coa001,Outsource Customer (RO Stores),done,now
+rost-coa002,Modernise Returns (RO Stores),approved,now
+rost-coa003,Automate Customer (RO Stores),approved,now
+rost-coa004,Modernise Promotion (RO Stores),approved,next
+rost-coa005,Retire Legacy Returns (RO Stores),proposed,next
+rost-coa006,Expand Customer Self-Service (RO Stores),done,later
+roon-coa001,Consolidate Payment Platforms (RO Online),approved,now
+roon-coa002,Modernise Fraud (RO Online),proposed,now
+roon-coa003,Outsource Pricing (RO Online),approved,later
+roon-coa004,Consolidate Stock Platforms (RO Online),in_flight,now
+roon-coa005,Consolidate Fraud Platforms (RO Online),in_flight,later
+roon-coa006,Retire Legacy Delivery (RO Online),in_flight,next
+rowh-coa001,Retire Legacy Returns (RO Wholesale),proposed,now
+rowh-coa002,Modernise Pricing (RO Wholesale),in_flight,now
+rowh-coa003,Expand Delivery Self-Service (RO Wholesale),in_flight,next
+rowh-coa004,Retire Legacy Delivery (RO Wholesale),proposed,later
+rowh-coa005,Expand Returns Self-Service (RO Wholesale),approved,later
+rowh-coa006,Modernise Supplier (RO Wholesale),proposed,next
+rolg-coa001,Automate Promotion (RO Logistics),in_flight,now
+rolg-coa002,Modernise Fraud (RO Logistics),in_flight,next
+rolg-coa003,Modernise Stock (RO Logistics),proposed,now
+rolg-coa004,Outsource Returns (RO Logistics),proposed,now
+rolg-coa005,Consolidate Returns Platforms (RO Logistics),done,now
+rolg-coa006,Modernise Delivery (RO Logistics),in_flight,next
+hrst-coa001,Expand Delivery Self-Service (HR Stores),proposed,next
+hrst-coa002,Expand Pricing Self-Service (HR Stores),done,next
+hrst-coa003,Modernise Supplier (HR Stores),approved,now
+hrst-coa004,Automate Returns (HR Stores),proposed,now
+hrst-coa005,Modernise Order (HR Stores),approved,later
+hrst-coa006,Retire Legacy Pricing (HR Stores),in_flight,next
+hron-coa001,Consolidate Pricing Platforms (HR Online),in_flight,later
+hron-coa002,Automate Returns (HR Online),proposed,next
+hron-coa003,Automate Fraud (HR Online),proposed,now
+hron-coa004,Outsource Delivery (HR Online),proposed,next
+hron-coa005,Consolidate Returns Platforms (HR Online),in_flight,next
+hron-coa006,Retire Legacy Order (HR Online),proposed,now
+hrwh-coa001,Retire Legacy Promotion (HR Wholesale),in_flight,next
+hrwh-coa002,Modernise Fraud (HR Wholesale),approved,later
+hrwh-coa003,Expand Supplier Self-Service (HR Wholesale),done,next
+hrwh-coa004,Automate Returns (HR Wholesale),approved,now
+hrwh-coa005,Consolidate Returns Platforms (HR Wholesale),approved,next
+hrwh-coa006,Expand Returns Self-Service (HR Wholesale),in_flight,now
+hrlg-coa001,Retire Legacy Delivery (HR Logistics),done,now
+hrlg-coa002,Retire Legacy Returns (HR Logistics),approved,now
+hrlg-coa003,Retire Legacy Pricing (HR Logistics),approved,now
+hrlg-coa004,Consolidate Supplier Platforms (HR Logistics),approved,now
+hrlg-coa005,Expand Fraud Self-Service (HR Logistics),in_flight,now
+hrlg-coa006,Retire Legacy Supplier (HR Logistics),in_flight,now
+skst-coa001,Expand Returns Self-Service (SK Stores),in_flight,now
+skst-coa002,Modernise Returns (SK Stores),done,later
+skst-coa003,Automate Order (SK Stores),approved,now
+skst-coa004,Expand Payment Self-Service (SK Stores),in_flight,next
+skst-coa005,Consolidate Returns Platforms (SK Stores),approved,now
+skst-coa006,Consolidate Customer Platforms (SK Stores),done,later
+skon-coa001,Modernise Promotion (SK Online),in_flight,now
+skon-coa002,Retire Legacy Fraud (SK Online),proposed,now
+skon-coa003,Outsource Supplier (SK Online),proposed,next
+skon-coa004,Retire Legacy Stock (SK Online),in_flight,later
+skon-coa005,Outsource Payment (SK Online),proposed,next
+skon-coa006,Expand Fraud Self-Service (SK Online),approved,later
+skwh-coa001,Automate Delivery (SK Wholesale),in_flight,next
+skwh-coa002,Retire Legacy Delivery (SK Wholesale),in_flight,later
+skwh-coa003,Consolidate Payment Platforms (SK Wholesale),proposed,later
+skwh-coa004,Modernise Fraud (SK Wholesale),in_flight,now
+skwh-coa005,Retire Legacy Customer (SK Wholesale),in_flight,next
+skwh-coa006,Modernise Order (SK Wholesale),done,now
+sklg-coa001,Retire Legacy Fraud (SK Logistics),done,now
+sklg-coa002,Outsource Fraud (SK Logistics),approved,now
+sklg-coa003,Expand Stock Self-Service (SK Logistics),in_flight,next
+sklg-coa004,Expand Customer Self-Service (SK Logistics),in_flight,later
+sklg-coa005,Outsource Stock (SK Logistics),proposed,later
+sklg-coa006,Modernise Delivery (SK Logistics),approved,now
+bgst-coa001,Modernise Customer (BG Stores),done,now
+bgst-coa002,Retire Legacy Payment (BG Stores),done,next
+bgst-coa003,Retire Legacy Fraud (BG Stores),proposed,now
+bgst-coa004,Outsource Fraud (BG Stores),in_flight,next
+bgst-coa005,Consolidate Returns Platforms (BG Stores),in_flight,now
+bgst-coa006,Consolidate Promotion Platforms (BG Stores),proposed,now
+bgon-coa001,Automate Fraud (BG Online),proposed,next
+bgon-coa002,Consolidate Promotion Platforms (BG Online),done,later
+bgon-coa003,Consolidate Supplier Platforms (BG Online),in_flight,next
+bgon-coa004,Expand Order Self-Service (BG Online),approved,later
+bgon-coa005,Modernise Returns (BG Online),approved,now
+bgon-coa006,Retire Legacy Stock (BG Online),in_flight,now
+bgwh-coa001,Expand Delivery Self-Service (BG Wholesale),approved,later
+bgwh-coa002,Expand Pricing Self-Service (BG Wholesale),done,now
+bgwh-coa003,Expand Order Self-Service (BG Wholesale),proposed,later
+bgwh-coa004,Consolidate Fraud Platforms (BG Wholesale),in_flight,now
+bgwh-coa005,Automate Payment (BG Wholesale),done,later
+bgwh-coa006,Outsource Order (BG Wholesale),proposed,next
+bglg-coa001,Automate Supplier (BG Logistics),approved,later
+bglg-coa002,Expand Order Self-Service (BG Logistics),in_flight,later
+bglg-coa003,Modernise Fraud (BG Logistics),done,next
+bglg-coa004,Retire Legacy Customer (BG Logistics),proposed,now
+bglg-coa005,Modernise Stock (BG Logistics),in_flight,later
+bglg-coa006,Consolidate Payment Platforms (BG Logistics),in_flight,next
+ltst-coa001,Modernise Customer (LT Stores),done,next
+ltst-coa002,Outsource Order (LT Stores),proposed,now
+ltst-coa003,Expand Fraud Self-Service (LT Stores),done,next
+ltst-coa004,Automate Supplier (LT Stores),in_flight,later
+ltst-coa005,Outsource Stock (LT Stores),done,next
+ltst-coa006,Outsource Delivery (LT Stores),approved,now
+lton-coa001,Modernise Stock (LT Online),in_flight,next
+lton-coa002,Consolidate Order Platforms (LT Online),in_flight,now
+lton-coa003,Outsource Returns (LT Online),done,later
+lton-coa004,Consolidate Supplier Platforms (LT Online),proposed,now
+lton-coa005,Consolidate Pricing Platforms (LT Online),done,later
+lton-coa006,Modernise Promotion (LT Online),in_flight,next
+ltwh-coa001,Outsource Stock (LT Wholesale),in_flight,now
+ltwh-coa002,Retire Legacy Customer (LT Wholesale),done,now
+ltwh-coa003,Automate Pricing (LT Wholesale),in_flight,next
+ltwh-coa004,Consolidate Returns Platforms (LT Wholesale),in_flight,next
+ltwh-coa005,Expand Delivery Self-Service (LT Wholesale),in_flight,now
+ltwh-coa006,Expand Pricing Self-Service (LT Wholesale),approved,later
+ltlg-coa001,Retire Legacy Promotion (LT Logistics),in_flight,later
+ltlg-coa002,Automate Fraud (LT Logistics),done,now
+ltlg-coa003,Retire Legacy Fraud (LT Logistics),approved,later
+ltlg-coa004,Consolidate Payment Platforms (LT Logistics),in_flight,now
+ltlg-coa005,Consolidate Stock Platforms (LT Logistics),in_flight,next
+ltlg-coa006,Expand Order Self-Service (LT Logistics),done,next
+lvst-coa001,Outsource Payment (LV Stores),in_flight,now
+lvst-coa002,Outsource Order (LV Stores),approved,later
+lvst-coa003,Outsource Delivery (LV Stores),approved,later
+lvst-coa004,Retire Legacy Stock (LV Stores),done,next
+lvst-coa005,Modernise Order (LV Stores),proposed,later
+lvst-coa006,Expand Customer Self-Service (LV Stores),in_flight,now
+lvon-coa001,Expand Payment Self-Service (LV Online),in_flight,next
+lvon-coa002,Automate Stock (LV Online),in_flight,later
+lvon-coa003,Automate Delivery (LV Online),approved,now
+lvon-coa004,Automate Order (LV Online),done,now
+lvon-coa005,Outsource Delivery (LV Online),in_flight,next
+lvon-coa006,Retire Legacy Pricing (LV Online),done,now
+lvwh-coa001,Retire Legacy Customer (LV Wholesale),done,now
+lvwh-coa002,Automate Payment (LV Wholesale),done,next
+lvwh-coa003,Modernise Delivery (LV Wholesale),in_flight,later
+lvwh-coa004,Retire Legacy Payment (LV Wholesale),in_flight,now
+lvwh-coa005,Expand Returns Self-Service (LV Wholesale),done,next
+lvwh-coa006,Modernise Payment (LV Wholesale),done,next
+lvlg-coa001,Retire Legacy Pricing (LV Logistics),in_flight,now
+lvlg-coa002,Modernise Fraud (LV Logistics),in_flight,later
+lvlg-coa003,Outsource Stock (LV Logistics),done,later
+lvlg-coa004,Expand Promotion Self-Service (LV Logistics),proposed,now
+lvlg-coa005,Consolidate Order Platforms (LV Logistics),in_flight,now
+lvlg-coa006,Retire Legacy Delivery (LV Logistics),in_flight,now

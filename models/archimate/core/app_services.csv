@@ -1,0 +1,11 @@
+id,name,availability
+order-capture-service,Order Capture Service,24x7
+stock-lookup-service,Stock Lookup Service,24x7
+payment-authorisation-service,Payment Authorisation Service,24x7
+delivery-scheduling-service,Delivery Scheduling Service,business_hours
+customer-record-service,Customer Record Service,24x7
+supplier-onboarding-service,Supplier Onboarding Service,business_hours
+price-calculation-service,Price Calculation Service,24x7
+loyalty-points-service,Loyalty Points Service,24x7
+fraud-scoring-service,Fraud Scoring Service,24x7
+sales-reporting-service,Sales Reporting Service,business_hours

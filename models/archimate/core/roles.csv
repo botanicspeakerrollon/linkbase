@@ -1,0 +1,9 @@
+id,name,description
+order-handler,Order Handler,Takes and confirms customer orders.
+inventory-controller,Inventory Controller,Keeps stock levels accurate and replenished.
+customer-advisor,Customer Advisor,Helps customers with returns and complaints.
+delivery-coordinator,Delivery Coordinator,Plans picking and packing for delivery.
+payment-processor,Payment Processor,Takes payments and reconciles takings.
+pricing-analyst,Pricing Analyst,Sets prices and runs promotions.
+vendor-liaison,Vendor Liaison,Negotiates and onboards suppliers.
+risk-reviewer,Risk Reviewer,Reviews flagged fraud cases.

@@ -1,0 +1,11 @@
+person_id,full_name,country,born,pep,risk_rating
+P-01,Dana Whitcombe,United Kingdom,1971-04-09,false,medium
+P-02,Rob Teague,United Kingdom,1968-11-23,false,low
+P-03,Mei-Ling Santos,Portugal,1980-07-30,false,low
+P-04,Anders Kowalczyk,Poland,1964-02-17,true,high
+P-05,Priya Nair,India,1985-09-05,false,low
+P-06,Tomas Eriksen,Norway,1977-12-01,false,medium
+P-07,Helena Okonkwo,Nigeria,1969-06-14,true,high
+P-08,Callum Reid,United Kingdom,1974-03-28,false,low
+P-09,Sofia Marchetti,Italy,1990-10-11,false,low
+P-10,Luca Brandt,Germany,1982-01-19,false,medium

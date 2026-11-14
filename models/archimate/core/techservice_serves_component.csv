@@ -1,0 +1,13 @@
+service,component
+compute-hosting-service,order-management-system
+compute-hosting-service,delivery-scheduling-app
+compute-hosting-service,pricing-engine
+compute-hosting-service,returns-processing-app
+relational-database-service,customer-relationship-management-system
+relational-database-service,loyalty-rewards-app
+relational-database-service,reporting-dashboard
+message-queue-service,warehouse-management-system
+message-queue-service,fraud-detection-system
+file-storage-service,supplier-portal
+network-connectivity-service,point-of-sale-system
+identity-and-access-service,payment-gateway-adapter

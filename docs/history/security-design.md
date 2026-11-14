@@ -87,7 +87,7 @@ can't bypass them and a missing `Where` in a repository can't leak.
   statement. It is not wrapped in a function, because Postgres can't inline one and it measured twelve times slower.
 - **Links** need the endpoints' visibility. The policy checks the two end nodes by primary key. This is the part to
   measure first on the large sample.
-- **Graph views** (`graph_nodes`, `graph_edges`, the `climbing_*` views) become `security_invoker` views (Postgres 15+; the
+- **Graph views** (`graph_nodes`, `graph_edges`; the `climbing_*` views were dropped, see build order 3) become `security_invoker` views (Postgres 15+; the
   repo is on 16), so the policies apply as the caller instead of as the view's owner.
 - **Side tables** inherit from the row they describe, by policy: `external_ref` (visible only if its node is), `saved_view`
   contents (hidden nodes drop out), history entries (see below), and staged import rows.
@@ -269,8 +269,9 @@ Reading: [Array Functions and Operators](https://www.postgresql.org/docs/16/func
   `node` has a policy too, those subqueries are filtered automatically; the design depends on that, and a test pins it.
 - **Views.** A view normally runs with its owner's rights, so a view owned by the owner role would **bypass** the policies.
   `create view graph_nodes with (security_invoker = true) as …` (or `alter view … set (security_invoker = true)`) makes the
-  view use the caller's rights, so the policies apply. Every view over labelled tables needs this, including the
-  `climbing_*` views, and the coverage test checks `pg_class.reloptions` for it.
+  view use the caller's rights, so the policies apply. Every view over labelled tables needs this, and the coverage test
+  checks `pg_class.reloptions` for it. (Climbing had views too, which would have needed it. They became a `WITH` clause in
+  the Insights queries instead, which runs as the viewer.)
 - **Dependent tables.** `external_ref` and the other side tables get a policy of the form
   `exists (select 1 from node n where n.id = node_id)`; the exists is itself filtered by `node`'s policy.
 - **Toggling.** Turning security on creates the role, the helper functions, grants and policies, then enables RLS, in
@@ -410,8 +411,9 @@ to the deployment. Nothing here is tied to one directory or protocol.
 2. Label columns, the model `security` setting, labels from CSV and bulk label edits. **Built.** Not yet: merging records
    (Cleanup) doesn't carry labels, and nobody is checked for permission to label.
 3. Row policies, the roles, the connection interceptor, `security_invoker` views, and the performance run. **Built**, for
-   the generic store (`node`, `node_link`, `external_ref`, `graph_nodes`, `graph_edges`). The climbing domain's own tables
-   and `climbing_*` views are not covered, so climbing should not turn security on yet.
+   the generic store (`node`, `node_link`, `external_ref`, `graph_nodes`, `graph_edges`). Climbing's records are in that store
+   and Insights reads them through the same policies, so climbing has no tables or views of its own left to cover. The gaps
+   listed in step 4 (import paths and trips) still apply to climbing.
 4. `FieldPolicy`, field labels, masking in DTOs, and search. **Built** for a field's own label (set in the model file). A
    per-record override (`node_property_label`) is **built** too, on every reader (records, graph, history, timeline, cleanup);
    see the measurements in `docs/performance.md`. Not covered yet: `Hierarchy`, `Derived` and `Merge` read `props`

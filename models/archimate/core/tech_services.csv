@@ -1,0 +1,7 @@
+id,name,provider
+compute-hosting-service,Compute Hosting Service,Internal Platform Team
+relational-database-service,Relational Database Service,Internal Platform Team
+message-queue-service,Message Queue Service,Internal Platform Team
+file-storage-service,File Storage Service,Internal Platform Team
+network-connectivity-service,Network Connectivity Service,Internal Platform Team
+identity-and-access-service,Identity and Access Service,Internal Platform Team

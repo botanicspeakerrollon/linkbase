@@ -152,10 +152,10 @@ slow. Not measured on the large sample; if it hurts, cache it per viewer shape f
   16 times more links than the `rail` tier. The canvas is never the limit, because it only ever draws what's asked for, 100 at
   a time.
 - **For the generic store:** read the schema from the definition tables, which removes the sampling, and keep `extra_node`'s plain
-  shape. The climbing views build ids by joining strings, so they can't use an index and won't scale like this.
+  shape. Climbing's Insights queries (the `WITH` clause in `ClimbingInsightsSql`) are written for a logbook's size and have not been measured on a model this big.
 - **Not tested:** several users at once, a real server, and writes, including how much the indexes slow them. The busiest stop
   measured is the busiest one named Zürich HB, so a stop with more links may exist. The link columns are indexed here by the
-  loader, which the real climbing views are not.
+  loader, which a real climbing logbook's are not.
 
 ## The everyday-use queries
 
