@@ -144,7 +144,9 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
             _store.ConnectionString,
             $"--ConnectionStrings:Consultancy={_store.ConnectionString}",
             $"--ConnectionStrings:SwissRail={_store.ConnectionString}",
-            $"--ConnectionStrings:ClimbingDemo={_store.ConnectionString}");
+            $"--ConnectionStrings:ClimbingDemo={_store.ConnectionString}",
+            $"--ConnectionStrings:LinkbaseCode={_store.ConnectionString}",
+            $"--ConnectionStrings:ArchiMate={_store.ConnectionString}");
         using var client = new HttpClient();
 
         var live = await client.GetAsync($"{url}/health/live");
@@ -728,7 +730,8 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
     {
         await OpenExploreAsync();
         var rail = _page.Locator(".app-rail");
-        var search = _page.Locator(".pattern-bar");
+        // The pattern search bar is first on the page; the Ask box below it uses the same styling.
+        var search = _page.Locator(".pattern-bar").First;
 
         Assert.Equal(RailWidth, (await rail.BoundingBoxAsync())!.Width, 0);
 
@@ -857,7 +860,9 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         // Expanding keeps the zoom the user chose, and keeps the expanded node in view.
         var zoomBox = (await _page.Locator(".explore-canvas").BoundingBoxAsync())!;
         await _page.Mouse.MoveAsync(zoomBox.X + zoomBox.Width / 2, zoomBox.Y + zoomBox.Height / 2);
-        await _page.Mouse.WheelAsync(0, -300);
+        // Short of the maximum zoom, so the nodes added below fit on screens of any size. At the maximum they only just do,
+        // and a slightly different font on CI made them not fit, which rightly zooms out.
+        await _page.Mouse.WheelAsync(0, -60);
         await _page.WaitForTimeoutAsync(300);
         var zoomBefore = await _page.EvaluateAsync<double>("() => import('/js/graph.js').then(m => m.zoom())");
         // Clicking a link selects it.
