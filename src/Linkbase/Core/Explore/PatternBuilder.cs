@@ -4,7 +4,7 @@ using Linkbase.Core.Graph;
 
 namespace Linkbase.Core.Explore;
 
-public enum SuggestionKind { Label, Relationship, Property, Operator, Value, Match, FreeText, Model }
+public enum SuggestionKind { Label, Relationship, Property, Operator, Value, Match, FreeText, Model, Rank }
 
 public sealed record PatternSuggestion(SuggestionKind Kind, string Text, string? Hint = null)
 {
@@ -25,6 +25,9 @@ public sealed record PatternChip(string? Label, IReadOnlyList<string> Filters, s
 public sealed class PatternBuilder(GraphSchema schema)
 {
     private static readonly string[] ModelWords = ["graph", "model", "schema"];
+
+    // Typing one of these, three letters or more, offers a ranking. It isn't listed otherwise, so an ordinary search stays as plain as ever.
+    private static readonly string[] RankWords = ["rank", "ranking", "top", "most", "busiest"];
 
     private readonly List<PatternNodeState> _nodes = [];
     private readonly List<PatternRel> _rels = [];
@@ -163,6 +166,12 @@ public sealed class PatternBuilder(GraphSchema schema)
                 .Select(p => new PatternSuggestion(SuggestionKind.Property, p.Key, "Property") { Key = p.Key }));
         }
 
+        // A ranking needs a chain to rank along, and is added once.
+        if (term.Length >= 3 && _rank is null && AtEnd && _nodes.Count >= 2 && RankWords.Any(w => Matches(w, term)))
+        {
+            suggestions.Add(new PatternSuggestion(SuggestionKind.Rank, $"Rank {_nodes[0].Label ?? "Anything"} by most different {_nodes[^1].Label ?? "Anything"}", "Ranking"));
+        }
+
         // Always on offer, so anything typed can be searched for even if nothing above matches it.
         if (term.Length > 0)
         {
@@ -189,6 +198,10 @@ public sealed class PatternBuilder(GraphSchema schema)
 
                 _rels.Add(new PatternRel(suggestion.RelType!, suggestion.Outgoing));
                 _nodes.Add(new PatternNodeState { Label = suggestion.Label });
+                break;
+            case SuggestionKind.Rank:
+                // The first step is the one ranked and the last is the one counted, which the chip in the bar can change.
+                _rank = new PatternRank(0, _nodes.Count - 1, 5);
                 break;
             case SuggestionKind.Property:
                 _pendingKey = suggestion.Key;
