@@ -98,6 +98,21 @@ can't bypass them and a missing `Where` in a repository can't leak.
 
 ### Properties: the field policy
 
+**As built.** A field definition carries a label (`field_definition.label_level`, `label_any`, `label_all`, set by the model
+file's field `label`; a relationship's fields can't have one). `FieldPolicy.HiddenAsync` returns, per type, the keys whose label
+the viewer fails. With row security off it returns `HiddenFields.None` without a query. Readers use it like this:
+
+- `RecordRepository` strips hidden values and reports them in `Masked`; a filter or sort on one fails with the same message
+  as an unknown field; search uses `graph_search_text(name, props - hidden)` for that viewer only; a save removes hidden
+  fields from the definition, so it neither reads, requires nor overwrites them.
+- `GraphRepository` strips them from nodes, drops them from the schema (so a filter on one fails as an unknown property),
+  leaves them out of suggestions, and sorts neighbours without a hidden `date`. Pattern search's free text uses the same
+  `props - hidden` form.
+- Timeline offers no hidden date field and Cleanup doesn't report a hidden required field.
+- A name template can't use a labelled field, because the name is shown to everyone.
+
+The rest of this section is the wider design.
+
 Property values live in `node.props` JSON, which a row policy can't look inside, so values are masked in the application.
 
 - One `FieldPolicy` service takes the viewer and a record's labels and decides, per property, show or mask. Every DTO
@@ -352,7 +367,11 @@ wait for it:
 3. Row policies, the roles, the connection interceptor, `security_invoker` views, and the performance run. **Built**, for
    the generic store (`node`, `node_link`, `external_ref`, `graph_nodes`, `graph_edges`). The climbing domain's own tables
    and `climbing_*` views are not covered, so climbing should not turn security on yet.
-4. `FieldPolicy`, the property label tables, masking in DTOs, and search.
+4. `FieldPolicy`, field labels, masking in DTOs, and search. **Built** for a field's own label (set in the model file). A
+   per-record override (`node_property_label`) is not built: `VisibilityRule.CanSeeProperty` already accepts one, but nothing
+   stores it, and it would cost a join on every read. Not covered yet: `Hierarchy`, `Derived` and `Merge` read `props`
+   directly, the import paths (`CsvImportService`, undo, trips) build their own `RecordRepository` without the policy, and
+   the audit history still shows old values (step 5).
 5. History, `external_ref`, saved views and the other side tables.
 6. Label UI, the model editor tab and bulk assignment.
 7. Identity and the user directory.

@@ -262,6 +262,16 @@ A record type says how its records are labelled, and a CSV can override it per r
   `security` section.
 - Reloading a model rebuilds its records, so labels come from the model and CSVs, not from hand edits.
 
+A field can carry a label too, which hides its value from viewers who fail it, on records they can otherwise see:
+
+```json
+{ "key": "budget", "type": "number", "label": { "level": "confidential" } }
+```
+
+It has the same keys as a record's label. Only a type's fields can have one, and a field used in a `nameTemplate` can't, since
+a name is shown to everyone. A hidden value shows as `••••`, can't be filtered, sorted or searched on, and is left as it was
+when the viewer saves the record. Masking is done by the application, not the database, so it covers the generic store only.
+
 `LabelRepository` changes labels in bulk: by node or link ids, setting a level or replacing, adding to or removing from a set.
 A batch is one transaction and one history change set (needing a reason where the model asks for one). Items the edit leaves as
 they were aren't counted or logged. Label changes can't be reverted from history yet.

@@ -59,7 +59,7 @@ else if (_type is not null)
                 var key = field.Key;
                 <TemplateColumn T="RecordRow" Sortable="false">
                     <HeaderTemplate>@SortHeader(key, RecordRepository.Title(key))</HeaderTemplate>
-                    <CellTemplate>@Shown(field, context.Item.Values.GetValueOrDefault(key))</CellTemplate>
+                    <CellTemplate>@(context.Item.Masked.Contains(key) ? MaskText : Shown(field, context.Item.Values.GetValueOrDefault(key)))</CellTemplate>
                 </TemplateColumn>
             }
         </Columns>
@@ -264,6 +264,9 @@ else if (_type is not null)
 
     public static string DerivedNote(RecordType type) =>
         $"{type.Name} records are derived by {type.Owner} from other records, so they can't be added, edited or linked here.";
+
+    // Stands in for a value the viewer isn't allowed to see, so the record doesn't look empty. It's never stored.
+    public const string MaskText = "••••";
 
     public static string Shown(RecordField field, string? value) =>
         field.IsMany ? string.Join(", ", (value ?? "").Split('\n').Select(v => Shown(field.ElementType, v)))

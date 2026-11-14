@@ -100,6 +100,9 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             field.HasIndex(f => new { f.NodeTypeName, f.Key }).IsUnique();
             field.Property(f => f.Required).HasDefaultValue(false);
             field.Property(f => f.Multiple).HasDefaultValue(false);
+            field.Property(f => f.LabelLevel).HasDefaultValue((short)0);
+            field.Property(f => f.LabelAny).HasDefaultValueSql("'{*}'");
+            field.Property(f => f.LabelAll).HasDefaultValueSql("'{}'");
         });
 
         modelBuilder.Entity<LinkDefinition>(link =>

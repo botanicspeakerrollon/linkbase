@@ -24,7 +24,7 @@
                               HelperText="What identifies it, and can't change later. Made from the name if left empty." />
             }
 
-            <FieldInputs Fields="Type.Editable" Values="_values" />
+            <FieldInputs Fields="Type.Editable.Where(f => Record?.Masked.Contains(f.Key) != true)" Values="_values" />
 
             @if (Record is null)
             {

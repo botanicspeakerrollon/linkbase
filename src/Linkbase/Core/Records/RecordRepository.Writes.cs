@@ -41,6 +41,7 @@ public sealed partial class RecordRepository
     {
         var definition = await TypeAsync(type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {type}.");
         RefuseDerived(definition);
+        definition = Visible(definition, await HiddenAsync(db, cancellationToken));
         var name = Name(definition, input);
         var props = Props(definition, input);
         props = Hooked(definition, name, props);
@@ -157,6 +158,7 @@ public sealed partial class RecordRepository
             ?? throw new LinkbaseValidationException("This record no longer exists.");
         var definition = await TypeAsync(node.Type, cancellationToken) ?? throw new LinkbaseValidationException($"There's no type called {node.Type}.");
         RefuseDerived(definition);
+        definition = Visible(definition, await HiddenAsync(db, cancellationToken));
 
         var before = Values(node.Props);
         var oldProps = node.Props;

@@ -71,6 +71,14 @@ public sealed partial class RecordRepository
     {
         // A type that isn't there, such as one an undone import took away, has no records.
         var definition = await TypeAsync(type, cancellationToken) ?? new RecordType(type, null, null, []);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var hidden = (await HiddenAsync(db, cancellationToken)).For(type);
+        if (filters.Select(f => f.Field).Concat(sort?.Field is { } sorted ? [sorted] : []).FirstOrDefault(hidden.Contains) is { } secret)
+        {
+            // The same words as for a field that isn't there, so the message doesn't say that it exists.
+            throw new LinkbaseValidationException($"{type} has no field called {secret}.");
+        }
+
         var parameters = new List<(string Name, object Value, NpgsqlDbType Type)>();
         string Add(object value, NpgsqlDbType dbType)
         {
@@ -82,7 +90,10 @@ public sealed partial class RecordRepository
         var where = new List<string> { $"type = {Add(type, NpgsqlDbType.Text)}", $"user_id = {Add(AppUser.DefaultId, NpgsqlDbType.Bigint)}" };
         if (!string.IsNullOrWhiteSpace(search))
         {
-            where.Add($"search_text ILIKE {Add($"%{EscapeLike(search.Trim())}%", NpgsqlDbType.Text)}");
+            // search_text holds every value, hidden ones too, so a viewer who can't see some searches the visible ones instead.
+            // It's slower than the indexed column, which is why it's only for them.
+            var column = hidden.Count == 0 ? "search_text" : $"graph_search_text(name, props - {Add(hidden.ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text)})";
+            where.Add($"{column} ILIKE {Add($"%{EscapeLike(search.Trim())}%", NpgsqlDbType.Text)}");
         }
 
         foreach (var filter in filters)
@@ -100,12 +111,11 @@ public sealed partial class RecordRepository
         var rowsSql = "SELECT id AS \"Id\", key AS \"Key\", name AS \"Name\", props::text AS \"Props\" " + from
             + " ORDER BY " + order + " OFFSET " + offset + " LIMIT " + limit;
 
-        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var total = await db.Database.SqlQueryRaw<int>(countSql, Materialize(parameters)).SingleAsync(cancellationToken);
         var rows = await db.Database
             .SqlQueryRaw<RawRecord>(rowsSql, Materialize(parameters))
             .ToListAsync(cancellationToken);
-        return new RecordRows(total, rows.Select(r => new RecordRow(r.Id, r.Key, r.Name, Values(r.Props))).ToList());
+        return new RecordRows(total, rows.Select(r => new RecordRow(r.Id, r.Key, r.Name, Values(r.Props, hidden)) { Masked = Present(r.Props, hidden) }).ToList());
     }
 
     private sealed record RawRecord(string Id, string Key, string Name, string Props);
@@ -194,7 +204,13 @@ public sealed partial class RecordRepository
             .Where(n => n.Type == type && n.Key == key && n.UserId == AppUser.DefaultId)
             .Select(n => new { n.Id, n.Type, n.Key, n.Name, n.Props, n.CreatedAt, n.UpdatedAt })
             .SingleOrDefaultAsync(cancellationToken);
-        return node is null ? null : new RecordDetail(node.Id, node.Type, node.Key, node.Name, Values(node.Props), node.CreatedAt, node.UpdatedAt);
+        if (node is null)
+        {
+            return null;
+        }
+
+        var hidden = (await HiddenAsync(db, cancellationToken)).For(node.Type);
+        return new RecordDetail(node.Id, node.Type, node.Key, node.Name, Values(node.Props, hidden), node.CreatedAt, node.UpdatedAt) { Masked = Present(node.Props, hidden) };
     }
 
     // Every kind of link the record has, each with its first few links in name order and the total.

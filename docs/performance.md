@@ -137,6 +137,10 @@ Three findings, each worth knowing before changing the policy:
 
 A narrow viewer (few rows visible) has not been measured on a large model; do that before relying on it there.
 
+A viewer with hidden fields searches `graph_search_text(name, props - hidden)`, which the stored `search_text` column and its trigram
+index can't serve, so free text for them scans. Everyone else, and every model without field labels, uses the index as before. It
+hasn't been measured on the large sample.
+
 ## What this does and doesn't show
 
 - **Fine at this size:** expanding, drawing and searching. Expanding and drawing follow indexes, so they barely changed with

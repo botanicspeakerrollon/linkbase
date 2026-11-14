@@ -113,7 +113,7 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             foreach (var field in type.Fields)
             {
                 await session.RunAsync(
-                    "INSERT INTO field_definition (node_type_name, key, type, options, required, owner, description, group_name, multiple) VALUES (@type, @key, @fieldType, @options, @required, @owner, @description, @group, @multiple)",
+                    "INSERT INTO field_definition (node_type_name, key, type, options, required, owner, description, group_name, multiple, label_level, label_any, label_all) VALUES (@type, @key, @fieldType, @options, @required, @owner, @description, @group, @multiple, @labelLevel, @labelAny, @labelAll)",
                     ("type", type.Name, NpgsqlDbType.Text),
                     ("key", field.Key, NpgsqlDbType.Text),
                     ("fieldType", SnakeCaseEnumConverter<FieldType>.ToStore(StoredType(field)), NpgsqlDbType.Text),
@@ -122,7 +122,10 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
                     ("owner", (object?)field.Owner ?? DBNull.Value, NpgsqlDbType.Text),
                     ("description", (object?)Clean(field.Description) ?? DBNull.Value, NpgsqlDbType.Text),
                     ("group", (object?)Clean(field.Group) ?? DBNull.Value, NpgsqlDbType.Text),
-                    ("multiple", field.Multiple, NpgsqlDbType.Boolean));
+                    ("multiple", field.Multiple, NpgsqlDbType.Boolean),
+                    ("labelLevel", (short)Math.Max(0, model.Security?.LevelRank(field.Label?.Level) ?? 0), NpgsqlDbType.Smallint),
+                    ("labelAny", field.Label?.AnyOf is { Count: > 0 } any ? any.ToArray() : [LabelCodec.Everyone], NpgsqlDbType.Array | NpgsqlDbType.Text),
+                    ("labelAll", field.Label?.AllOf?.ToArray() ?? [], NpgsqlDbType.Array | NpgsqlDbType.Text));
             }
         }
     }
