@@ -64,8 +64,8 @@ Nothing here is implemented (see [security-roadmap](security-roadmap.md) and [se
 - **Who is asking.** Every owned row has a `user_id`, and the app assumes one user (`AppUser.DefaultId`). Sign-in replaces that
   assumption in the repositories' write paths and in the context factory.
 - **Reads.** Every read is a repository method returning a DTO. Record values come from `node.props` JSON, so a field policy
-  has to filter in `RecordRepository` (`Reads`, `Values`), `GraphRepository`, and the climbing repositories and `climbing_*`
-  views, which read props directly. Moving a sensitive field out of JSON into a typed column is the other route.
+  has to filter in `RecordRepository` (`Reads`, `Values`), `GraphRepository`, and the climbing repositories, which read
+  props directly. Moving a sensitive field out of JSON into a typed column is the other route.
 - **Writes.** `RecordRepository.Writes`, `ImportStagingService` and the loader. All write in one
   transaction, so a check at the start covers the batch.
 - **Model choice.** `ModelCatalog` decides which models exist and `/model/{key}` switches; per-customer instances are

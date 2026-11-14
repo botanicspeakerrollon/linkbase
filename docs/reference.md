@@ -375,7 +375,8 @@ Six types: **Area** (country → region → area), **Crag**, **Route**, **Ascent
   would not survive. Multi-country trips merge from `data/corrections.json`.
 - **Importers** (command line): UKC export and Mountain Project ticks, one undoable batch each, re-runnable.
   Crags and routes can also be added from text through Read text, like any model's records.
-- **Views**: `climbing_*` views serve Logbook and Insights.
+- **Insights queries**: each starts with the `WITH` clause in `ClimbingInsightsSql` (ascent facts, trips, partners). Climbing adds
+  no views or tables to the database.
 
 **Not yet.** The real climbing model's areas have no hierarchy rules. The UKC and Mountain Project importers write areas
 themselves and are not checked against hierarchy rules. Phone-width Logbook and quick one-handed logging.
