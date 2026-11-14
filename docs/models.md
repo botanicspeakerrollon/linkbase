@@ -527,6 +527,9 @@ files, and it guesses from their names and headers:
 - A file with columns for two types and no key of its own, such as `assignments.csv` with `person` and `project`, is links
   between them. Its other columns aren't kept, since link values are defined in a model file only.
 
+Each new type also gets a colour no other type in the model has, and an icon chosen from its name (`Customer` gets a person,
+`Account` a bank, `Trade` arrows), or a plain shape if no word fits. Change them afterwards in the model editor.
+
 Everything guessed can be corrected before **Check**, which reports problems in any file and changes nothing. **Create the
 model** then imports each file's records, and then the links, through the same service as the CSV tab, so each file is an
 import of its own in **Recent imports** of the new model and can be undone there. Records are checked before anything is written; a problem

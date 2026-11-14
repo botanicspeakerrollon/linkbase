@@ -23,6 +23,11 @@ public sealed partial class ImportStagingService
         var summary = JsonNode.Parse(batch.RawPayload ?? "{}") as JsonObject ?? [];
         var model = summary["model"] is { } node ? node.Deserialize<ModelChanges>(Json) ?? ModelChanges.None : ModelChanges.None;
 
+        // A type made here has no look of its own, so it gets a colour and icon that no other type in the model has.
+        var taken = await db.NodeTypes.AsNoTracking().Select(t => new { t.Color, t.Icon }).ToListAsync(cancellationToken);
+        var takenColors = taken.Select(t => t.Color).ToList();
+        var takenIcons = taken.Select(t => t.Icon).ToList();
+
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
@@ -31,11 +36,16 @@ public sealed partial class ImportStagingService
         var newTypes = new JsonArray();
         foreach (var type in model.Types)
         {
+            var (color, icon) = TypeLook.Pick(type, takenColors, takenIcons);
             if (await ExecuteAsync(connection, transaction,
-                "INSERT INTO node_type (name, sort_order) SELECT @type, coalesce(max(sort_order), 0) + 1 FROM node_type ON CONFLICT (name) DO NOTHING",
-                ("type", type, NpgsqlDbType.Text)) > 0)
+                "INSERT INTO node_type (name, color, icon, sort_order) SELECT @type, @color, @icon, coalesce(max(sort_order), 0) + 1 FROM node_type ON CONFLICT (name) DO NOTHING",
+                ("type", type, NpgsqlDbType.Text),
+                ("color", color, NpgsqlDbType.Text),
+                ("icon", icon, NpgsqlDbType.Text)) > 0)
             {
                 newTypes.Add(type);
+                takenColors.Add(color);
+                takenIcons.Add(icon);
             }
         }
 
