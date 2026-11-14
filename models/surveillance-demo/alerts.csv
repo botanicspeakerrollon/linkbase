@@ -1,0 +1,7 @@
+alert_id,trade_id,raised_on,rule,score,status
+AL-001,TR-0003,2026-03-11,pre_announcement,87,open
+AL-002,TR-0004,2026-03-14,pre_announcement,91,escalated
+AL-003,TR-0008,2026-03-06,closed_period,64,closed
+AL-004,TR-0010,2026-04-07,pre_announcement,78,open
+AL-005,TR-0012,2026-04-16,quick_profit,72,open
+AL-006,TR-9999,2026-04-21,unusual_size,55,open
