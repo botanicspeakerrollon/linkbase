@@ -79,9 +79,14 @@ public sealed class ExternalRefRepository(IDbContextFactory<LinkbaseDbContext> c
         await db.ExternalRefs.Where(r => r.Id == id && r.NodeId != null).ExecuteDeleteAsync(cancellationToken);
     }
 
-    // external_ref has no foreign key, so whatever deletes nodes deletes their refs in the same transaction.
-    internal static Task RemoveForNodesAsync(LinkbaseDbContext db, IQueryable<string> nodeIds, CancellationToken cancellationToken) =>
-        db.ExternalRefs.Where(r => r.NodeId != null && nodeIds.Contains(r.NodeId)).ExecuteDeleteAsync(cancellationToken);
+    // external_ref and node_property_label have no foreign key, so whatever deletes nodes deletes their refs and their
+    // per-property labels in the same transaction. (Row security may filter the label delete for a viewer who can't see a
+    // label; the row then stays as an orphan, which can only restrict, never reveal.)
+    internal static async Task RemoveForNodesAsync(LinkbaseDbContext db, IQueryable<string> nodeIds, CancellationToken cancellationToken)
+    {
+        await db.ExternalRefs.Where(r => r.NodeId != null && nodeIds.Contains(r.NodeId)).ExecuteDeleteAsync(cancellationToken);
+        await db.NodePropertyLabels.Where(l => nodeIds.Contains(l.NodeId)).ExecuteDeleteAsync(cancellationToken);
+    }
 
     public static string SourceName(DataSource source) => source switch
     {

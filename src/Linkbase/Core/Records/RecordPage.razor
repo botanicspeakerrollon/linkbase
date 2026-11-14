@@ -67,6 +67,13 @@ else if (_record is not null && _type is not null)
                     </th>
                     <td>
                         @(_record.Masked.Contains(field.Key) ? RecordListPage.MaskText : RecordListPage.Shown(field, _record.Values.GetValueOrDefault(field.Key)))
+                        @if (_security is not null && _type.Owner is null && !_record.Masked.Contains(field.Key))
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Lock" Size="Size.Small" Class="ml-1 property-label"
+                                           Color="@(_propertyLabels.ContainsKey(field.Key) ? Color.Warning : Color.Default)"
+                                           title="@PropertyLabelTitle(field.Key)" aria-label="@PropertyLabelTitle(field.Key)"
+                                           OnClick="@(() => LabelPropertyAsync(field.Key))" />
+                        }
                         @if (field.Owner is not null && _type.Owner is null)
                         {
                             <MudText Typo="Typo.caption" Inline="true" Class="ml-2" Style="color: var(--mud-palette-text-secondary)">kept by @field.Owner</MudText>
@@ -179,6 +186,7 @@ else if (_record is not null && _type is not null)
     // Set only when the model uses security. The record's label, in the model's own names.
     private ModelSecurity? _security;
     private LabelValue? _label;
+    private IReadOnlyDictionary<string, LabelValue> _propertyLabels = new Dictionary<string, LabelValue>();
 
     protected override Task OnParametersSetAsync() => LoadAsync();
 
@@ -216,6 +224,45 @@ else if (_record is not null && _type is not null)
         }
     }
 
+    private string PropertyLabelTitle(string key) => _propertyLabels.TryGetValue(key, out var label)
+        ? $"{RecordRepository.Title(key)} has its own label ({Describe(label)}). Change it"
+        : $"Set who can see {RecordRepository.Title(key)} on this record";
+
+    private string Describe(LabelValue label)
+    {
+        var parts = new List<string>();
+        if (label.Level is not null)
+        {
+            parts.Add($"{_security!.Level?.Name}: {label.Level}");
+        }
+
+        if (label.AnyOf.Count > 0)
+        {
+            parts.Add($"{_security!.AnyOf?.Name}: {string.Join(", ", label.AnyOf)}");
+        }
+
+        if (label.AllOf.Count > 0)
+        {
+            parts.Add($"{_security!.AllOf?.Name}: {string.Join(", ", label.AllOf)}");
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private async Task LabelPropertyAsync(string key)
+    {
+        var parameters = new DialogParameters<LabelDialog>
+        {
+            { d => d.NodeIds, new[] { _record!.Id } }, { d => d.Security, _security }, { d => d.History, _history }, { d => d.PropertyKey, key },
+            { d => d.Current, _propertyLabels.TryGetValue(key, out var current) ? current : new LabelValue(null, [], []) },
+        };
+        var dialog = await Dialogs.ShowAsync<LabelDialog>($"Who can see {RecordRepository.Title(key)}", parameters);
+        if (await dialog.Result is { Canceled: false })
+        {
+            _propertyLabels = await Labels.GetPropertyLabelsAsync(_record.Id);
+        }
+    }
+
     private async Task LoadAsync()
     {
         var types = await Records.TypesAsync();
@@ -232,6 +279,7 @@ else if (_record is not null && _type is not null)
         _style = GraphStyle.For(Type, _type!.Color, _type.Icon);
         _security = await Labels.SettingsAsync() is { Enabled: true } enabled ? enabled : null;
         _label = _security is null ? null : await Labels.GetNodeAsync(_record.Id);
+        _propertyLabels = _security is null ? new Dictionary<string, LabelValue>() : await Labels.GetPropertyLabelsAsync(_record.Id);
         _refs = await Refs.RefsAsync(_record.Id);
         _options = await Records.LinkOptionsAsync(Type);
         _crumbs = [new BreadcrumbItem(Type, GraphStyle.RecordListLink(Type))];

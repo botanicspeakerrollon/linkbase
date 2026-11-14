@@ -22,6 +22,8 @@ public sealed partial class RecordRepository(IDbContextFactory<LinkbaseDbContext
         fieldPolicy is null ? Linkbase.Core.Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
 
     // A type's definition without the fields the viewer can't see, so a save neither reads, requires nor overwrites them.
-    private static RecordType Visible(RecordType type, Linkbase.Core.Security.HiddenFields hidden) =>
-        hidden.For(type.Name) is { Count: > 0 } keys ? type with { Fields = type.Fields.Where(f => !keys.Contains(f.Key)).ToList() } : type;
+    // With a record id, also without the properties that record's own labels hide from this viewer (the hidden set must have
+    // been scoped to the record, HiddenFields.ForRecordsAsync).
+    private static RecordType Visible(RecordType type, Linkbase.Core.Security.HiddenFields hidden, string? nodeId = null) =>
+        (nodeId is null ? hidden.For(type.Name) : hidden.For(type.Name, nodeId)) is { Count: > 0 } keys ? type with { Fields = type.Fields.Where(f => !keys.Contains(f.Key)).ToList() } : type;
 }
