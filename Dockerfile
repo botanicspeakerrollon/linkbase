@@ -46,6 +46,10 @@ COPY --from=build /app ./
 # The example models, which `model setup` loads (see docker-compose.demo.yml). The .dockerignore leaves out the others.
 COPY models/ ./models/
 
+# The requirements, which the demo shows in the app (Docs:Pages). The .dockerignore leaves out every other document, and a
+# deployment that doesn't set Docs:Pages never reads this one.
+COPY docs/ ./docs/
+
 ENV ASPNETCORE_HTTP_PORTS=8080 \
     ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
     HttpsRedirection=false \

@@ -8,6 +8,7 @@
 @inject RecordRepository Records
 @inject Linkbase.Core.Security.ICurrentUserAccessor CurrentUserAccessor
 @inject IConfiguration Configuration
+@inject Linkbase.Core.Docs.DocsService Docs
 @using Linkbase.Core.Explore
 @using Linkbase.Core.Records
 
@@ -70,6 +71,11 @@
             <MudNavLink Href="model" Icon="@Icons.Material.Outlined.Schema">Model</MudNavLink>
             @* Last, so the numbers of the g shortcuts for the links above stay as they were. *@
             <MudNavLink Href="guide" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.HelpOutline">Guide</MudNavLink>
+            @* Documents the deployment chose to show (Docs:Pages), such as the requirements in the demo. *@
+            @foreach (var slug in Docs.Slugs.Where(s => Docs.Find(s) is not null))
+            {
+                <MudNavLink Href="@($"docs/{slug}")" Icon="@Icons.Material.Outlined.Article">@(char.ToUpperInvariant(slug[0]) + slug[1..].Replace('-', ' '))</MudNavLink>
+            }
             @* With demo sign-in, who you are and a way to be someone else. A link out of the router, so the cookie is cleared. *@
             @if (_signedInAs is not null && Configuration["Security:Identity"] == "demo")
             {

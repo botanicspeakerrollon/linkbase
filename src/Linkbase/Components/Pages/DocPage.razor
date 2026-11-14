@@ -1,0 +1,39 @@
+@page "/docs/{Slug}"
+@inject Linkbase.Core.Docs.DocsService Docs
+@inject NavigationManager Navigation
+
+@* A repo document shown in the app: the requirements, in the demo. Which documents, and whether any, is Docs:Pages. *@
+@if (_page is not null)
+{
+    <PageTitle>@_page.Title</PageTitle>
+
+    <div class="guide guide-wide">
+        <nav class="guide-toc" aria-label="On this page">
+            <div class="guide-toc-title">On this page</div>
+            @foreach (var heading in _page.Headings)
+            {
+                @* Spelled out with the page's path, because a bare #id would resolve against the app's base address. *@
+                <a href="@($"/docs/{_page.Slug}#{heading.Id}")">@heading.Text</a>
+            }
+        </nav>
+
+        <article class="guide-body doc-body">
+            @((MarkupString)_page.Html)
+        </article>
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private Linkbase.Core.Docs.DocsService.Page? _page;
+
+    protected override void OnParametersSet()
+    {
+        _page = Docs.Find(Slug);
+        if (_page is null)
+        {
+            Navigation.NavigateTo("/not-found", replace: true);
+        }
+    }
+}

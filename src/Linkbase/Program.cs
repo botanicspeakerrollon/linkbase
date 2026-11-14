@@ -43,6 +43,8 @@ builder.Services.AddHttpLogging(options =>
 
 // Each model has its own database, and the factory connects to whichever model is current.
 builder.Services.AddSingleton<ModelCatalog>();
+// Docs:Pages names repo documents to show in the app (the demo shows the requirements). None by default.
+builder.Services.AddSingleton(sp => Linkbase.Core.Docs.DocsService.FromConfiguration(sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<IHostEnvironment>()));
 builder.Services.AddScoped<CurrentModel>();
 builder.Services.AddSingleton<Linkbase.Core.Security.RowSecurityState>();
 builder.Services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>();

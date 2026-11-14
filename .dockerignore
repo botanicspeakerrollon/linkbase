@@ -8,7 +8,9 @@
 .env
 backups/
 data/
-docs/
+# Only the requirements go in, for the demo to show (Docs:Pages in appsettings.Demo.json).
+docs/*
+!docs/requirements.md
 # Only the example models go in, for `model setup` in docker-compose.demo.yml. Not the real climbing one or the Swiss rail one.
 models/*
 !models/climbing-demo/

@@ -932,6 +932,73 @@ html:has(.explore) {
     font-size: 0.8125rem;
 }
 
+/* A repo document shown in the app (DocPage): wider than the guide, because its tables are. */
+.guide.guide-wide {
+    grid-template-columns: 220px minmax(0, 1100px);
+}
+
+.doc-body h1 {
+    margin: 0 0 12px;
+    font-size: 1.75rem;
+    font-weight: 500;
+}
+
+.doc-body h2 {
+    margin: 36px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    font-size: 1.375rem;
+    font-weight: 500;
+    scroll-margin-top: 16px;
+}
+
+.doc-body h3 {
+    margin: 24px 0 8px;
+    font-size: 1.125rem;
+    font-weight: 500;
+    scroll-margin-top: 16px;
+}
+
+.doc-body a {
+    color: var(--mud-palette-primary);
+}
+
+.doc-body ul,
+.doc-body ol {
+    margin: 0 0 14px;
+    padding-left: 22px;
+}
+
+.doc-body li {
+    margin-bottom: 6px;
+}
+
+.doc-body table {
+    width: 100%;
+    margin: 0 0 18px;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.doc-body th,
+.doc-body td {
+    padding: 6px 10px;
+    border: 1px solid var(--mud-palette-lines-default);
+    text-align: left;
+    vertical-align: top;
+}
+
+.doc-body th {
+    background: var(--mud-palette-background-gray);
+    font-weight: 600;
+}
+
+.doc-body hr {
+    margin: 28px 0;
+    border: none;
+    border-top: 1px solid var(--mud-palette-lines-default);
+}
+
 /* The front page's feature cards. */
 .guide-cards {
     display: grid;
