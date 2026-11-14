@@ -86,4 +86,19 @@ public sealed class LabelUiTests(PostgresFixture fixture) : UiTestBase(fixture),
         Sees(cut, "Label (0)…");
         cut.WaitForAssertion(() => Assert.True(cut.FindAll("input[type=checkbox]").Count > 1));
     }
+
+    [Fact]
+    public async Task Each_property_has_a_lock_that_opens_its_own_label_and_marks_one_that_has_it()
+    {
+        var factory = await ConsultancyAsync();
+        await new LabelRepository(factory).EditPropertyAsync("project:pr2", "status", new LabelEdit(Level: "confidential"), null);
+
+        var cut = RenderPage<RecordPage>(p => p.Add(x => x.Type, "Project").Add(x => x.Key, "pr2"));
+
+        cut.WaitForAssertion(() => Assert.Contains(cut.FindAll("button.property-label"), b => b.GetAttribute("aria-label")!.Contains("has its own label")));
+        Assert.Contains(cut.FindAll("button.property-label"), b => b.GetAttribute("aria-label")!.StartsWith("Set who can see", StringComparison.Ordinal));
+
+        cut.FindAll("button.property-label").First(b => b.GetAttribute("aria-label")!.Contains("has its own label")).Click();
+        Dialogs.WaitForAssertion(() => Assert.Contains("on this record, on top of who can see the record", Dialogs.Markup));
+    }
 }
