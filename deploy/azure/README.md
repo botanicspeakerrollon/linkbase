@@ -58,6 +58,16 @@ To show it to people on other networks without listing addresses, put Entra sign
 Container App, Authentication, Add identity provider, Microsoft, and require authentication. Then use `-AllowAnyone`. That
 step creates an app registration in your tenant, so the script doesn't do it for you.
 
+## Search engines
+
+The app asks to be left out of search results: `robots.txt` disallows everything, every response carries an `X-Robots-Tag:
+noindex, nofollow, noarchive` header, and pages have a matching meta tag. This only stops crawlers that obey it. It hides
+nothing from anyone who has the address, so it is not access control.
+
+The Container App is named `linkbase`, so the address starts `linkbase.` rather than with the random hash the other
+resources carry. Changing the name makes the next deploy create a new Container App; delete the old one
+(`az containerapp delete --name <old name> --resource-group rg-linkbase-demo`) and the new address replaces the old.
+
 ## Notes and limits
 
 - Postgres accepts connections from Azure services and requires a password and TLS. The connection skips checking the server's

@@ -195,7 +195,9 @@ var ipRules = [for (cidr, i) in allowedCidrs: {
 }]
 
 resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
-  name: '${baseName}-app'
+  // Just the prefix, not baseName: the name is the first label of the public URL, and the hash in baseName is random
+  // letters that can spell something unfortunate. A Container App's name only has to be unique within its environment.
+  name: prefix
   location: location
   identity: {
     type: 'UserAssigned'

@@ -160,6 +160,14 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
+// Linkbase is never meant to be found through a search engine. robots.txt asks crawlers to stay out, and this header
+// tells the well-behaved ones that do arrive not to index or cache anything, including non-HTML responses.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
+    await next();
+});
+
 // In a container, TLS ends at the Route or ingress in front of the app, which has no HTTPS port of its own, so the image
 // turns this off. ASPNETCORE_FORWARDEDHEADERS_ENABLED tells the app the original request was HTTPS.
 if (app.Configuration.GetValue("HttpsRedirection", true))
