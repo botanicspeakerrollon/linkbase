@@ -53,13 +53,22 @@ replaces everything, edits included.
 
 ## The ArchiMate example
 
-`models/archimate/` is a made-up retail group's enterprise architecture, in ArchiMate's three core layers: 10 business
-actors, 8 business roles, 14 business processes, 8 business services and 8 business objects; 12 application components,
-10 application services and 10 data objects; 8 technology nodes and 6 technology services, 94 records in all. The 139
-links between them use only real ArchiMate relationship kinds (`ASSIGNMENT`, `REALIZATION`, `SERVING`, `ACCESS` and
-`TRIGGERING`), reused across layers the way ArchiMate itself reuses them, such as a process realizing a business service
-and a component realizing an application service. To load it, make a database and load the model file like any other
-(see [Adding a model](#adding-a-model)):
+`models/archimate/` is a made-up retail group's enterprise architecture and the project's large demo model: about 47,000
+records and 540,000 links, all invented. It covers ArchiMate's three core layers (business, application, technology) plus
+the strategy layer (resources, capabilities, value streams, courses of action) and the motivation layer (stakeholders,
+drivers, assessments, goals, outcomes, principles, requirements, constraints, meanings and values), 24 types in all. The
+links use only real ArchiMate relationship kinds (`ASSIGNMENT`, `REALIZATION`, `SERVING`, `ACCESS`, `TRIGGERING`, `FLOW`,
+`COMPOSITION`, `AGGREGATION`, `INFLUENCE` and `ASSOCIATION`), reused across layers the way ArchiMate itself reuses them.
+`FLOW` carries a `frequency` and `INFLUENCE` a `strength`.
+
+The hand-written original (94 records, 139 links) is kept in `models/archimate/core/`. `generate.py` reads it and writes
+the CSV files beside `model.json`: 25 markets with 4 business lines each, 100 units in all, every unit with its own
+processes, services, components, goals and requirements, linked mostly within the unit and partly to a pool of shared group
+elements. It uses a fixed seed, so running `python models/archimate/generate.py` again gives the same files. Edit the
+`MARKETS` and `LINES` lists in the script for a bigger or smaller model; a test fails if it drops below 500,000 links. The
+CSVs are about 17 MB and are committed, because the Docker demo and the Azure deploy load them. Loading takes noticeably
+longer than for the other example models. To load it, make a database and load the model file like any other (see
+[Adding a model](#adding-a-model)):
 
 ```powershell
 docker exec linkbase-samples psql -U linkbase -d postgres -c "CREATE DATABASE archimate"
