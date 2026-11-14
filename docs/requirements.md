@@ -289,7 +289,7 @@ security on; a model that doesn't is unaffected (SEC-6).
 | DEM-2 | S | The demo shall include a model with row security on and several example users, so the feature can be shown without a directory. | Met |
 | DEM-3 | S | The demo's sign-in shall be passwordless and say so, shall guard everything except the page itself, health probes and static files, and shall never be used with real data. | Met |
 | DEM-4 | S | The demo shall be deployable to Azure from one script (Container Apps, Postgres, Key Vault), shall keep the model provider's key out of the repo, the image and the deployment history, and by default shall admit only the deployer's public address. | Met — not exercised by CI |
-| DEM-5 | C | A hosted demo shall show this specification, so a visitor can read what the app is required to do without a source checkout. | Planned |
+| DEM-5 | C | A hosted demo shall show this specification, so a visitor can read what the app is required to do without a source checkout. | Met — `Docs:Pages` in `appsettings.Demo.json`; off elsewhere |
 
 ---
 
@@ -331,6 +331,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | --- | --- |
 | 2026-11-14 | First draft, derived from `reference.md` and the plans under `docs/`. |
 | 2026-11-15 | SEC-\* no longer Deferred: restated against what is built (row security, field labels, identity seam, demo sign-in), with SEC-8 and SEC-9 added. MOD-4 and MOD-5 built (MOD-4 partial); MOD-6 added. New DEM group, DAT-9, FUN-15, OPS-7; DAT-6, IMP-9 and OPS-3 reworded; §1.5 and §2 updated; security links point at `history/`. |
+| 2026-11-15 | DEM-5 met: the demo shows this document in the app (`Docs:Pages`). |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.

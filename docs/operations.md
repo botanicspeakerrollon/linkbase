@@ -117,6 +117,8 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Send OpenTelemetry traces, metrics and logs to this collector, such as `http://otel-collector:4317`. Logs still go to stdout too | None, so nothing is sent |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES` | The standard OpenTelemetry settings, such as `http/protobuf` or an API key header | gRPC, none |
 | `OTEL_SERVICE_NAME` | The service name telemetry carries | `linkbase` |
+| `Docs__Pages__0`, `Docs__Pages__1`, … | Repo documents to show in the app, by file name without `.md` (the demo sets `requirements`). Each gets a rail link and a page at `/docs/<name>`. Only listed names are read | None, so there is no docs page |
+| `Docs__Path` | The folder holding those documents | `docs` beside the app (the image has the requirements there), else the repo's `docs` |
 | `Security__Identity` | Where the current user comes from: `configured` (the user in `Security__User`), `principal` (whoever ASP.NET Core authentication has signed in; the deployment adds the scheme) or `demo` (a click-to-sign-in page with no password, for made-up data only: see below) | `configured` |
 | `Security__User` | With `configured` identity, who the app treats as signed in. Must be a user in the model file's `security.users`, or hold grants from a directory | None, so a model with row security on shows nothing |
 | `Security__UserClaim` | With `principal` identity, the claim holding the user's id, such as `preferred_username` or `employee_id` | The first of `preferred_username`, name, `name`, name identifier and `sub` |
