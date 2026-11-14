@@ -141,6 +141,7 @@ JSON, with comments allowed. Paths are relative to the model file.
 | `types[].nameTemplate` | Optional. Makes each record's name from its fields, such as `"{name_first} {name_last}"`. A field with no value drops out and so does the space around it. People then aren't asked for a name, and it follows the fields when they're edited. Each `{field}` must be a field of the type with one value that people fill in. The source's `name` can hold the template instead, if it has braces |
 | `relationships[].max` | Optional. The most links of this kind one record of the `from` type may have, such as `1` for a person's team. With `required: true` that means exactly one. The load stops at a record over it, and the Add link and new record forms refuse a link over it |
 | `types[].owner`, `types[].fields[].owner` | Optional. The domain module that writes these records or keeps this value, by its key, such as `Climbing`. See [owned by a module](#owned-by-a-module) |
+| `security` | Optional. Which of three kinds of visibility part the model uses, what it calls them, and where people's grants come from. See [security](#security) |
 | `history` | Optional. `record` (default `true`) keeps an audit trail of changes, and `requireReason` (default `true`) means a change can't be saved without a reason. See [history](#history) |
 | `types[].hierarchy` | Optional. Makes the type's records a tree, with rules about what may be in what. See [hierarchies](#hierarchies) |
 | `relationships[].type` | Capitals, digits and underscores, such as `CALLS_AT` |
@@ -182,6 +183,79 @@ be checked), and the record's page shows its history, newest first.
   or differed.
 
 See [audit-history-plan](history/audit-history-plan.md) for the design.
+
+### Security
+
+A model can say who may see what. Nothing in the app enforces it yet: this is the part of the
+[design](security-design.md) that is built so far, which is the model file's section, the rule, and where people's grants
+come from. A model with no `security` section behaves exactly as it always has.
+
+A model chooses which of three **kinds** of part it uses, and names each in its own words. Any one is optional.
+
+| Key | Kind | An item holds | A person holds | Passes when |
+| --- | --- | --- | --- | --- |
+| `level` | An ordered list, lowest first | one value | one value | the person's value is at least the item's |
+| `anyOf` | A set | a set | a set | they share **any one** value, or the item has none |
+| `allOf` | A set | a set | a set | the person has **every one** of the item's values |
+
+An item is visible only if every part the model uses passes. Items, links and properties will each carry a label; a link is
+visible only if its own label and both its records pass.
+
+```json
+"security": {
+  "level": { "name": "Sensitivity", "values": [ "public", "internal", "confidential" ] },
+  "anyOf": { "name": "Practice", "values": [ "Design", "Engineering", "Delivery" ] },
+  "allOf": { "name": "NDA", "values": [ "Harbourline", "Greenleaf", "Copperfield", "Northgate" ] },
+  "users": {
+    "ava.lindqvist": { "level": "internal", "anyOf": [ "Design" ], "allOf": [ "Harbourline" ] }
+  }
+}
+```
+
+- `name` is what the app will call the part: Classification, Department and Project suit a bank, Sensitivity, Practice and
+  NDA suit [the consultancy example](#security-in-the-consultancy-example). A part the model doesn't list doesn't exist for it.
+- `values` is required for `level`, which is ordered. For the others it is optional: leave it out to accept any value. A value
+  is 1 to 60 characters, matched exactly (including case), with no braces, commas, quotes, backslashes or asterisks and no
+  space at either end.
+- Each part's grants come from its `source`. The default is `{ "type": "config" }`: the `users` table in the model file,
+  for demos and small teams. Or ask a directory the app doesn't own:
+
+  ```json
+  "allOf": { "name": "NDA", "source": { "type": "api", "url": "https://directory.example/people/{user}", "path": "ndas", "cacheSeconds": 600, "tokenSetting": "Security:DirectoryToken" } }
+  ```
+
+  The app sends a `GET` to `url` with `{user}` replaced by the user's id, reads JSON, and takes the grants from `path` (dots
+  go inwards, such as `data.departments`): a string, or for a set an array of strings. `cacheSeconds` is any number of
+  seconds (0 keeps nothing; 300 if left out), and parts that share an address share one request. `tokenSetting` names an
+  app setting holding a bearer token. The token itself never goes in the model file, and the setting is a secret listed in
+  [operations](operations.md#secrets).
+- A directory that is down, slow or returns something unexpected grants **nothing** for that part, so people see less,
+  never more. An answer is never used after `cacheSeconds`, so a revoked grant stops working within that time. Failures are
+  logged and not cached. An unknown level, or a value that isn't valid, is dropped.
+- A person with no entry, or no sign-in, holds nothing. In a model that uses a level, that means they see nothing.
+- Names of parts are 1 to 40 characters and unique within the model. `https` is required for a directory, except `http` for
+  a directory on the same machine. The load stops with every problem listed if any of this is wrong.
+
+#### Security in the consultancy example
+
+[`models/consultancy`](../models/consultancy/model.json) uses all three parts. Its project budgets and each client's work are
+commercially sensitive, so the labels below are the kind of thing it would carry. Its made-up people hold:
+
+| Person | Sensitivity | Practice | NDA |
+| --- | --- | --- | --- |
+| `sam.partner` | confidential | Design, Engineering, Delivery | all four clients |
+| `ava.lindqvist` | internal | Design | Harbourline |
+| `chloe.marsh` | internal | Engineering | Harbourline, Greenleaf |
+| `guest` | public | none | none |
+
+| An item that needs | sam | ava | chloe | guest | someone not listed |
+| --- | --- | --- | --- | --- | --- |
+| Project budgets: confidential | yes | no | no | no | no |
+| Booking redesign: internal, Design or Delivery, Harbourline NDA | yes | yes | no (not Design or Delivery) | no | no |
+| A project for two clients: internal, Harbourline and Greenleaf NDAs | yes | no (no Greenleaf) | yes | no | no |
+| Timetable app: public | yes | yes | yes | yes | no |
+
+These rows are checked by `SecurityRuleTests`. The person not listed holds nothing, so sees nothing, even what is public.
 
 ### Owned by a module
 

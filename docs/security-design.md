@@ -4,7 +4,9 @@ Nothing here is implemented. This is the design for the visibility rules that [s
 left open. It replaces that roadmap's step 4 ("consider row-level security later"): the rules below are enforced by the
 database for rows, and by one field policy for property values.
 
-The example used throughout is a bank, but nothing in the design is specific to one.
+The example used throughout is a bank, but nothing in the design is specific to one. The bank's words (classification,
+department, project) are only a model's configuration: the design has three **kinds** of part, and a model names them,
+fills in their values, and chooses which it uses. `models/consultancy` has a worked example.
 
 ## Principles
 
@@ -19,20 +21,27 @@ The example used throughout is a bank, but nothing in the design is specific to 
 
 ## The label
 
-Every node, link and property can carry a label of three parts.
+Every node, link and property can carry a label of up to three parts, one of each kind.
 
-| Part | The item holds | The user holds | Passes when |
-| --- | --- | --- | --- |
-| Classification | one level from the model's ordered scale (default: `public` < `private`) | one clearance level | the user's level is at least the item's |
-| Departments | a set (Finance, HR…) | a set | the sets overlap: **any one** |
-| Projects | a set (ProjX, ProjY…) | a set | the item's set is a subset of the user's: **every one** |
+| Kind (key in the model file) | The item holds | The user holds | Passes when | The bank's name for it |
+| --- | --- | --- | --- | --- |
+| Level (`level`) | one value from the part's ordered list | one value | the user's value is at least the item's | Classification: `public` < `private` |
+| Any of (`anyOf`) | a set | a set | the sets overlap: **any one** | Department: Finance, HR… |
+| All of (`allOf`) | a set | a set | the item's set is a subset of the user's: **every one** | Project: ProjX, ProjY… |
 
-The item is visible only if **all three** pass.
+A model **opts in** to each kind by listing it in its `security` section, and gives it a name (`"name": "Department"`),
+which is all the app shows people. A kind a model doesn't list doesn't exist for that model: no column is checked, no
+picker is shown and the rule skips it. A model that lists none has security off. The item is visible only if **every part
+the model uses** passes.
+
+Each model has at most one part of each kind. If a model ever needs two independent sets of one kind, that is a new design.
 
 - An item with **no departments** is unrestricted on that part (stored as a `'*'` sentinel; see Postgres mechanics). An item with **no projects** passes the all-of test
   trivially. The default label (`public`, no departments, no projects) is visible to everyone.
-- The scale, the departments and the projects are defined per model, as arbitrary names. There is no second classification
-  axis; a model that wants "personal" or "commercial" makes them levels or departments.
+- The level list, and optionally the allowed values of the other two parts, are defined per model as arbitrary names.
+  There is no second classification axis; a model that wants "personal" or "commercial" makes them levels or members of a set.
+- Values are matched exactly, including case. They may not contain `{`, `}`, `,`, `"`, `\` or control characters, because they
+  travel in Postgres array literals, and `*` is reserved.
 - Example: item A is `public`, departments {Finance, HR}, projects {ProjX, ProjY}. A user sees it if they hold public
   clearance, **and** Finance or HR, **and** both ProjX and ProjY.
 
@@ -56,19 +65,19 @@ The design is a hybrid, because the two things being protected live in different
 Rows (nodes, links, and everything that points at them) are protected by Postgres policies, so raw SQL and the graph views
 can't bypass them and a missing `Where` in a repository can't leak.
 
-- **Typed columns.** `node` and `node_link` gain `classification smallint not null default 0`,
-  `departments text[] not null default '{}'` and `projects text[] not null default '{}'`. They are constants with defaults,
-  so adding them is instant and costs nothing in a model that never uses them. Level names map to ranks through the model's
-  scale. This also keeps to the rule that sensitive data lives in typed columns.
+- **Typed columns.** `node` and `node_link` gain `label_level smallint not null default 0`,
+  `label_any text[] not null default '{*}'` and `label_all text[] not null default '{}'`. They are constants with defaults,
+  so adding them is instant and costs nothing in a model that never uses them. A level's value maps to its rank (its position in the
+  part's list); a part the model doesn't use keeps its default and is never checked. This also keeps to the rule that sensitive data lives in typed columns.
 - **Two database roles.** The owner role runs migrations, backups and restores, and bypasses the policies. The application
   connects as a separate role with no `BYPASSRLS`, and the tables use `FORCE ROW LEVEL SECURITY` so the owner is bound too
   when the app happens to use it. Superusers always bypass, so the app must never connect as one.
 - **Who is asking.** A connection interceptor on the one `IDbContextFactory` sets three session variables
-  (`linkbase.level`, `linkbase.departments`, `linkbase.projects`) when a connection is opened, and Npgsql's pool reset clears
+  (`linkbase.level`, `linkbase.any`, `linkbase.all`) when a connection is opened, and Npgsql's pool reset clears
   them when it's returned. If the variables are unset, the policy returns no rows. Every context comes from the factory
   (an existing rule), so every query is covered, including raw SQL.
 - **The policy** is one SQL function used by every policy, written so the planner evaluates the session settings once per
-  statement and can use GIN indexes on the arrays (`departments && …`, `projects <@ …`).
+  statement and can use GIN indexes on the arrays (`label_any && …`, `label_all <@ …`).
 - **Links** need the endpoints' visibility. The policy checks the two end nodes by primary key. This is the part to
   measure first on the large sample.
 - **Graph views** (`graph_nodes`, `graph_edges`, the `climbing_*` views) become `security_invoker` views (Postgres 15+; the
@@ -150,13 +159,13 @@ create function linkbase_sec.viewer_level() returns int
   language sql stable as
   $$ select coalesce(nullif(current_setting('linkbase.level', true), '')::int, -1) $$;
 
-create function linkbase_sec.viewer_departments() returns text[]
+create function linkbase_sec.viewer_any() returns text[]
   language sql stable as
-  $$ select coalesce(nullif(current_setting('linkbase.departments', true), '')::text[], '{}') $$;
+  $$ select coalesce(nullif(current_setting('linkbase.any', true), '')::text[], '{}') $$;
 
-create function linkbase_sec.viewer_projects() returns text[]
+create function linkbase_sec.viewer_all() returns text[]
   language sql stable as
-  $$ select coalesce(nullif(current_setting('linkbase.projects', true), '')::text[], '{}') $$;
+  $$ select coalesce(nullif(current_setting('linkbase.all', true), '')::text[], '{}') $$;
 ```
 
 The app sets them with `select set_config('linkbase.level', '1', false)` and so on, from an EF Core `DbConnectionInterceptor`
@@ -181,8 +190,8 @@ Reading: [Customized Options](https://www.postgresql.org/docs/16/runtime-config-
 create function linkbase_sec.can_see(cls int, depts text[], projs text[]) returns boolean
   language sql stable as $$
     select cls <= (select linkbase_sec.viewer_level())
-       and depts && (select linkbase_sec.viewer_departments())   -- any of
-       and projs <@ (select linkbase_sec.viewer_projects())      -- all of
+       and depts && (select linkbase_sec.viewer_any())   -- any of
+       and projs <@ (select linkbase_sec.viewer_all())      -- all of
   $$;
 
 alter table node enable row level security;
@@ -190,22 +199,22 @@ alter table node force row level security;
 
 create policy node_label on node
   for all to linkbase_app
-  using      (linkbase_sec.can_see(classification, departments, projects))
-  with check (linkbase_sec.can_see(classification, departments, projects));
+  using      (linkbase_sec.can_see(label_level, label_any, label_all))
+  with check (linkbase_sec.can_see(label_level, label_any, label_all));
 ```
 
 Points to know:
 
 - `&&` (overlap) and `<@` (is contained by) are the array operators that express "any of" and "all of". `x <@ y` is true
   when every element of `x` is in `y`, and an empty `x` is contained by anything, so an item with no projects passes.
-- `&&` with an empty `departments` is false, which is the wrong answer for "no departments means unrestricted". The design
-  avoids a special case: an unrestricted item stores the sentinel `{'*'}`, and every viewer's department set always includes
+- `&&` with an empty `label_any` is false, which is the wrong answer for "no departments means unrestricted". The design
+  avoids a special case: an unrestricted item stores the sentinel `{'*'}` (the column's default), and every viewer's any-of set always includes
   `'*'`. The model layer hides this; the database sees only plain overlap, which a GIN index can serve. The alternative,
-  `cardinality(departments) = 0 or …`, defeats the index.
+  `cardinality(label_any) = 0 or …`, defeats the index.
 - `(select …)` around each helper makes the planner evaluate it **once per statement** (an InitPlan) instead of once per row.
   `stable` is the right volatility: constant within a statement, not constant forever. Check with `EXPLAIN` that the helpers
   appear as `InitPlan` and not under the scan.
-- Indexes for the array tests are GIN indexes (`create index … using gin (departments)`); the built-in `array_ops` operator
+- Indexes for the array tests are GIN indexes (`create index … using gin (label_any)`); the built-in `array_ops` operator
   class supports `&&`, `<@`, `@>` and `=`. A GIN index is only worth having when the policy is selective, so create them only
   when security is turned on, never when it is off.
 - **Leakproof.** To stop a user's own filter from leaking hidden rows (for example an expression that raises an error on a
@@ -275,6 +284,26 @@ Mass labelling is a first-class feature, not an afterthought.
 - Each runs as one transaction in chunks, through `ChangeRecorder` with a single reason, and reports how many records
   changed. Bulk jobs run as the acting user, so the policy also decides what they can touch.
 
+## Where grants come from
+
+A viewer's grants are a level and two sets. The app doesn't own them; a company brings its own directory. One company owns a
+deployment, so grants are the same for every model in it. Each **part** chooses its own source in the model file, so the level
+may be hard-coded while departments come from an API.
+
+| Source | What it is |
+| --- | --- |
+| `config` (default) | A `users` table in the model file: `{ "alice": { "level": "private", "anyOf": ["Finance"], "allOf": ["ProjX"] } }`. For demos, tests and small teams. |
+| `api` | An HTTP `GET` to a URL the app doesn't own, with `{user}` replaced by the user's id. The response is JSON; `path` names the property holding the value (a string for a level, a string or an array of strings for a set). An optional bearer token is read from the named app setting, never from the model file. |
+
+- **Caching.** `cacheSeconds` is any number of seconds, including 0 for none. Parts that share a URL and a cache time share one
+  request and one cache entry. The default is 300.
+- **Failing closed.** If the API is down, slow or returns something unexpected, and nothing fresh is cached, the part grants
+  **nothing**: the viewer sees less, never more. Expired entries are never served, so a revoked grant stops working
+  within `cacheSeconds` at most. Failures are logged and not cached.
+- An unknown level name, or a value with a forbidden character, is dropped.
+- The grants are resolved into a `Viewer` once per request or circuit; policies and the field policy only ever see the
+  `Viewer`.
+
 ## Users and sign-in
 
 Labels are meaningless without identities, so ASP.NET Core Identity (roadmap step 1) is still required. The design doesn't
@@ -282,13 +311,12 @@ wait for it:
 
 - Everything is written against an `IViewerContext` (level, departments, projects, roles). The first implementation is a
   fixed or test-supplied viewer, so labels, policies and the field policy can be built and tested before sign-in exists.
-- Users, their clearance and their department and project memberships need a home. Proposal: one app-wide user directory,
-  with grants that may be narrowed per model.
+- Users' grants come from the sources above. The user's id (from Identity, later) is the only thing the app has to supply.
 
 ## Model and UI
 
-- The model file gains a `security` section: `enabled`, the classification scale, and the departments and projects.
-  The model editor gets a matching tab. See [models](models.md).
+- The model file gains a `security` section: the parts it uses (`level`, `anyOf`, `allOf`), each with a `name`, the level's
+  ordered `values`, and where grants come from. The model editor gets a matching tab. See [models](models.md#security).
 - With security off, none of it appears. With it on, records show a label chip, the editor has a label picker, and masked
   values show as `••••`. Everything stays drivable from the keyboard.
 
@@ -311,7 +339,8 @@ wait for it:
 
 ## Build order
 
-1. `IViewerContext` and the rule as a pure, tested function (the oracle).
+1. `IViewerContext`, the model's `security` section, the grant sources, and the rule as a pure, tested function (the
+   oracle). **Built.**
 2. Label columns, the model `security` setting and the scale/departments/projects definitions.
 3. Row policies, the roles, the connection interceptor, `security_invoker` views, and the performance run.
 4. `FieldPolicy`, the property label tables, masking in DTOs, and search.
@@ -321,9 +350,8 @@ wait for it:
 
 ## Open questions
 
-- Should the scale be strictly ordered, or can a model have unordered levels? This design assumes ordered, with a one-level
-  scale as the degenerate case.
-- Where do clearances and memberships live, and can they differ per model?
+- Should the level part be strictly ordered, or can a model have unordered levels? This design assumes ordered, with a
+  one-value list as the degenerate case.
 - Is a `label-admin` permission enough, or does labelling need a separate approver?
 - What do administrators see in counts and history, and is there an audited "break glass" access?
 - Does `CLAUDE.md`'s "sensitive fields in typed columns" rule stand? Row labels are typed; property labels are not, since values

@@ -15,7 +15,7 @@ Current:
 - [performance](performance.md): the large Swiss rail sample and how queries are checked against it.
 - [extensibility-plan](history/extensibility-plan.md): what's built and what to do next, in order.
 - [security-roadmap](security-roadmap.md): sign-in, roles and field-level permissions (not started).
-- [security-design](security-design.md): labels (classification, departments, projects), row-level security and masking, with the Postgres mechanics (design only).
+- [security-design](security-design.md): labels (classification, departments, projects), row-level security and masking, with the Postgres mechanics (the model file's section, the rule and where grants come from are built; nothing is enforced yet).
 - [audit-history-plan](history/audit-history-plan.md): the audit trail, with a reason for each change (built, apart from reverting changes that touched several records).
 - [relationship-attributes](history/relationship-attributes.md): values on links, such as a partner's role (built, with filtering and updating a link's value on CSV re-import; Read text still skips it).
 - [deployment-plan](history/deployment-plan.md) and [`deploy/`](../deploy/README.md): running the one image on Kubernetes, OpenShift or Docker.
