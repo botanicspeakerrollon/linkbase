@@ -72,7 +72,8 @@ public sealed partial class RecordRepository
         // A type that isn't there, such as one an undone import took away, has no records.
         var definition = await TypeAsync(type, cancellationToken) ?? new RecordType(type, null, null, []);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var hidden = (await HiddenAsync(db, cancellationToken)).For(type);
+        var policy = await HiddenAsync(db, cancellationToken);
+        var hidden = policy.For(type);
         if (filters.Select(f => f.Field).Concat(sort?.Field is { } sorted ? [sorted] : []).FirstOrDefault(hidden.Contains) is { } secret)
         {
             // The same words as for a field that isn't there, so the message doesn't say that it exists.
@@ -87,12 +88,15 @@ public sealed partial class RecordRepository
             return $"@{name}";
         }
 
+        // A record's own labels on properties (overrides) hide values per record, so a read that filters, sorts or searches by value
+        // looks at the properties with those removed (`props`), and still has the whole of them (`raw`) to show masks from.
+        var masking = policy.HasOverrides && (!string.IsNullOrWhiteSpace(search) || filters.Count > 0 || sort?.Field is { } byField and not ("" or "name" or "key"));
         var where = new List<string> { $"type = {Add(type, NpgsqlDbType.Text)}", $"user_id = {Add(AppUser.DefaultId, NpgsqlDbType.Bigint)}" };
         if (!string.IsNullOrWhiteSpace(search))
         {
             // search_text holds every value, hidden ones too, so a viewer who can't see some searches the visible ones instead.
             // It's slower than the indexed column, which is why it's only for them.
-            var column = hidden.Count == 0 ? "search_text" : $"graph_search_text(name, props - {Add(hidden.ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text)})";
+            var column = hidden.Count == 0 && !masking ? "search_text" : $"graph_search_text(name, props{(hidden.Count == 0 ? "" : $" - {Add(hidden.ToArray(), NpgsqlDbType.Array | NpgsqlDbType.Text)}")})";
             where.Add($"{column} ILIKE {Add($"%{EscapeLike(search.Trim())}%", NpgsqlDbType.Text)}");
         }
 
@@ -102,20 +106,26 @@ public sealed partial class RecordRepository
         }
 
         var order = OrderSql(definition, sort, Add);
-        var from = $"FROM node WHERE {string.Join(" AND ", where)}";
+        var source = masking ? $"(SELECT id, key, name, type, user_id, props AS raw, props - {Linkbase.Core.Security.PropertyLabelSql.FailingKeys("id")} AS props FROM node) node" : "node";
+        var from = $"FROM {source} WHERE {string.Join(" AND ", where)}";
         var offset = Add(page * pageSize, NpgsqlDbType.Integer);
         var limit = Add(pageSize, NpgsqlDbType.Integer);
 
         // Field keys and values only ever go in as parameters, so this is built from fixed pieces.
         var countSql = "SELECT count(*)::int AS \"Value\" " + from;
-        var rowsSql = "SELECT id AS \"Id\", key AS \"Key\", name AS \"Name\", props::text AS \"Props\" " + from
+        var rowsSql = "SELECT id AS \"Id\", key AS \"Key\", name AS \"Name\", " + (masking ? "raw" : "props") + "::text AS \"Props\" " + from
             + " ORDER BY " + order + " OFFSET " + offset + " LIMIT " + limit;
 
         var total = await db.Database.SqlQueryRaw<int>(countSql, Materialize(parameters)).SingleAsync(cancellationToken);
         var rows = await db.Database
             .SqlQueryRaw<RawRecord>(rowsSql, Materialize(parameters))
             .ToListAsync(cancellationToken);
-        return new RecordRows(total, rows.Select(r => new RecordRow(r.Id, r.Key, r.Name, Values(r.Props, hidden)) { Masked = Present(r.Props, hidden) }).ToList());
+        var scoped = await policy.ForRecordsAsync(db, rows.Select(r => r.Id), cancellationToken);
+        return new RecordRows(total, rows.Select(r =>
+        {
+            var keys = scoped.For(type, r.Id);
+            return new RecordRow(r.Id, r.Key, r.Name, Values(r.Props, keys)) { Masked = Present(r.Props, keys) };
+        }).ToList());
     }
 
     private sealed record RawRecord(string Id, string Key, string Name, string Props);
@@ -209,7 +219,7 @@ public sealed partial class RecordRepository
             return null;
         }
 
-        var hidden = (await HiddenAsync(db, cancellationToken)).For(node.Type);
+        var hidden = (await (await HiddenAsync(db, cancellationToken)).ForRecordsAsync(db, [node.Id], cancellationToken)).For(node.Type, node.Id);
         return new RecordDetail(node.Id, node.Type, node.Key, node.Name, Values(node.Props, hidden), node.CreatedAt, node.UpdatedAt) { Masked = Present(node.Props, hidden) };
     }
 
