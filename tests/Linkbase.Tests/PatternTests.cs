@@ -59,6 +59,36 @@ public class PatternBuilderTests
     }
 
     [Fact]
+    public void A_number_measure_takes_a_number_field_of_the_counted_step_and_falls_back_when_there_is_none()
+    {
+        var builder = New();
+        builder.Load(RankedChain());
+        builder.SetRankCount(1);
+        Assert.Equal(["length_m"], builder.NumberKeys(builder.Rank!.Count));
+
+        builder.SetRankMeasure(RankMeasure.Sum);
+        Assert.Equal((RankMeasure.Sum, "length_m"), (builder.Rank.Measure, builder.Rank.Key));
+
+        // Counting a type with no number fields leaves the measure as it was, then the swap falls back to counting.
+        builder.SetRankCount(0);
+        Assert.Equal((RankMeasure.Distinct, (string?)null), (builder.Rank!.Measure, builder.Rank.Key));
+        builder.SetRankMeasure(RankMeasure.Highest);
+        Assert.Equal(RankMeasure.Distinct, builder.Rank.Measure);
+
+        builder.SetRankFewest(true);
+        Assert.True(builder.Rank.Fewest);
+    }
+
+    [Fact]
+    public void Typing_fewest_offers_a_ranking_that_starts_with_the_fewest()
+    {
+        var builder = ChainOfThree();
+        var offer = Assert.Single(builder.Suggest("fewest", [], []), s => s.Kind == SuggestionKind.Rank);
+        builder.Apply(offer);
+        Assert.True(builder.Rank!.Fewest);
+    }
+
+    [Fact]
     public void A_ranking_can_be_added_by_typing_and_starts_from_the_first_step_to_the_last()
     {
         var builder = ChainOfThree();
@@ -132,6 +162,22 @@ public class PatternBuilderTests
 
         builder.RemoveRank();
         Assert.Null(builder.Rank);
+    }
+
+    [Fact]
+    public void The_sentence_and_heading_say_what_each_measure_works_out()
+    {
+        var route = RankedChain() with { Rank = new PatternRank(2, 1, 5) { Measure = RankMeasure.Sum, Key = "length_m" } };
+        Assert.Contains("biggest total length_m across the Route records", PatternRankText.Describe(route));
+        Assert.Equal("Total length_m", PatternRankText.Column(route));
+
+        var fewest = route with { Rank = route.Rank! with { Measure = RankMeasure.Average, Fewest = true } };
+        Assert.Contains("lowest average length_m", PatternRankText.Describe(fewest));
+
+        var matches = RankedChain() with { Rank = new PatternRank(2, 0, 5) { Measure = RankMeasure.Matches, Fewest = true } };
+        Assert.Contains("fewest matches with Ascent records, every match counted even when a record is reached more than once", PatternRankText.Describe(matches));
+        Assert.Equal("Matches with Ascent records", PatternRankText.Column(matches));
+        Assert.Equal("Different Ascent records", PatternRankText.Column(RankedChain()));
     }
 
     [Fact]
@@ -574,6 +620,21 @@ public class GraphPatternSqlTests
         Assert.DoesNotContain("20", sql!.Replace("length_m", ""));
         Assert.Contains(parameters, p => p.Value is decimal d && d == 20);
     }
+
+    [Fact]
+    public void A_ranking_by_a_number_must_use_a_number_field_of_the_counted_type()
+    {
+        var schema = Schema;
+        var chain = new GraphPattern([new PatternNode("Crag", []), new PatternNode("Route", [])], [new PatternRel("WORKS_ON", true)]);
+
+        Assert.Contains("length_m", GraphPatternSql.BuildRank(chain with { Rank = new PatternRank(0, 1, 5) { Measure = RankMeasure.Sum, Key = "length_m" } }, schema).Sql);
+        foreach (var key in new[] { null, "name", "length_m') OR 1=1 --", "missing" })
+        {
+            Assert.Throws<LinkbaseValidationException>(() => GraphPatternSql.BuildRank(chain with { Rank = new PatternRank(0, 1, 5) { Measure = RankMeasure.Sum, Key = key } }, schema));
+        }
+
+        Assert.Throws<LinkbaseValidationException>(() => GraphPatternSql.BuildRank(chain with { Rank = new PatternRank(0, 1, 5) { Measure = (RankMeasure)99 } }, schema));
+    }
 }
 
 [Trait("Category", "Database")]
@@ -765,11 +826,45 @@ public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime, I
 
         var ranked = await Graph().RankPatternAsync(pattern, schema);
 
-        Assert.Equal([(big, 3L), (small, 1L)], ranked.Select(r => (r.NodeId, r.Count)));
+        Assert.Equal([(big, 3m), (small, 1m)], ranked.Select(r => (r.NodeId, r.Value)));
         Assert.StartsWith("Big", ranked[0].Name);
 
         var top = await Graph().RankPatternAsync(pattern with { Rank = new PatternRank(0, 2, 1) }, schema);
         Assert.Equal(big, Assert.Single(top).NodeId);
+    }
+
+    [Fact]
+    public async Task A_ranking_can_total_average_or_take_the_highest_of_a_number_and_can_put_the_fewest_first()
+    {
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Word()}");
+        var word = Word();
+        static JsonObject RouteProps(int length) => new() { ["grade"] = "VS 4c", ["grade_system"] = "uk_trad", ["discipline"] = "trad", ["length_m"] = length, ["pitches"] = 1 };
+
+        // Big has routes of 10 and 30 metres, Small has one of 15. Bare has a route with no length at all, so it never appears.
+        var big = await ClimbingStore.AddAsync(_store, "Crag", $"Big {word}", null, "IN", area);
+        var small = await ClimbingStore.AddAsync(_store, "Crag", $"Small {word}", null, "IN", area);
+        var bare = await ClimbingStore.AddAsync(_store, "Crag", $"Bare {word}", null, "IN", area);
+        await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(10), "AT", big);
+        await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(30), "AT", big);
+        await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(15), "AT", small);
+        await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", new JsonObject { ["grade"] = "VS 4c", ["grade_system"] = "uk_trad", ["discipline"] = "trad", ["pitches"] = 1 }, "AT", bare);
+
+        var schema = await Graph().SchemaAsync();
+        var pattern = new GraphPattern(
+            [new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Contains, word)]), new PatternNode("Route", [])],
+            [new PatternRel("AT", false)]);
+
+        async Task<List<(string, decimal)>> Run(PatternRank rank) =>
+            (await Graph().RankPatternAsync(pattern with { Rank = rank }, schema)).Select(r => (r.NodeId, r.Value)).ToList();
+
+        Assert.Equal([(big, 40m), (small, 15m)], await Run(new PatternRank(0, 1, 5) { Measure = RankMeasure.Sum, Key = "length_m" }));
+        Assert.Equal([(big, 20m), (small, 15m)], await Run(new PatternRank(0, 1, 5) { Measure = RankMeasure.Average, Key = "length_m" }));
+        Assert.Equal([(big, 30m), (small, 15m)], await Run(new PatternRank(0, 1, 5) { Measure = RankMeasure.Highest, Key = "length_m" }));
+        Assert.Equal([(small, 15m), (big, 40m)], await Run(new PatternRank(0, 1, 5) { Measure = RankMeasure.Sum, Key = "length_m", Fewest = true }));
+
+        // Counts list every crag with a route, fewest first, ties by name. Bare's route has no length, so a number measure skips it.
+        Assert.Equal([(bare, 1m), (small, 1m), (big, 2m)], await Run(new PatternRank(0, 1, 5) { Measure = RankMeasure.Matches, Fewest = true }));
+        Assert.Equal([(big, 2m), (bare, 1m), (small, 1m)], await Run(new PatternRank(0, 1, 5) { Measure = RankMeasure.Distinct }));
     }
 
     [Fact]

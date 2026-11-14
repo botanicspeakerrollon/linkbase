@@ -28,6 +28,7 @@ public sealed class PatternBuilder(GraphSchema schema)
 
     // Typing one of these, three letters or more, offers a ranking. It isn't listed otherwise, so an ordinary search stays as plain as ever.
     private static readonly string[] RankWords = ["rank", "ranking", "top", "most", "busiest"];
+    private static readonly string[] FewestWords = ["fewest", "least", "bottom", "lowest"];
 
     private readonly List<PatternNodeState> _nodes = [];
     private readonly List<PatternRel> _rels = [];
@@ -103,6 +104,7 @@ public sealed class PatternBuilder(GraphSchema schema)
         if (_rank is { } rank && step >= 0 && step < _nodes.Count)
         {
             _rank = step == rank.Count ? rank with { Group = step, Count = rank.Group } : rank with { Group = step };
+            KeepRankOnlyIfItFits();
         }
     }
 
@@ -111,16 +113,67 @@ public sealed class PatternBuilder(GraphSchema schema)
         if (_rank is { } rank && step >= 0 && step < _nodes.Count)
         {
             _rank = step == rank.Group ? rank with { Count = step, Group = rank.Count } : rank with { Count = step };
+            KeepRankOnlyIfItFits();
         }
     }
 
     public void RemoveRank() => _rank = null;
 
+    // The number fields the counted step could be totalled, averaged or maximised on. Empty when its type has none, or any type.
+    public IReadOnlyList<string> NumberKeys(int step) =>
+        step >= 0 && step < _nodes.Count && _nodes[step].Label is { } label
+            ? schema.Properties.Where(p => p.Label == label && p.Type == GraphValueType.Number).Select(p => p.Key).Distinct().ToList()
+            : [];
+
+    // Picking a number measure takes the first number field of the counted type, and does nothing if it has none.
+    public void SetRankMeasure(RankMeasure measure)
+    {
+        if (_rank is not { } rank)
+        {
+            return;
+        }
+
+        if (measure is RankMeasure.Distinct or RankMeasure.Matches)
+        {
+            _rank = rank with { Measure = measure, Key = null };
+        }
+        else if (NumberKeys(rank.Count) is { Count: > 0 } keys)
+        {
+            _rank = rank with { Measure = measure, Key = rank.Key is { } k && keys.Contains(k) ? k : keys[0] };
+        }
+    }
+
+    public void SetRankKey(string key)
+    {
+        if (_rank is { NeedsKey: true } rank && NumberKeys(rank.Count).Contains(key))
+        {
+            _rank = rank with { Key = key };
+        }
+    }
+
+    public void SetRankFewest(bool fewest)
+    {
+        if (_rank is { } rank)
+        {
+            _rank = rank with { Fewest = fewest };
+        }
+    }
+
+    // After a step is added, removed or swapped the counted type can change. A number field it doesn't have falls back to the
+    // first one it does have, or to counting different records.
     private void KeepRankOnlyIfItFits()
     {
         if (_rank is { } rank && (rank.Group >= _nodes.Count || rank.Count >= _nodes.Count))
         {
             _rank = null;
+            return;
+        }
+
+        if (_rank is { NeedsKey: true } counted && (counted.Key is null || !NumberKeys(counted.Count).Contains(counted.Key)))
+        {
+            _rank = NumberKeys(counted.Count) is { Count: > 0 } keys
+                ? counted with { Key = keys[0] }
+                : counted with { Measure = RankMeasure.Distinct, Key = null };
         }
     }
 
@@ -167,9 +220,11 @@ public sealed class PatternBuilder(GraphSchema schema)
         }
 
         // A ranking needs a chain to rank along, and is added once.
-        if (term.Length >= 3 && _rank is null && AtEnd && _nodes.Count >= 2 && RankWords.Any(w => Matches(w, term)))
+        if (term.Length >= 3 && _rank is null && AtEnd && _nodes.Count >= 2 && (RankWords.Any(w => Matches(w, term)) || FewestWords.Any(w => Matches(w, term))))
         {
-            suggestions.Add(new PatternSuggestion(SuggestionKind.Rank, $"Rank {_nodes[0].Label ?? "Anything"} by most different {_nodes[^1].Label ?? "Anything"}", "Ranking"));
+            var fewest = FewestWords.Any(w => Matches(w, term));
+            var rankText = fewest ? "fewest" : "most";
+            suggestions.Add(new PatternSuggestion(SuggestionKind.Rank, $"Rank {_nodes[0].Label ?? "Anything"} by {rankText} different {_nodes[^1].Label ?? "Anything"}", "Ranking") { Value = fewest ? "fewest" : null });
         }
 
         // Always on offer, so anything typed can be searched for even if nothing above matches it.
@@ -201,7 +256,7 @@ public sealed class PatternBuilder(GraphSchema schema)
                 break;
             case SuggestionKind.Rank:
                 // The first step is the one ranked and the last is the one counted, which the chip in the bar can change.
-                _rank = new PatternRank(0, _nodes.Count - 1, 5);
+                _rank = new PatternRank(0, _nodes.Count - 1, 5) { Fewest = suggestion.Value == "fewest" };
                 break;
             case SuggestionKind.Property:
                 _pendingKey = suggestion.Key;

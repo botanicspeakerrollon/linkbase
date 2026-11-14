@@ -100,16 +100,36 @@ must appear in the question; at most 7 steps, 6 conditions on a step and 100 cha
 searches nothing.
 
 *Ranking.* For "most / busiest / most depended on" questions the answer may also carry a ranking (`PatternRank`): group by one
-step of the chain, count the distinct records at another, keep the top 1, 3, 5, 10 or 25 (5 unless the question says otherwise).
-It is computed in SQL over every match (`GraphPatternSql.BuildRank`) and shown as a "Ranking of the search" panel, with a
-plain-words sentence from `PatternRankText` above the table and only the winners on the canvas. In the search bar it is a
-`Top 5 Crag by most different Route` chip whose size and two steps are drop-downs and which has a × to remove it; it appears only
-when there is a ranking, so an ordinary search shows nothing new. It is kept while the phrase is edited and run, changes wait for
-Search like any other edit, and it goes if a step it points at is removed. It is saved with the view and permalink. The checker
-needs both steps inside the chain and different. Limits: a chain only, so no branching; "least" and "none" questions are not
-ranked; only records with at least one match are counted. By hand, type `rank` (or `top`, `most`, `busiest`; three letters at least) in the search bar once the phrase has two or more steps:
-the suggestion `Rank <first type> by most different <last type>` adds the chip with a top 5, and the chip's drop-downs change it. It is
-offered only when typed, so a plain search shows no extra choices.
+step of the chain, work out one figure for each group from the records at another step, and keep the top (or bottom) 1, 3, 5, 10
+or 25 (5 unless the question says otherwise). It is computed in SQL over every match (`GraphPatternSql.BuildRank`) and shown as a
+"Ranking of the search" panel, with a plain-words sentence from `PatternRankText` above the table and only the winners on the
+canvas. In the search bar it is a `Top 5 Crag by different Route` chip whose size and steps are drop-downs and which has a × to
+remove it; it appears only when there is a ranking, so an ordinary search shows nothing new. It is kept while the phrase is edited
+and run, changes wait for Search like any other edit, and it goes if a step it points at is removed. It is saved with the view
+and permalink. The checker needs both steps inside the chain and different.
+
+The figure for each group is the **measure**:
+
+| Measure (chip wording) | Works out | SQL |
+|---|---|---|
+| `different` (the default) | How many different records at the counted step each group reaches. A record reached by several chains counts once. | `count(DISTINCT node_id)` |
+| `every match of` | How many matches each group has, repeats included: a record reached by two chains counts twice. | `count(*)` over the joined rows |
+| `total`, `average`, `highest` + a number field | The sum, mean or largest of one number field of the counted records. Each counted record adds its value once however many chains reach it; a record with no number, or a value that isn't a plain number, is left out. | `sum`, `avg`, `max` over distinct counted records |
+
+The number field must be a Number field of the counted step's type in the model, checked by `PatternChecker` and again by
+`BuildRank`, which never puts an unchecked key in the SQL text. The `total`, `average` and `highest` choices only appear when the
+counted type has a number field. `Top` becomes `Bottom` to list the smallest figure first (`PatternRank.Fewest`); ties come out by
+name. Ask reads the three parts from the tool's `measure`, `key` and `order` fields, so "which crag has the most climbing
+metres?" is a total of `length_m` and "the shortest average route" is `average` with order `fewest`. A change to the counted step
+that leaves the chosen number field without a home falls back to the first number field of the new type, or to `different`.
+
+Limits: a chain only, so no branching and no "with at least N" minimum; only records with at least one match are listed, so
+"fewest" means the smallest figure among those that have any, and questions about records with **none** ("which crags have no
+routes") are not ranked and get the plain search; the numbers come from the counted type's own number fields, not from a link's
+values. By hand, type `rank` (or `top`, `most`, `busiest`; or `fewest`, `least`, `bottom`, `lowest` to start with the smallest;
+three letters at least) in the search bar once the phrase has two or more steps: the suggestion `Rank <first type> by most
+different <last type>` adds the chip with a top 5, and the chip's drop-downs change it. It is offered only when typed, so a plain
+search shows no extra choices.
 
 *Canvas.* Click selects and fills the details panel. Right-click expands (all links, or one relationship), removes, removes
 all others, or opens the record. Double-click expands everything linked. Expanding adds at most 100 nodes at a time, with *Show

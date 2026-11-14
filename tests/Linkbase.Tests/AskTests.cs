@@ -187,6 +187,20 @@ public class PatternCheckerTests
         Assert.Null(PatternChecker.Check(RouteChain(null), Schema, "crags").Rank);
     }
 
+    [Fact]
+    public void A_ranking_by_a_number_must_name_a_number_field_of_the_counted_type()
+    {
+        var kept = PatternChecker.Check(RouteChain(new PatternRank(0, 1, 5) { Measure = RankMeasure.Highest, Key = "length_m", Fewest = true }), Schema, "which crag");
+        Assert.Equal(new PatternRank(0, 1, 5) { Measure = RankMeasure.Highest, Key = "length_m", Fewest = true }, kept.Rank);
+
+        // A key the counts don't use is dropped, and one that isn't a number field of the counted type is refused.
+        Assert.Null(PatternChecker.Check(RouteChain(new PatternRank(0, 1, 5) { Key = "length_m" }), Schema, "which crag").Rank!.Key);
+        Fails(RouteChain(new PatternRank(0, 1, 5) { Measure = RankMeasure.Sum, Key = "grade" }), "which crag");
+        Fails(RouteChain(new PatternRank(0, 1, 5) { Measure = RankMeasure.Sum, Key = null }), "which crag");
+        Fails(RouteChain(new PatternRank(0, 2, 5) { Measure = RankMeasure.Sum, Key = "length_m" }), "which crag");
+        Fails(RouteChain(new PatternRank(0, 1, 5) { Measure = (RankMeasure)42 }), "which crag");
+    }
+
     [Theory]
     [InlineData(0, 3)]
     [InlineData(-1, 2)]
@@ -235,9 +249,21 @@ public class AnthropicQuestionCompilerTests
         var rank = JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!["properties"]!["rank"]!["anyOf"]!.AsArray();
 
         Assert.Equal("null", rank[0]!["type"]!.GetValue<string>());
-        Assert.Equal(["group", "count", "top"], rank[1]!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(["group", "count", "top", "measure", "key", "order"], rank[1]!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
         Assert.Equal(PatternChecker.MaxNodes, rank[1]!["properties"]!["group"]!["enum"]!.AsArray().Count);
         Assert.Contains("rank", JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
+    }
+
+    [Fact]
+    public void A_ranking_by_a_number_in_the_answer_keeps_its_measure_key_and_order()
+    {
+        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+            """
+            {"records":[{"type":"Crag","filters":[]},{"type":"Route","filters":[]}],"links":[{"rel_type":"AT","direction":"incoming","filters":[]}],
+             "rank":{"group":0,"count":1,"top":3,"measure":"sum","key":"length_m","order":"fewest"}}
+            """));
+
+        Assert.Equal(new PatternRank(0, 1, 3) { Measure = RankMeasure.Sum, Key = "length_m", Fewest = true }, pattern.Rank);
     }
 
     [Fact]

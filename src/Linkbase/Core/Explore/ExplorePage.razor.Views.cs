@@ -167,7 +167,7 @@ public partial class ExplorePage
 
         // A ranking that doesn't fit the chain is dropped, leaving the plain search.
         var rank = pattern.Rank is { } r && r.Group >= 0 && r.Group < nodes.Count && r.Count >= 0 && r.Count < nodes.Count && r.Group != r.Count
-            ? r with { Top = Math.Clamp(r.Top, 1, PatternRank.MaxTop) }
+            ? r with { Top = Math.Clamp(r.Top, 1, PatternRank.MaxTop), Measure = Enum.IsDefined(r.Measure) ? r.Measure : RankMeasure.Distinct, Key = r.NeedsKey && Enum.IsDefined(r.Measure) ? r.Key : null }
             : null;
         return new GraphPattern(
             nodes.Select(n => new PatternNode(n.Label, (n.Filters ?? []).Where(f => f is { Key: not null, Value: not null }).ToList())).ToList(),

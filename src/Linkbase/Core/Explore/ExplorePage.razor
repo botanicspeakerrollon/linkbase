@@ -36,7 +36,7 @@
                 <MudText Typo="Typo.body2" Class="explore-rank-sentence">@RankSentence</MudText>
                 <MudSimpleTable Dense="true" Elevation="0">
                     <thead>
-                        <tr><th>#</th><th>@RankGrouped</th><th class="text-right">Different @RankCounted records</th></tr>
+                        <tr><th>#</th><th>@RankGrouped</th><th class="text-right">@RankColumn</th></tr>
                     </thead>
                     <tbody>
                         @for (var i = 0; i < _ranking.Count; i++)
@@ -45,7 +45,7 @@
                             <tr>
                                 <td>@(i + 1)</td>
                                 <td><MudLink OnClick="@(() => SelectRankedAsync(ranked))">@ranked.Name</MudLink></td>
-                                <td class="text-right">@Figure(ranked.Count)</td>
+                                <td class="text-right">@Figure(ranked.Value)</td>
                             </tr>
                         }
                     </tbody>
