@@ -140,6 +140,7 @@ each one back.
 | `ConnectionStrings:Linkbase` | The app's connection to Postgres | Always | Run `./scripts/init-dev.ps1`, which rebuilds it from the password in `.env` |
 | `Anthropic:ApiKey` | Reading text with AI | Only for reading text | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
 | `Llm:ApiKey` | Reading text through an OpenAI-compatible server | Only with `Llm:Provider` set to `openai`, and only if that server wants a key | Create a new key with that provider |
+| The setting a model's `tokenSetting` names, such as `Security:DirectoryToken` | A bearer token for the directory that holds people's security grants | Only for a security part whose source is `api` | Ask the directory's owner for a new one |
 
 `POSTGRES_PASSWORD` in `.env` is the other secret. It sets the password when the database volume is first created.
 
