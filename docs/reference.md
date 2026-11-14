@@ -96,7 +96,7 @@ data. Typing `graph` shows the model itself (types as nodes, relationships as li
 *Ask.* The Ask box under the search bar (`a`) turns a question of up to 300 characters into a pattern via an LLM call and puts it in the search
 bar, where it can be read and edited. Only the question and the model's type, field and relationship names are sent out. The
 answer is checked by `PatternChecker`: every type, field and relationship must exist in the model, in that direction; a value
-must appear in the question; at most 5 steps, 6 conditions on a step and 100 characters in a value. A failure says why and
+must appear in the question; at most 7 steps, 6 conditions on a step and 100 characters in a value. A failure says why and
 searches nothing.
 
 *Canvas.* Click selects and fills the details panel. Right-click expands (all links, or one relationship), removes, removes
@@ -477,7 +477,7 @@ The `?` dialog is the source of truth; this is its content.
 
 | Thing | Limit |
 | --- | --- |
-| Question to Ask | 300 characters; 5 steps; 6 conditions per step; values 100 characters |
+| Question to Ask | 300 characters; 7 steps; 6 conditions per step; values 100 characters |
 | Names/values from Read text | 200 characters; read in pieces of 24,000; fetched page 5 MB |
 | CSV file | 100 MB; types guessed from the first 1,000 rows |
 | Explore expansion | 100 nodes at a time |

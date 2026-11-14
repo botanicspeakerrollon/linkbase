@@ -9,7 +9,7 @@ namespace Linkbase.Core.Ask;
 // passes is still only a pattern: it reaches the database through GraphPatternSql, which allow-lists it again.
 public static class PatternChecker
 {
-    public const int MaxNodes = 5;
+    public const int MaxNodes = 7;
     public const int MaxFiltersPerNode = 6;
     public const int MaxValueLength = 100;
 

@@ -178,7 +178,7 @@ public class PatternCheckerTests
     [Fact]
     public void Too_long_a_chain_or_too_long_a_value_is_refused()
     {
-        var chain = new GraphPattern(Enumerable.Repeat(new PatternNode("Route", []), 6).ToList(), Enumerable.Repeat(new PatternRel("AT", true), 5).ToList());
+        var chain = new GraphPattern(Enumerable.Repeat(new PatternNode("Route", []), PatternChecker.MaxNodes + 1).ToList(), Enumerable.Repeat(new PatternRel("AT", true), PatternChecker.MaxNodes).ToList());
         Fails(chain, "x");
 
         var value = new string('a', PatternChecker.MaxValueLength + 1);
