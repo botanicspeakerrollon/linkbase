@@ -144,6 +144,25 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     }
 
     [Fact]
+    public void The_loading_bar_is_gone_once_the_page_has_loaded()
+    {
+        var cut = RenderPage<ExplorePage>();
+        cut.WaitForAssertion(() => Assert.Contains("create", GraphCalls));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".explore-busy")));
+        Assert.Equal("false", cut.Find(".explore-canvas").GetAttribute("aria-busy"));
+    }
+
+    [Fact]
+    public void The_loading_bar_is_gone_even_when_the_graph_cant_be_drawn()
+    {
+        Services.AddSingleton<IJSRuntime>(new NoNetworkJs());
+        var cut = RenderPage<ExplorePage>();
+
+        Sees(cut, "The graph can't be drawn");
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".explore-busy")));
+    }
+
+    [Fact]
     public void Says_when_the_graph_libraries_cant_load()
     {
         Services.AddSingleton<IJSRuntime>(new NoNetworkJs());

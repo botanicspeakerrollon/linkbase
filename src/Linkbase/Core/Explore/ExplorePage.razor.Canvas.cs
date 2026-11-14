@@ -98,7 +98,9 @@ public partial class ExplorePage
         await DrawAsync(null);
     }
 
-    private async Task ExpandAsync(string nodeId, string? relType = null)
+    private Task ExpandAsync(string nodeId, string? relType = null) => WithBusyAsync(() => ExpandCoreAsync(nodeId, relType));
+
+    private async Task ExpandCoreAsync(string nodeId, string? relType)
     {
         var filter = relType is null ? Filter : Filter with { RelTypes = [relType] };
         // What's on the graph is excluded, so "show more" gets the next batch. Removed nodes aren't on it, so they come back.

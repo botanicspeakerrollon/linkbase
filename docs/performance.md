@@ -146,6 +146,17 @@ With row security on, the relationship counts in Explore's model view are counte
 the viewer can't see. That is a grouped count over every link, joined to both ends, so on tens of millions of links it will be
 slow. Not measured on the large sample; if it hurts, cache it per viewer shape for a few minutes.
 
+## Timing a slow Explore load
+
+Explore shows a thin bar over the canvas while it works (opening the page, applying a link or saved view, searching,
+expanding). It appears only after 300 ms, so quick loads don't flash it. It logs where the time went, at Information level:
+
+- `Explore first load took ...`: the schema, the history start, and the graph libraries, before any link is applied.
+- `Explore restored N nodes and M links: query ... ms, draw and layout ... ms`: the database read, then the browser's
+  fcose layout. A view saved with its layout pinned skips the layout, which `(positions pinned)` marks.
+
+The table above times the queries only, so a slow load that is mostly "draw and layout" is the browser, not the database.
+
 ## What this does and doesn't show
 
 - **Fine at this size:** expanding, drawing and searching. Expanding and drawing follow indexes, so they barely changed with

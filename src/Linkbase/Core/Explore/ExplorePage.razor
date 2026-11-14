@@ -7,6 +7,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IDialogService Dialogs
+@inject Microsoft.Extensions.Logging.ILogger<ExplorePage> Log
 @inject Linkbase.Core.Timeline.TimelineRepository Times
 
 <PageTitle>Explore</PageTitle>
@@ -66,7 +67,13 @@
     <div class="explore-stage">
         @* Always rendered, because Cytoscape attaches to this element once. *@
         @* Where Esc in the search box goes (see hotkeys.js), so the keyboard is on the graph and its shortcuts work. *@
-        <div @ref="_canvas" class="explore-canvas" tabindex="-1" aria-label="Graph" data-hotkey-home></div>
+        <div @ref="_canvas" class="explore-canvas" tabindex="-1" aria-label="Graph" aria-busy="@(Busy ? "true" : "false")" data-hotkey-home></div>
+
+        @if (Busy)
+        {
+            @* Fades in after a short delay (see app.css), so quick loads don't flash it. *@
+            <MudProgressLinear Indeterminate="true" Size="Size.Small" Color="Color.Primary" Class="explore-busy" role="progressbar" aria-label="Loading" />
+        }
 
         @if (_nodes.Count > 0)
         {

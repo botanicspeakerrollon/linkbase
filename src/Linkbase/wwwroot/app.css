@@ -331,6 +331,21 @@ html:has(.explore) {
     inset: 0;
 }
 
+/* The loading bar waits a moment before appearing, so a quick load doesn't flash it. */
+.explore-busy {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    opacity: 0;
+    animation: explore-busy-in 150ms linear 300ms forwards;
+}
+
+@keyframes explore-busy-in {
+    to { opacity: 1; }
+}
+
 /* Says the keyboard is on the graph, after Esc leaves the search box. */
 .explore-canvas:focus {
     outline: none;

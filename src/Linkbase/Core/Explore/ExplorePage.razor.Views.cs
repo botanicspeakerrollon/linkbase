@@ -78,7 +78,9 @@ public partial class ExplorePage
     }
 
     // Makes the canvas match an address someone else set: a link, a saved view, or the Back button.
-    private async Task ApplyAddressAsync(string? address)
+    private Task ApplyAddressAsync(string? address) => WithBusyAsync(() => ApplyAddressCoreAsync(address));
+
+    private async Task ApplyAddressCoreAsync(string? address)
     {
         _addressed = address;
         _restoring = true;
@@ -122,7 +124,9 @@ public partial class ExplorePage
         var ids = (state.Nodes ?? []).Where(id => !string.IsNullOrEmpty(id)).Distinct().Take(ExploreState.MaxNodes).ToList();
         if (ids.Count > 0)
         {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             var subgraph = await Graph.SubgraphAsync(ids);
+            var queryMs = clock.ElapsedMilliseconds;
             foreach (var node in subgraph.Nodes)
             {
                 _nodes[node.Id] = node;
@@ -131,7 +135,10 @@ public partial class ExplorePage
             _edges = subgraph.Edges;
             _lastPattern = pattern;
             await DrawAsync(null, state.Positions);
+            var drawMs = clock.ElapsedMilliseconds - queryMs;
             await LoadSummaryAsync();
+            Log.LogInformation("Explore restored {Nodes} nodes and {Edges} links: query {Query} ms, draw and layout {Draw} ms{Pinned}.",
+                subgraph.Nodes.Count, subgraph.Edges.Count, queryMs, drawMs, state.Positions is null ? "" : " (positions pinned)");
             if (subgraph.Nodes.Count < ids.Count)
             {
                 Snackbar.Add($"{ids.Count - subgraph.Nodes.Count} of the records in this view no longer exist.", Severity.Info);

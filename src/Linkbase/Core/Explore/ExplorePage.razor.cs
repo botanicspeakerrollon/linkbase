@@ -180,6 +180,32 @@ public partial class ExplorePage
     private static string FilterText(PatternFilter filter) =>
         $"{filter.Key} {PatternBuilder.OperatorText(filter.Operator)} {filter.Value}";
 
+    // Counts the things in flight, so a bar shows while the page is working. It starts at 1 for the first load, which
+    // includes reading the schema and fetching the graph libraries before any address is applied.
+    private int _busyDepth = 1;
+
+    private bool Busy => _busyDepth > 0;
+
+    private async Task WithBusyAsync(Func<Task> work)
+    {
+        if (_busyDepth++ == 0)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+
+        try
+        {
+            await work();
+        }
+        finally
+        {
+            if (--_busyDepth == 0)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -193,8 +219,24 @@ public partial class ExplorePage
             return;
         }
 
+        try
+        {
+            await FirstRenderAsync();
+        }
+        finally
+        {
+            _busyDepth--;
+            StateHasChanged();
+        }
+    }
+
+    private async Task FirstRenderAsync()
+    {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
         _schema = await Graph.SchemaAsync();
+        var schemaMs = clock.ElapsedMilliseconds;
         _historyStart = await Times.EarliestAsync();
+        var historyMs = clock.ElapsedMilliseconds - schemaMs;
 
         // The search bar can work before the graph libraries finish loading from the CDN.
         StateHasChanged();
@@ -220,6 +262,7 @@ public partial class ExplorePage
             _hotkeys = null;
         }
 
+        var scriptsMs = clock.ElapsedMilliseconds - schemaMs - historyMs;
         _ready = true;
         StateHasChanged();
 
@@ -229,10 +272,15 @@ public partial class ExplorePage
             await ApplyAddressAsync(View);
             StateHasChanged();
         }
+
+        Log.LogInformation("Explore first load took {Total} ms: schema {Schema} ms, history {History} ms, scripts {Scripts} ms, then the address.",
+            clock.ElapsedMilliseconds, schemaMs, historyMs, scriptsMs);
     }
 
     // Replaces the canvas with the model itself: one node per type and one link per kind of relationship.
-    private async Task ShowModelAsync()
+    private Task ShowModelAsync() => WithBusyAsync(ShowModelCoreAsync);
+
+    private async Task ShowModelCoreAsync()
     {
         var schema = await Graph.SchemaAsync();
         var counts = await Graph.NodeCountsAsync();
@@ -293,7 +341,9 @@ public partial class ExplorePage
         await RunPatternAsync(pattern);
     }
 
-    private async Task RunPatternAsync(GraphPattern pattern)
+    private Task RunPatternAsync(GraphPattern pattern) => WithBusyAsync(() => RunPatternCoreAsync(pattern));
+
+    private async Task RunPatternCoreAsync(GraphPattern pattern)
     {
         if (_showingModel)
         {
@@ -307,7 +357,7 @@ public partial class ExplorePage
         await LoadSummaryAsync();
     }
 
-    private Task ShowMorePatternAsync() => AddPatternResultsAsync();
+    private Task ShowMorePatternAsync() => WithBusyAsync(AddPatternResultsAsync);
 
     private async Task AddPatternResultsAsync()
     {
