@@ -132,11 +132,13 @@ Property values live in `node.props` JSON, which a row policy can't look inside,
 
 | Place | Rule |
 | --- | --- |
-| Audit history (`ChangeRecorder`) | Each entry stores a snapshot of the record's label at the time. It is visible only if the viewer passes that snapshot **and** the record's current label. A masked property's old and new values are masked. Relabelling is itself an entry. |
-| `import_batch.raw_payload` | Owner/administrator only when security is on. |
-| `link_definition.links` | A global count reveals hidden links. With security on, counts are computed for the viewer, or shown only to administrators. To decide when we measure. |
-| Totals, "N results", pagination | Computed after the policy, never from a cached unfiltered count. |
-| Error messages | A foreign-key failure that names a hidden record must report a generic "in use by something you can't see". |
+| Audit history (`HistoryRepository`) | **Built, and stricter than a snapshot.** With row security on, a change is shown only if the record, or the link and both its ends, can be seen *now* (the reads go through the policies). Anything since deleted can't be checked, so a restricted viewer doesn't see it; a record or link that is deleted and was never visible costs nothing, but a deleted one that was is hidden too. A masked property's old and new values show as a mask, and the JSON of a create or delete has the hidden keys removed. Relabelling is itself an entry, visible with the record. An entry with no visible change is dropped, so a page can come back shorter than `PageSize`. A per-entry label snapshot would let deleted records keep their history for those cleared to see it; it is not built. |
+| `import_batch.raw_payload` | **Not enforced.** Import and staging are administrative: the payload holds the batch summary (counts, record ids it created), not source text. Don't give import to a restricted viewer until sign-in can say who is an administrator (step 7). |
+| `link_definition.links` | **Built.** With row security on, `ConnectionCountsAsync` counts links live through the policies, which is slower on a very large model; with it off the kept counts are used as before. |
+| Totals, "N results", pagination | Computed after the policy: lists, graph totals and search all read through row security, never from a cached unfiltered count. |
+| Error messages | The foreign-key failures say only that the record "was linked to something else" or "is in use", never naming the other record. |
+| Saved views | A view stores filters and record ids, not data, but views belong to the one app user, so every viewer of a deployment sees every view's name and filters until sign-in gives each viewer their own (step 7). A filter on a field the viewer can't see fails like an unknown field. |
+| `external_ref` | Has its own policy: visible only with its record. History shows an external id only with its record. |
 | Backups | Contain everything. Treat them as the most sensitive thing in the system and encrypt them (`docs/operations.md`). |
 
 ## Postgres mechanics
@@ -370,9 +372,10 @@ wait for it:
 4. `FieldPolicy`, field labels, masking in DTOs, and search. **Built** for a field's own label (set in the model file). A
    per-record override (`node_property_label`) is not built: `VisibilityRule.CanSeeProperty` already accepts one, but nothing
    stores it, and it would cost a join on every read. Not covered yet: `Hierarchy`, `Derived` and `Merge` read `props`
-   directly, the import paths (`CsvImportService`, undo, trips) build their own `RecordRepository` without the policy, and
-   the audit history still shows old values (step 5).
-5. History, `external_ref`, saved views and the other side tables.
+   directly, and the import paths (`CsvImportService`, undo, trips) build their own `RecordRepository` without the policy.
+5. History, `external_ref`, saved views and the other side tables. **Built** as the table under "Other places that repeat
+   data" says: history is filtered and masked, link counts are live for restricted viewers, `external_ref` has a policy.
+   Not built: a label snapshot per history entry, and per-viewer saved views (they wait for identity).
 6. Label UI, the model editor tab and bulk assignment.
 7. Identity and the user directory.
 

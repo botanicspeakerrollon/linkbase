@@ -257,6 +257,19 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
     public async Task<IReadOnlyList<ConnectionCount>> ConnectionCountsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        // The kept counts include links the viewer can't see, so with row security on they are counted live, through the
+        // policies. That is slower on a very large model, and security off keeps the fast path (docs/performance.md).
+        if ((await HiddenAsync(db, cancellationToken)).Secured)
+        {
+            var live = await db.NodeLinks.AsNoTracking()
+                .GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
+                .Select(g => new { g.Key.SourceType, g.Key.RelType, g.Key.TargetType, Links = g.LongCount() })
+                .ToListAsync(cancellationToken);
+            return live.OrderByDescending(d => d.Links).ThenBy(d => d.SourceType).ThenBy(d => d.RelType).ThenBy(d => d.TargetType)
+                .Select(d => new ConnectionCount(d.SourceType, d.RelType, d.TargetType, d.Links)).ToList();
+        }
+
         return await db.LinkDefinitions.AsNoTracking()
             .Where(d => d.Links > 0)
             .OrderByDescending(d => d.Links).ThenBy(d => d.SourceType).ThenBy(d => d.RelType).ThenBy(d => d.TargetType)
