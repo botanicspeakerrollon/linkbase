@@ -30,6 +30,7 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
         public CleanupRepository Cleanup => new(Factory);
         public HistoryRepository History => new(Factory);
         public PathRepository Paths => new(Factory);
+        public TraceRepository Trace => new(Factory);
         public TimelineRepository Timeline => new(Factory);
         public HomeRepository Home => new(Factory);
     }
@@ -218,6 +219,47 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
     }
 
     [Fact]
+    public async Task A_trace_steps_along_links_either_way_counts_what_lies_beyond_and_pages_a_busy_record()
+    {
+        var world = await ExampleAsync();
+        var person = await PersonAsync(world, "Trace Person");
+        var project = await ProjectAsync(world, "Trace project");
+        var client = $"client:{await world.Records.CreateAsync("Client", null, new RecordInput("Trace client", new Dictionary<string, string?>()))}";
+        await world.Records.AddLinkAsync(person, "WORKS_ON", project);
+        await world.Records.AddLinkAsync(project, "FOR", client);
+
+        var down = await world.Trace.StepAsync([person], TraceDirection.Downstream, null, 0, 10);
+        var child = Assert.Single(down.Children);
+        Assert.Equal((person, project, "WORKS_ON", true, 1), (child.ParentId, child.NodeId, child.RelType, child.Outgoing, child.Further));
+        Assert.Empty(down.Remaining);
+
+        Assert.Empty((await world.Trace.StepAsync([person], TraceDirection.Upstream, null, 0, 10)).Children);
+
+        var both = await world.Trace.StepAsync([project], TraceDirection.Both, null, 0, 10);
+        Assert.Equal([(person, false), (client, true)], both.Children.OrderBy(c => c.Label).Select(c => (c.NodeId, c.Outgoing)));
+
+        Assert.Empty((await world.Trace.StepAsync([person], TraceDirection.Downstream, ["FOR"], 0, 10)).Children);
+
+        // A busy record is read a page at a time, and says how many are left.
+        var busy = await PersonAsync(world, "Busy Person");
+        for (var i = 1; i <= 5; i++)
+        {
+            await world.Records.AddLinkAsync(busy, "WORKS_ON", await ProjectAsync(world, $"Busy project {i}"));
+        }
+
+        var first = await world.Trace.StepAsync([busy], TraceDirection.Downstream, null, 0, 2);
+        Assert.Equal(["Busy project 1", "Busy project 2"], first.Children.Select(c => c.Name));
+        Assert.Equal(3, first.Remaining[busy]);
+        var last = await world.Trace.StepAsync([busy], TraceDirection.Downstream, null, 4, 2);
+        Assert.Equal(["Busy project 5"], last.Children.Select(c => c.Name));
+        Assert.Empty(last.Remaining);
+
+        Assert.Empty((await world.Trace.StepAsync([], TraceDirection.Both, null, 0, 10)).Children);
+        await Assert.ThrowsAsync<LinkbaseValidationException>(() =>
+            world.Trace.StepAsync(Enumerable.Range(0, TraceRepository.MaxParents + 1).Select(i => $"person:{i}").ToList(), TraceDirection.Both, null, 0, 10));
+    }
+
+    [Fact]
     public async Task A_links_history_and_the_changes_near_a_record_come_from_the_audit_trail()
     {
         var world = await ExampleAsync();
@@ -391,5 +433,22 @@ public sealed class EverydayUsePageTests(PostgresFixture fixture) : UiTestBase(f
         var result = await reference.Result;
         var path = Assert.IsType<Linkbase.Core.Paths.PathResult>(result!.Data);
         Assert.Equal([place.RouteId, place.CragId], path.NodeIds);
+    }
+
+    [Fact]
+    public async Task The_trace_dialog_opens_the_links_of_a_record_and_hands_back_what_it_shows()
+    {
+        var store = await UseClimbingStoreAsync();
+        var place = await ClimbingStore.AddPlaceAsync(store);
+        var dialogs = Services.GetRequiredService<IDialogService>();
+        RenderPage<ExplorePage>();
+        var start = new GraphNode(place.RouteId, "Route", place.Route, []);
+
+        var reference = await Dialogs.InvokeAsync(() => dialogs.ShowAsync<TraceDialog>("Trace", new DialogParameters<TraceDialog> { { d => d.Start, start } }));
+
+        Sees(Dialogs, place.Crag);
+        Press(Dialogs, "Show on graph");
+        var trace = Assert.IsType<TraceResult>((await reference.Result)!.Data);
+        Assert.Equal([place.RouteId, place.CragId], trace.NodeIds);
     }
 }

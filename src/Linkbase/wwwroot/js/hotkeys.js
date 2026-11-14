@@ -170,6 +170,15 @@ export function scrollIntoView(selector) {
     document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
 }
 
+// Stops the given keys scrolling the page or the list they're pressed in, for a widget that handles them itself.
+export function keepKeys(selector, keys) {
+    document.querySelector(selector)?.addEventListener('keydown', event => {
+        if (keys.includes(event.key)) {
+            event.preventDefault();
+        }
+    });
+}
+
 // A dialog's own focus handling, or a page's autofocus, can take focus back just after it opens, so keep asking for
 // about a second, and stop as soon as the person has typed something.
 export function focusWhenReady(selector) {

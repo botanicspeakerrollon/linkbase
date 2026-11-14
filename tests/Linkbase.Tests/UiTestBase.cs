@@ -230,6 +230,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<Linkbase.Core.Home.HomeRepository>();
         Services.AddSingleton<Linkbase.Core.Cleanup.CleanupRepository>();
         Services.AddSingleton<Linkbase.Core.Paths.PathRepository>();
+        Services.AddSingleton<Linkbase.Core.Paths.TraceRepository>();
         Services.AddSingleton<Linkbase.Core.Timeline.TimelineRepository>();
     }
 

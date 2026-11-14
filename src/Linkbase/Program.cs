@@ -101,6 +101,7 @@ builder.Services.AddScoped<ExternalRefRepository>();
 builder.Services.AddScoped<Linkbase.Core.Home.HomeRepository>();
 builder.Services.AddScoped<Linkbase.Core.Cleanup.CleanupRepository>();
 builder.Services.AddScoped<Linkbase.Core.Paths.PathRepository>();
+builder.Services.AddScoped<Linkbase.Core.Paths.TraceRepository>();
 builder.Services.AddScoped<Linkbase.Core.Timeline.TimelineRepository>();
 builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<CsvModelStarter>();

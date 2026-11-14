@@ -1,0 +1,482 @@
+@using Linkbase.Core.Paths
+@inject TraceRepository Trace
+@inject IJSRuntime JS
+
+@* "What does this lead to, and what leads to it?": follows the links out of a record, a level at a time, as a tree that is
+   opened and closed with the arrow keys. Show on graph hands back the records it is showing, and Explore draws them. *@
+<MudDialog>
+    <DialogContent>
+        <div class="trace-controls">
+            <MudSelect T="TraceDirection" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Follow links" Value="_direction" ValueChanged="ChooseDirectionAsync" ToStringFunc="DirectionText">
+                <MudSelectItem T="TraceDirection" Value="TraceDirection.Downstream">@DirectionText(TraceDirection.Downstream)</MudSelectItem>
+                <MudSelectItem T="TraceDirection" Value="TraceDirection.Upstream">@DirectionText(TraceDirection.Upstream)</MudSelectItem>
+                <MudSelectItem T="TraceDirection" Value="TraceDirection.Both">@DirectionText(TraceDirection.Both)</MudSelectItem>
+            </MudSelect>
+            <MudNumericField T="int" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Levels to open" Value="_levels" ValueChanged="ChooseLevelsAsync" Min="1" Max="4" />
+            <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Relationships" MultiSelection="true" Clearable="true"
+                       SelectedValues="_relTypes" SelectedValuesChanged="ChooseRelTypesAsync">
+                @foreach (var relType in Schema?.RelTypes ?? [])
+                {
+                    <MudSelectItem T="string" Value="relType">@relType</MudSelectItem>
+                }
+            </MudSelect>
+        </div>
+
+        @if (_root is { } root)
+        {
+            <div class="trace-head">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Size="Size.Small" OnClick="BackAsync" Disabled="@(_history.Count == 0)" aria-label="Back to the previous record" title="Back (Backspace)" />
+                <span class="trace-dot" style="@DotStyle(root.Label)"></span>
+                <strong>@root.Name</strong>
+                <MudText Typo="Typo.caption" Inline="true">@root.Label</MudText>
+            </div>
+        }
+
+        @if (_busy)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mb-1" />
+        }
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-1">@_error</MudAlert>
+        }
+
+        <div @ref="_tree" id="trace-tree" class="trace-tree" role="tree" tabindex="0" aria-label="Records reached by following links"
+             aria-activedescendant="@(_rows.Count > 0 ? $"trace-row-{_active}" : null)" @onkeydown="OnKeyDownAsync">
+            @for (var i = 0; i < _rows.Count; i++)
+            {
+                var index = i;
+                var row = _rows[i];
+                var item = row.Item;
+                if (row.More)
+                {
+                    <div id="trace-row-@index" class="trace-row trace-more @(index == _active ? "active" : null)" role="treeitem" aria-level="@(row.Depth + 1)" aria-selected="@(index == _active ? "true" : "false")"
+                         style="padding-left: @(row.Depth * 18 + 26)px" @onclick="() => MoreAsync(index)">Show @item.Remaining more</div>
+                }
+                else
+                {
+                    <div id="trace-row-@index" class="trace-row @(index == _active ? "active" : null)" role="treeitem" aria-level="@(row.Depth + 1)" aria-selected="@(index == _active ? "true" : "false")"
+                         aria-expanded="@(item.Expandable ? (item.Open ? "true" : "false") : null)" style="padding-left: @(row.Depth * 18 + 4)px" @onclick="() => ClickAsync(index)">
+                        <span class="trace-chevron">
+                            @if (item.Expandable)
+                            {
+                                <MudIcon Icon="@(item.Open ? Icons.Material.Filled.ExpandMore : Icons.Material.Filled.ChevronRight)" Size="Size.Small" />
+                            }
+                        </span>
+                        <span class="trace-dot" style="@DotStyle(item.Label)"></span>
+                        <span class="trace-name">@item.Name</span>
+                        <span class="trace-type">@item.Label</span>
+                        @if (item.RelType is not null)
+                        {
+                            <span class="trace-rel">@(item.Outgoing ? $"{item.RelType} →" : $"← {item.RelType}")</span>
+                        }
+                        <span class="trace-count">@(item.Further > 0 && !item.Open ? item.FurtherText : "")</span>
+                        @if (item.Parent is not null)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Outlined.CenterFocusStrong" Size="Size.Small" OnClick="() => TraceFromAsync(index)" aria-label="@($"Trace from {item.Name}")" title="Trace from here (Enter)" />
+                        }
+                    </div>
+                }
+            }
+            @if (_rows.Count == 1 && !_busy)
+            {
+                <div class="trace-empty">Nothing is linked that way.</div>
+            }
+        </div>
+
+        @if (_capped)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-1">Stopped at @MaxRows.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) records. Open branches one at a time, or narrow it by relationship.</MudAlert>
+        }
+
+        <div class="trace-keys"><kbd>↑</kbd><kbd>↓</kbd> move <kbd>→</kbd> open <kbd>←</kbd> close <kbd>Enter</kbd> trace from here <kbd>Backspace</kbd> back</div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Close</MudButton>
+        <MudButton OnClick="ShowOnGraph" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(ShownIds.Count < 2)"
+                   title="@(ShownIds.Count >= MaxOnGraph ? $"Only the first {MaxOnGraph} are drawn" : null)">Show on graph (@ShownIds.Count)</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+
+    // The record to start from, and the schema for its colours and the relationships to choose from.
+    [Parameter] public GraphNode? Start { get; set; }
+    [Parameter] public GraphSchema? Schema { get; set; }
+
+    // How many records each record opens with, and the most the tree holds, so a hub can't fill the page.
+    private const int PerParent = 50;
+    private const int MaxRows = 2000;
+    private const int MaxOnGraph = 500;
+
+    private sealed class Item
+    {
+        public required string Id { get; init; }
+        public required string Label { get; init; }
+        public required string Name { get; init; }
+        public string? RelType { get; init; }
+        public bool Outgoing { get; init; }
+        public int Further { get; init; }
+        public Item? Parent { get; init; }
+        public List<Item>? Children { get; set; }
+
+        // How many of its links have been read, which is where Show more carries on from, and how many matched past those.
+        public int Fetched { get; set; }
+        public int Remaining { get; set; }
+        public bool Open { get; set; }
+
+        public string FurtherText => Further > TraceRepository.FurtherCap ? $"{TraceRepository.FurtherCap}+" : Further.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        public bool Expandable => Children is null ? Further > 0 : Children.Count > 0 || Remaining > 0;
+
+        public bool OnPath(string id)
+        {
+            for (var at = this; at is not null; at = at.Parent)
+            {
+                if (at.Id == id)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    private sealed record Row(Item Item, int Depth, bool More = false);
+
+    private ElementReference _tree;
+    private Item? _root;
+    private List<Row> _rows = [];
+    private readonly Stack<(string Id, string Label, string Name)> _history = new();
+    private TraceDirection _direction = TraceDirection.Downstream;
+    private int _levels = 2;
+    private List<string> _relTypes = [];
+    private int _active;
+    private int _count;
+    private bool _busy;
+    private bool _capped;
+    private bool _scrollNeeded;
+    private string? _error;
+
+    private IReadOnlyList<string> ShownIds => _rows.Where(r => !r.More).Select(r => r.Item.Id).Distinct().Take(MaxOnGraph).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Start is { } start)
+        {
+            await ReloadAsync(start.Id, start.Label, start.Name);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await using var hotkeys = await JS.InvokeAsync<IJSObjectReference>("import", "./js/hotkeys.js");
+            await hotkeys.InvokeVoidAsync("keepKeys", "#trace-tree", new[] { "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", "Backspace" });
+            await _tree.FocusAsync();
+        }
+
+        if (_scrollNeeded)
+        {
+            _scrollNeeded = false;
+            await using var hotkeys = await JS.InvokeAsync<IJSObjectReference>("import", "./js/hotkeys.js");
+            await hotkeys.InvokeVoidAsync("scrollIntoView", ".trace-row.active");
+        }
+    }
+
+    private static string DirectionText(TraceDirection direction) => direction switch
+    {
+        TraceDirection.Downstream => "Downstream (the way links point)",
+        TraceDirection.Upstream => "Upstream (against the links)",
+        _ => "Both ways",
+    };
+
+    private string DotStyle(string label) => $"background: {GraphStyle.For(label, Schema).Color}";
+
+    private IReadOnlyCollection<string>? Rels => _relTypes.Count > 0 ? _relTypes : null;
+
+    private async Task ChooseDirectionAsync(TraceDirection direction)
+    {
+        _direction = direction;
+        await RestartAsync();
+    }
+
+    private async Task ChooseLevelsAsync(int levels)
+    {
+        _levels = Math.Clamp(levels, 1, 4);
+        await RestartAsync();
+    }
+
+    private async Task ChooseRelTypesAsync(IEnumerable<string>? relTypes)
+    {
+        _relTypes = relTypes?.ToList() ?? [];
+        await RestartAsync();
+    }
+
+    private async Task RestartAsync()
+    {
+        if (_root is { } root)
+        {
+            await ReloadAsync(root.Id, root.Label, root.Name);
+        }
+    }
+
+    // Starts the tree again from one record, opening the chosen number of levels.
+    private async Task ReloadAsync(string id, string label, string name)
+    {
+        _busy = true;
+        _error = null;
+        _capped = false;
+        try
+        {
+            _root = new Item { Id = id, Label = label, Name = name, Further = 1 };
+            _count = 1;
+            var level = new List<Item> { _root };
+            for (var depth = 0; depth < _levels && level.Count > 0 && !_capped; depth++)
+            {
+                var parents = level.Where(i => i.Children is null && i.Further > 0).Take(TraceRepository.MaxParents).ToList();
+                level = await ExpandAsync(parents);
+            }
+
+            _active = 0;
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+            Rebuild();
+        }
+    }
+
+    // Reads the first page of children for each parent in one query, and returns the records it added.
+    private async Task<List<Item>> ExpandAsync(IReadOnlyList<Item> parents)
+    {
+        var added = new List<Item>();
+        if (parents.Count == 0)
+        {
+            return added;
+        }
+
+        var byId = parents.ToLookup(p => p.Id);
+        var step = await Trace.StepAsync(byId.Select(g => g.Key).ToList(), _direction, Rels, 0, PerParent);
+        var children = step.Children.ToLookup(c => c.ParentId);
+        foreach (var parent in parents)
+        {
+            parent.Children = [];
+            parent.Open = true;
+            Attach(parent, children[parent.Id].ToList(), step.Remaining.GetValueOrDefault(parent.Id), added);
+        }
+
+        return added;
+    }
+
+    // Adds what was read under a parent. A record already above it is left out, so a loop can't run on for ever.
+    private void Attach(Item parent, List<TraceChild> read, int remaining, List<Item> added)
+    {
+        parent.Fetched += read.Count;
+        parent.Remaining = remaining;
+        foreach (var child in read)
+        {
+            if (parent.OnPath(child.NodeId))
+            {
+                continue;
+            }
+
+            if (_count >= MaxRows)
+            {
+                _capped = true;
+                parent.Remaining += 1;
+                continue;
+            }
+
+            var item = new Item
+            {
+                Id = child.NodeId,
+                Label = child.Label,
+                Name = child.Name,
+                RelType = child.RelType,
+                Outgoing = child.Outgoing,
+                Further = child.Further,
+                Parent = parent,
+            };
+            parent.Children!.Add(item);
+            added.Add(item);
+            _count++;
+        }
+    }
+
+    private async Task OpenAsync(Item item)
+    {
+        if (item.Children is null)
+        {
+            _busy = true;
+            try
+            {
+                await ExpandAsync([item]);
+            }
+            catch (LinkbaseValidationException ex)
+            {
+                _error = ex.Message;
+            }
+            finally
+            {
+                _busy = false;
+            }
+        }
+
+        item.Open = true;
+        Rebuild();
+    }
+
+    private async Task MoreAsync(int index)
+    {
+        var item = _rows[index].Item;
+        _busy = true;
+        try
+        {
+            var step = await Trace.StepAsync([item.Id], _direction, Rels, item.Fetched, PerParent);
+            Attach(item, step.Children.ToList(), step.Remaining.GetValueOrDefault(item.Id), []);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+            Rebuild();
+        }
+    }
+
+    private async Task ClickAsync(int index)
+    {
+        _active = index;
+        var item = _rows[index].Item;
+        if (!item.Expandable)
+        {
+            return;
+        }
+
+        if (item.Open)
+        {
+            item.Open = false;
+            Rebuild();
+        }
+        else
+        {
+            await OpenAsync(item);
+        }
+    }
+
+    private async Task TraceFromAsync(int index)
+    {
+        var item = _rows[index].Item;
+        if (_root is { } root)
+        {
+            _history.Push((root.Id, root.Label, root.Name));
+        }
+
+        await ReloadAsync(item.Id, item.Label, item.Name);
+    }
+
+    private async Task BackAsync()
+    {
+        if (_history.Count > 0)
+        {
+            var (id, label, name) = _history.Pop();
+            await ReloadAsync(id, label, name);
+        }
+    }
+
+    private void Rebuild()
+    {
+        _rows = [];
+        if (_root is not null)
+        {
+            Add(_root, 0);
+        }
+
+        _active = Math.Clamp(_active, 0, Math.Max(0, _rows.Count - 1));
+        _scrollNeeded = true;
+
+        void Add(Item item, int depth)
+        {
+            _rows.Add(new Row(item, depth));
+            if (!item.Open || item.Children is null)
+            {
+                return;
+            }
+
+            foreach (var child in item.Children)
+            {
+                Add(child, depth + 1);
+            }
+
+            if (item.Remaining > 0)
+            {
+                _rows.Add(new Row(item, depth + 1, More: true));
+            }
+        }
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (_rows.Count == 0 || _busy)
+        {
+            return;
+        }
+
+        var row = _rows[_active];
+        var item = row.Item;
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _active = Math.Min(_active + 1, _rows.Count - 1);
+                break;
+            case "ArrowUp":
+                _active = Math.Max(_active - 1, 0);
+                break;
+            case "ArrowRight" when row.More:
+                break;
+            case "ArrowRight" when item.Expandable && !item.Open:
+                await OpenAsync(item);
+                break;
+            case "ArrowRight" when item.Open && _active + 1 < _rows.Count:
+                _active++;
+                break;
+            case "ArrowLeft" when !row.More && item.Open && item.Parent is not null:
+                item.Open = false;
+                Rebuild();
+                break;
+            case "ArrowLeft" when item.Parent is not null:
+                _active = Math.Max(0, _rows.FindIndex(r => !r.More && r.Item == item.Parent));
+                break;
+            case "ArrowLeft" when item.Open:
+                item.Open = false;
+                Rebuild();
+                break;
+            case "Enter" when row.More:
+                await MoreAsync(_active);
+                break;
+            case "Enter" when item.Parent is not null:
+                await TraceFromAsync(_active);
+                break;
+            case "Backspace":
+                await BackAsync();
+                break;
+            default:
+                return;
+        }
+
+        _scrollNeeded = true;
+    }
+
+    private void ShowOnGraph() => Instance.Close(DialogResult.Ok(new TraceResult(ShownIds)));
+}

@@ -204,6 +204,8 @@
             {
                 <MudButton OnClick="FindPathAsync" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
                            title="How is it connected to another record? (w)">Find a path…</MudButton>
+                <MudButton OnClick="ShowTraceAsync" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
+                           title="Follow its links level by level, down or up (r)">Trace…</MudButton>
                 <MudButton OnClick="ShowNearbyChangesAsync" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
                            title="What changed in its neighbourhood since a date (d)">What changed nearby…</MudButton>
                 <MudButton OnClick="@(() => RemoveAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"

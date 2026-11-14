@@ -52,6 +52,9 @@ public partial class ExplorePage
             case "w" when _selected is { IsModel: false }:
                 await FindPathAsync();
                 break;
+            case "r" when _selected is { IsModel: false }:
+                await ShowTraceAsync();
+                break;
             case "d" when _selected is { IsModel: false }:
                 await ShowNearbyChangesAsync();
                 break;

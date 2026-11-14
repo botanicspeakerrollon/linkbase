@@ -246,22 +246,40 @@ public partial class ExplorePage
     }
 
     // Adds the path's records, and every link between records on the canvas. Records already there stay where they are.
-    private async Task ShowPathAsync(Linkbase.Core.Paths.PathResult path)
+    private Task ShowPathAsync(Linkbase.Core.Paths.PathResult path) => ShowRecordsAsync(path.NodeIds);
+
+    // "Trace...": follows a record's links level by level in a dialog, and draws what it was showing.
+    private async Task ShowTraceAsync()
+    {
+        if (_selected is not { IsModel: false } node)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters<TraceDialog> { { d => d.Start, node }, { d => d.Schema, _schema } };
+        var dialog = await Dialogs.ShowAsync<TraceDialog>($"Trace from {node.Name}", parameters, new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true });
+        if (await dialog.Result is { Canceled: false, Data: Linkbase.Core.Paths.TraceResult trace } && trace.NodeIds.Count > 0)
+        {
+            await ShowRecordsAsync(trace.NodeIds);
+        }
+    }
+
+    private async Task ShowRecordsAsync(IReadOnlyList<string> nodeIds)
     {
         if (_showingModel)
         {
             ForgetCanvas();
         }
 
-        var found = await Graph.SubgraphAsync(path.NodeIds);
+        var found = await Graph.SubgraphAsync(nodeIds);
         foreach (var node in found.Nodes)
         {
             _nodes.TryAdd(node.Id, node);
         }
 
-        _selected = _nodes.GetValueOrDefault(path.NodeIds[0]);
+        _selected = _nodes.GetValueOrDefault(nodeIds[0]);
         await RefreshEdgesAndDrawAsync(anchorId: null);
-        await SelectOnCanvasAsync(path.NodeIds[0]);
+        await SelectOnCanvasAsync(nodeIds[0]);
         await InvokeAsync(StateHasChanged);
     }
 
