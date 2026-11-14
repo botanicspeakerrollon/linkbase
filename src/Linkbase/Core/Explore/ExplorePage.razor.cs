@@ -322,6 +322,7 @@ public partial class ExplorePage
         _nodes.Clear();
         _summaryOpen = false;
         _summary = null;
+        _ranking = null;
         _expanded.Clear();
         _remaining.Clear();
         _edges = [];
@@ -353,9 +354,75 @@ public partial class ExplorePage
         _lastPattern = pattern;
         _patternOffset = 0;
         _patternShown = 0;
-        await AddPatternResultsAsync();
+        _patternRemaining = 0;
+        _ranking = null;
+        if (pattern.Rank is null)
+        {
+            await AddPatternResultsAsync();
+        }
+        else
+        {
+            await ShowRankingAsync();
+        }
+
         await LoadSummaryAsync();
     }
+
+    // The ranking of the last search, when it asked for one: the groups with the most distinct matches, most first.
+    private IReadOnlyList<RankedNode>? _ranking;
+
+    private async Task LoadRankingAsync()
+    {
+        _ranking = null;
+        if (_lastPattern?.Rank is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _ranking = await Graph.RankPatternAsync(_lastPattern, _schema!);
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+            _ranking = [];
+        }
+    }
+
+    // A ranked search puts the winners on the canvas, not every match; expanding a node from there shows how it got its count.
+    private async Task ShowRankingAsync()
+    {
+        await LoadRankingAsync();
+        if (_ranking is not { Count: > 0 })
+        {
+            Snackbar.Add("Nothing matches that search.", Severity.Info);
+            return;
+        }
+
+        var found = await Graph.SubgraphAsync(_ranking.Select(r => r.NodeId).ToList());
+        foreach (var node in found.Nodes)
+        {
+            _nodes.TryAdd(node.Id, node);
+        }
+
+        _selected = _nodes.GetValueOrDefault(_ranking[0].NodeId);
+        await RefreshEdgesAndDrawAsync(anchorId: null);
+        await SelectOnCanvasAsync(_selected?.Id);
+    }
+
+    private async Task SelectRankedAsync(RankedNode ranked)
+    {
+        if (_nodes.TryGetValue(ranked.NodeId, out var node))
+        {
+            await SelectFromTableAsync(node);
+        }
+    }
+
+    // What the ranking counts, named from the pattern: the type at that position, or "records" for any.
+    private string RankCounted => _lastPattern?.Rank is { } rank && _lastPattern.Nodes[rank.Count].Label is { } label ? label : "record";
+
+    private string RankGrouped => _lastPattern?.Rank is { } rank && _lastPattern.Nodes[rank.Group].Label is { } label ? label : "record";
 
     private Task ShowMorePatternAsync() => WithBusyAsync(AddPatternResultsAsync);
 

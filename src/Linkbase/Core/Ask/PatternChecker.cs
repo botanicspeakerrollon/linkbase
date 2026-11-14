@@ -65,7 +65,23 @@ public static class PatternChecker
             checkedRels.Add(rel with { Filters = (rel.Filters ?? []).Select(f => CheckLinkFilter(f, rel.RelType, schema, question)).ToList() });
         }
 
-        return new GraphPattern(checkedNodes, checkedRels);
+        return new GraphPattern(checkedNodes, checkedRels) { Rank = CheckRank(pattern.Rank, checkedNodes.Count) };
+    }
+
+    // Two different positions in the chain, and a short list. The size is trimmed rather than refused.
+    private static PatternRank? CheckRank(PatternRank? rank, int nodeCount)
+    {
+        if (rank is null)
+        {
+            return null;
+        }
+
+        if (rank.Group < 0 || rank.Group >= nodeCount || rank.Count < 0 || rank.Count >= nodeCount || rank.Group == rank.Count)
+        {
+            throw new QuestionFailedException("The answer ranked records the search doesn't have. Try asking another way.");
+        }
+
+        return rank with { Top = Math.Clamp(rank.Top, 1, PatternRank.MaxTop) };
     }
 
     private static PatternFilter CheckLinkFilter(PatternFilter filter, string relType, GraphSchema schema, string question)

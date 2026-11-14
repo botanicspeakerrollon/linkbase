@@ -276,6 +276,21 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         cut.WaitForAssertion(() => Assert.Contains("have no number fields to total", cut.Markup));
     }
 
+    [Fact]
+    public async Task A_ranked_search_lists_its_winners_with_their_counts_and_survives_a_permalink()
+    {
+        var s = await SeedAsync();
+        var pattern = new GraphPattern([new PatternNode("Route", []), new PatternNode("Crag", [])], [new PatternRel("AT", true)])
+        {
+            Rank = new PatternRank(Group: 1, Count: 0, Top: 3),
+        };
+        var cut = OpenAt(new ExploreState { Pattern = pattern }.Encode());
+
+        cut.WaitForAssertion(() => Assert.Contains("Ranking of the search", cut.Markup));
+        Sees(cut, s.Crag);
+        Sees(cut, "Distinct");
+    }
+
     private static GraphPattern NamedRoute(string name) =>
         new([new PatternNode("Route", [new PatternFilter("name", Linkbase.Core.Graph.FilterOperator.Equals, name)])], []);
 

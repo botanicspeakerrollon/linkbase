@@ -175,6 +175,25 @@ public class PatternCheckerTests
         Fails(new GraphPattern([new PatternNode("Route", [])], [new PatternRel("AT", true)]), "x");
     }
 
+    private static GraphPattern RouteChain(PatternRank? rank) =>
+        new([new PatternNode("Crag", []), new PatternNode("Route", []), new PatternNode("Person", [])], [new PatternRel("AT", false), new PatternRel("WORKS_ON", false)]) { Rank = rank };
+
+    [Fact]
+    public void A_ranking_between_two_positions_in_the_chain_is_kept_and_its_size_trimmed()
+    {
+        var result = PatternChecker.Check(RouteChain(new PatternRank(0, 2, 500)), Schema, "which crag");
+
+        Assert.Equal(new PatternRank(0, 2, PatternRank.MaxTop), result.Rank);
+        Assert.Null(PatternChecker.Check(RouteChain(null), Schema, "crags").Rank);
+    }
+
+    [Theory]
+    [InlineData(0, 3)]
+    [InlineData(-1, 2)]
+    [InlineData(1, 1)]
+    public void A_ranking_of_positions_the_chain_doesnt_have_is_refused(int group, int count) =>
+        Fails(RouteChain(new PatternRank(group, count, 5)), "which crag");
+
     [Fact]
     public void Too_long_a_chain_or_too_long_a_value_is_refused()
     {
@@ -211,6 +230,32 @@ public class AnthropicQuestionCompilerTests
     }
 
     [Fact]
+    public void The_tool_schema_lets_the_model_rank_or_leave_it_null()
+    {
+        var rank = JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!["properties"]!["rank"]!["anyOf"]!.AsArray();
+
+        Assert.Equal("null", rank[0]!["type"]!.GetValue<string>());
+        Assert.Equal(["group", "count", "top"], rank[1]!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Equal(PatternChecker.MaxNodes, rank[1]!["properties"]!["group"]!["enum"]!.AsArray().Count);
+        Assert.Contains("rank", JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
+    }
+
+    [Fact]
+    public void A_ranking_in_the_answer_becomes_part_of_the_pattern()
+    {
+        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+            """
+            {"records":[{"type":"Route","filters":[]},{"type":"Crag","filters":[]}],"links":[{"rel_type":"AT","direction":"outgoing","filters":[]}],
+             "rank":{"group":1,"count":0,"top":5}}
+            """));
+        Assert.Equal(new PatternRank(1, 0, 5), pattern.Rank);
+
+        var plain = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+            """{"records":[{"type":"Route","filters":[]}],"links":[],"rank":null}"""));
+        Assert.Null(plain.Rank);
+    }
+
+    [Fact]
     public void The_prompt_lists_the_model_and_treats_the_question_as_data()
     {
         var prompt = AnthropicQuestionCompiler.SystemPrompt(Schema, new DateOnly(2026, 5, 1));
@@ -219,6 +264,7 @@ public class AnthropicQuestionCompilerTests
         Assert.Contains("Route AT Crag, carrying: pitch (a number)", prompt);
         Assert.Contains("Today is 2026-05-01", prompt);
         Assert.Contains("ignore them", prompt);
+        Assert.Contains("\"rank\"", prompt);
     }
 
     [Fact]

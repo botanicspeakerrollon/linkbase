@@ -404,6 +404,14 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
         return new PatternResult(rows.SelectMany(r => r.NodeIds).Distinct().ToList(), Math.Max(0, total - offset - rows.Count));
     }
 
+    // The top groups of a ranked pattern, most first.
+    public async Task<IReadOnlyList<RankedNode>> RankPatternAsync(GraphPattern pattern, GraphSchema schema, CancellationToken cancellationToken = default)
+    {
+        var (sql, parameters) = GraphPatternSql.BuildRank(pattern, schema);
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        return await db.Database.SqlQueryRaw<RankedNode>(sql, parameters.Cast<object>().ToArray()).ToListAsync(cancellationToken);
+    }
+
     // Count, sum, smallest, largest and average of each number property, over every match of a pattern.
     public async Task<IReadOnlyList<PropertySummary>> SummarisePatternAsync(GraphPattern pattern, GraphSchema schema, CancellationToken cancellationToken = default)
     {
