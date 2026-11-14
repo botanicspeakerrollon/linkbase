@@ -43,6 +43,7 @@ builder.Services.AddHttpLogging(options =>
 
 // Each model has its own database, and the factory connects to whichever model is current.
 builder.Services.AddSingleton<ModelCatalog>();
+builder.Services.AddSingleton<ModelCreator>();
 // Docs:Pages names repo documents to show in the app (the demo shows the requirements). None by default.
 builder.Services.AddSingleton(sp => Linkbase.Core.Docs.DocsService.FromConfiguration(sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<IHostEnvironment>()));
 builder.Services.AddScoped<CurrentModel>();
@@ -136,6 +137,9 @@ foreach (var domain in RegisteredDomains.All)
 
 var app = builder.Build();
 
+// Models made in the app are in the default model's database, so every command and every page sees them.
+await app.Services.GetRequiredService<ModelCreator>().LoadAsync();
+
 // Admin commands run instead of the web app: dotnet run --project src/Linkbase -- import all
 if (ModelCommands.IsCommand(args))
 {
@@ -199,8 +203,14 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => fa
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") }).WithHttpLogging(HttpLoggingFields.None).AllowAnonymous();
 
 // The switcher in the rail comes here. The choice is kept in a cookie, and a fresh page load starts a circuit with it.
-app.MapGet("/model/{key}", (string key, ModelCatalog catalog, HttpContext context) =>
+app.MapGet("/model/{key}", async (string key, ModelCatalog catalog, ModelCreator creator, HttpContext context) =>
 {
+    // Another instance may have made it since this one last looked.
+    if (catalog.Find(key) is null)
+    {
+        await creator.LoadAsync(context.RequestAborted);
+    }
+
     if (catalog.Find(key) is null)
     {
         return Results.NotFound();

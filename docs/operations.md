@@ -7,6 +7,7 @@ How to back up, restore and rebuild the database. Everything runs from the repo 
 | Kept in | Holds | Backed up by |
 | --- | --- | --- |
 | Postgres (`linkbase_linkbase-data` Docker volume) | Everything the app shows, including ascents added or edited in the app, saved views and staged imports | `backup-db.ps1` |
+| One Postgres database for each model made with **New model** (`model_<name>`, listed in the `user_model` table of the default database) | The records of that model | Nothing yet. `backup-db.ps1` covers the default database only, so dump these by hand with `pg_dump` |
 | `data/samples/import.csv`, `ticks.csv`, `data/corrections.json` (git-ignored) | The source for a rebuild, and the only copy of the corrections | `backup-db.ps1` copies them |
 | `.env`, `appsettings.Development.local.json` and user secrets (git-ignored) | Database password, API keys | Nothing. `init-dev.ps1` makes a new database password, and the Anthropic key has to be added again |
 | Git | The code | A remote, once one is set up. There isn't one yet |

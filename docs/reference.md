@@ -56,7 +56,7 @@ links between them. The rail's switcher moves between them; one model alone hide
 
 | Kind | Made by | Has |
 | --- | --- | --- |
-| **Generic model** | A model file, or **Start from CSVs** in the app | Every page in Part II except the climbing ones |
+| **Generic model** | A model file, or **New model** in the app | Every page in Part II except the climbing ones |
 | **Domain model** | A model file plus a domain module in code | The above, plus the module's pages, importers and derived data. Climbing is the only one |
 
 ## 3. Three rules that run through everything
@@ -209,17 +209,17 @@ CSVs) still need a real key column on both sides; a link to a record identified 
 
 **See also.** [models](models.md#importing-a-csv-file), `Core/CsvImport`, `Core/Staging`.
 
-## 7. Importing: Start from CSVs
+## 7. New model from CSV files
 
 **Built.** Partial: link values and hierarchies need the model editor afterwards.
 
-**Synopsis.** Import → Start from CSVs.
+**Synopsis.** New model, in the rail (`/new-model`), or the model switcher's *New model from CSV files*.
 
-**Description.** Choose all of a customer's files. Each becomes a type named from the file (`clients.csv` → `Client`, `people.csv` →
+**Description.** Name the model, then choose all of a customer's files. The model gets a database of its own (`model_<name>`), made and migrated on the spot and recorded in the `user_model` table of the default model's database, so no existing model is read or written. Each becomes a type named from the file (`clients.csv` → `Client`, `people.csv` →
 `Person`) with a key, a name and a typed field per other column. A column naming another file's type is a link (`HAS_CLIENT`),
 not a field; a file of two such columns and no key of its own is links. Every guess can be changed before *Check*, which writes
-nothing. *Create the model* then imports each file's records, then the links, one import each, so each can be undone. Types
-already in the model are added to.
+nothing. *Create the model* makes the database, then imports each file's records, then the links, one import each, so each can be undone. Types
+already in the model are added to. If the import fails, the new database is dropped again. Other running instances list the model once they restart or are asked for its key.
 
 **Not yet.** Link values and hierarchies come from a model file or [the model editor](#8-the-model-editor) only.
 
@@ -461,7 +461,7 @@ The `?` dialog is the source of truth; this is its content.
 | Quick-find | Partial | Only "add" as an action |
 | Import: CSV records and links | Built | |
 | Import: update existing records | Partial | CSV only, not Read text |
-| Import: Start from CSVs | Partial | No hierarchies or link values from the files; use the model editor after |
+| New model from CSV files | Partial | No hierarchies or link values from the files; use the model editor after |
 | Import: Read text | Partial | Not `multiple` numbers, dates, choices |
 | Review, commit, undo | Built | Undo's "edited since" uses `updated_at` |
 | Audit trail, reasons | Built | |
@@ -508,7 +508,8 @@ canvas's node positions.
 | --- | --- |
 | Explore, Ask, path, as of | `Core/Explore`, `Core/Ask`, `Core/Graph`, `Core/Paths`, `wwwroot/js/graph.js` |
 | Lists, records, forms, merge, hierarchy | `Core/Records` |
-| Import hub, CSV, Start from CSVs | `Core/Import`, `Core/CsvImport` |
+| Import hub, CSV | `Core/Import`, `Core/CsvImport` |
+| New model | `Core/Models/NewModelPage.razor`, `ModelCreator`, `Core/CsvImport/CsvModelStarter` |
 | Read text | `Core/Extraction` |
 | Review, commit, undo | `Core/Staging` |
 | Audit trail, revert | `Core/History`, `Data/HistoryEntities.cs` |

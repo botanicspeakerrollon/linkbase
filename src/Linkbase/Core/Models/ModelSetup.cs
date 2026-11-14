@@ -106,7 +106,7 @@ public sealed class ModelSetup(ModelCatalog catalog, CurrentModel current, Model
     }
 
     // Connects through the server's own `postgres` database, since the model's doesn't exist yet. The user needs CREATEDB.
-    private static async Task<bool> CreateDatabaseIfMissingAsync(string connectionString, CancellationToken cancellationToken)
+    internal static async Task<bool> CreateDatabaseIfMissingAsync(string connectionString, CancellationToken cancellationToken)
     {
         var target = new NpgsqlConnectionStringBuilder(connectionString);
         var name = target.Database ?? throw new LinkbaseValidationException("A model's connection string needs a Database.");

@@ -15,6 +15,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<NodePropertyLabel> NodePropertyLabels => Set<NodePropertyLabel>();
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<SavedView> SavedViews => Set<SavedView>();
+    public DbSet<UserModel> UserModels => Set<UserModel>();
     public DbSet<NodeType> NodeTypes => Set<NodeType>();
     public DbSet<FieldDefinition> FieldDefinitions => Set<FieldDefinition>();
     public DbSet<LinkDefinition> LinkDefinitions => Set<LinkDefinition>();
@@ -93,6 +94,8 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             view.HasIndex(v => new { v.UserId, v.Name }).IsUnique();
             view.Property(v => v.Pinned).HasDefaultValue(false);
         });
+
+        modelBuilder.Entity<UserModel>(model => model.HasKey(m => m.Key));
 
         modelBuilder.Entity<NodeType>(type => type.HasKey(t => t.Name));
 

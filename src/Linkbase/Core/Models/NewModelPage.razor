@@ -1,17 +1,32 @@
+@page "/new-model"
 @using System.Globalization
+@using Linkbase.Core.CsvImport
 @inject CsvModelStarter Starter
+@inject ModelCreator Creator
+@inject CurrentModel CurrentModel
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-@* Starts a model from several CSV files: choose them all, correct the guessed types, fields and relationships, then create. *@
-<MudText Typo="Typo.body2" Class="mb-4 mt-2" Style="color: var(--mud-palette-text-secondary)">
+@* Makes a new model from several CSV files, in a database of its own: name it, choose the files, correct the guessed types,
+   fields and relationships, then create. No existing model is read or changed. *@
+<PageTitle>New model</PageTitle>
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">New model</MudText>
+<MudText Typo="Typo.body2" Class="mb-4" Style="color: var(--mud-palette-text-secondary)">
+    Makes a new model from your own spreadsheets, in a database of its own, so every other model stays exactly as it is.
     Choose all your CSV files at once, such as clients, projects and people. Each becomes a type, a column holding another
     type's keys (such as client_id) becomes a link to it, and a file of nothing but two such columns becomes links between them.
     Check the guesses below, then create.
 </MudText>
 
 <MudPaper Class="pa-4 mb-4" Elevation="1">
-    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">1. Choose the files</MudText>
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">1. Name the model</MudText>
+    <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Model name" Value="_name" ValueChanged="@(v => Changed(() => _name = v))"
+                  MaxLength="ModelCreator.MaxNameLength" HelperText="Shown in the model switcher, such as Supplier risk" Style="max-width: 400px" AutoFocus="true" />
+</MudPaper>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">2. Choose the files</MudText>
     <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadAsync" Accept=".csv,.txt" MaximumFileCount="30" MaxFileSize="CsvImportService.MaxBytes">
         <CustomContent Context="upload">
             <MudButton OnClick="@upload.OpenFilePickerAsync" Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.UploadFile">@(_files.Count == 0 ? "Choose CSV files" : "Choose different files")</MudButton>
@@ -33,7 +48,7 @@
 @if (_files.Count > 0)
 {
     <MudPaper Class="pa-4 mb-4" Elevation="1">
-        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">2. Check what they become</MudText>
+        <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">3. Check what they become</MudText>
         @foreach (var file in _files)
         {
             var current = file;
@@ -172,10 +187,10 @@
         }
 
         <MudButton OnClick="CheckAsync" Variant="Variant.Outlined" Disabled="_working">Check</MudButton>
-        <MudButton OnClick="CreateAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_working || _checked != true)" Class="ml-2">Create the model</MudButton>
+        <MudButton OnClick="CreateAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_working || _checked != true || string.IsNullOrWhiteSpace(_name))" Class="ml-2">Create the model</MudButton>
         @if (_checked == true)
         {
-            <MudAlert Severity="Severity.Success" Dense="true" Class="mt-2">Nothing wrong found. Creating imports every file, one import each.</MudAlert>
+            <MudAlert Severity="Severity.Success" Dense="true" Class="mt-2">Nothing wrong found. Creating makes the new model, then imports every file into it, one import each.</MudAlert>
         }
     </MudPaper>
 }
@@ -188,15 +203,15 @@
 @if (_done.Count > 0)
 {
     <MudAlert Severity="Severity.Success" Class="mb-4">
-        <div>Added:</div>
+        <div>Made <strong>@_madeName</strong> and added:</div>
         <ul>
             @foreach (var line in _done)
             {
                 <li>@line</li>
             }
         </ul>
-        @* A full load, so the rail lists the new types. Each import can be undone under Recent imports. *@
-        <MudButton OnClick="@(() => Navigation.NavigateTo("/", forceLoad: true))" Variant="Variant.Outlined" Size="Size.Small">See the model</MudButton>
+        @* A full load that switches to the new model, so the rail lists it and its types. Each import can be undone under Recent imports. *@
+        <MudButton OnClick="@(() => Navigation.NavigateTo($"/model/{_madeKey}", forceLoad: true))" Variant="Variant.Outlined" Size="Size.Small">Open @_madeName</MudButton>
     </MudAlert>
 }
 
@@ -207,6 +222,9 @@
     private bool _reading;
     private bool _working;
     private bool? _checked;
+    private string _name = "";
+    private string _madeName = "";
+    private string _madeKey = "";
 
     private IEnumerable<string> TypeNames() => _files.Where(f => !f.IsLinks).Select(f => f.Type.Trim()).Where(t => t.Length > 0).Distinct();
 
@@ -283,15 +301,26 @@
     private async Task CreateAsync()
     {
         _working = true;
+        var before = CurrentModel.Info.Key;
+        ModelInfo? made = null;
+        var kept = false;
         try
         {
+            made = await Creator.CreateAsync(_name);
+
+            // The imports follow the current model, so it is the new one for as long as they take.
+            CurrentModel.Select(made.Key);
             var outcome = await Starter.ApplyAsync(_files);
             _problems = outcome.Problems.ToList();
             _done = outcome.Done.ToList();
             if (outcome.Applied)
             {
+                kept = true;
+                _madeName = made.Name;
+                _madeKey = made.Key;
                 _files = [];
                 _checked = null;
+                _name = "";
             }
         }
         catch (LinkbaseValidationException ex)
@@ -300,6 +329,21 @@
         }
         finally
         {
+            CurrentModel.Select(before);
+
+            // Nothing was imported, so there is nothing to keep: the model is taken away again, and the files can be fixed.
+            if (made is not null && !kept)
+            {
+                try
+                {
+                    await Creator.RemoveEmptyAsync(made.Key);
+                }
+                catch (LinkbaseValidationException)
+                {
+                    // It has data in it after all, so it stays.
+                }
+            }
+
             _working = false;
         }
     }

@@ -205,3 +205,18 @@ public class StagedItem
 
     public bool Included { get; set; } = true;
 }
+
+// A model someone made in the app rather than in configuration, kept in the default model's database (like the data
+// protection keys) so every instance and every restart finds it. Each has a database of its own, which the app created.
+// The table exists in every model's database, because they share one schema, but only the default model's is read.
+// See docs/models.md.
+public class UserModel
+{
+    // What the switcher and the model cookie call it, such as supplier-risk.
+    public required string Key { get; set; }
+    public required string Name { get; set; }
+
+    // The Postgres database holding the model, on the same server as the default model.
+    public required string Database { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+}

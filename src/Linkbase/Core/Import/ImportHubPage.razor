@@ -5,7 +5,7 @@
 @inject IConfiguration Configuration
 
 @* The one place to bring data in. A tab for each way of importing: the ones a model's domains add, then reading
-   text for any model, then a CSV file. *@
+   text for any model, then a CSV file. A whole new model from CSV files is made on the New model page. *@
 <PageTitle>Import</PageTitle>
 
 <MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Import</MudText>
@@ -26,9 +26,6 @@
         }
         <MudTabPanel Text="CSV file">
             <CsvImportPanel />
-        </MudTabPanel>
-        <MudTabPanel Text="Start from CSVs">
-            <CsvModelPanel />
         </MudTabPanel>
     </MudTabs>
 </MudPaper>

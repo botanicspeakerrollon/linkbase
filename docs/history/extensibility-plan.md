@@ -42,7 +42,7 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
    from Read text and links, a way to revert a deleted record, and reverting a change that touched several records.
 5. **Hosting.** Off-site backups first, because nothing else matters if the data can be lost, then per-customer setup and
    monitoring. See [operations](../operations.md) and [deployment-plan](deployment-plan.md).
-6. **A model from a CSV.** A new customer starts from a blank model, not a model file. Built: the Start from CSVs tab infers
+6. **A model from a CSV.** A new customer starts from a blank model, not a model file. Built: the New model page infers
    types, fields and relationships from several CSVs ([models](../models.md#starting-a-model-from-csv-files)), and the Model
    editor changes the result (or any model) afterwards: types, fields, relationships and link values, without a developer
    ([models](../models.md#editing-a-model-in-the-app), [reference](../reference.md#8-the-model-editor)). Link values are also

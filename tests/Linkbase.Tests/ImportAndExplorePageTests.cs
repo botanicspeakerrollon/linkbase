@@ -51,7 +51,7 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
     }
 
     [Fact]
-    public async Task The_import_page_can_start_a_model_from_several_csv_files()
+    public async Task The_import_page_no_longer_starts_models()
     {
         var store = await ClimbingStore.CreateAsync(Fixture);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(store);
@@ -60,13 +60,11 @@ public class ImportPageTests(PostgresFixture fixture) : UiTestBase(fixture), ICl
         Services.AddSingleton<Linkbase.Core.Staging.ImportStagingService>();
         Services.AddSingleton<ModelExtractionService>();
         Services.AddSingleton<Linkbase.Core.CsvImport.CsvImportService>();
-        Services.AddSingleton<Linkbase.Core.CsvImport.CsvModelStarter>();
         Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(new Microsoft.Extensions.Configuration.ConfigurationManager());
         var cut = RenderPage<Linkbase.Core.Import.ImportHubPage>();
 
-        ClickFresh(cut, () => cut.FindAll(".mud-tab").First(t => t.TextContent.Trim() == "Start from CSVs"));
-
-        Assert.Contains("Choose CSV files", cut.Markup, StringComparison.Ordinal);
+        // Starting a model makes a database of its own, so it isn't offered where the open model's data would be written.
+        Assert.DoesNotContain(cut.FindAll(".mud-tab"), t => t.TextContent.Trim() == "Start from CSVs");
     }
 }
 

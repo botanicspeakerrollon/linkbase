@@ -442,7 +442,7 @@ The choice is kept in a cookie for a year, and switching reloads the page. `/mod
 | Command | Does |
 | --- | --- |
 | `model list` | Lists the configured models |
-| `model migrate` | Applies migrations to every configured model's database, **including your real one** |
+| `model migrate` | Applies migrations to every configured and app-made model's database, **including your real one** |
 | `model load <file> [model]` | Loads a model file into a model, the first one if none is named |
 | `model security on\|off [model]` | Turns Postgres row security on or off for a model that has a `security` section (see [security-design](security-design.md)) |
 | `climbing import <model> ukc\|mp\|all [--fresh] [--same-database]` | Loads the UKC and Mountain Project exports into `<model>`, one undoable batch per file, and rebuilds the trips. `--fresh` first reloads the model file, which empties the model's records, and needs `--same-database` for the climbing model's own database |
@@ -514,8 +514,10 @@ listed, the import stays committed, and it can be undone again once they're deal
 
 ## Starting a model from CSV files
 
-The **Start from CSVs** tab of the Import page builds a model from several files at once, so a new customer needs no model
-file. Choose all the files, and it guesses from their names and headers:
+The **New model** page (`/new-model`, in the rail and the model switcher) builds a model from several files at once, so a new
+customer needs no model file. It always makes a **new model with a database of its own**, named `model_<name>` and recorded in the
+`user_model` table of the default model's database; existing models are never read or written. Give it a name, choose all the
+files, and it guesses from their names and headers:
 
 - Each file is a type, named from the file (`clients.csv` is `Client`, `people.csv` is `Person`), with a key column
   (`id`, `key`, `code` or the type's id), a name column (the first with "name" in it) and a field for each other column, typed
@@ -527,8 +529,9 @@ file. Choose all the files, and it guesses from their names and headers:
 
 Everything guessed can be corrected before **Check**, which reports problems in any file and changes nothing. **Create the
 model** then imports each file's records, and then the links, through the same service as the CSV tab, so each file is an
-import of its own in **Recent imports** and can be undone there. Records are checked before anything is written; a problem
-found only in the links is reported once the records are in. Types already in the model are added to, as in the CSV tab.
+import of its own in **Recent imports** of the new model and can be undone there. Records are checked before anything is written; a problem
+found only in the links is reported once the records are in. If anything fails before the model is kept, its database is dropped again. The model appears at once on this instance; others
+list it after a restart or when asked for its key. Like any database, it needs backing up (see [operations](operations.md)).
 Its result, like any model's, can then be edited in the app (below).
 
 To try it, `models/financial-demo/` has eight files for a financial compliance and KYC model (people, companies, accounts,

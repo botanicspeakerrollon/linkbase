@@ -56,7 +56,7 @@ Deliberately not required by this version, and not to be treated as a defect:
   label or import (**SEC-1**, **SEC-8**; see [security-design.md](history/security-design.md)).
 - Multiple customers behind one running instance (one instance, one owner, one or more models).
 - A phone-optimised layout for every page.
-- Editing link values, descriptions, groups or `max` through **Start from CSVs** or its editor (model-file only, until the
+- Editing link values, descriptions, groups or `max` through **New model** or its editor (model-file only, until the
   model editor covers them).
 
 ### 1.6 References

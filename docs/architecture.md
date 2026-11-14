@@ -10,7 +10,7 @@ src/Linkbase/
   Program.cs            Services, middleware, health probes, the /model/{key} switch, command-line commands
   Components/           App shell and layout (MainLayout, theme, Quick-find, hotkeys help) and the guide's frame (Guide/)
   Core/                 Generic. Knows no domain
-    Models/             ModelCatalog (configured models), CurrentModel (this circuit's model), ModelFile, ModelLoader
+    Models/             ModelCatalog (configured and app-made models), ModelCreator and NewModelPage (a new model with its own database), CurrentModel (this circuit's model), ModelFile, ModelLoader
     Graph/              GraphRepository and GraphPattern: the graph_nodes / graph_edges views and pattern search
     Explore/            The Explore page, pattern search bar, Ask box, table, export, label styles
     Ask/                Plain-English questions: the compiler, PatternChecker (checks the answer), QuestionService
@@ -20,7 +20,7 @@ src/Linkbase/
     Paths/, Timeline/   Find a path, and the timeline page
     Cleanup/, Home/     The cleanup page, and what the home page reads
     Import/             The Import page: one tab for each way in
-    CsvImport/          CSV upload and column mapping, and Start from CSVs
+    CsvImport/          CSV upload and column mapping, and what New model starts from
     Extraction/         Reading text with AI: the model call, the validator, matching to existing records
     Staging/            Stage, review, commit and undo for any import (ImportStagingService)
     IDomainModule.cs    What a domain plugs in
