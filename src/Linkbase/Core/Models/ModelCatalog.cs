@@ -12,6 +12,10 @@ public sealed record ModelInfo(string Key, string Name, string ConnectionStringN
     // A model file to load, from Models:<key>:Seed, when `model setup` finds the model empty. Models without one are left alone.
     public string? Seed { get; init; }
 
+    // From Models:<key>:RowSecurity: `model setup` turns row security on once the model's file has a security section. For demos,
+    // which should show it working. Elsewhere it's `model security on`.
+    public bool RowSecurity { get; init; }
+
     public bool ShowsOnHome(string panel) => !HomeHidden.Contains(panel, StringComparer.OrdinalIgnoreCase);
 }
 
@@ -34,6 +38,7 @@ public sealed class ModelCatalog
             {
                 HomeHidden = section.GetSection("Home:Hide").GetChildren().Select(h => h.Value!).ToList(),
                 Seed = section["Seed"] is { Length: > 0 } seed ? seed : null,
+                RowSecurity = section.GetValue("RowSecurity", false),
             })
             .OrderBy(m => m.Order)
             .ThenBy(m => m.Key, StringComparer.Ordinal)

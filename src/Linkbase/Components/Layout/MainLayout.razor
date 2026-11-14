@@ -6,6 +6,8 @@
 @inject ModelCatalog Catalog
 @inject NavigationManager Navigation
 @inject RecordRepository Records
+@inject Linkbase.Core.Security.ICurrentUserAccessor CurrentUserAccessor
+@inject IConfiguration Configuration
 @using Linkbase.Core.Explore
 @using Linkbase.Core.Records
 
@@ -68,6 +70,11 @@
             <MudNavLink Href="model" Icon="@Icons.Material.Outlined.Schema">Model</MudNavLink>
             @* Last, so the numbers of the g shortcuts for the links above stay as they were. *@
             <MudNavLink Href="guide" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.HelpOutline">Guide</MudNavLink>
+            @* With demo sign-in, who you are and a way to be someone else. A link out of the router, so the cookie is cleared. *@
+            @if (_signedInAs is not null && Configuration["Security:Identity"] == "demo")
+            {
+                <MudNavLink Href="signout" ForceLoad="true" Icon="@Icons.Material.Outlined.Logout">Sign out (@_signedInAs)</MudNavLink>
+            }
         </MudNavMenu>
     </MudDrawer>
     <MudMainContent>
@@ -88,9 +95,12 @@
     private bool _railOpen;
 
     private IReadOnlyList<RecordType> _types = [];
+    private string? _signedInAs;
 
     protected override async Task OnInitializedAsync()
     {
+        _signedInAs = (await CurrentUserAccessor.GetAsync()).Id;
+
         // A database that's unreachable or not migrated yet has no types to list. The home page says what's wrong.
         try
         {

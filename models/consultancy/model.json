@@ -58,7 +58,8 @@
   // Who may see what, in this consultancy's own words. A part is used only if it's listed here, and its name is up to the model.
   // Project budgets and each client's work are commercially sensitive, so a project is labelled with the sensitivity it needs, the
   // practices that may see it (any one) and the clients whose NDAs cover it (all of them): see projects.csv. Labels are loaded
-  // and can be changed in bulk, but nothing enforces them yet (docs/security-design.md). The users are made up.
+  // and can be changed in bulk. They are enforced once row security is on, which the demo setup does (docs/security-design.md).
+  // The users are made up.
   "security": {
     "level": { "name": "Sensitivity", "values": [ "public", "internal", "confidential" ] },
     "anyOf": { "name": "Practice", "values": [ "Design", "Engineering", "Delivery" ] },

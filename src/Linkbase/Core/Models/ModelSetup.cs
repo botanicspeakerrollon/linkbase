@@ -37,6 +37,7 @@ public sealed class ModelSetup(ModelCatalog catalog, CurrentModel current, Model
                 if (await db.NodeTypes.AnyAsync(cancellationToken) || await db.Nodes.AnyAsync(cancellationToken))
                 {
                     await output.WriteLineAsync($"{model.Name}: already has data, left as it is");
+                    await EnableRowSecurityAsync(model, connectionString, output, cancellationToken);
                     continue;
                 }
             }
@@ -44,6 +45,30 @@ public sealed class ModelSetup(ModelCatalog catalog, CurrentModel current, Model
             current.Select(model.Key);
             var summary = await loader.LoadAsync(path, TextWriter.Null, cancellationToken);
             await output.WriteLineAsync($"{model.Name}: loaded {summary.Types} types, {summary.Nodes:N0} nodes and {summary.Links:N0} links in {summary.Took.TotalSeconds:N0} s");
+            await EnableRowSecurityAsync(model, connectionString, output, cancellationToken);
+        }
+    }
+
+    // For a model that asks for it (Models:<key>:RowSecurity) and whose file has a security section.
+    private static async Task EnableRowSecurityAsync(ModelInfo model, string connectionString, TextWriter output, CancellationToken cancellationToken)
+    {
+        if (!model.RowSecurity)
+        {
+            return;
+        }
+
+        await using var owner = new LinkbaseDbContext(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
+        var section = await owner.ModelSettings.Select(s => s.Security).FirstOrDefaultAsync(cancellationToken);
+        if (!(Security.LabelCodec.FromJson(section)?.Enabled ?? false))
+        {
+            await output.WriteLineAsync($"{model.Name}: asks for row security but its file has no security section, so it stays off");
+            return;
+        }
+
+        if (!await Security.RowSecurity.IsEnabledAsync(owner, cancellationToken))
+        {
+            await Security.RowSecurity.EnableAsync(owner, cancellationToken);
+            await output.WriteLineAsync($"{model.Name}: row security on");
         }
     }
 

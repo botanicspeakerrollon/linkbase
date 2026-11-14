@@ -344,6 +344,12 @@ to the deployment. Nothing here is tied to one directory or protocol.
   - `principal`: whoever ASP.NET Core authentication has signed in, read from the circuit's `AuthenticationStateProvider`.
     The id is the claim named by `Security:UserClaim`, or the first of `preferred_username`, the name claim, `name`, the
     name identifier and `sub`. Someone not signed in is nobody, who sees nothing of a model that uses levels.
+  - `demo`: a sign-in page for showing the feature. It lists the users in every model's `security.users` (with a summary of
+    their grants); clicking one signs in as them, with a cookie, and the nav rail gets "Sign out". **There is no password**:
+    anyone who can reach the app can be anyone, and everything except the page, health probes and static files requires the
+    cookie. Use it only for made-up data, and keep a hosted demo behind something that decides who may open it (App Service
+    authentication with Entra "require authentication", or an address allowlist). It reads the same users and grants as
+    `principal`, so moving to a real scheme changes only how the id arrives. Code: `Components/Layout/DemoSignIn.cs`.
   - Or register your own `ICurrentUserAccessor`, for example to trust a header a gateway sets.
 - **How people sign in** is standard ASP.NET Core, added by the deployment in `Program.cs` with the usual packages: OpenID
   Connect for Entra ID, Okta, Keycloak, Auth0 and any other OAuth2/OIDC or SSO provider (`AddOpenIdConnect`); Negotiate for

@@ -20,7 +20,9 @@ public transport, the demo climbing logbook and an ArchiMate example. The last f
 
 `model setup` makes every model that has a `Seed` ready from nothing: it creates the model's database if the server hasn't
 got it, applies the migrations, and loads the seed file if the model has no types or records. It does nothing to a model that
-has data, so it is safe to run again, and nothing to a model with no `Seed`, such as your real logbook.
+has data, so it is safe to run again, and nothing to a model with no `Seed`, such as your real logbook. A model with
+`"RowSecurity": true` also has [row security](#security) switched on (what `model security on` does), so a demo database
+enforces its labels from the first start.
 
 ```json
 "consultancy": { "Name": "Example consultancy", "ConnectionString": "Consultancy", "Seed": "models/consultancy/model.json" }

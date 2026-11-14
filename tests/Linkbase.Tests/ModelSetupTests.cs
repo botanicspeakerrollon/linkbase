@@ -16,7 +16,7 @@ public sealed class ModelSetupTests(PostgresFixture fixture) : IClassFixture<Pos
             new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(catalog.ConnectionString(current.Info)).Options);
     }
 
-    private (ModelCatalog Catalog, ModelSetup Setup) Arrange(string database, string? seed)
+    private (ModelCatalog Catalog, ModelSetup Setup) Arrange(string database, string? seed, bool rowSecurity = false)
     {
         var connection = new NpgsqlConnectionStringBuilder(fixture.ConnectionString) { Database = database }.ConnectionString;
         var settings = new Dictionary<string, string?>
@@ -32,6 +32,11 @@ public sealed class ModelSetupTests(PostgresFixture fixture) : IClassFixture<Pos
         if (seed is not null)
         {
             settings["Models:demo:Seed"] = seed;
+        }
+
+        if (rowSecurity)
+        {
+            settings["Models:demo:RowSecurity"] = "true";
         }
 
         var catalog = new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
@@ -64,6 +69,33 @@ public sealed class ModelSetupTests(PostgresFixture fixture) : IClassFixture<Pos
         Assert.Contains("already has data", again.ToString());
         Assert.DoesNotContain("created the database", again.ToString());
         Assert.Equal(nodes, await NodeCountAsync(catalog));
+    }
+
+    private static async Task<bool> RowSecurityOnAsync(ModelCatalog catalog)
+    {
+        await using var connection = new NpgsqlConnection(catalog.ConnectionString(catalog.Find("demo")!));
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand("select relrowsecurity from pg_class where relname = 'node'", connection);
+        return (bool)(await command.ExecuteScalarAsync())!;
+    }
+
+    [Fact]
+    public async Task Turns_row_security_on_only_for_a_model_that_asks()
+    {
+        var (plainCatalog, plain) = Arrange("setup_" + Guid.NewGuid().ToString("N"), "models/consultancy/model.json");
+        await plain.RunAsync(TextWriter.Null);
+        Assert.False(await RowSecurityOnAsync(plainCatalog));
+
+        var (catalog, setup) = Arrange("setup_" + Guid.NewGuid().ToString("N"), "models/consultancy/model.json", rowSecurity: true);
+        var output = new StringWriter();
+        await setup.RunAsync(output);
+
+        Assert.Contains("row security on", output.ToString());
+        Assert.True(await RowSecurityOnAsync(catalog));
+
+        // Safe to run again, and it also covers a database that was loaded before the setting was added.
+        await setup.RunAsync(TextWriter.Null);
+        Assert.True(await RowSecurityOnAsync(catalog));
     }
 
     [Fact]

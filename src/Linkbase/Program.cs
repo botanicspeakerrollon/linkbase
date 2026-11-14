@@ -51,7 +51,14 @@ builder.Services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>()
 // brings OpenID Connect, Active Directory and the like). Register your own ICurrentUserAccessor and ICustomGrantProvider to
 // go further. See docs/security-design.md, "Users and sign-in".
 builder.Services.AddSingleton<Linkbase.Core.Security.ViewerDirectories>();
-if (builder.Configuration["Security:Identity"] == "principal")
+var demoSignIn = builder.Configuration["Security:Identity"] == "demo";
+if (demoSignIn)
+{
+    // A page of example users to be, with no password, for showing security working. See DemoSignIn.
+    Linkbase.Components.Layout.DemoSignIn.Add(builder.Services);
+    builder.Services.AddScoped<Linkbase.Core.Security.ICurrentUserAccessor, Linkbase.Core.Security.PrincipalUserAccessor>();
+}
+else if (builder.Configuration["Security:Identity"] == "principal")
 {
     builder.Services.AddScoped<Linkbase.Core.Security.ICurrentUserAccessor, Linkbase.Core.Security.PrincipalUserAccessor>();
 }
@@ -160,14 +167,26 @@ if (app.Configuration.GetValue("HttpsRedirection", true))
     app.UseHttpsRedirection();
 }
 
+if (demoSignIn)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
+
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+// With demo sign-in every endpoint needs a signed-in user unless it says otherwise: these, which the sign-in page and probes use.
+var staticAssets = app.MapStaticAssets();
+if (demoSignIn)
+{
+    staticAssets.AllowAnonymous();
+    Linkbase.Components.Layout.DemoSignIn.Map(app);
+}
 
 // For a platform's probes. Live runs no checks, so a slow database never gets a working pod restarted; ready checks every
 // model's database. Neither writes a request log line, as probes call them every few seconds.
-app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).WithHttpLogging(HttpLoggingFields.None);
-app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") }).WithHttpLogging(HttpLoggingFields.None);
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false }).WithHttpLogging(HttpLoggingFields.None).AllowAnonymous();
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") }).WithHttpLogging(HttpLoggingFields.None).AllowAnonymous();
 
 // The switcher in the rail comes here. The choice is kept in a cookie, and a fresh page load starts a circuit with it.
 app.MapGet("/model/{key}", (string key, ModelCatalog catalog, HttpContext context) =>
