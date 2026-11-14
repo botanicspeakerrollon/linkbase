@@ -1,6 +1,7 @@
 # Security roadmap
 
-Nothing here is implemented. The app is single-user with no sign-in, and should only be run locally
+Nothing here is implemented. The design for labels, row-level security and masking is in
+[security-design](security-design.md), which supersedes step 4 below. The app is single-user with no sign-in, and should only be run locally
 until the first step below is done.
 
 The goal is field-level visibility later: for example, ascent notes and partners stay private while
@@ -27,8 +28,8 @@ routes and crags are shareable, or some crags' locations are hidden.
 1. Add Identity and policy-based authorization. Do this before exposing the app beyond localhost.
 2. Add global query filters for row visibility, and apply the same condition in the graph queries.
 3. Add one field policy service, used by the DTO projections and the graph queries.
-4. Consider row-level security only if the app starts serving people other than its owner, as defense in
-   depth for the rows and fields that matter most.
+4. ~~Consider row-level security later.~~ Decided: rows are enforced by Postgres row-level security and values by a field
+   policy, with label-based rules. See [security-design](security-design.md).
 
 ## Things to watch
 
