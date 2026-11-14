@@ -14,7 +14,7 @@ because it loads the example data.
 
 ## What it creates
 
-One resource group (`rg-linkbase-demo` in `uksouth`; `-ResourceGroup` and `-Location` change them):
+One resource group (`rg-linkbase-demo` in `newzealandnorth`; `-ResourceGroup` and `-Location` change them):
 
 | Resource | Why | Rough cost a month |
 | --- | --- | --- |
@@ -68,3 +68,8 @@ step creates an app registration in your tenant, so the script doesn't do it for
   only into an empty model, so restarts don't reset what people changed.
 - To reset the demo, delete the databases (or the Postgres server and run the script again).
 - `main.bicep` and `deploy.ps1` compile cleanly with `az bicep build` but haven't been run against a real subscription yet: expect to fix a detail or two the first time.
+- **Region.** Blazor Server sends every keystroke and click to the server and waits for the reply, so the app feels slow to
+  anyone far from it (about 280 ms a round trip between New Zealand and the UK). Pick the region nearest the people using
+  it with `-Location`. A region can't be changed in place: delete the group (`az group delete --name rg-linkbase-demo --yes`,
+  which removes the data and secrets, so the key is asked for again) and run the script again. Colleagues on other continents will
+  still feel the distance; one region is all this script sets up.

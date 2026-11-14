@@ -22,7 +22,7 @@
 [CmdletBinding()]
 param(
     [string] $ResourceGroup = 'rg-linkbase-demo',
-    [string] $Location = 'uksouth',
+    [string] $Location = 'newzealandnorth',
     [string[]] $AllowedCidr,
     [switch] $AllowAnyone,
     [switch] $NoAnthropic,
@@ -92,6 +92,12 @@ try {
     }
 
     $deployer = Invoke-Az ad signed-in-user show --query id --output tsv
+    # A resource group, and the resources in it, can't move region. Changing -Location means starting again.
+    $groupLocation = $null
+    try { $groupLocation = Invoke-Az group show --name $ResourceGroup --query location --output tsv } catch { }
+    if ($groupLocation -and $groupLocation -ne $Location) {
+        throw "Resource group $ResourceGroup is in $groupLocation, not $Location, and can't be moved. Delete it first (this removes the demo, its data and its vault secrets): az group delete --name $ResourceGroup --yes"
+    }
     Invoke-Az group create --name $ResourceGroup --location $Location --output none
 
     # The database password: kept if a previous run made one, otherwise new. Letters and digits only, so it needs no escaping
