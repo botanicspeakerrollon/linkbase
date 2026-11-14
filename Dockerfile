@@ -22,7 +22,9 @@ COPY src/Linkbase/Linkbase.csproj src/Linkbase/
 RUN dotnet restore src/Linkbase/Linkbase.csproj
 
 COPY src/ src/
-RUN dotnet publish src/Linkbase/Linkbase.csproj -c Release -o /app --no-restore /p:UseAppHost=false
+# Restores again, now the source is here: the first restore saw no .razor files and left out the Blazor script (blazor.web.js),
+# so every page rendered and none was interactive. Packages are cached by then, so it costs seconds.
+RUN dotnet publish src/Linkbase/Linkbase.csproj -c Release -o /app -p:UseAppHost=false
 
 FROM ${RUNTIME_IMAGE} AS runtime
 WORKDIR /app
