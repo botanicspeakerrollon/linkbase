@@ -46,7 +46,21 @@ builder.Services.AddSingleton<ModelCatalog>();
 builder.Services.AddScoped<CurrentModel>();
 builder.Services.AddSingleton<Linkbase.Core.Security.RowSecurityState>();
 builder.Services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>();
-builder.Services.AddSingleton<Linkbase.Core.Security.IViewerResolver, Linkbase.Core.Security.ConfiguredViewerResolver>();
+// Who is asking. Security:Identity picks where the user comes from: "configured" (the default, the user named by Security:User,
+// for demos and development) or "principal" (whoever ASP.NET Core authentication has signed in, which is how a deployment
+// brings OpenID Connect, Active Directory and the like). Register your own ICurrentUserAccessor and ICustomGrantProvider to
+// go further. See docs/security-design.md, "Users and sign-in".
+builder.Services.AddSingleton<Linkbase.Core.Security.ViewerDirectories>();
+if (builder.Configuration["Security:Identity"] == "principal")
+{
+    builder.Services.AddScoped<Linkbase.Core.Security.ICurrentUserAccessor, Linkbase.Core.Security.PrincipalUserAccessor>();
+}
+else
+{
+    builder.Services.AddScoped<Linkbase.Core.Security.ICurrentUserAccessor, Linkbase.Core.Security.ConfiguredUserAccessor>();
+}
+
+builder.Services.AddScoped<Linkbase.Core.Security.IViewerResolver, Linkbase.Core.Security.DirectoryViewerResolver>();
 builder.Services.AddScoped<IDbContextFactory<LinkbaseDbContext>, ModelDbContextFactory>();
 
 // Data Protection signs cookies and anti-forgery tokens. Its keys live in the default model's database, so they survive

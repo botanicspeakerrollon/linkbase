@@ -81,7 +81,13 @@ public sealed partial class ModelEditorPage : ComponentBase
     };
 
     private static string SourceText(SecurityPart part) => part.Source is { } source
-        ? source.Type == GrantSourceType.Config ? "the model file's users" : $"{source.Type}, cached for {source.CacheFor.TotalSeconds:0} s"
+        ? source.Type switch
+        {
+            GrantSourceType.Config => "the model file's users",
+            GrantSourceType.Claims => $"the sign-in's {source.Claim} claim",
+            GrantSourceType.Custom => $"the {source.Provider} provider",
+            _ => $"an API, cached for {source.CacheFor.TotalSeconds:0} s",
+        }
         : "the model file's users";
 
     // ---- Types

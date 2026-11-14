@@ -229,7 +229,9 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<Linkbase.Core.Security.RowSecurityState>();
         services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>();
-        services.AddSingleton<Linkbase.Core.Security.IViewerResolver, Linkbase.Core.Security.ConfiguredViewerResolver>();
+        services.AddSingleton<Linkbase.Core.Security.ViewerDirectories>();
+        services.AddScoped<Linkbase.Core.Security.ICurrentUserAccessor, Linkbase.Core.Security.ConfiguredUserAccessor>();
+        services.AddScoped<Linkbase.Core.Security.IViewerResolver, Linkbase.Core.Security.DirectoryViewerResolver>();
         services.AddScoped<IDbContextFactory<LinkbaseDbContext>, ModelDbContextFactory>();
         services.AddScoped<ModelLoader>();
         return services.BuildServiceProvider();
