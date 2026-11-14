@@ -77,7 +77,7 @@ try {
     catch { throw "Not signed in. Run: az login" }
     Write-Host "Subscription: $($account.name) ($($account.id))"
     Invoke-Az provider register --namespace Microsoft.App --wait --output none
-    Invoke-Az provider register --namespace Microsoft.OperationalInsights --output none
+    Invoke-Az provider register --namespace Microsoft.OperationalInsights --wait --output none
 
     # Who may reach the demo.
     if ($AllowAnyone) {
@@ -105,7 +105,11 @@ try {
     }
     if (-not $password) {
         $chars = [char[]]'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-        $password = -join (1..32 | ForEach-Object { $chars[[Security.Cryptography.RandomNumberGenerator]::GetInt32($chars.Length)] })
+        $bytes = New-Object byte[] 32
+        $random = New-Object Security.Cryptography.RNGCryptoServiceProvider
+        $random.GetBytes($bytes)
+        $random.Dispose()
+        $password = -join ($bytes | ForEach-Object { $chars[$_ % $chars.Length] })
     }
 
     function Invoke-Deployment([bool] $DeployApp, [string] $ImageTag) {
