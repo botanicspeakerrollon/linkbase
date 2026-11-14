@@ -341,7 +341,8 @@ wait for it:
 
 1. `IViewerContext`, the model's `security` section, the grant sources, and the rule as a pure, tested function (the
    oracle). **Built.**
-2. Label columns, the model `security` setting and the scale/departments/projects definitions.
+2. Label columns, the model `security` setting, labels from CSV and bulk label edits. **Built.** Not yet: merging records
+   (Cleanup) doesn't carry labels, and nobody is checked for permission to label.
 3. Row policies, the roles, the connection interceptor, `security_invoker` views, and the performance run.
 4. `FieldPolicy`, the property label tables, masking in DTOs, and search.
 5. History, `external_ref`, saved views and the other side tables.

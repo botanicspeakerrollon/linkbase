@@ -464,7 +464,7 @@ The `?` dialog is the source of truth; this is its content.
 | Revert | Partial | One record's manual edits only |
 | Home, Timeline, Cleanup, Merge | Built | No fuzzy duplicates; phone untested |
 | Climbing: Logbook, Insights, trips, importers | Built | Phone logging |
-| Security parts, the visibility rule, grant sources (model file or API) | Built, not yet enforced | [security-design](security-design.md), [models](models.md#security) |
+| Security parts, the visibility rule, grant sources (model file or API), label columns, labels from CSV, bulk label edits | Built, not yet enforced | [security-design](security-design.md), [models](models.md#security) |
 | Sign-in, row-level security, field permissions | Not built | [security-design](security-design.md) |
 | Off-site backups, per-customer hosting | Not built | [operations](operations.md#still-to-do) |
 | Phone layouts | Not built | |

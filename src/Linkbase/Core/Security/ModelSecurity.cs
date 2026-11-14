@@ -115,6 +115,67 @@ public sealed partial class ModelSecurity
         ValidateUsers(problems);
     }
 
+    // A label's values have to be this model's own: a level from the list, and values valid and, where the part lists them, listed.
+    public void ValidateLabel(string what, ModelLabel? label, ModelLabelColumns? columns, List<string> problems)
+    {
+        if (label?.Level is { } level && (!HasLevel ? true : LevelRank(level) < 0))
+        {
+            problems.Add(HasLevel ? $"{what}'s label has the level '{level}', which isn't one of {string.Join(", ", Level!.Values ?? [])}." : $"{what}'s label has a level, but the model has no level part.");
+        }
+
+        ValidateLabelSet(what, LabelKeyAny, label?.AnyOf, AnyOf, problems);
+        ValidateLabelSet(what, LabelKeyAll, label?.AllOf, AllOf, problems);
+        ValidateColumn(what, LevelKey, columns?.Level, HasLevel, problems);
+        ValidateColumn(what, AnyOfKey, columns?.AnyOf, HasAnyOf, problems);
+        ValidateColumn(what, AllOfKey, columns?.AllOf, HasAllOf, problems);
+    }
+
+    private const string LabelKeyAny = AnyOfKey;
+    private const string LabelKeyAll = AllOfKey;
+
+    private static void ValidateLabelSet(string what, string key, IReadOnlyList<string>? values, SecurityPart? part, List<string> problems)
+    {
+        if (values is null)
+        {
+            return;
+        }
+
+        if (part is null)
+        {
+            problems.Add($"{what}'s label has {key} values, but the model has no {key} part.");
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            if (!IsValidValue(value))
+            {
+                problems.Add($"{what}'s label has the {key} value '{value}', which isn't a valid value.");
+            }
+            else if (part.Values is { Count: > 0 } listed && !listed.Contains(value, StringComparer.Ordinal))
+            {
+                problems.Add($"{what}'s label has the {key} value '{value}', which isn't one of {string.Join(", ", listed)}.");
+            }
+        }
+    }
+
+    private static void ValidateColumn(string what, string key, string? column, bool partUsed, List<string> problems)
+    {
+        if (column is null)
+        {
+            return;
+        }
+
+        if (!partUsed)
+        {
+            problems.Add($"{what} has a {key} label column, but the model has no {key} part.");
+        }
+        else if (string.IsNullOrWhiteSpace(column))
+        {
+            problems.Add($"{what}'s {key} label column needs a name.");
+        }
+    }
+
     private static void ValidateValues(string what, SecurityPart part, bool isLevel, List<string> problems)
     {
         var values = part.Values;

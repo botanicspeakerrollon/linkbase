@@ -7,9 +7,9 @@ namespace Linkbase.Data;
 public enum JustificationKind { Manual, Import, Derived, Correction }
 
 // What a change is to. A node is a record. A link is a record-to-record link, with the source in EntityId and the target in
-// RelatedId. A definition is part of the model: a type, field or relationship. An import batch stands for everything the
+// RelatedId. A label is a change to who may see a node or link, written the same way. A definition is part of the model: a type, field or relationship. An import batch stands for everything the
 // import added or removed, which is not logged row by row.
-public enum ChangeEntityKind { Node, Link, ExternalRef, Definition, ImportBatch }
+public enum ChangeEntityKind { Node, Link, ExternalRef, Definition, ImportBatch, Label }
 
 public enum ChangeOp { Create, Update, Delete }
 
@@ -25,6 +25,10 @@ public class ModelSetting
 
     // The kinds of source a person can pick, from the model file. Empty means just Internet.
     public string[] SourceKinds { get; set; } = [];
+
+    // The model file's security section as JSON (the parts, their names and values, where grants come from, and any users
+    // written in the file), or null when the model has none. See docs/security-design.md.
+    public string? Security { get; set; }
 }
 
 // The why of a change set. The note is a brief paraphrase, never text copied from a source. The source says where the change

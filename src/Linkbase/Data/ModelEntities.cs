@@ -141,6 +141,12 @@ public class Node : ITimestamped
     public ImportBatch? ImportBatch { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+
+    // Who may see it, for a model that uses security. The defaults, level 0 and everyone, ask for nothing. A level is a rank in
+    // the model's list. See docs/security-design.md.
+    public short LabelLevel { get; set; }
+    public string[] LabelAny { get; set; } = [Linkbase.Core.Security.LabelCodec.Everyone];
+    public string[] LabelAll { get; set; } = [];
 }
 
 public class NodeLink
@@ -152,6 +158,12 @@ public class NodeLink
     public required string TargetId { get; set; }
     public Node Target { get; set; } = null!;
     public string Props { get; set; } = "{}";
+
+    // Who may see it, for a model that uses security. The defaults, level 0 and everyone, ask for nothing. A level is a rank in
+    // the model's list. See docs/security-design.md.
+    public short LabelLevel { get; set; }
+    public string[] LabelAny { get; set; } = [Linkbase.Core.Security.LabelCodec.Everyone];
+    public string[] LabelAll { get; set; } = [];
 
     // The CSV import that added it, so that import can be undone.
     public long? ImportBatchId { get; set; }
