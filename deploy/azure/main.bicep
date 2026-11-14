@@ -45,7 +45,7 @@ var databases = [
 
 // Role definition ids are the same in every tenant.
 var roleKeyVaultSecretsOfficer = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
-var roleKeyVaultSecretsUser = '4633458b-6a2f-4c6c-8c0f-3eff6f2b3d3b'
+var roleKeyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
