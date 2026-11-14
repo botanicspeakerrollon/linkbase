@@ -49,6 +49,45 @@ public class PatternBuilderTests
         Assert.Equal(new PatternRank(2, 0, 5), builder.ToPattern()!.Rank);
     }
 
+    private static PatternBuilder ChainOfThree()
+    {
+        var builder = New();
+        builder.Load(new GraphPattern(
+            [new PatternNode("Ascent", []), new PatternNode("Route", []), new PatternNode("Crag", [])],
+            [new PatternRel("OF", true), new PatternRel("AT", true)]));
+        return builder;
+    }
+
+    [Fact]
+    public void A_ranking_can_be_added_by_typing_and_starts_from_the_first_step_to_the_last()
+    {
+        var builder = ChainOfThree();
+        var offer = Pick(builder, "rank", "Rank Ascent by most different Crag");
+        Assert.Equal(SuggestionKind.Rank, offer.Kind);
+
+        builder.Apply(offer);
+
+        Assert.Equal(new PatternRank(0, 2, 5), builder.ToPattern()!.Rank);
+        Assert.DoesNotContain(builder.Suggest("rank", [], []), s => s.Kind == SuggestionKind.Rank);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("ra")]
+    [InlineData("grade")]
+    public void A_ranking_is_not_offered_unless_asked_for_by_name(string typed)
+    {
+        Assert.DoesNotContain(ChainOfThree().Suggest(typed, [], []), s => s.Kind == SuggestionKind.Rank);
+    }
+
+    [Fact]
+    public void A_ranking_needs_a_chain_of_at_least_two_steps()
+    {
+        var builder = New();
+        builder.Apply(Pick(builder, "", "Crag"));
+        Assert.DoesNotContain(builder.Suggest("rank", [], []), s => s.Kind == SuggestionKind.Rank);
+    }
+
     [Fact]
     public void A_plain_search_has_no_ranking()
     {

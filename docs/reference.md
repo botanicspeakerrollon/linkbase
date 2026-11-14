@@ -107,7 +107,9 @@ plain-words sentence from `PatternRankText` above the table and only the winners
 when there is a ranking, so an ordinary search shows nothing new. It is kept while the phrase is edited and run, changes wait for
 Search like any other edit, and it goes if a step it points at is removed. It is saved with the view and permalink. The checker
 needs both steps inside the chain and different. Limits: a chain only, so no branching; "least" and "none" questions are not
-ranked; only records with at least one match are counted; a ranking can't be added by hand, only by a question.
+ranked; only records with at least one match are counted. By hand, type `rank` (or `top`, `most`, `busiest`; three letters at least) in the search bar once the phrase has two or more steps:
+the suggestion `Rank <first type> by most different <last type>` adds the chip with a top 5, and the chip's drop-downs change it. It is
+offered only when typed, so a plain search shows no extra choices.
 
 *Canvas.* Click selects and fills the details panel. Right-click expands (all links, or one relationship), removes, removes
 all others, or opens the record. Double-click expands everything linked. Expanding adds at most 100 nodes at a time, with *Show

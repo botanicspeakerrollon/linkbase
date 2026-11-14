@@ -1078,6 +1078,25 @@ public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture
     }
 
     [Fact]
+    public async Task Typing_rank_adds_a_ranking_by_hand_that_Search_then_runs()
+    {
+        var cut = Bar();
+        await cut.InvokeAsync(() => cut.Instance.ShowPattern(new GraphPattern(
+            [new PatternNode("Route", []), new PatternNode("Crag", [])], [new PatternRel("AT", true)])));
+        Assert.Empty(cut.FindAll(".pattern-rank"));
+
+        cut.Find("input").Focus();
+        Input(cut).Type("rank");
+        cut.WaitForAssertion(() => Assert.Contains(cut.FindAll("[role=option]"), o => o.TextContent.Contains("Rank Route by most different Crag", StringComparison.Ordinal)));
+        Input(cut).Key("Enter");
+
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".pattern-rank")));
+        Assert.Null(_ran);
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Search").Click();
+        Assert.Equal(new PatternRank(0, 1, 5), _ran?.Rank);
+    }
+
+    [Fact]
     public async Task A_plain_search_shows_no_ranking_in_the_bar()
     {
         var cut = Bar();
