@@ -100,6 +100,44 @@ public sealed class CsvModelStarterTests(PostgresFixture fixture) : IDisposable,
         Assert.Contains(problems, p => p.Contains("both Client"));
     }
 
+    // The demo files in models/financial-demo, as its README walks through them, so it stays true.
+    [Fact]
+    public async Task The_financial_demo_files_make_the_model_its_readme_describes()
+    {
+        var files = new[] { "people", "companies", "accounts", "trades", "alerts", "insiders", "major_holders", "associates" }
+            .Select(n => CsvImportService.Read(RepoPaths.Resolve($"models/financial-demo/{n}.csv"), $"{n}.csv"))
+            .ToList();
+        var proposed = CsvModelStarter.Propose(files);
+
+        Assert.Equal(["Person", "Company", "Account", "Trade", "Alert"], proposed.Take(5).Select(p => p.Type));
+        Assert.All(proposed.Take(5), p => Assert.False(p.IsLinks));
+        Assert.Equal([true, true, true], proposed.Skip(5).Select(p => p.IsLinks));
+        Assert.Equal(1, proposed[0].NameColumn);
+        Assert.Equal([("Person", "HAS_PERSON")], proposed[2].Links.Select(l => (l.ToType, l.RelType)));
+        Assert.Equal([("Account", "HAS_ACCOUNT"), ("Company", "HAS_COMPANY")], proposed[3].Links.Select(l => (l.ToType, l.RelType)));
+        Assert.Equal([("Trade", "HAS_TRADE")], proposed[4].Links.Select(l => (l.ToType, l.RelType)));
+        Assert.Equal([("Person", "Company"), ("Person", "Company"), ("Person", "Person")], proposed.Skip(5).Select(p => (p.FromType, p.ToType)));
+
+        proposed[5].RelType = "INSIDER_OF";
+        proposed[6].RelType = "MAJOR_HOLDER_OF";
+        proposed[7].RelType = "ASSOCIATE_OF";
+
+        var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
+        var starter = new CsvModelStarter(new CsvImportService(factory));
+        Assert.Empty(await starter.CheckAsync(proposed));
+        var outcome = await starter.ApplyAsync(proposed);
+
+        Assert.True(outcome.Applied);
+        Assert.Empty(outcome.Problems);
+        await using var db = await ((IDbContextFactory<LinkbaseDbContext>)factory).CreateDbContextAsync();
+        var counts = await db.Nodes.GroupBy(n => n.Type).Select(g => new { g.Key, N = g.Count() }).ToDictionaryAsync(g => g.Key, g => g.N);
+        Assert.Equal(new Dictionary<string, int> { ["Person"] = 10, ["Company"] = 6, ["Account"] = 10, ["Trade"] = 18, ["Alert"] = 6 }, counts);
+        var links = await db.NodeLinks.GroupBy(l => l.RelType).Select(g => new { g.Key, N = g.Count() }).ToDictionaryAsync(g => g.Key, g => g.N);
+        Assert.Equal(
+            new Dictionary<string, int> { ["HAS_PERSON"] = 9, ["HAS_ACCOUNT"] = 18, ["HAS_COMPANY"] = 18, ["HAS_TRADE"] = 5, ["INSIDER_OF"] = 5, ["MAJOR_HOLDER_OF"] = 4, ["ASSOCIATE_OF"] = 4 },
+            links);
+    }
+
     public void Dispose()
     {
         foreach (var file in _files)

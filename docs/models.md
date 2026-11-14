@@ -527,6 +527,9 @@ import of its own in **Recent imports** and can be undone there. Records are che
 found only in the links is reported once the records are in. Types already in the model are added to, as in the CSV tab.
 Its result, like any model's, can then be edited in the app (below).
 
+To try it, `models/financial-demo/` has eight files for a financial compliance and KYC model (people, companies, accounts,
+trades, alerts and three link files), and a README saying what each should become. A test reads them, so it stays true.
+
 ## Editing a model in the app
 
 **Model** (`/model`) adds, changes and removes a model's types, fields, relationships and link values without a developer or

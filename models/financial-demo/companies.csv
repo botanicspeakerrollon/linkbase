@@ -1,0 +1,7 @@
+company_id,name,country,sector,listed,ticker
+C-01,Halvorsen Biotech,United Kingdom,Healthcare,true,HLVB
+C-02,Brightwater Energy,Norway,Energy,true,BWE
+C-03,Corvid Logistics,Germany,Transport,true,CRVD
+C-04,Pinecrest Foods,Ireland,Consumer goods,true,PCF
+C-05,Tidewell Capital Partners,United Kingdom,Financial,false,
+C-06,Northlight Mining,Canada,Materials,true,NLM
