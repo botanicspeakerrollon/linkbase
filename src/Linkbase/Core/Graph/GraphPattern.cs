@@ -84,8 +84,22 @@ public sealed record PatternRel(string RelType, bool Outgoing)
     public IReadOnlyList<PatternFilter> Filters { get; init; } = [];
 }
 
+// Ranks a pattern's matches: group them by the node at position Group (counting from 0), count the distinct nodes at position
+// Count that each group reaches, and keep the Top groups with the most. Positions, not names, so it works for any model.
+public sealed record PatternRank(int Group, int Count, int Top)
+{
+    public const int MaxTop = 25;
+}
+
 // A chain such as Crag <-AT- Route. There's always one more node than there are relationships.
-public sealed record GraphPattern(IReadOnlyList<PatternNode> Nodes, IReadOnlyList<PatternRel> Rels);
+public sealed record GraphPattern(IReadOnlyList<PatternNode> Nodes, IReadOnlyList<PatternRel> Rels)
+{
+    // Set when the question asked for "the most", so the matches are ranked instead of listed.
+    public PatternRank? Rank { get; init; }
+}
+
+// One group of a ranking: the node, and how many distinct nodes at the counted position it reaches.
+public sealed record RankedNode(string NodeId, string Name, long Count);
 
 // Node ids are in the order of the query's matches. Remaining counts matches left out by the limit.
 public sealed record PatternResult(IReadOnlyList<string> NodeIds, int Remaining);
@@ -128,6 +142,42 @@ public static partial class GraphPatternSql
             WHERE {string.Join(" AND ", where)}
             ORDER BY {order}
             LIMIT {Add(limit, NpgsqlDbType.Integer)} OFFSET {Add(offset, NpgsqlDbType.Integer)}
+            """;
+        return (sql, parameters);
+    }
+
+    // The groups with the most distinct matches at another position, over every match of the pattern. A node reached by several
+    // chains counts once. Only groups with at least one match appear, and ties come out by name so the order is stable.
+    public static (string Sql, List<NpgsqlParameter> Parameters) BuildRank(GraphPattern pattern, GraphSchema schema)
+    {
+        if (pattern.Rank is not { } rank)
+        {
+            throw new LinkbaseValidationException("That search has no ranking.");
+        }
+
+        if (pattern.Nodes.Count == 0 || pattern.Rels.Count != pattern.Nodes.Count - 1)
+        {
+            throw new LinkbaseValidationException("That search isn't complete.");
+        }
+
+        var last = pattern.Nodes.Count - 1;
+        if (rank.Group < 0 || rank.Group > last || rank.Count < 0 || rank.Count > last || rank.Group == rank.Count || rank.Top is < 1 or > PatternRank.MaxTop)
+        {
+            throw new LinkbaseValidationException("That ranking doesn't fit its search.");
+        }
+
+        var parameters = new List<NpgsqlParameter>();
+        var (from, where) = FromAndWhere(pattern, schema, parameters);
+        var Add = ParameterAdder(parameters);
+        var (g, c) = (rank.Group, rank.Count);
+        var sql =
+            $"""
+            SELECT n{g}.node_id AS "NodeId", n{g}.name AS "Name", count(DISTINCT n{c}.node_id)::bigint AS "Count"
+            {from}
+            WHERE {string.Join(" AND ", where)}
+            GROUP BY n{g}.node_id, n{g}.name
+            ORDER BY count(DISTINCT n{c}.node_id) DESC, n{g}.name, n{g}.node_id
+            LIMIT {Add(rank.Top, NpgsqlDbType.Integer)}
             """;
         return (sql, parameters);
     }

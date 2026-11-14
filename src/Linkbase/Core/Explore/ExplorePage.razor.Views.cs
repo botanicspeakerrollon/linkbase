@@ -137,6 +137,7 @@ public partial class ExplorePage
             await DrawAsync(null, state.Positions);
             var drawMs = clock.ElapsedMilliseconds - queryMs;
             await LoadSummaryAsync();
+            await LoadRankingAsync();
             Log.LogInformation("Explore restored {Nodes} nodes and {Edges} links: query {Query} ms, draw and layout {Draw} ms{Pinned}.",
                 subgraph.Nodes.Count, subgraph.Edges.Count, queryMs, drawMs, state.Positions is null ? "" : " (positions pinned)");
             if (subgraph.Nodes.Count < ids.Count)
@@ -164,9 +165,14 @@ public partial class ExplorePage
             return null;
         }
 
+        // A ranking that doesn't fit the chain is dropped, leaving the plain search.
+        var rank = pattern.Rank is { } r && r.Group >= 0 && r.Group < nodes.Count && r.Count >= 0 && r.Count < nodes.Count && r.Group != r.Count
+            ? r with { Top = Math.Clamp(r.Top, 1, PatternRank.MaxTop) }
+            : null;
         return new GraphPattern(
             nodes.Select(n => new PatternNode(n.Label, (n.Filters ?? []).Where(f => f is { Key: not null, Value: not null }).ToList())).ToList(),
-            pattern.Rels);
+            pattern.Rels)
+        { Rank = rank };
     }
 
     private async Task OpenViewsAsync()

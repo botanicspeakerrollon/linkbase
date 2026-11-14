@@ -30,6 +30,29 @@
             </MudAlert>
         }
 
+        @if (_ranking is { Count: > 0 })
+        {
+            <div class="explore-summary mt-2" role="region" aria-label="Ranking of the search">
+                <MudSimpleTable Dense="true" Elevation="0">
+                    <thead>
+                        <tr><th>#</th><th>@RankGrouped</th><th class="text-right">Distinct @RankCounted records</th></tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < _ranking.Count; i++)
+                        {
+                            var ranked = _ranking[i];
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td><MudLink OnClick="@(() => SelectRankedAsync(ranked))">@ranked.Name</MudLink></td>
+                                <td class="text-right">@Figure(ranked.Count)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">Ranked over every match of the search. Records with no match aren't listed. Right-click one on the graph to expand it.</MudText>
+            </div>
+        }
+
         @if (_summaryOpen && _summary is not null)
         {
             <div class="explore-summary mt-2" role="region" aria-label="Totals of the search">

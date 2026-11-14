@@ -398,6 +398,35 @@ public class GraphPatternSqlTests
     }
 
     [Fact]
+    public void A_ranking_groups_by_one_position_and_counts_distinct_nodes_at_another()
+    {
+        var pattern = new GraphPattern([new PatternNode("Crag", []), new PatternNode("Route", [])], [new PatternRel("WORKS_ON", true)]) { Rank = new PatternRank(0, 1, 5) };
+
+        var (sql, parameters) = GraphPatternSql.BuildRank(pattern, Schema);
+
+        Assert.Contains("count(DISTINCT n1.node_id)", sql);
+        Assert.Contains("GROUP BY n0.node_id", sql);
+        Assert.Contains(parameters, p => p.Value is int top && top == 5);
+    }
+
+    [Theory]
+    [InlineData(0, 0, 5)]
+    [InlineData(0, 2, 5)]
+    [InlineData(-1, 1, 5)]
+    [InlineData(0, 1, 0)]
+    [InlineData(0, 1, 26)]
+    public void A_ranking_that_doesnt_fit_its_chain_is_rejected(int group, int count, int top)
+    {
+        var pattern = new GraphPattern([new PatternNode("Crag", []), new PatternNode("Route", [])], [new PatternRel("WORKS_ON", true)]) { Rank = new PatternRank(group, count, top) };
+
+        Assert.Throws<LinkbaseValidationException>(() => GraphPatternSql.BuildRank(pattern, Schema));
+    }
+
+    [Fact]
+    public void A_search_with_no_ranking_has_nothing_to_rank() =>
+        Assert.Throws<LinkbaseValidationException>(() => GraphPatternSql.BuildRank(Single("Crag"), Schema));
+
+    [Fact]
     public void A_summary_totals_each_number_property_of_the_typed_nodes()
     {
         var (sql, _) = GraphPatternSql.BuildSummary(Single("Route"), Schema);
@@ -584,6 +613,41 @@ public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime, I
             [new PatternRel("AT", false)]);
         var all = Assert.Single(await Graph().SummarisePatternAsync(routes, schema), s => s is { Label: "Route", Key: "length_m" });
         Assert.Equal((3, 60m, 10m, 30m, 20m), (all.Count, all.Sum, all.Min, all.Max, all.Average));
+    }
+
+    [Fact]
+    public async Task A_ranking_lists_the_groups_with_the_most_distinct_matches_first()
+    {
+        var area = await ClimbingStore.AddCountryAsync(_store, $"Country {Word()}");
+        var word = Word();
+        static JsonObject Ascent() => new() { ["date"] = "2020-05-02", ["date_precision"] = "day", ["style"] = "onsight", ["source"] = "manual" };
+        static JsonObject RouteProps() => new() { ["grade"] = "VS 4c", ["grade_system"] = "uk_trad", ["discipline"] = "trad", ["length_m"] = 20, ["pitches"] = 1 };
+
+        // Big has two routes and three ascents, one route being climbed twice. Small has one. Empty has a route and no ascents.
+        var big = await ClimbingStore.AddAsync(_store, "Crag", $"Big {word}", null, "IN", area);
+        var small = await ClimbingStore.AddAsync(_store, "Crag", $"Small {word}", null, "IN", area);
+        var empty = await ClimbingStore.AddAsync(_store, "Crag", $"Empty {word}", null, "IN", area);
+        var bigRoutes = new[] { await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(), "AT", big), await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(), "AT", big) };
+        var smallRoute = await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(), "AT", small);
+        await ClimbingStore.AddAsync(_store, "Route", $"R {Word()}", RouteProps(), "AT", empty);
+        foreach (var route in new[] { bigRoutes[0], bigRoutes[0], bigRoutes[1], smallRoute })
+        {
+            await ClimbingStore.AddAsync(_store, "Ascent", $"Ascent {Word()}", Ascent(), "OF", route);
+        }
+
+        var schema = await Graph().SchemaAsync();
+        var pattern = new GraphPattern(
+            [new PatternNode("Crag", [new PatternFilter("name", FilterOperator.Contains, word)]), new PatternNode("Route", []), new PatternNode("Ascent", [])],
+            [new PatternRel("AT", false), new PatternRel("OF", false)])
+        { Rank = new PatternRank(0, 2, 5) };
+
+        var ranked = await Graph().RankPatternAsync(pattern, schema);
+
+        Assert.Equal([(big, 3L), (small, 1L)], ranked.Select(r => (r.NodeId, r.Count)));
+        Assert.StartsWith("Big", ranked[0].Name);
+
+        var top = await Graph().RankPatternAsync(pattern with { Rank = new PatternRank(0, 2, 1) }, schema);
+        Assert.Equal(big, Assert.Single(top).NodeId);
     }
 
     [Fact]

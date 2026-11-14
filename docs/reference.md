@@ -99,6 +99,12 @@ answer is checked by `PatternChecker`: every type, field and relationship must e
 must appear in the question; at most 7 steps, 6 conditions on a step and 100 characters in a value. A failure says why and
 searches nothing.
 
+*Ranking.* For "most / busiest / most depended on" questions the answer may also carry a ranking (`PatternRank`): group by one
+step of the chain, count the distinct records at another, keep the top 1, 3, 5, 10 or 25. It is computed in SQL over every match
+(`GraphPatternSql.BuildRank`), shown as a "Ranking of the search" panel with only the winners on the canvas, and saved with the
+view and permalink. The checker needs both positions inside the chain and different. Limits: a chain only, so no branching;
+"least" and "none" questions are not ranked; only records with at least one match are counted. Editing the search drops the ranking.
+
 *Canvas.* Click selects and fills the details panel. Right-click expands (all links, or one relationship), removes, removes
 all others, or opens the record. Double-click expands everything linked. Expanding adds at most 100 nodes at a time, with *Show
 more*. Nodes already drawn never move when others are added, and the zoom is kept; dragging pulls linked nodes after it,
