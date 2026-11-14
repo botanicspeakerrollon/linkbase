@@ -220,8 +220,8 @@ public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<Postg
     [Fact]
     public void Links_point_at_the_right_page()
     {
-        Assert.Null(GraphStyle.Link(new GraphNode("ascent:7", "Ascent", "X", [])));
-        Assert.Null(GraphStyle.Link(new GraphNode("partner:7", "Partner", "X", [])));
-        Assert.Null(GraphStyle.Link(new GraphNode("trip:7", "Trip", "X", [])));
+        Assert.Equal("/data/Ascent/7", GraphStyle.Link(new GraphNode("ascent:7", "Ascent", "X", [])));
+        Assert.Equal("/data/Partner/7", GraphStyle.Link(new GraphNode("partner:7", "Partner", "X", [])));
+        Assert.Equal("/data/Trip/7", GraphStyle.Link(new GraphNode("trip:7", "Trip", "X", [])));
     }
 }

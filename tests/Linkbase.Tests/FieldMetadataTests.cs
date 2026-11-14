@@ -417,8 +417,8 @@ public sealed class FieldMetadataPageTests(PostgresFixture fixture) : UiTestBase
         Sees(cut, "Zoe Adams");
         Sees(cut, "What they are called day to day.");
         Sees(cut, "Each time they passed.");
-        Assert.Single(cut.FindAll("th.record-group"));
-        Assert.Equal("Name", cut.Find("th.record-group").TextContent.Trim());
+        Assert.Single(cut.FindAll("th.group-heading"));
+        Assert.Equal("Name", cut.Find("th.group-heading").TextContent.Trim());
         Sees(cut, "2024-03-01, 2025-04-02");
         Sees(cut, "English, French");
     }
