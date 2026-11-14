@@ -35,7 +35,7 @@ $tmp = Join-Path ([IO.Path]::GetTempPath()) ("linkbase-azure-" + [guid]::NewGuid
 New-Item -ItemType Directory -Path $tmp | Out-Null
 
 # Runs az and stops on failure. Windows PowerShell treats anything az writes to stderr as an error, so it's let through.
-function Az {
+function Invoke-Az {
     $previous = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try {
@@ -53,7 +53,7 @@ function Set-VaultSecret([string] $Vault, [string] $Name, [string] $Value) {
         # The role that lets this account write takes a minute to arrive after the first deployment.
         for ($try = 1; $try -le 12; $try++) {
             try {
-                Az keyvault secret set --vault-name $Vault --name $Name --file $file --encoding utf-8 --output none
+                Invoke-Az keyvault secret set --vault-name $Vault --name $Name --file $file --encoding utf-8 --output none
                 return
             } catch {
                 if ($try -eq 12) { throw }
@@ -65,7 +65,7 @@ function Set-VaultSecret([string] $Vault, [string] $Name, [string] $Value) {
 }
 
 function Test-VaultSecret([string] $Vault, [string] $Name) {
-    try { Az keyvault secret show --vault-name $Vault --name $Name --query id --output tsv | Out-Null; return $true }
+    try { Invoke-Az keyvault secret show --vault-name $Vault --name $Name --query id --output tsv | Out-Null; return $true }
     catch { return $false }
 }
 
@@ -73,11 +73,11 @@ try {
     if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
         throw "The Azure CLI isn't installed. Run: winget install Microsoft.AzureCLI"
     }
-    try { $account = Az account show --output json | ConvertFrom-Json }
+    try { $account = Invoke-Az account show --output json | ConvertFrom-Json }
     catch { throw "Not signed in. Run: az login" }
     Write-Host "Subscription: $($account.name) ($($account.id))"
-    Az provider register --namespace Microsoft.App --wait --output none
-    Az provider register --namespace Microsoft.OperationalInsights --output none
+    Invoke-Az provider register --namespace Microsoft.App --wait --output none
+    Invoke-Az provider register --namespace Microsoft.OperationalInsights --output none
 
     # Who may reach the demo.
     if ($AllowAnyone) {
@@ -91,17 +91,17 @@ try {
         Write-Host "Only $ip can reach the demo. Add others with -AllowedCidr, and see README.md for signing in through Entra instead."
     }
 
-    $deployer = Az ad signed-in-user show --query id --output tsv
-    Az group create --name $ResourceGroup --location $Location --output none
+    $deployer = Invoke-Az ad signed-in-user show --query id --output tsv
+    Invoke-Az group create --name $ResourceGroup --location $Location --output none
 
     # The database password: kept if a previous run made one, otherwise new. Letters and digits only, so it needs no escaping
     # in a connection string.
     $vault = $null
-    $existing = Az keyvault list --resource-group $ResourceGroup --query '[0].name' --output tsv
+    $existing = Invoke-Az keyvault list --resource-group $ResourceGroup --query '[0].name' --output tsv
     if ($existing) { $vault = $existing }
     $password = $null
     if ($vault -and (Test-VaultSecret $vault 'postgres-password')) {
-        $password = Az keyvault secret show --vault-name $vault --name 'postgres-password' --query value --output tsv
+        $password = Invoke-Az keyvault secret show --vault-name $vault --name 'postgres-password' --query value --output tsv
     }
     if (-not $password) {
         $chars = [char[]]'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -125,7 +125,7 @@ try {
         [IO.File]::WriteAllText($parametersFile, ($parameters | ConvertTo-Json -Depth 6), (New-Object Text.UTF8Encoding($false)))
         try {
             $name = if ($DeployApp) { 'linkbase-app' } else { 'linkbase-base' }
-            return Az deployment group create --resource-group $ResourceGroup --name $name `
+            return Invoke-Az deployment group create --resource-group $ResourceGroup --name $name `
                 --template-file (Join-Path $PSScriptRoot 'main.bicep') --parameters "@$parametersFile" `
                 --query properties.outputs --output json | ConvertFrom-Json
         } finally { Remove-Item $parametersFile -Force -ErrorAction SilentlyContinue }
@@ -166,7 +166,7 @@ try {
     Write-Host "`n3/4  Building the image in $registry (a few minutes)..."
     $tag = Get-Date -Format 'yyyyMMddHHmmss'
     Push-Location $repo
-    try { Az acr build --registry $registry --image "linkbase:$tag" --file Dockerfile . --output none }
+    try { Invoke-Az acr build --registry $registry --image "linkbase:$tag" --file Dockerfile . --output none }
     finally { Pop-Location }
 
     Write-Host "`n4/4  The app..."
