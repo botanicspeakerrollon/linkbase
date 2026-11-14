@@ -9,7 +9,7 @@ public enum JustificationKind { Manual, Import, Derived, Correction }
 // What a change is to. A node is a record. A link is a record-to-record link, with the source in EntityId and the target in
 // RelatedId. A label is a change to who may see a node or link, written the same way. A definition is part of the model: a type, field or relationship. An import batch stands for everything the
 // import added or removed, which is not logged row by row.
-public enum ChangeEntityKind { Node, Link, ExternalRef, Definition, ImportBatch, Label }
+public enum ChangeEntityKind { Node, Link, ExternalRef, Definition, ImportBatch, Label, PropertyLabel }
 
 public enum ChangeOp { Create, Update, Delete }
 

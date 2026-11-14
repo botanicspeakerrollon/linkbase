@@ -52,7 +52,8 @@ public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> cont
     public async Task<TimelineData> LoadAsync(string type, string field, string? from, string? to, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        if (fieldPolicy is not null && (await fieldPolicy.HiddenAsync(db, cancellationToken)).IsHidden(type, field))
+        var hidden = fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        if (hidden.IsHidden(type, field))
         {
             return new TimelineData([], [], 0, 0);
         }
@@ -63,36 +64,40 @@ public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> cont
         var limit = EntryLimit;
         var months = MonthLimit;
 
-        var entries = await db.Database.SqlQuery<EntryRow>(
-            $"""
-            SELECT n.id AS "Id", n.key AS "Key", n.name AS "Name", n.props ->> {field} AS "Date"
-            FROM node n
-            WHERE n.user_id = {user} AND n.type = {type}
-              AND n.props ->> {field} ~ '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$'
-              AND n.props ->> {field} >= {low} AND n.props ->> {field} <= {high}
-            ORDER BY n.props ->> {field} DESC, n.name, n.id
-            LIMIT {limit}
-            """).ToListAsync(cancellationToken);
+        // A date a record's own label hides is read as no date, so the viewer can't tell it from a record that has none.
+        var source = hidden.HasOverrides
+            ? $"(SELECT id, key, name, user_id, type, props - {Security.PropertyLabelSql.FailingKeys("id")} AS props FROM node)"
+            : "node";
+        var entriesSql = $$"""
+            SELECT n.id AS "Id", n.key AS "Key", n.name AS "Name", n.props ->> {0} AS "Date"
+            FROM {{source}} n
+            WHERE n.user_id = {1} AND n.type = {2}
+              AND n.props ->> {0} ~ '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$'
+              AND n.props ->> {0} >= {3} AND n.props ->> {0} <= {4}
+            ORDER BY n.props ->> {0} DESC, n.name, n.id
+            LIMIT {5}
+            """;
+        var entries = await db.Database.SqlQueryRaw<EntryRow>(entriesSql, field, user, type, low, high, limit, months).ToListAsync(cancellationToken);
 
-        var perMonth = await db.Database.SqlQuery<MonthRow>(
-            $"""
-            SELECT substr(n.props ->> {field}, 1, 7) AS "Month", count(*)::int AS "Count"
-            FROM node n
-            WHERE n.user_id = {user} AND n.type = {type}
-              AND n.props ->> {field} ~ '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$'
-              AND n.props ->> {field} >= {low} AND n.props ->> {field} <= {high}
+        var perMonthSql = $$"""
+            SELECT substr(n.props ->> {0}, 1, 7) AS "Month", count(*)::int AS "Count"
+            FROM {{source}} n
+            WHERE n.user_id = {1} AND n.type = {2}
+              AND n.props ->> {0} ~ '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$'
+              AND n.props ->> {0} >= {3} AND n.props ->> {0} <= {4}
             GROUP BY 1
             ORDER BY 1 DESC
-            LIMIT {months}
-            """).ToListAsync(cancellationToken);
+            LIMIT {6}
+            """;
+        var perMonth = await db.Database.SqlQueryRaw<MonthRow>(perMonthSql, field, user, type, low, high, limit, months).ToListAsync(cancellationToken);
 
-        var undated = await db.Database.SqlQuery<int>(
-            $"""
+        var undatedSql = $$"""
             SELECT count(*)::int AS "Value"
-            FROM node n
-            WHERE n.user_id = {user} AND n.type = {type}
-              AND (n.props ->> {field} IS NULL OR NOT n.props ->> {field} ~ '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$')
-            """).SingleAsync(cancellationToken);
+            FROM {{source}} n
+            WHERE n.user_id = {1} AND n.type = {2}
+              AND (n.props ->> {0} IS NULL OR NOT n.props ->> {0} ~ '^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$')
+            """;
+        var undated = await db.Database.SqlQueryRaw<int>(undatedSql, field, user, type, low, high, limit, months).SingleAsync(cancellationToken);
 
         return new TimelineData(
             entries.Select(e => new { Row = e, Parsed = DateOnly.TryParseExact(e.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d : (DateOnly?)null })

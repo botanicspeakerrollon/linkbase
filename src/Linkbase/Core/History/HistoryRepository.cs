@@ -49,6 +49,8 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
             : (await db.NodeLinks.AsNoTracking().Where(l => sources.Contains(l.SourceId) && targets.Contains(l.TargetId)).Select(l => new { l.SourceId, l.RelType, l.TargetId }).ToListAsync(cancellationToken))
                 .Select(l => (l.SourceId, l.RelType, l.TargetId)).ToHashSet();
 
+        // A property a record's own label hides from this viewer is masked on that record, like one its field hides.
+        hidden = await hidden.ForRecordsAsync(db, types.Keys, cancellationToken);
         var kept = new List<Change>();
         foreach (var change in changes)
         {
@@ -63,7 +65,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
             }
             else if (types.TryGetValue(change.EntityId, out var type))
             {
-                kept.Add(change.EntityKind == ChangeEntityKind.Node ? Masked(change, type, hidden) : change);
+                kept.Add(change.EntityKind is ChangeEntityKind.Node or ChangeEntityKind.PropertyLabel ? Masked(change, type, hidden) : change);
             }
         }
 
@@ -72,7 +74,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
 
     private static Change Masked(Change change, string type, HiddenFields hidden)
     {
-        var keys = hidden.For(type);
+        var keys = hidden.For(type, change.EntityId);
         if (keys.Count == 0)
         {
             return change;
@@ -278,7 +280,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var hidden = await HiddenAsync(db, cancellationToken);
         var touching = db.Changes.AsNoTracking().Where(c =>
-            ((c.EntityKind == ChangeEntityKind.Node || c.EntityKind == ChangeEntityKind.Label) && c.RelType == null && c.EntityId == nodeId)
+            ((c.EntityKind == ChangeEntityKind.Node || c.EntityKind == ChangeEntityKind.Label || c.EntityKind == ChangeEntityKind.PropertyLabel) && c.RelType == null && c.EntityId == nodeId)
             || (c.EntityKind == ChangeEntityKind.Label && c.RelType != null && (c.EntityId == nodeId || c.RelatedId == nodeId))
             || (c.EntityKind == ChangeEntityKind.Link && (c.EntityId == nodeId || c.RelatedId == nodeId))
             || (c.EntityKind == ChangeEntityKind.ExternalRef && c.EntityId == nodeId));
