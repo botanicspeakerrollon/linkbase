@@ -166,7 +166,12 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | `ConnectionStrings:Linkbase` | Postgres connection | `appsettings.Development.local.json` or environment variable |
 | `Anthropic:ApiKey` | Reading text with AI | user secrets or environment variable |
 | `Anthropic:Model` | Model for extraction | `appsettings.json` |
-| `Extraction:Enabled` | Set to `false` to hide every import, and Explore's Ask box, that sends text to Anthropic | `appsettings.json` or environment variable |
+| `Llm:Provider` | `anthropic` (the default) or `openai`, which is any server that speaks the OpenAI chat completions format: OpenAI, Ollama, LM Studio, vLLM, OpenRouter and most gateways. Chooses who reads text and answers Ask | `appsettings.json` or environment variable |
+| `Llm:BaseUrl` | With `openai`: the server's address, such as `http://localhost:11434/v1`. Defaults to `https://api.openai.com/v1` | `appsettings.json` or environment variable |
+| `Llm:ApiKey` | With `openai`: the key, if the server wants one. Local servers usually don't | user secrets or environment variable |
+| `Llm:Model` | With `openai`: the model name the server knows. Required | `appsettings.json` or environment variable |
+| `Llm:MaxTokensField`, `Llm:Strict` | With `openai`: `max_tokens` for servers that reject `max_completion_tokens`, and `true` to ask the server to enforce the tool's schema | environment variable |
+| `Extraction:Enabled` | Set to `false` to hide every import, and Explore's Ask box, that sends text to the model provider | `appsettings.json` or environment variable |
 | `Ask:Fixture` | Canned answer to every question in Explore's Ask box, as a JSON pattern, instead of calling the API | environment variable |
 | `Extraction:Fixture` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
 

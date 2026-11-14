@@ -103,7 +103,9 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `ConnectionStrings__<name>` | Each other model's database. A secret if it has a password | None |
 | `Anthropic__ApiKey` | Reading text with AI. A secret | None, so text can't be read |
 | `Anthropic__Model` | The model that reads text and answers questions | In `appsettings.json` |
-| `Extraction__Enabled` | `false` hides every import that sends text to Anthropic, and Explore's Ask box | `true` |
+| `Llm__Provider`, `Llm__BaseUrl`, `Llm__Model`, `Llm__MaxTokensField`, `Llm__Strict` | Use an OpenAI-compatible server instead of Anthropic, as in the [README](../README.md#configuration) | `anthropic` |
+| `Llm__ApiKey` | The key for that server, if it wants one. A secret | None, so no key is sent |
+| `Extraction__Enabled` | `false` hides every import that sends text to the model provider, and Explore's Ask box | `true` |
 | `Extraction__Fixture`, `Ask__Fixture` | A file of canned results instead of calling the API, for trying the flow with no key. Not for production | None |
 | `Models__<key>__Home__Hide__0` | A home-page panel this model leaves out (`records`, `changes`, `imports`, `growth`) | None |
 | `ASPNETCORE_ENVIRONMENT` | `Development` for plain-text logs and detailed errors | `Production` |
@@ -137,6 +139,7 @@ each one back.
 | --- | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | The app's connection to Postgres | Always | Run `./scripts/init-dev.ps1`, which rebuilds it from the password in `.env` |
 | `Anthropic:ApiKey` | Reading text with AI | Only for reading text | Create a new key in the Anthropic Console, because existing keys can't be viewed again |
+| `Llm:ApiKey` | Reading text through an OpenAI-compatible server | Only with `Llm:Provider` set to `openai`, and only if that server wants a key | Create a new key with that provider |
 
 `POSTGRES_PASSWORD` in `.env` is the other secret. It sets the password when the database volume is first created.
 
