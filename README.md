@@ -114,7 +114,7 @@ The Import page adds crags and routes from an article or list. Paste the text, o
 the more reliable option, and the right one for sites that block fetching or forbid scraping. Claude extracts the facts,
 and you check, edit and match them before anything reaches your logbook. An import can be undone later.
 
-Only facts and a brief summary are stored, never the page's own text. Extraction needs `Anthropic:ApiKey` (see Configuration).
+Only facts and a brief summary are stored, never the page's own text. Extraction needs a model provider: `Anthropic:ApiKey`, or the `Llm:*` settings for an OpenAI-compatible server (see Configuration).
 
 To try the whole flow without a key or any API cost, run the app with canned results, then paste the text of
 `tests/Linkbase.Tests/Fixtures/web/crag-article.txt`:
@@ -164,8 +164,8 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | Key | Purpose | Where |
 | --- | --- | --- |
 | `ConnectionStrings:Linkbase` | Postgres connection | `appsettings.Development.local.json` or environment variable |
-| `Anthropic:ApiKey` | Reading text with AI | user secrets or environment variable |
-| `Anthropic:Model` | Model for extraction | `appsettings.json` |
+| `Anthropic:ApiKey` | Reading text with AI (Anthropic provider) | user secrets or environment variable |
+| `Anthropic:Model` | With the Anthropic provider: model for extraction | `appsettings.json` |
 | `Llm:Provider` | `anthropic` (the default) or `openai`, which is any server that speaks the OpenAI chat completions format: OpenAI, Ollama, LM Studio, vLLM, OpenRouter and most gateways. Chooses who reads text and answers Ask | `appsettings.json` or environment variable |
 | `Llm:BaseUrl` | With `openai`: the server's address, such as `http://localhost:11434/v1`. Defaults to `https://api.openai.com/v1` | `appsettings.json` or environment variable |
 | `Llm:ApiKey` | With `openai`: the key, if the server wants one. Local servers usually don't | user secrets or environment variable |

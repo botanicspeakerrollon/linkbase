@@ -33,7 +33,7 @@
         {
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">@_error</MudAlert>
         }
-        <div class="ask-note">The answer appears in the search bar above, where you can change it. Your question is sent to Anthropic to be read.</div>
+        <div class="ask-note">The answer appears in the search bar above, where you can change it. Your question is sent to an AI model to be read.</div>
     </div>
 }
 
@@ -47,7 +47,7 @@
     private bool _asking;
     private CancellationTokenSource? _cancel;
 
-    // The question goes to Anthropic, so an administrator can turn it off with the same setting as reading text.
+    // The question goes to the model provider, so an administrator can turn it off with the same setting as reading text.
     public bool Available => Schema is not null
         && !string.Equals(Configuration["Extraction:Enabled"], "false", StringComparison.OrdinalIgnoreCase);
 

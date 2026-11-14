@@ -45,7 +45,7 @@ agreed; future-self deciding whether a gap is a bug or a known limit.
 
 See [reference.md Appendix D](reference.md#appendix-d-glossary) for **model**, **record/node**, **link/edge**,
 **relationship**, **pattern**, **hook**, **domain module**. Additionally here: **SRS** = this document. **LLM** = the
-Anthropic model used for Read text and Ask.
+model, Anthropic or OpenAI-compatible, that reads text for Read text and Ask.
 
 ### 1.5 Out of scope for now
 
@@ -70,7 +70,7 @@ Deliberately not required by this version, and not to be treated as a defect:
 ### 2.1 Product perspective
 
 Self-hosted. The app is the only writer of its databases; nothing else may write `node`, `node_link` or the history tables
-directly. The one external dependency that is optional is the Anthropic API (Read text, Ask); the app is fully usable with
+directly. The one external dependency that is optional is the LLM provider (Anthropic or an OpenAI-compatible server, for Read text and Ask); the app is fully usable with
 it disabled.
 
 ### 2.2 User classes
@@ -88,7 +88,7 @@ multi-user audience.
 
 - **ASM-1.** Single user per deployed instance. Every row's `user_id` is `AppUser.DefaultId` until sign-in exists.
 - **ASM-2.** Postgres is reachable and migrated before the app serves traffic other than `/health/*`.
-- **ASM-3.** `Anthropic:ApiKey` may be absent; features that need it (Read text, Ask) are then unavailable, not broken.
+- **ASM-3.** The LLM provider may be unconfigured (no `Anthropic:ApiKey`, or no `Llm:Model` with `Llm:Provider` set to `openai`); features that need it (Read text, Ask) are then unavailable, not broken.
 - **ASM-4.** A model's database holds only that model's data; the app never joins across two models' tables.
 - **ASM-5.** The person pasting or fetching text for Read text has the right to use it under copyright and any site's
   terms; the app's job is only to avoid storing more than facts (REQ **IMP-8**).
@@ -272,7 +272,7 @@ Each requirement is independently testable. "Record" and "link" are as defined i
 | --- | --- | --- |
 | Browser (Blazor Server, SignalR circuit) | In/out | The only end-user interface; no separate public API is required by this version. |
 | Postgres | Out | One connection string per model; `pg_trgm` extension required for trigram search. |
-| Anthropic API | Out, optional | Used only for Read text and Ask (IMP-7, FUN-4); absence shall degrade those two features only (ASM-3). |
+| LLM provider (Anthropic API, or an OpenAI-compatible server) | Out, optional | Used only for Read text and Ask (IMP-7, FUN-4); absence shall degrade those two features only (ASM-3). |
 | Container runtime | In | Environment variables only (OPS-3); port 8080; no mounted config files required. |
 
 ---

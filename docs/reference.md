@@ -28,7 +28,7 @@ A feature carries one of three marks: **Built**, **Partial** (works, with a stat
                   └───────────────────────────────────────────────────┼────────────────────────────────┘
                                                                       │ one database per model
                                                        Postgres: node · node_link · history · …
-                                                       Anthropic API: only for Read text and Ask
+                                                       Model provider (Anthropic or OpenAI-compatible): only for Read text and Ask
 ```
 
 ---
@@ -258,7 +258,7 @@ relationship's values only come through here or a model file, same as a type's f
 
 **Built.** Partial: it fills text fields and text lists, not `multiple` numbers, dates or choices.
 
-**Synopsis.** Import → Read text. Hidden when `Extraction:Enabled` is `false`; needs `Anthropic:ApiKey`.
+**Synopsis.** Import → Read text. Hidden when `Extraction:Enabled` is `false`; needs a model provider: `Anthropic:ApiKey`, or `Llm:*` with `Llm:Provider` set to `openai`.
 
 **Description.** Paste text, or give an address to fetch (up to 5 MB, refused by sites that block it; pasting is more reliable and
 the right way for sites that forbid scraping). The model's types, fields, relationships and link values become the extraction
@@ -428,7 +428,7 @@ Models are listed under `Models` in configuration: `Name`, `ConnectionString` (n
 - **Tests.** Unit, database (Testcontainers on real Postgres), bUnit page tests and Playwright browser tests, run in CI on every
   push; coverage uses an in-memory collector.
 - **Security.** Single user, no sign-in: run it on one machine until [security-roadmap](security-roadmap.md) is done.
-  Reading text and Ask send text to Anthropic; records and values are never sent by Ask, and Read text sends only the text you give it.
+  Reading text and Ask send text to the configured model provider; records and values are never sent by Ask, and Read text sends only the text you give it.
 
 ---
 
