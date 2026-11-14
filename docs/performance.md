@@ -168,3 +168,36 @@ Measured by hand in `psql` on 13 November 2026 against the same 3.6M nodes, not 
 | Cleanup: duplicate names across four types | 2.3 s |
 | Cleanup: records with no links, across four types | 9.1 s, 67 ms for one small type. It is on demand, and a type narrows it |
 | Path search: one level from 5,000 stops | 350 ms. Each level is capped at 5,000 records and 50,000 links, and the search says when it was cut short |
+
+## Row security on the large sample
+
+Measured on 14 November 2026 by hand in `psql`, on a copy of the sample (`swiss_rail_sec`, cloned with `CREATE DATABASE ...
+TEMPLATE swiss_rail`, migrated, and given row security with the real `EnableAsync` script). Labels are made up: 12% of
+nodes above the lowest level, 5% restricted to one department, 3% needing one project, and 1% of links above the lowest
+level. Each query ran three times, with JIT off, and the table gives the median in ms. "Owner" is the table owner, whom
+the policies don't apply to, so it stands for security off. "Wide" is a viewer who sees everything and "narrow" one
+who sees about 80% of nodes. Parallel query was off for every run, because the container's shared memory is too small for it.
+
+| What | Owner | Wide viewer | Narrow viewer |
+| --- | --- | --- | --- |
+| Node counts by type | 422 | 1,830 | 1,491 |
+| Name contains, within a type | 50 | 46 | 36 |
+| Free text, first 100 | 22 | 1 | 1 |
+| Expand a hub stop, first 100 links | 0 | 1 | 1 |
+| Links of that stop, counted | 0 | 1 | 1 |
+| **First 100 of a type, by name** | **1** | **1,256** | **1,033** |
+
+Expanding, counting a stop's links and searching are unaffected, because they follow indexes and the policy is a cheap filter.
+Two things are not fine for a restricted viewer:
+
+- **First 100 of a type, by name** goes from 1 ms to about 1 s. The policy compares the label columns with the viewer's
+  settings as query parameters, so the planner can't estimate how many rows pass, guesses too few, and chooses to read the whole
+  table and sort it. Forcing the index (`enable_seqscan` and `enable_sort` off) gives 0.4 ms with the same results, so the fix is to
+  steer the plan (a query shape that finds its rows first, as `CLAUDE.md` says for sorted views, or an index that includes the
+  label columns), not to change the rules. Not done yet.
+- **Node counts** are 3 to 4 times slower, since the count has to test every row. It's a full scan either way, and the unrestricted
+  figure comes from a cheaper path.
+
+Not covered: the app's own queries with a viewer (these are the views' shapes by hand, not `GraphRepository`), several users
+at once, writes, and hidden fields (those are masked in code, so they cost nothing in the database). The labels on links are
+few, so a model that labels most links will cost more on expand.
