@@ -116,6 +116,27 @@ The generic store should do what the sample does.
   the last lookup, so it's only felt on a pause.
 - **Re-measure after adding an index.** The performance test fails if any query takes over 2 minutes.
 
+## Row security
+
+Measured on a copy of `swiss_rail` with row security on (3.6 million nodes, 45 million links), comparing the owner, who
+bypasses policies, with `linkbase_app` as a viewer who sees everything, so the policy filters nothing and only costs:
+
+| Query | Owner | As `linkbase_app` |
+| --- | --- | --- |
+| 5,000 nodes of a type, with their links | 10 ms | 24 ms |
+| `order by name limit 100` | 200 ms | 344 ms |
+| Shortest path | 10 ms | 31 ms |
+
+Three findings, each worth knowing before changing the policy:
+
+- **Write the test inline in each policy.** Behind a SQL function, Postgres can't inline the sub-selects, so
+  `current_setting` ran per row and everything was 12 times slower.
+- **No GIN indexes on the label arrays.** With every row `{*}` they aren't selective, and the planner scanned all
+  3.6 million entries as a bitmap, 3 to 30 times slower than no index.
+- **Links cost the most**, because each needs its two end nodes checked by primary key. That is the 3 times above.
+
+A narrow viewer (few rows visible) has not been measured on a large model; do that before relying on it there.
+
 ## What this does and doesn't show
 
 - **Fine at this size:** expanding, drawing and searching. Expanding and drawing follow indexes, so they barely changed with

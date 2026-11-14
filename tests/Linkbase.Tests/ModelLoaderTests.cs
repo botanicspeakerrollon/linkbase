@@ -225,6 +225,11 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
         services.AddSingleton<ModelCatalog>();
         services.AddScoped<CurrentModel>();
+        services.AddLogging();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<Linkbase.Core.Security.RowSecurityState>();
+        services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>();
+        services.AddSingleton<Linkbase.Core.Security.IViewerResolver, Linkbase.Core.Security.ConfiguredViewerResolver>();
         services.AddScoped<IDbContextFactory<LinkbaseDbContext>, ModelDbContextFactory>();
         services.AddScoped<ModelLoader>();
         return services.BuildServiceProvider();
@@ -263,6 +268,36 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         Assert.Equal(1, await commands.RunAsync(["model", "load", WriteModel("not json")]));
         Assert.True(ModelCommands.IsCommand(["model", "load", "x"]));
         Assert.False(ModelCommands.IsCommand(["model", "load"]));
+    }
+
+    [Fact]
+    public async Task The_security_command_turns_row_security_on_and_off_and_needs_a_security_section()
+    {
+        var connection = await fixture.CreateModelDatabaseAsync("SELECT 1");
+        await using var services = Services(("only", connection));
+        using var scope = services.CreateScope();
+        var output = new StringWriter();
+        var commands = new ModelCommands(scope.ServiceProvider, output);
+        Assert.Equal(0, await commands.RunAsync(["model", "migrate"]));
+        Assert.Equal(0, await commands.RunAsync(["model", "load", RepoPaths.Resolve("models/archimate/model.json"), "only"]));
+
+        Assert.Equal(1, await commands.RunAsync(["model", "security", "on"]));
+        Assert.Contains("has no security section", output.ToString());
+
+        Assert.Equal(0, await commands.RunAsync(["model", "load", Example, "only"]));
+        Assert.Equal(0, await commands.RunAsync(["model", "security", "on", "only"]));
+        await using (var owner = new Factory(connection).CreateDbContext())
+        {
+            Assert.True(await Linkbase.Core.Security.RowSecurity.IsEnabledAsync(owner));
+        }
+
+        Assert.Equal(0, await commands.RunAsync(["model", "security", "off"]));
+        await using (var owner = new Factory(connection).CreateDbContext())
+        {
+            Assert.False(await Linkbase.Core.Security.RowSecurity.IsEnabledAsync(owner));
+        }
+
+        Assert.False(ModelCommands.IsCommand(["model", "security", "maybe"]));
     }
 
     [Fact]

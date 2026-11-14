@@ -117,6 +117,15 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Send OpenTelemetry traces, metrics and logs to this collector, such as `http://otel-collector:4317`. Logs still go to stdout too | None, so nothing is sent |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES` | The standard OpenTelemetry settings, such as `http/protobuf` or an API key header | gRPC, none |
 | `OTEL_SERVICE_NAME` | The service name telemetry carries | `linkbase` |
+| `Security__User` | Who the app treats as signed in, for a model with row security on, until real sign-in exists. Must be a user in the model file's `security.users` | None, so that model shows nothing |
+
+### Row security and the database
+
+Turning row security on (`model security on`) creates a `linkbase_app` role in the database's cluster, with no login, and
+grants it to the connecting user. The app runs each viewer's queries as that role (`SET ROLE`), which the policies bind;
+the connecting user owns the tables, bypasses the policies, and so does `pg_dump`. Back up and restore as the owner, never
+as `linkbase_app`. Roles belong to the cluster, so a restore into a new server needs `model security on` again (or the
+`create role`), and `model security off` leaves the role in place. Backups hold every record whatever its label, so encrypt them.
 
 The keys that sign the app's cookies and anti-forgery tokens are in the default model's database, in `data_protection_key`,
 so restarts don't sign anyone out and every pod shares them. They're stored unencrypted, so treat database access as

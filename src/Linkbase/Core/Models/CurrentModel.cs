@@ -1,5 +1,6 @@
 using Linkbase.Core;
 using Linkbase.Data;
+using Linkbase.Core.Security;
 using Linkbase.Domains;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,8 +20,9 @@ public sealed class CurrentModel(ModelCatalog catalog)
     public void Select(string? key) => Info = catalog.Find(key) ?? catalog.Default;
 }
 
-public sealed class ModelDbContextFactory(ModelCatalog catalog, CurrentModel current) : IDbContextFactory<LinkbaseDbContext>
+public sealed class ModelDbContextFactory(ModelCatalog catalog, CurrentModel current, ViewerConnectionInterceptor viewer) : IDbContextFactory<LinkbaseDbContext>
 {
+    // The interceptor tells the database who is asking when the model has row security on, and does nothing otherwise.
     public LinkbaseDbContext CreateDbContext() =>
-        new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(catalog.ConnectionString(current.Info)).Options);
+        new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(catalog.ConnectionString(current.Info)).AddInterceptors(viewer).Options);
 }
