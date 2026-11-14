@@ -45,10 +45,10 @@ Set aside here: sign-in, roles and field permissions. They must finish before a 
 6. **A model from a CSV.** A new customer starts from a blank model, not a model file. Built: the Start from CSVs tab infers
    types, fields and relationships from several CSVs ([models](models.md#starting-a-model-from-csv-files)), and the Model
    editor changes the result (or any model) afterwards: types, fields, relationships and link values, without a developer
-   ([models](models.md#editing-a-model-in-the-app), [reference](reference.md#8-the-model-editor)). **Left, on link values**
-   ([relationship-attributes](history/relationship-attributes.md)): CSV import and Read text still only fill a link's values
-   when the relationship already has them, not update one that already has different values; and Explore can't filter or ask
-   about a value on a link, only show it.
+   ([models](models.md#editing-a-model-in-the-app), [reference](reference.md#8-the-model-editor)). Link values are also
+   finished: CSV import can update a link's values on re-import, the same as records, and Explore and the Ask box can filter
+   on one ([relationship-attributes](history/relationship-attributes.md)). **Left:** Read text still only fills a link's
+   values when the relationship has none yet, and doesn't update a record it finds again either.
 7. **The rest of everyday use.** Built, except phone use. Checked by tests and bUnit pages, not yet by using the running app:
    - **A useful Home.** Recent records, changes and imports, and records added per month, each hideable per model with
      `Models:<key>:Home:Hide` ([models](models.md#configuring-models)). Climbing's Insights page was not folded in.

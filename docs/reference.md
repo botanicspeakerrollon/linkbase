@@ -188,14 +188,18 @@ List values split on `|`.
 clears a value, and with no name column the name stays. The review lists each change as `city: Bern → Zurich`, and commit writes
 one history entry per field, so the values can be put back. It needs history on, and cannot touch types a module owns.
 
+*Update links that are already here*, offered when the relationship carries values, does the same for a link's values, but
+only when the two records are linked that way exactly once; an ambiguous pair (none yet, or more than one already) is left
+alone and the row becomes a further link, same as unticked.
+
 *Review first* stages the batch (`staged_item`); the batch survives a reload, and is listed under Recent imports and on Home.
 Untick items, then Commit or Discard. Commit is one transaction and skips anything that became a duplicate or lost an end.
 
-*Undo* (Recent imports) removes what the import added and puts back values it changed. It leaves, and lists, a record edited
-since, one something now links to, one a staying record needs through a required link, and a value changed again since.
-The import stays committed; undo can be repeated.
+*Undo* (Recent imports) removes what the import added and puts back values it changed, records and links alike. It leaves,
+and lists, a record edited since, one something now links to, one a staying record needs through a required link, and a
+value changed again since. The import stays committed; undo can be repeated.
 
-**Not yet.** Updates work for CSV records only: links, and Read text, still skip what exists.
+**Not yet.** Read text still skips what exists, for both records and links.
 
 **See also.** [models](models.md#importing-a-csv-file), `Core/CsvImport`, `Core/Staging`.
 
@@ -442,12 +446,13 @@ The `?` dialog is the source of truth; this is its content.
 | Explore: patterns, canvas, table, totals, export | Built | |
 | Explore: Ask | Built | |
 | Explore: path, nearby changes, as of, link history | Built | Deleted records not shown as of |
-| Lists and record pages, forms, hierarchies, link values | Built | No bulk edit; no model editor |
+| Lists and record pages, forms, hierarchies, link values | Built | No bulk edit |
+| Model editor | Partial | No bulk edit; a type can't be renamed |
 | Saved views, scenes, permalinks | Built | No read-only share |
 | Quick-find | Partial | Only "add" as an action |
 | Import: CSV records and links | Built | |
-| Import: update existing records | Partial | CSV records only |
-| Import: Start from CSVs | Partial | No editor afterwards |
+| Import: update existing records | Partial | CSV only, not Read text |
+| Import: Start from CSVs | Partial | No hierarchies or link values from the files; use the model editor after |
 | Import: Read text | Partial | Not `multiple` numbers, dates, choices |
 | Review, commit, undo | Built | Undo's "edited since" uses `updated_at` |
 | Audit trail, reasons | Built | |

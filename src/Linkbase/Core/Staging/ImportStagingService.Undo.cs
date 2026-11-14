@@ -92,7 +92,10 @@ public sealed partial class ImportStagingService
         var recordsRemoved = await db.Nodes.Where(n => n.ImportBatchId == batchId && !keep.Contains(n.Id)).ExecuteDeleteAsync(cancellationToken);
         await RemoveWhatItCreatedAsync(db, batch.RawPayload, cancellationToken);
         var (restored, reverted) = await RevertUpdatesAsync(db, batchId, kept, cancellationToken);
+        var (linkRestored, linkReverted, linkRevertedCount) = await RevertLinkUpdatesAsync(db, batchId, kept, cancellationToken);
         changes.AddRange(restored);
+        changes.AddRange(linkRestored);
+        reverted = [.. reverted, .. linkReverted];
         if (kept.Count == 0)
         {
             batch.Status = ImportStatus.Undone;
@@ -118,7 +121,7 @@ public sealed partial class ImportStagingService
             await _hooks.AfterChangeAsync(changes, cancellationToken);
         }
 
-        return new StagedUndo(recordsRemoved, linksRemoved, kept) { Reverted = restored.Count };
+        return new StagedUndo(recordsRemoved, linksRemoved, kept) { Reverted = restored.Count + linkRevertedCount };
     }
 
     // Puts back what a committing import changed on records that were already there, field by field, as the trail logged it
@@ -210,6 +213,80 @@ public sealed partial class ImportStagingService
         }
 
         return (restored, logged);
+    }
+
+    // Puts back what a committing import changed on a link that was already there, the same way RevertUpdatesAsync does for a
+    // record. A link removed since (by this undo, just above, or by hand) is skipped: nothing to put a value back on. One
+    // whose value someone has changed again since stays as it is and is reported.
+    private async Task<(List<RecordChange> Restored, List<PendingChange> Logged, int Reverted)> RevertLinkUpdatesAsync(
+        LinkbaseDbContext db, long batchId, List<string> kept, CancellationToken cancellationToken)
+    {
+        var restored = new List<RecordChange>();
+        var logged = new List<PendingChange>();
+        var updates = await db.Changes.AsNoTracking()
+            .Where(c => c.EntityKind == ChangeEntityKind.Link && c.Op == ChangeOp.Update
+                && c.ChangeSet.Justification.ImportBatchId == batchId && c.ChangeSet.Justification.Kind == JustificationKind.Import
+                && db.Changes.Any(b => b.ChangeSetId == c.ChangeSetId && b.EntityKind == ChangeEntityKind.ImportBatch && b.Op == ChangeOp.Create))
+            .OrderBy(c => c.Id)
+            .Select(c => new { c.EntityId, c.RelType, c.RelatedId, c.FieldKey, c.OldValue, c.NewValue })
+            .ToListAsync(cancellationToken);
+        if (updates.Count == 0)
+        {
+            return (restored, logged, 0);
+        }
+
+        var reverted = 0;
+        var shown = 0;
+        foreach (var group in updates.GroupBy(u => new { u.EntityId, u.RelType, u.RelatedId }))
+        {
+            var link = await db.NodeLinks.SingleOrDefaultAsync(
+                l => l.SourceId == group.Key.EntityId && l.RelType == group.Key.RelType && l.TargetId == group.Key.RelatedId, cancellationToken);
+            if (link is null)
+            {
+                continue;
+            }
+
+            var before = RecordRepository.Values(link.Props);
+            var values = before.ToDictionary(v => v.Key, v => (string?)v.Value);
+            foreach (var change in group)
+            {
+                var key = change.FieldKey!;
+                var now = values.GetValueOrDefault(key);
+                if (now == change.NewValue || (string.IsNullOrEmpty(now) && string.IsNullOrEmpty(change.NewValue)))
+                {
+                    values[key] = change.OldValue;
+                }
+                else if (!(now == change.OldValue || (string.IsNullOrEmpty(now) && string.IsNullOrEmpty(change.OldValue))) && ++shown <= KeptShown)
+                {
+                    kept.Add($"A {group.Key.RelType} link's {RecordRepository.Title(key)} was changed since the import, so it stays as it is.");
+                }
+            }
+
+            // RecordRepository.Props needs field definitions to type each value; a link's own are its relationship's attributes.
+            var sourceType = await db.Nodes.Where(n => n.Id == link.SourceId).Select(n => n.Type).SingleAsync(cancellationToken);
+            var targetType = await db.Nodes.Where(n => n.Id == link.TargetId).Select(n => n.Type).SingleAsync(cancellationToken);
+            var attributes = await RecordRepository.AttributesAsync(db, sourceType, link.RelType, targetType, cancellationToken);
+            var after = RecordRepository.Props(attributes, values, link.Props);
+            var afterValues = RecordRepository.Values(after);
+            if (afterValues.OrderBy(v => v.Key).SequenceEqual(before.OrderBy(v => v.Key)))
+            {
+                continue;
+            }
+
+            link.Props = after;
+            await db.SaveChangesAsync(cancellationToken);
+            reverted++;
+            logged.AddRange(ChangeRecorder.LinkUpdated(link.SourceId, link.RelType, link.TargetId, before, afterValues));
+            restored.Add(new RecordChange(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, before, afterValues, link.RelType, link.TargetId));
+            restored.Add(new RecordChange(RecordChangeKind.LinkUpdated, targetType, link.TargetId, before, afterValues, link.RelType, link.SourceId));
+        }
+
+        if (shown > KeptShown)
+        {
+            kept.Add($"And {shown - KeptShown:N0} more link value(s) changed since the import.");
+        }
+
+        return (restored, logged, reverted);
     }
 
     // The batch's links that go. A link between two records that stay is kept with them, and so is a link a record that stays

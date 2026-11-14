@@ -150,6 +150,112 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
         Assert.Contains("keep a history", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => importer.StageAsync(file, Mapping(true)))).Message);
     }
 
+    // Updating a link's values from an import, and undoing it.
+
+    private static CsvLinkMapping WorksOnMapping(bool update) =>
+        new("Person", 0, "WORKS_ON", "Project", 1, [new CsvFieldMapping(2, "role", FieldType.Text), new CsvFieldMapping(3, "days_a_week", FieldType.Number)])
+        { UpdateExisting = update };
+
+    private async Task<(ModelFactory Factory, CsvImportService Importer, RecordRepository Records)> WithConsultancyAsync()
+    {
+        var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        return (factory, new CsvImportService(factory), new RecordRepository(factory));
+    }
+
+    [Fact]
+    public async Task A_links_file_adds_another_link_unless_asked_to_update_the_one_there()
+    {
+        // p1 already works on pr2 as "Design lead", 2 days a week. Without asking to update, a file with different values
+        // adds a second link rather than changing it, same as an import always has.
+        var (_, importer, records) = await WithConsultancyAsync();
+        var file = Csv("person,project,role,days_a_week\np1,pr2,Lead,3\n");
+
+        var plan = await importer.PlanAsync(file, WorksOnMapping(false));
+        Assert.Equal((1, 0, 0), (plan.ToAdd, plan.AlreadyThere, plan.ToUpdate));
+
+        await importer.ImportAsync(file, WorksOnMapping(false));
+        var links = (await records.LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Where(l => l.OtherKey == "pr2").ToList();
+        Assert.Equal(2, links.Count);
+    }
+
+    [Fact]
+    public async Task Updating_a_links_file_changes_only_its_values_and_undo_puts_them_back()
+    {
+        var (factory, importer, records) = await WithConsultancyAsync();
+        var file = Csv("person,project,role,days_a_week\np1,pr2,Lead,3\n");
+
+        var plan = await importer.PlanAsync(file, WorksOnMapping(true));
+        Assert.Equal((0, 0, 1), (plan.ToAdd, plan.AlreadyThere, plan.ToUpdate));
+
+        var result = await importer.ImportAsync(file, WorksOnMapping(true));
+        Assert.Equal((0, 1), (result.Added, result.Updated));
+
+        var link = (await records.LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
+        Assert.Equal(("Lead", "3"), (link.Values["role"], link.Values["days_a_week"]));
+
+        var undo = await importer.UndoAsync(result.BatchId);
+        Assert.True(undo.Complete);
+        Assert.Equal(1, undo.Reverted);
+        var back = (await records.LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
+        Assert.Equal(("Design lead", "2"), (back.Values["role"], back.Values["days_a_week"]));
+    }
+
+    [Fact]
+    public async Task Undo_keeps_a_links_value_that_was_changed_again_since()
+    {
+        var (_, importer, records) = await WithConsultancyAsync();
+        var result = await importer.ImportAsync(Csv("person,project,role,days_a_week\np1,pr2,Lead,3\n"), WorksOnMapping(true));
+        Assert.Equal(1, result.Updated);
+
+        var link = (await records.LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
+        await records.UpdateLinkAsync(link.Id, new Dictionary<string, string?> { ["role"] = "Director", ["days_a_week"] = "3" });
+
+        var undo = await importer.UndoAsync(result.BatchId);
+        Assert.False(undo.Complete);
+        Assert.Contains("link's Role was changed since the import", undo.Kept.Single());
+
+        var now = (await records.LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
+        Assert.Equal(("Director", "2"), (now.Values["role"], now.Values["days_a_week"]));
+    }
+
+    [Fact]
+    public async Task A_link_updates_only_when_the_two_are_linked_that_way_exactly_once()
+    {
+        var (_, importer, records) = await WithConsultancyAsync();
+
+        // A second WORKS_ON link between p1 and pr2 means it's no longer clear which one the file would mean, so asking
+        // to update adds a third link instead of changing either.
+        await records.AddLinkAsync("person:p1", "WORKS_ON", "project:pr2", new Dictionary<string, string?> { ["role"] = "Reviewer", ["days_a_week"] = "1" });
+        var file = Csv("person,project,role,days_a_week\np1,pr2,Lead,3\n");
+
+        var plan = await importer.PlanAsync(file, WorksOnMapping(true));
+        Assert.Equal((1, 0), (plan.ToAdd, plan.ToUpdate));
+
+        await importer.ImportAsync(file, WorksOnMapping(true));
+        var links = (await records.LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Where(l => l.OtherKey == "pr2").ToList();
+        Assert.Equal(3, links.Count);
+    }
+
+    [Fact]
+    public async Task A_model_without_history_cannot_update_links_either()
+    {
+        var (factory, _, _) = await WithConsultancyAsync();
+        await using (var db = factory.CreateDbContext())
+        {
+            if (await db.ModelSettings.ExecuteUpdateAsync(m => m.SetProperty(x => x.RecordHistory, false).SetProperty(x => x.RequireReason, false)) == 0)
+            {
+                db.ModelSettings.Add(new ModelSetting { RecordHistory = false, RequireReason = false });
+                await db.SaveChangesAsync();
+            }
+        }
+
+        var importer = new CsvImportService(factory);
+        var file = Csv("person,project,role,days_a_week\np1,pr2,Lead,3\n");
+        Assert.Contains("keep a history", (await importer.PlanAsync(file, WorksOnMapping(true))).Problems.Single());
+        Assert.Contains("keep a history", (await Assert.ThrowsAsync<LinkbaseValidationException>(() => importer.StageAsync(file, WorksOnMapping(true)))).Message);
+    }
+
     // Reverting an edit.
 
     private async Task<(ModelFactory Factory, RecordRepository Records, ChangeReverter Reverter)> WithPersonAsync()

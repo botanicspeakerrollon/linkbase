@@ -248,6 +248,11 @@ public sealed partial class CsvImportService
             problems.Add($"{RecordRepository.Title(required.Key)} is required on every {mapping.FromType} {mapping.RelType} {mapping.ToType} link, so it needs a column.");
         }
 
+        if (mapping.UpdateExisting && !(await Linkbase.Core.History.ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
+        {
+            problems.Add("Updating links needs the model to keep a history, so the changes can be put back. This model doesn't.");
+        }
+
         if (problems.Count > 0)
         {
             return (pairs, problems, notes, 0);
@@ -402,29 +407,64 @@ public sealed partial class CsvImportService
 
     // The links the model already has between the same two records with the same values. A row with no values is there when
     // the two are linked that way at all.
-    private static async Task<HashSet<(string Source, string Target, string Props)>> ExistingLinksAsync(
-        LinkbaseDbContext db, string relType, List<(string Source, string Target, string Props)> pairs, CancellationToken cancellationToken)
+    private static Task<HashSet<(string Source, string Target, string Props)>> ExistingLinksAsync(
+        LinkbaseDbContext db, string relType, List<(string Source, string Target, string Props)> pairs, CancellationToken cancellationToken) =>
+        StagedLinksWhereAsync(db, relType, pairs,
+            "EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id AND (s.props = '{}'::jsonb OR l.props = s.props))",
+            cancellationToken);
+
+    // Among pairs that don't already match exactly, those whose two records are already linked this way exactly once:
+    // committing changes that link's values instead of adding another. Left out when there's no link yet, or more than
+    // one already, since which one the file means isn't clear then.
+    private static Task<HashSet<(string Source, string Target, string Props)>> UpdatableLinksAsync(
+        LinkbaseDbContext db, string relType, List<(string Source, string Target, string Props)> pairs, CancellationToken cancellationToken) =>
+        StagedLinksWhereAsync(db, relType, pairs,
+            "(SELECT count(*) FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id) = 1",
+            cancellationToken);
+
+    // Which of the pairs' indexes satisfy a condition against the model's links, found through the staging table. In a
+    // transaction only so the table lasts until the lookup, and goes when it's rolled back. A context whose connection is
+    // already open, such as one this same call already opened for an earlier lookup, is left open rather than closed.
+    private static async Task<HashSet<(string Source, string Target, string Props)>> StagedLinksWhereAsync(
+        LinkbaseDbContext db, string relType, List<(string Source, string Target, string Props)> pairs, string condition, CancellationToken cancellationToken)
     {
-        // In a transaction only so the staging table lasts until the lookup, and goes when it's rolled back.
-        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
-        await connection.OpenAsync(cancellationToken);
-        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
-        await StageLinksAsync(connection, pairs, cancellationToken);
-        await using var command = new NpgsqlCommand(
-            "SELECT s.idx FROM staging_link s WHERE EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = @rel AND l.target_id = s.target_id AND (s.props = '{}'::jsonb OR l.props = s.props))",
-            connection, transaction);
-        command.Parameters.Add(new NpgsqlParameter("rel", NpgsqlDbType.Text) { Value = relType });
-        var found = new HashSet<(string, string, string)>();
-        await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+        if (pairs.Count == 0)
         {
-            while (await reader.ReadAsync(cancellationToken))
-            {
-                found.Add(pairs[reader.GetInt32(0)]);
-            }
+            return [];
         }
 
-        await transaction.RollbackAsync(cancellationToken);
-        return found;
+        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
+        var opened = connection.State != System.Data.ConnectionState.Open;
+        if (opened)
+        {
+            await connection.OpenAsync(cancellationToken);
+        }
+
+        try
+        {
+            await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+            await StageLinksAsync(connection, pairs, cancellationToken);
+            await using var command = new NpgsqlCommand($"SELECT s.idx FROM staging_link s WHERE {condition}", connection, transaction);
+            command.Parameters.Add(new NpgsqlParameter("rel", NpgsqlDbType.Text) { Value = relType });
+            var found = new HashSet<(string, string, string)>();
+            await using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    found.Add(pairs[reader.GetInt32(0)]);
+                }
+            }
+
+            await transaction.RollbackAsync(cancellationToken);
+            return found;
+        }
+        finally
+        {
+            if (opened)
+            {
+                await connection.CloseAsync();
+            }
+        }
     }
 
     private static async Task StageLinksAsync(NpgsqlConnection connection, List<(string Source, string Target, string Props)> pairs, CancellationToken cancellationToken)

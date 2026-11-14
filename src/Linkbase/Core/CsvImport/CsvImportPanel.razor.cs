@@ -316,5 +316,6 @@ public partial class CsvImportPanel
             ? throw new LinkbaseValidationException("Choose the types at both ends.")
             : new(_fromType, _fromColumn, _relType ?? "", _toType, _toColumn,
                 Attributes().Select(a => (Attribute: a, Column: AttributeColumn(a))).Where(a => a.Column >= 0)
-                    .Select(a => new CsvFieldMapping(a.Column, a.Attribute.Key, a.Attribute.Type)).ToList());
+                    .Select(a => new CsvFieldMapping(a.Column, a.Attribute.Key, a.Attribute.Type)).ToList())
+            { UpdateExisting = _update };
 }

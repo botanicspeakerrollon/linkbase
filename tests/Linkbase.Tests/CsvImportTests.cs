@@ -519,4 +519,28 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         Press(cut, "Check");
         Sees(cut, "2 new link(s) to add.");
     }
+
+    [Fact]
+    public async Task A_links_file_can_update_the_links_already_there()
+    {
+        var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
+        await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
+        Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
+        Services.AddSingleton<CsvImportService>();
+        var cut = RenderPage<CsvImportPanel>();
+
+        // p1 already works on pr2 as "Design lead", 2 days a week.
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("person_id,project_id,role,days_a_week\np1,pr2,Lead,3\n", "assignments.csv"));
+        Sees(cut, "value=\"WORKS_ON\"");
+
+        cut.Find("input[aria-label='Update links that are already here']").Change(true);
+        Press(cut, "Check");
+        Sees(cut, "1 already here to update.");
+
+        Press(cut, "Import 1");
+        Sees(cut, "Added 0 link(s) and updated 1.");
+
+        var link = (await new RecordRepository(factory).LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
+        Assert.Equal(("Lead", "3"), (link.Values["role"], link.Values["days_a_week"]));
+    }
 }

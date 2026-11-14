@@ -315,8 +315,12 @@ since it was staged. Things already here are never staged, only counted.
 file has changes: an empty cell leaves the value alone, and with no name column the record keeps its name. Check counts the
 records it would update, the review lists each one by what changes (`city: Bern → Zurich`), and commit writes one field-level
 entry per change to the audit trail, under the import. It needs the model to keep a history, because that is what puts the values
-back, and it can't update a type a domain module keeps up to date. Only CSV records update so far: links and Read text still skip
-what is already here.
+back, and it can't update a type a domain module keeps up to date.
+
+A links file offers the same box, **Update links that are already here**, when the relationship carries values. It only
+changes a link's values when the two records are linked that way exactly once: a row that would otherwise match an
+ambiguous pair (none yet, or more than one already) is added as a further link instead, same as when the box is unticked.
+Read text still only skips what is already here, for both records and links.
 
 Undoing an import also puts back the values it changed. A value someone has changed again since stays as it is and is listed
 with the records that stay. A value already back at its old value is skipped, so an undo that left something can be run again.
