@@ -633,6 +633,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
         DoesNotSee(cut, "explore-menu");
         cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
+
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
         Sees(cut, "Click a node for its details");
 
@@ -662,6 +663,24 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("c"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
         Sees(cut, "Type anything above");
+    }
+
+    [Fact]
+    public async Task O_opens_the_selected_nodes_own_page_and_does_nothing_without_one()
+    {
+        var s = await SeedAsync();
+        var cut = Render(s);
+        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "register"));
+        var before = Address;
+
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("o"));
+        Assert.Equal(before, Address);
+
+        await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
+        cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("o"));
+        Assert.EndsWith($"/data/Crag/{s.CragId}", Address, StringComparison.Ordinal);
     }
 
     [Fact]

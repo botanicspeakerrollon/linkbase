@@ -116,6 +116,8 @@ It stops looking through a hub that is too busy and says so.
 
 *What changed nearby* (`d`). Edits since a date to the record, the records it links to and their links, up to 500.
 
+*Open and edit* (`o`). Opens the selected record's own page.
+
 *Link history.* Selecting a link lists its changes under its values.
 
 *As of.* A date or slider hides records and links that did not exist on that day and shows the rest with the

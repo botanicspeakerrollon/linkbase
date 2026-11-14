@@ -62,9 +62,8 @@ public static class GraphStyle
     // A domain's own page, or else the generated record page, whose ids are the type in lower case, a colon and the key.
     public static string? Link(GraphNode node) => node.IsModel
         ? null
-        : Known.TryGetValue(node.Label, out var known)
-            ? known.Link?.Invoke(node)
-            : RecordLink(node.Label, node.Id[(node.Id.IndexOf(':') + 1)..]);
+        : Known.GetValueOrDefault(node.Label)?.Link?.Invoke(node)
+            ?? RecordLink(node.Label, node.Id[(node.Id.IndexOf(':') + 1)..]);
 
     public static string RecordLink(string type, string key) => $"/data/{Uri.EscapeDataString(type)}/{Uri.EscapeDataString(key)}";
 

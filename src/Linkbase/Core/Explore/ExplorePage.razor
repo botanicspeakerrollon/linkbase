@@ -180,7 +180,7 @@
             }
             @if (GraphStyle.Link(node) is { } link)
             {
-                <MudButton Href="@link" Variant="Variant.Text" Size="Size.Small" FullWidth="true" EndIcon="@Icons.Material.Filled.OpenInNew">Open and edit</MudButton>
+                <MudButton Href="@link" Variant="Variant.Text" Size="Size.Small" FullWidth="true" EndIcon="@Icons.Material.Filled.OpenInNew" title="Open its page (o)">Open and edit</MudButton>
             }
         }
         else if (_selectedEdge is { } edge)

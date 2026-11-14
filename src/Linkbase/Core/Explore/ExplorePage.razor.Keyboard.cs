@@ -55,6 +55,9 @@ public partial class ExplorePage
             case "d" when _selected is { IsModel: false }:
                 await ShowNearbyChangesAsync();
                 break;
+            case "o" when _selected is { } node && GraphStyle.Link(node) is { } link:
+                Navigation.NavigateTo(link);
+                return;
             case "Delete" when _selected is { IsModel: false } node:
                 await RemoveAsync(node.Id);
                 break;

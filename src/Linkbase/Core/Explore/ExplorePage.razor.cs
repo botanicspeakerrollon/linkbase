@@ -31,7 +31,7 @@ public partial class ExplorePage
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "a", "w", "d", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "a", "w", "d", "o", "Delete", "Escape"];
 
     // Totals of the number properties over every match of the last search, shown in a panel on request.
     private bool _summaryOpen;
