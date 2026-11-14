@@ -37,5 +37,5 @@ routes and crags are shareable, or some crags' locations are hidden.
   the viewer or be filtered in the repository, or they become a way around it.
 - `import_batch.raw_payload` holds the source data as JSON, which may include private fields. Treat it as
   owner-only. For text read by AI it holds only the extracted facts, not the page's text.
-- Reading text sends pasted or fetched text to the Anthropic API. Your own notes and partners are never sent.
+- Reading text sends pasted or fetched text to the configured model provider (the Anthropic API unless `Llm:Provider` says otherwise). Your own notes and partners are never sent.
 - `external_ref` has no `user_id`. It should inherit visibility from the row it points to.

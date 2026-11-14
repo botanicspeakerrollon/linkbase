@@ -424,7 +424,7 @@ review's notes. A type that requires links is only kept when the text gives them
 staged for review, committed in one transaction, and can be undone from **Recent imports**. A record is keyed by the slug of its
 name, and one already here, by key or by exact name, is left as it is but can be linked to.
 
-The text is sent to Anthropic, and the tab says so. Set `Extraction:Enabled` to `false` to hide it.
+The text is sent to the configured AI model (Anthropic unless `Llm:Provider` says otherwise), and the tab says so. Set `Extraction:Enabled` to `false` to hide it.
 
 Reading text fills text fields and text lists, but leaves out fields that hold several numbers, dates or choices (`multiple`), because it
 can't check each value against the text yet.

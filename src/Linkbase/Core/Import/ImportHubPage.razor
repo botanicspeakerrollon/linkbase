@@ -40,7 +40,7 @@
 
     protected override void OnInitialized()
     {
-        // Text goes to Anthropic, so an administrator can turn the ways of importing that send it off.
+        // Text goes to the model provider, so an administrator can turn the ways of importing that send it off.
         _aiEnabled = !string.Equals(Configuration["Extraction:Enabled"], "false", StringComparison.OrdinalIgnoreCase);
         _sources = CurrentModel.Domains.SelectMany(d => d.ImportSources).Where(s => _aiEnabled || !s.UsesAi).ToList();
 
