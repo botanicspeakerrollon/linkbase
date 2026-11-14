@@ -223,6 +223,9 @@ Each requirement is independently testable. "Record" and "link" are as defined i
 | SEC-1 | M (once started) | The system shall authenticate who is using it before it is reachable beyond localhost. | Deferred |
 | SEC-2 | M (once started) | Row visibility shall be enforced for every read path, including raw SQL graph queries and free-text search, not only EF LINQ. | Deferred |
 | SEC-3 | S (once started) | Individual fields (e.g. notes, partner identity, precise location) shall be hideable per viewer, independent of record-level visibility. | Deferred |
+| SEC-5 | M (once started) | Visibility shall follow a label of classification (at least), department (any of) and project (all of), on nodes, links and properties; see [security-design.md](security-design.md). | Deferred |
+| SEC-6 | M (once started) | A model with security off shall behave and perform as it does without the feature. | Deferred |
+| SEC-7 | S (once started) | Labels shall be assignable in bulk by selection, filter, import and default. | Deferred |
 | SEC-4 | M | Until SEC-1–3 exist, the system shall not be exposed beyond a single trusted operator's own machine or network. | Met (documented constraint, not a software control) |
 
 ### 4.3 Reliability and data integrity (REL)
