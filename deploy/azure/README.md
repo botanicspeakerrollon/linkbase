@@ -4,7 +4,7 @@ Hosts the demo (the example models, with Read text and Ask working) on Azure Con
 Key Vault. It's one script, and running it again after a change redeploys.
 
 ```powershell
-winget install Microsoft.AzureCLI      # once
+winget install Microsoft.AzureCLI      # once; Docker Desktop must be running too
 az login
 powershell -ExecutionPolicy Bypass -File ./deploy/azure/deploy.ps1   # Bypass is for this one run only; it changes no setting
 ```
@@ -20,7 +20,7 @@ One resource group (`rg-linkbase-demo` in `uksouth`; `-ResourceGroup` and `-Loca
 | --- | --- | --- |
 | Container App, 0.5 vCPU and 1 GiB, one replica | The app. One replica, because Blazor Server keeps each browser's session in its process | about £15 |
 | Postgres Flexible Server, Burstable B1ms | The four example models' databases | about £12 |
-| Container Registry, Basic | Holds the image the script builds | about £4 |
+| Container Registry, Basic | Holds the image the script builds (with Docker on your PC, then pushes) | about £4 |
 | Key Vault | Holds the secrets | pennies |
 | Log Analytics | The app's logs | pennies at demo volume |
 | Managed identity | How the app reaches the vault and registry, so no password does that job | free |

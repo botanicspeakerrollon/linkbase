@@ -167,11 +167,20 @@ try {
         }
     }
 
-    Write-Host "`n3/4  Building the image in $registry (a few minutes)..."
+    # Built here with Docker and pushed, rather than with `az acr build`, because ACR Tasks is switched off on some
+    # subscriptions (new and free ones) and fails with TasksOperationsNotAllowed.
+    Write-Host "`n3/4  Building the image with Docker and pushing it to $registry (a few minutes)..."
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw 'Docker is needed to build the image. Install and start Docker Desktop.' }
+    $image = "$($base.registryLoginServer.value)/linkbase"
     $tag = Get-Date -Format 'yyyyMMddHHmmss'
+    Invoke-Az acr login --name $registry --output none
     Push-Location $repo
-    try { Invoke-Az acr build --registry $registry --image "linkbase:$tag" --file Dockerfile . --output none }
-    finally { Pop-Location }
+    try {
+        & docker build --tag "${image}:$tag" .
+        if ($LASTEXITCODE -ne 0) { throw 'docker build failed. Is Docker Desktop running?' }
+        & docker push "${image}:$tag"
+        if ($LASTEXITCODE -ne 0) { throw 'docker push failed.' }
+    } finally { Pop-Location }
 
     Write-Host "`n4/4  The app..."
     $app = Invoke-Deployment $true $tag
