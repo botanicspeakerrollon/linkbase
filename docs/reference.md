@@ -163,8 +163,8 @@ links, level edits, loading and import commits. To move a record, remove its lin
 
 **Limits.** A name over about 2,000 characters cannot be stored. A reason note is 500 characters.
 
-**Not yet.** No bulk edit. No way to edit a model's types, fields or relationships in the app (a model file or *Start from CSVs*
-makes them). Phone-width layouts have not been checked.
+**Not yet.** No bulk edit. Phone-width layouts have not been checked. A model's types, fields and relationships are edited in
+the model editor, not here.
 
 **See also.** [models](models.md#lists-and-records), [hierarchies](models.md#hierarchies), `Core/Records`.
 
