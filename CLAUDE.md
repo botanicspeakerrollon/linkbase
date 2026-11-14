@@ -45,6 +45,8 @@ choice between clever and boring, choose boring. See `README.md` for commands.
 
 - Small commits, one per meaningful step.
 - Be prepared to work in a new worktree or branch if other work is happening. Be aware of merge conflicts and the need to collaborate with other work.
+- User facing and repo docs must be checked for accuracy against new work, and updated if required. 
+- Once new work is completed, it must be merged to main, but not pushed to remote.
 - The repo is anonymous: nothing in it may identify its owner. Commits use the repo's own `Linkbase` identity and are made
   with `TZ=UTC0` (`$env:TZ = 'UTC0'` in PowerShell), or git records the PC's time zone. Test data uses made-up people,
   places and dates, never anything from the real logbook.
