@@ -148,6 +148,7 @@ Each requirement is independently testable. "Record" and "link" are as defined i
 | FUN-14 | S | The canvas's nodes and links shall be exportable as CSV (nodes), CSV (links), combined JSON, or a PNG image. | Met |
 | FUN-15 | C | The selected node's own page shall open from Explore by keyboard, in the same tab or a new one. | Met |
 | FUN-16 | C | A natural-language question about "the most" of something shall be answerable as a ranking: the records of one type with the most distinct linked records of another, counted in the database over every match of the search, shown with a plain-words description, kept as a visible, editable part of the search phrase, and addable by hand by typing "rank" once the phrase has two steps. A search with no ranking shall look and behave as before. | Met |
+| FUN-17 | C | A ranking shall be able to use more than a count of different records: a count of every match with repeats included, or the total, average or highest of a number field of the counted type, listed biggest first or smallest first (among records with at least one match). The choice shall be a visible part of the ranking in the search bar, in the plain-words sentence and in the panel heading, shall be set from a question by Ask, and shall be checked against the model so only a real number field is used. A ranking with no change shall behave as before. Absence ("none") and branching patterns are out of scope. | Met |
 
 ### 3.3 Records and editing (REC)
 

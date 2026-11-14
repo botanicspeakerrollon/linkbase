@@ -424,6 +424,9 @@ public partial class ExplorePage
 
     private string RankCounted => _lastPattern?.Rank is { } rank && _lastPattern.Nodes[rank.Count].Label is { } label ? label : "record";
 
+    // The panel's column heading says what the figure is, in the same words as the sentence above it.
+    private string RankColumn => _lastPattern is { Rank: { } rank } ? PatternRankText.Column(_lastPattern) : "";
+
     private string RankGrouped => _lastPattern?.Rank is { } rank && _lastPattern.Nodes[rank.Group].Label is { } label ? label : "record";
 
     private Task ShowMorePatternAsync() => WithBusyAsync(AddPatternResultsAsync);

@@ -89,6 +89,26 @@ public sealed record PatternRel(string RelType, bool Outgoing)
 public sealed record PatternRank(int Group, int Count, int Top)
 {
     public const int MaxTop = 25;
+
+    // What is worked out for each group. Distinct is the original: how many different records are reached.
+    public RankMeasure Measure { get; init; } = RankMeasure.Distinct;
+
+    // The number field of the counted records that Sum, Average and Highest use. Null for the two counts.
+    public string? Key { get; init; }
+
+    // Lists the groups with the smallest figure first. Only groups with at least one match are ever listed.
+    public bool Fewest { get; init; }
+
+    public bool NeedsKey => Measure is RankMeasure.Sum or RankMeasure.Average or RankMeasure.Highest;
+}
+
+public enum RankMeasure
+{
+    Distinct,
+    Matches,
+    Sum,
+    Average,
+    Highest,
 }
 
 // A chain such as Crag <-AT- Route. There's always one more node than there are relationships.
@@ -99,7 +119,7 @@ public sealed record GraphPattern(IReadOnlyList<PatternNode> Nodes, IReadOnlyLis
 }
 
 // One group of a ranking: the node, and how many distinct nodes at the counted position it reaches.
-public sealed record RankedNode(string NodeId, string Name, long Count);
+public sealed record RankedNode(string NodeId, string Name, decimal Value);
 
 // Node ids are in the order of the query's matches. Remaining counts matches left out by the limit.
 public sealed record PatternResult(IReadOnlyList<string> NodeIds, int Remaining);
@@ -146,7 +166,7 @@ public static partial class GraphPatternSql
         return (sql, parameters);
     }
 
-    // The groups with the most distinct matches at another position, over every match of the pattern. A node reached by several
+    // The groups with the biggest (or smallest) figure over the nodes at another position, over every match of the pattern. A node reached by several
     // chains counts once. Only groups with at least one match appear, and ties come out by name so the order is stable.
     public static (string Sql, List<NpgsqlParameter> Parameters) BuildRank(GraphPattern pattern, GraphSchema schema)
     {
@@ -170,14 +190,56 @@ public static partial class GraphPatternSql
         var (from, where) = FromAndWhere(pattern, schema, parameters);
         var Add = ParameterAdder(parameters);
         var (g, c) = (rank.Group, rank.Count);
+        var direction = rank.Fewest ? "ASC" : "DESC";
+        var limit = Add(rank.Top, NpgsqlDbType.Integer);
+        var conditions = string.Join(" AND ", where);
+
+        if (!Enum.IsDefined(rank.Measure))
+        {
+            throw new LinkbaseValidationException("That ranking doesn't fit its search.");
+        }
+
+        if (!rank.NeedsKey)
+        {
+            var figure = rank.Measure == RankMeasure.Matches ? "count(*)" : $"count(DISTINCT n{c}.node_id)";
+            var counts =
+                $"""
+                SELECT n{g}.node_id AS "NodeId", n{g}.name AS "Name", {figure}::numeric AS "Value"
+                {from}
+                WHERE {conditions}
+                GROUP BY n{g}.node_id, n{g}.name
+                ORDER BY {figure} {direction}, n{g}.name, n{g}.node_id
+                LIMIT {limit}
+                """;
+            return (counts, parameters);
+        }
+
+        // The key has to be a number field of the counted type in the model, and plain enough to put in the SQL text.
+        var label = pattern.Nodes[c].Label;
+        if (label is null || rank.Key is null || !PropertyKey().IsMatch(rank.Key)
+            || !schema.Properties.Any(p => p.Label == label && p.Key == rank.Key && p.Type == GraphValueType.Number))
+        {
+            throw new LinkbaseValidationException("That ranking needs a number field of the records it counts.");
+        }
+
+        // Each counted record adds its number once however many chains reach it, and a value that isn't a plain number is
+        // left out rather than failing the cast. Groups whose records have no number at all aren't listed.
+        var props = PropsOf(schema, $"n{c}");
+        var number = $"CASE WHEN {props}->>'{rank.Key}' ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN ({props}->>'{rank.Key}')::numeric END";
+        var aggregate = rank.Measure switch
+        {
+            RankMeasure.Sum => "sum(v)",
+            RankMeasure.Average => "avg(v)",
+            _ => "max(v)",
+        };
         var sql =
             $"""
-            SELECT n{g}.node_id AS "NodeId", n{g}.name AS "Name", count(DISTINCT n{c}.node_id)::bigint AS "Count"
-            {from}
-            WHERE {string.Join(" AND ", where)}
-            GROUP BY n{g}.node_id, n{g}.name
-            ORDER BY count(DISTINCT n{c}.node_id) DESC, n{g}.name, n{g}.node_id
-            LIMIT {Add(rank.Top, NpgsqlDbType.Integer)}
+            SELECT gid AS "NodeId", gname AS "Name", {aggregate}::numeric AS "Value"
+            FROM (SELECT DISTINCT n{g}.node_id AS gid, n{g}.name AS gname, n{c}.node_id AS cid, {number} AS v {from} WHERE {conditions}) t
+            WHERE v IS NOT NULL
+            GROUP BY gid, gname
+            ORDER BY {aggregate} {direction}, gname, gid
+            LIMIT {limit}
             """;
         return (sql, parameters);
     }

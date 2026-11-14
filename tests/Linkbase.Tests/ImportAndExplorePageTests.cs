@@ -1031,7 +1031,7 @@ public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture
 {
     private static readonly GraphSchema Schema = new(
         [new GraphConnection("Route", "AT", "Crag")],
-        [new GraphPropertyInfo("Crag", "name", GraphValueType.Text), new GraphPropertyInfo("Route", "name", GraphValueType.Text)]);
+        [new GraphPropertyInfo("Crag", "name", GraphValueType.Text), new GraphPropertyInfo("Route", "name", GraphValueType.Text), new GraphPropertyInfo("Route", "length_m", GraphValueType.Number)]);
 
     private GraphPattern? _ran;
 
@@ -1068,13 +1068,36 @@ public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture
         var cut = Bar();
         await cut.InvokeAsync(() => cut.Instance.ShowPattern(RankedRoutes()));
 
-        Assert.Contains("by most different", cut.Markup);
+        Assert.NotEmpty(cut.FindAll(".pattern-rank"));
         cut.Find("select[aria-label='How many to show']").Change("3");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Search").Click();
         Assert.Equal(new PatternRank(1, 0, 3), _ran?.Rank);
 
         cut.Find("button[aria-label='Remove the ranking']").Click();
-        Assert.DoesNotContain("by most different", cut.Markup);
+        Assert.Empty(cut.FindAll(".pattern-rank"));
+    }
+
+    [Fact]
+    public async Task The_ranking_offers_totals_only_for_a_counted_type_with_numbers_and_can_put_the_fewest_first()
+    {
+        var cut = Bar();
+        await cut.InvokeAsync(() => cut.Instance.ShowPattern(RankedRoutes()));
+
+        // Route has a number field, so totals are on offer. Counting Crag, which has none, takes them away again.
+        Assert.NotEmpty(cut.FindAll("select[aria-label='What to work out'] option[value='Sum']"));
+        Assert.Empty(cut.FindAll("select[aria-label='Which number to use']"));
+        cut.Find("select[aria-label='What to work out']").Change("Sum");
+        cut.Find("select[aria-label='Biggest or smallest first']").Change("fewest");
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Search").Click();
+
+        Assert.Equal(RankMeasure.Sum, _ran?.Rank?.Measure);
+        Assert.NotNull(_ran?.Rank?.Key);
+        Assert.True(_ran?.Rank?.Fewest);
+
+        // Swapping the ends so Crag is counted leaves no number to total, so the ranking goes back to counting.
+        cut.Find("select[aria-label='Which records to count']").Change("1");
+        Assert.Empty(cut.FindAll("select[aria-label='What to work out'] option[value='Sum']"));
+        Assert.Empty(cut.FindAll("select[aria-label='Which number to use']"));
     }
 
     [Fact]
@@ -1092,8 +1115,11 @@ public class PatternSearchBarTests(PostgresFixture fixture) : UiTestBase(fixture
 
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".pattern-rank")));
         Assert.Null(_ran);
-        cut.FindAll("button").First(b => b.TextContent.Trim() == "Search").Click();
-        Assert.Equal(new PatternRank(0, 1, 5), _ran?.Rank);
+        cut.WaitForAssertion(() =>
+        {
+            cut.FindAll("button").First(b => b.TextContent.Trim() == "Search").Click();
+            Assert.Equal(new PatternRank(0, 1, 5), _ran?.Rank);
+        });
     }
 
     [Fact]

@@ -65,23 +65,39 @@ public static class PatternChecker
             checkedRels.Add(rel with { Filters = (rel.Filters ?? []).Select(f => CheckLinkFilter(f, rel.RelType, schema, question)).ToList() });
         }
 
-        return new GraphPattern(checkedNodes, checkedRels) { Rank = CheckRank(pattern.Rank, checkedNodes.Count) };
+        return new GraphPattern(checkedNodes, checkedRels) { Rank = CheckRank(pattern.Rank, checkedNodes, schema) };
     }
 
     // Two different positions in the chain, and a short list. The size is trimmed rather than refused.
-    private static PatternRank? CheckRank(PatternRank? rank, int nodeCount)
+    private static PatternRank? CheckRank(PatternRank? rank, List<PatternNode> nodes, GraphSchema schema)
     {
         if (rank is null)
         {
             return null;
         }
 
-        if (rank.Group < 0 || rank.Group >= nodeCount || rank.Count < 0 || rank.Count >= nodeCount || rank.Group == rank.Count)
+        if (rank.Group < 0 || rank.Group >= nodes.Count || rank.Count < 0 || rank.Count >= nodes.Count || rank.Group == rank.Count)
         {
             throw new QuestionFailedException("The answer ranked records the search doesn't have. Try asking another way.");
         }
 
-        return rank with { Top = Math.Clamp(rank.Top, 1, PatternRank.MaxTop) };
+        if (!Enum.IsDefined(rank.Measure))
+        {
+            throw new QuestionFailedException("The answer ranked by something this search can't work out. Try asking another way.");
+        }
+
+        // A total, average or highest needs a number field that the counted type really has. The two counts need none.
+        string? key = null;
+        if (rank.NeedsKey)
+        {
+            var label = nodes[rank.Count].Label;
+            key = label is not null && rank.Key is not null
+                && schema.Properties.Any(p => p.Label == label && p.Key == rank.Key && p.Type == GraphValueType.Number)
+                    ? rank.Key
+                    : throw new QuestionFailedException($"The answer ranked by a number {label ?? "those records"} don't have. Try asking another way.");
+        }
+
+        return rank with { Top = Math.Clamp(rank.Top, 1, PatternRank.MaxTop), Key = key };
     }
 
     private static PatternFilter CheckLinkFilter(PatternFilter filter, string relType, GraphSchema schema, string question)
