@@ -217,14 +217,64 @@ public sealed partial class ModelSecurity
             return;
         }
 
+        var api = source.Url is not null || source.Path is not null || source.CacheSeconds is not null || source.TokenSetting is not null;
+        var claims = source.Claim is not null || source.Map is not null;
         if (source.Type == GrantSourceType.Config)
         {
-            if (source.Url is not null || source.Path is not null || source.CacheSeconds is not null || source.TokenSetting is not null)
+            if (api)
             {
                 problems.Add($"{what} reads its grants from the model file, so its source can't have a url, path, cacheSeconds or tokenSetting.");
             }
 
+            if (claims || source.Provider is not null)
+            {
+                problems.Add($"{what} reads its grants from the model file, so its source can't have a claim, map or provider.");
+            }
+
             return;
+        }
+
+        if (source.Type == GrantSourceType.Claims)
+        {
+            if (api || source.Provider is not null)
+            {
+                problems.Add($"{what} reads its grants from a claim, so its source can only have a claim and a map.");
+            }
+
+            if (string.IsNullOrWhiteSpace(source.Claim))
+            {
+                problems.Add($"{what} reads its grants from a claim, so its source needs a claim: the type of the claim that holds them, such as groups.");
+            }
+
+            foreach (var (from, to) in source.Map ?? new Dictionary<string, string>())
+            {
+                if (string.IsNullOrWhiteSpace(from) || !IsValidValue(to))
+                {
+                    problems.Add($"{what}'s map has '{from}' meaning '{to}', which isn't a usable value.");
+                }
+            }
+
+            return;
+        }
+
+        if (source.Type == GrantSourceType.Custom)
+        {
+            if (api || claims)
+            {
+                problems.Add($"{what} reads its grants from a provider, so its source can only have a provider.");
+            }
+
+            if (string.IsNullOrWhiteSpace(source.Provider))
+            {
+                problems.Add($"{what} reads its grants from a provider, so its source needs a provider: the name it was registered under.");
+            }
+
+            return;
+        }
+
+        if (claims || source.Provider is not null)
+        {
+            problems.Add($"{what} reads its grants from an API, so its source can't have a claim, map or provider.");
         }
 
         if (string.IsNullOrWhiteSpace(source.Url))
@@ -258,7 +308,7 @@ public sealed partial class ModelSecurity
 
         if (configParts.Count == 0)
         {
-            problems.Add("The security section has users, but every part reads its grants from an API, so they would never be used.");
+            problems.Add("The security section has users, but every part reads its grants from somewhere else, so they would never be used.");
         }
 
         foreach (var (id, grants) in Users)
@@ -322,8 +372,17 @@ public sealed class SecurityPart
 
 public enum GrantSourceType
 {
+    // The model file's users table.
     Config,
+
+    // A directory over HTTP that the app doesn't own.
     Api,
+
+    // The claims of the signed-in user's token, such as groups.
+    Claims,
+
+    // A provider a deployment registered in code.
+    Custom,
 }
 
 // Where one part's grants come from: the model file, or a directory the app doesn't own, fetched over HTTP. The directory is
@@ -345,6 +404,16 @@ public sealed class GrantSource
     // For an API: the name of the app setting that holds a bearer token to send, such as Security:DirectoryToken. The token
     // itself never goes in the model file.
     public string? TokenSetting { get; init; }
+
+    // For claims: the type of the claim holding the grants, such as groups, or an identity provider's full claim name.
+    public string? Claim { get; init; }
+
+    // For claims: optionally, which of the part's values each claim value means, such as { "CN=Finance": "Finance" }. Claim values
+    // not listed are ignored. Left out, the claim's values are the part's values.
+    public IReadOnlyDictionary<string, string>? Map { get; init; }
+
+    // For custom: the name of the registered provider (ICustomGrantProvider.Name).
+    public string? Provider { get; init; }
 
     [JsonIgnore] public TimeSpan CacheFor => TimeSpan.FromSeconds(CacheSeconds ?? ModelSecurity.DefaultCacheSeconds);
 }

@@ -10,22 +10,22 @@ public interface IGrantSource
 {
     // The values the user holds for the part. Empty if they hold none, or if the source couldn't be asked: a failure grants
     // nothing, so a viewer sees less and never more.
-    Task<IReadOnlyList<string>> GetAsync(string userId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<string>> GetAsync(CurrentUser user, CancellationToken cancellationToken);
 }
 
 // Grants written in the model file's users table.
 public sealed class ConfigGrantSource(ModelSecurity security, string partKey) : IGrantSource
 {
-    public Task<IReadOnlyList<string>> GetAsync(string userId, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<string>> GetAsync(CurrentUser user, CancellationToken cancellationToken)
     {
         IReadOnlyList<string> grants = [];
-        if (security.Users is not null && security.Users.TryGetValue(userId, out var user))
+        if (user.Id is not null && security.Users is not null && security.Users.TryGetValue(user.Id, out var held))
         {
             grants = partKey switch
             {
-                ModelSecurity.LevelKey => user.Level is null ? [] : [user.Level],
-                ModelSecurity.AnyOfKey => user.AnyOf ?? [],
-                ModelSecurity.AllOfKey => user.AllOf ?? [],
+                ModelSecurity.LevelKey => held.Level is null ? [] : [held.Level],
+                ModelSecurity.AnyOfKey => held.AnyOf ?? [],
+                ModelSecurity.AllOfKey => held.AllOf ?? [],
                 _ => [],
             };
         }
@@ -34,13 +34,51 @@ public sealed class ConfigGrantSource(ModelSecurity security, string partKey) : 
     }
 }
 
+// Grants carried by the sign-in itself: the values of one claim, such as the groups Active Directory or an identity provider
+// puts in the token. With a map, a claim value becomes the part's value it names and any other claim value is ignored, so a
+// directory's own group names can differ from the model's. Nothing is asked of anyone, so nothing is cached or can fail.
+public sealed class ClaimsGrantSource(GrantSource source) : IGrantSource
+{
+    public Task<IReadOnlyList<string>> GetAsync(CurrentUser user, CancellationToken cancellationToken)
+    {
+        var values = user.Claims.Where(c => c.Key == source.Claim).Select(c => c.Value);
+        IReadOnlyList<string> grants = source.Map is null
+            ? values.Distinct().ToList()
+            : values.Select(v => source.Map.TryGetValue(v, out var mapped) ? mapped : null).OfType<string>().Distinct().ToList();
+        return Task.FromResult(grants);
+    }
+}
+
+// Grants from a provider a deployment registered. One that isn't there, or that throws, grants nothing.
+public sealed class CustomGrantSource(string name, ICustomGrantProvider? provider, string partKey, ILogger logger) : IGrantSource
+{
+    public async Task<IReadOnlyList<string>> GetAsync(CurrentUser user, CancellationToken cancellationToken)
+    {
+        if (provider is null)
+        {
+            logger.LogWarning("No grant provider called {Provider} is registered, so its grants are empty.", name);
+            return [];
+        }
+
+        try
+        {
+            return await provider.GetAsync(user, partKey, cancellationToken) ?? [];
+        }
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogWarning("The grant provider {Provider} failed, so its grants are empty: {Reason}", name, ex.Message);
+            return [];
+        }
+    }
+}
+
 // Grants fetched from a directory the app doesn't own. Answers are cached for the source's cacheSeconds and never served after
 // that, so a revoked grant stops working within that time. A failed request is not cached and grants nothing.
 public sealed class ApiGrantSource(GrantSource source, ApiResponseCache cache) : IGrantSource
 {
-    public async Task<IReadOnlyList<string>> GetAsync(string userId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<string>> GetAsync(CurrentUser user, CancellationToken cancellationToken)
     {
-        var url = source.Url!.Replace("{user}", Uri.EscapeDataString(userId), StringComparison.Ordinal);
+        var url = source.Url!.Replace("{user}", Uri.EscapeDataString(user.Id!), StringComparison.Ordinal);
         var root = await cache.GetAsync(url, source.TokenSetting, source.CacheFor).WaitAsync(cancellationToken);
         return root is null ? [] : Extract(root.Value, source.Path!);
     }
@@ -166,29 +204,39 @@ public sealed class ApiResponseCache(HttpClient http, IConfiguration configurati
 public sealed class ViewerDirectory(ModelSecurity security, IReadOnlyDictionary<string, IGrantSource> sources)
 {
     public static ViewerDirectory Create(ModelSecurity security, HttpClient? http = null, IConfiguration? configuration = null,
-        TimeProvider? time = null, ILogger? logger = null)
+        TimeProvider? time = null, ILogger? logger = null, IEnumerable<ICustomGrantProvider>? providers = null)
     {
         var sources = new Dictionary<string, IGrantSource>();
         ApiResponseCache? cache = null;
         foreach (var (key, part) in security.Parts)
         {
-            if (part.Source is { Type: GrantSourceType.Api } api)
+            switch (part.Source)
             {
-                cache ??= new ApiResponseCache(http ?? new HttpClient(), configuration ?? new ConfigurationBuilder().Build(), time ?? TimeProvider.System, logger);
-                sources[key] = new ApiGrantSource(api, cache);
-            }
-            else
-            {
-                sources[key] = new ConfigGrantSource(security, key);
+                case { Type: GrantSourceType.Api } api:
+                    cache ??= new ApiResponseCache(http ?? new HttpClient(), configuration ?? new ConfigurationBuilder().Build(), time ?? TimeProvider.System, logger);
+                    sources[key] = new ApiGrantSource(api, cache);
+                    break;
+                case { Type: GrantSourceType.Claims } claims:
+                    sources[key] = new ClaimsGrantSource(claims);
+                    break;
+                case { Type: GrantSourceType.Custom } custom:
+                    sources[key] = new CustomGrantSource(custom.Provider!, providers?.FirstOrDefault(p => p.Name == custom.Provider), key, logger ?? NullLogger.Instance);
+                    break;
+                default:
+                    sources[key] = new ConfigGrantSource(security, key);
+                    break;
             }
         }
 
         return new ViewerDirectory(security, sources);
     }
 
-    public async Task<Viewer> ResolveAsync(string? userId, CancellationToken cancellationToken = default)
+    public Task<Viewer> ResolveAsync(string? userId, CancellationToken cancellationToken = default) =>
+        ResolveAsync(new CurrentUser(userId), cancellationToken);
+
+    public async Task<Viewer> ResolveAsync(CurrentUser user, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(userId))
+        if (string.IsNullOrEmpty(user.Id))
         {
             return Viewer.Nobody;
         }
@@ -197,18 +245,18 @@ public sealed class ViewerDirectory(ModelSecurity security, IReadOnlyDictionary<
         if (security.HasLevel)
         {
             // If a directory returns several, the lowest counts, which is the cautious reading.
-            var ranks = (await sources[ModelSecurity.LevelKey].GetAsync(userId, cancellationToken))
+            var ranks = (await sources[ModelSecurity.LevelKey].GetAsync(user, cancellationToken))
                 .Select(security.LevelRank).Where(r => r >= 0).ToList();
             level = ranks.Count == 0 ? -1 : ranks.Min();
         }
 
-        return new Viewer(level, await SetAsync(ModelSecurity.AnyOfKey, userId, cancellationToken), await SetAsync(ModelSecurity.AllOfKey, userId, cancellationToken));
+        return new Viewer(level, await SetAsync(ModelSecurity.AnyOfKey, user, cancellationToken), await SetAsync(ModelSecurity.AllOfKey, user, cancellationToken));
     }
 
-    private async Task<IEnumerable<string>> SetAsync(string key, string userId, CancellationToken cancellationToken) =>
+    private async Task<IEnumerable<string>> SetAsync(string key, CurrentUser user, CancellationToken cancellationToken) =>
         security.Part(key) is null
             ? []
-            : (await sources[key].GetAsync(userId, cancellationToken)).Where(ModelSecurity.IsValidValue);
+            : (await sources[key].GetAsync(user, cancellationToken)).Where(ModelSecurity.IsValidValue);
 }
 
 // The viewer for one user, resolved on first use and then kept, so a request or circuit asks the directory once.

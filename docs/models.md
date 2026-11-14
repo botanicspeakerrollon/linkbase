@@ -230,6 +230,13 @@ visible only if its own label and both its records pass.
   seconds (0 keeps nothing; 300 if left out), and parts that share an address share one request. `tokenSetting` names an
   app setting holding a bearer token. The token itself never goes in the model file, and the setting is a secret listed in
   [operations](operations.md#secrets).
+- Or take grants from the sign-in or from code. `{ "type": "claims", "claim": "groups", "map": { "CN=Finance,OU=Groups": "Finance" } }`
+  reads the values of the user's `groups` claim (what an identity provider or Active Directory puts in the token), renaming
+  those the `map` lists and ignoring the rest; without a `map` the claim's values are used as they are. And
+  `{ "type": "custom", "provider": "hr" }` asks an `ICustomGrantProvider` named `hr` that the deployment registered. A
+  claims source needs the app's `Security:Identity` set to `principal` and a sign-in scheme (see
+  [security design](security-design.md#users-and-sign-in)); a source can't mix settings, so `claims` can't have a `url` and
+  `api` can't have a `claim`.
 - A directory that is down, slow or returns something unexpected grants **nothing** for that part, so people see less,
   never more. An answer is never used after `cacheSeconds`, so a revoked grant stops working within that time. Failures are
   logged and not cached. An unknown level, or a value that isn't valid, is dropped.

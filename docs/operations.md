@@ -117,7 +117,9 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Send OpenTelemetry traces, metrics and logs to this collector, such as `http://otel-collector:4317`. Logs still go to stdout too | None, so nothing is sent |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES` | The standard OpenTelemetry settings, such as `http/protobuf` or an API key header | gRPC, none |
 | `OTEL_SERVICE_NAME` | The service name telemetry carries | `linkbase` |
-| `Security__User` | Who the app treats as signed in, for a model with row security on, until real sign-in exists. Must be a user in the model file's `security.users` | None, so that model shows nothing |
+| `Security__Identity` | Where the current user comes from: `configured` (the user in `Security__User`) or `principal` (whoever ASP.NET Core authentication has signed in; the deployment adds the scheme) | `configured` |
+| `Security__User` | With `configured` identity, who the app treats as signed in. Must be a user in the model file's `security.users`, or hold grants from a directory | None, so a model with row security on shows nothing |
+| `Security__UserClaim` | With `principal` identity, the claim holding the user's id, such as `preferred_username` or `employee_id` | The first of `preferred_username`, name, `name`, name identifier and `sub` |
 
 ### Row security and the database
 

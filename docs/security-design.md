@@ -1,9 +1,10 @@
 # Security design: labels and row-level security
 
-Status: the viewer, rule, grant sources, label columns and row policies are built (see "Build order"); property masking,
-the side tables, the UI and sign-in are not. Turn row security on for a model with
-`dotnet run --project src/Linkbase -- model security on [model]` (and `off`), run as the database owner. Until sign-in exists the
-viewer is the user named by the `Security:User` setting (nobody if unset, who sees nothing). This is the design for the visibility rules that [security-roadmap](security-roadmap.md)
+Status: everything in "Build order" is built, including the identity layer; what is left is listed under it and in "Other
+places that repeat data". Turn row security on for a model with
+`dotnet run --project src/Linkbase -- model security on [model]` (and `off`), run as the database owner. By default the
+viewer is the user named by the `Security:User` setting (nobody if unset, who sees nothing); a deployment that has sign-in
+sets `Security:Identity` to `principal` (see "Users and sign-in"). This is the design for the visibility rules that [security-roadmap](security-roadmap.md)
 left open. It replaces that roadmap's step 4 ("consider row-level security later"): the rules below are enforced by the
 database for rows, and by one field policy for property values.
 
@@ -330,12 +331,32 @@ may be hard-coded while departments come from an API.
 
 ## Users and sign-in
 
-Labels are meaningless without identities, so ASP.NET Core Identity (roadmap step 1) is still required. The design doesn't
-wait for it:
+Labels are meaningless without identities, so the app asks "who is this?" through one seam and leaves *how* people sign in
+to the deployment. Nothing here is tied to one directory or protocol.
 
-- Everything is written against an `IViewerContext` (level, departments, projects, roles). The first implementation is a
-  fixed or test-supplied viewer, so labels, policies and the field policy can be built and tested before sign-in exists.
-- Users' grants come from the sources above. The user's id (from Identity, later) is the only thing the app has to supply.
+- **Who** is an `ICurrentUserAccessor`, which returns a `CurrentUser`: an id and the claims the sign-in provided. Two are
+  built in, chosen by `Security:Identity`:
+  - `configured` (the default): the one user named by `Security:User`. For demos, development and tests. Nobody signs in.
+  - `principal`: whoever ASP.NET Core authentication has signed in, read from the circuit's `AuthenticationStateProvider`.
+    The id is the claim named by `Security:UserClaim`, or the first of `preferred_username`, the name claim, `name`, the
+    name identifier and `sub`. Someone not signed in is nobody, who sees nothing of a model that uses levels.
+  - Or register your own `ICurrentUserAccessor`, for example to trust a header a gateway sets.
+- **How people sign in** is standard ASP.NET Core, added by the deployment in `Program.cs` with the usual packages: OpenID
+  Connect for Entra ID, Okta, Keycloak, Auth0 and any other OAuth2/OIDC or SSO provider (`AddOpenIdConnect`); Negotiate for
+  Active Directory with Kerberos or NTLM (`AddNegotiate`; on Windows the user's groups arrive as group SID claims, which a
+  `claims` source can `map` to the model's values); a
+  gateway such as oauth2-proxy that authenticates for the app. This repo ships none of those packages, because each deployment
+  needs a different one, so the app starts with no sign-in and `principal` then treats everyone as nobody (fail closed).
+- **What each person holds** comes from each part's grant source, as above, and a source can use the identity:
+  - `config`, `api`: look the user's id up in the model file or a directory.
+  - `claims`: read the grants out of the sign-in itself, such as the `groups` claim an identity provider or AD puts in the
+    token. An optional `map` renames a claim value to the part's value, and values it doesn't list are ignored. Nothing is
+    fetched, so nothing is cached and nothing can be down.
+  - `custom`: a provider written in code, `ICustomGrantProvider { Name; GetAsync(user, partKey, ct) }`, registered with the
+    container, for anything else (an LDAP query, a database, a vendor SDK). It does its own caching. One that throws or isn't
+    registered grants nothing and is logged.
+- The grants are resolved into a `Viewer` once per request or circuit; policies and the field policy only ever see the
+  `Viewer`, so none of this touches the rules.
 
 ## Model and UI
 
@@ -382,7 +403,10 @@ wait for it:
    match), and a read-only Security tab in the model editor. All need a model with security, and the dialog is keyboard
    driven. Not built: labelling links from the UI, labelling from Explore, and a preview before a bulk run; the model
    editor shows the `security` section but doesn't edit it (that is the model file).
-7. Identity and the user directory.
+7. Identity and the user directory. **Built** as the seam above: `ICurrentUserAccessor` (configured and principal),
+   `claims` and `custom` grant sources, and the existing `config` and `api` sources, all tested with fake principals and
+   providers. Not built: a sign-in scheme (each deployment adds its own), a sign-in page or menu, who may label or import
+   (so `raw_payload` and saved views stay as listed above), and per-user saved views.
 
 ## Open questions
 
