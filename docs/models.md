@@ -272,6 +272,10 @@ A record type says how its records are labelled, and a CSV can override it per r
   added to or removed from, so a bulk change touches only what it names, and it is one change in the history with one reason.
   The model editor's **Security** tab shows the parts and where grants come from; it is read-only, because the model file
   is where they are set.
+- A record's page also has a lock beside each value. It sets a label on that one property of that one record, on top of the
+  field's own, and it can only restrict: the value shows only to someone who passes the record's label, the field's and this
+  one. A lock that has a label is highlighted. Setting everything back to no restriction removes it. It needs a reason like any
+  other change and appears in the record's history.
 - Loading stops, naming the value, if a label isn't one of the model's values, or if a label is given in a model with no
   `security` section.
 - Reloading a model rebuilds its records, so labels come from the model and CSVs, not from hand edits.
