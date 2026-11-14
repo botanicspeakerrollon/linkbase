@@ -23,6 +23,7 @@ One resource group (`rg-linkbase` in `newzealandnorth`; `-ResourceGroup` and `-L
 | Container Registry, Basic | Holds the image the script builds (with Docker on your PC, then pushes) | about £4 |
 | Key Vault | Holds the secrets | pennies |
 | Log Analytics | The app's logs | pennies at demo volume |
+| Application Insights | The app's OpenTelemetry traces and logs, sent by the environment's managed agent (no setting in the app). Find them under Transaction search or Logs in the portal. Metrics aren't sent, because this agent can't send them to Application Insights | pennies at demo volume |
 | Managed identity | How the app reaches the vault and registry, so no password does that job | free |
 
 `az group delete --name rg-linkbase` removes everything and stops the charges. The vault is then soft-deleted for

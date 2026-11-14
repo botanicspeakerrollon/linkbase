@@ -142,10 +142,28 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
-resource appEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
+// Receives the app's OpenTelemetry traces and logs. Workspace-based, so it stores them in the Log Analytics workspace above.
+resource insights 'Microsoft.Insights/components@2020-02-02' = {
+  name: '${baseName}-ai'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logs.id
+  }
+}
+
+resource appEnvironment 'Microsoft.App/managedEnvironments@2024-10-02-preview' = {  // preview: the OpenTelemetry settings aren't in a stable API yet
   name: '${baseName}-env'
   location: location
   properties: {
+    // The environment's managed OpenTelemetry agent. It puts OTEL_EXPORTER_OTLP_* into each container, so the app's
+    // Telemetry.cs switches itself on. Application Insights takes traces and logs here, not metrics.
+    appInsightsConfiguration: { connectionString: insights.properties.ConnectionString }
+    openTelemetryConfiguration: {
+      tracesConfiguration: { destinations: [ 'appInsights' ] }
+      logsConfiguration: { destinations: [ 'appInsights' ] }
+    }
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {

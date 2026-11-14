@@ -115,7 +115,7 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `HttpsRedirection` | Redirect HTTP to HTTPS. Off behind a proxy that ends TLS | `true`, `false` in the image |
 | `Logging__Console__FormatterName` | `json` for one JSON object per line on stdout, or `simple` | `json`, `simple` in Development |
 | `Logging__LogLevel__Default` | How much to log | `Information` |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Send OpenTelemetry traces, metrics and logs to this collector, such as `http://otel-collector:4317`. Logs still go to stdout too | None, so nothing is sent |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Send OpenTelemetry traces, metrics and logs to this collector, such as `http://otel-collector:4317`. Logs still go to stdout too | None, so nothing is sent. The Azure demo gets it from the Container Apps managed agent, which forwards traces and logs to Application Insights |
 | `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_RESOURCE_ATTRIBUTES` | The standard OpenTelemetry settings, such as `http/protobuf` or an API key header | gRPC, none |
 | `OTEL_SERVICE_NAME` | The service name telemetry carries | `linkbase` |
 | `Docs__Pages__0`, `Docs__Pages__1`, … | Repo documents to show in the app, by file name without `.md` (the demo sets `requirements`). Each gets a rail link and a page at `/docs/<name>`. Only listed names are read | None, so there is no docs page |
