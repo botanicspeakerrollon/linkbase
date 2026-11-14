@@ -39,6 +39,8 @@
                     {
                         <MudMenuItem OnClick="@(() => Switch(model.Key))" Icon="@(model.Key == CurrentModel.Info.Key ? Icons.Material.Filled.Check : null)">@model.Name</MudMenuItem>
                     }
+                    <MudDivider />
+                    <MudMenuItem Href="new-model" Icon="@Icons.Material.Filled.Add">New model from CSV files</MudMenuItem>
                 </ChildContent>
             </MudMenu>
         }
@@ -71,6 +73,8 @@
             <MudNavLink Href="model" Icon="@Icons.Material.Outlined.Schema">Model</MudNavLink>
             @* Last, so the numbers of the g shortcuts for the links above stay as they were. *@
             <MudNavLink Href="guide" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.HelpOutline">Guide</MudNavLink>
+            @* Makes another model in a database of its own, so it sits apart from the others. *@
+            <MudNavLink Href="new-model" Icon="@Icons.Material.Outlined.AddCircleOutline">New model</MudNavLink>
             @* Documents the deployment chose to show (Docs:Pages), such as the requirements in the demo. *@
             @foreach (var slug in Docs.Slugs.Where(s => Docs.Find(s) is not null))
             {

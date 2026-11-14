@@ -16,6 +16,10 @@ public sealed record ModelInfo(string Key, string Name, string ConnectionStringN
     // which should show it working. Elsewhere it's `model security on`.
     public bool RowSecurity { get; init; }
 
+    // Set for a model made in the app: its database, on the same server as the default model's. Such a model has no
+    // connection string of its own in configuration.
+    public string? Database { get; init; }
+
     public bool ShowsOnHome(string panel) => !HomeHidden.Contains(panel, StringComparer.OrdinalIgnoreCase);
 }
 
@@ -24,11 +28,13 @@ public sealed record ModelInfo(string Key, string Name, string ConnectionStringN
 public sealed class ModelCatalog
 {
     private readonly IConfiguration _configuration;
+    private readonly List<ModelInfo> _configured;
+    private volatile IReadOnlyList<ModelInfo> _all;
 
     public ModelCatalog(IConfiguration configuration)
     {
         _configuration = configuration;
-        Models = configuration.GetSection("Models").GetChildren()
+        _configured = configuration.GetSection("Models").GetChildren()
             .Select(section => new ModelInfo(
                 section.Key,
                 section["Name"] ?? section.Key,
@@ -44,13 +50,26 @@ public sealed class ModelCatalog
             .ThenBy(m => m.Key, StringComparer.Ordinal)
             .ToList();
 
-        if (Models.Count == 0)
+        if (_configured.Count == 0)
         {
-            Models = [new ModelInfo("default", RegisteredDomains.All[0].Name, "Linkbase", RegisteredDomains.All.Select(d => d.Key).ToList(), 0)];
+            _configured = [new ModelInfo("default", RegisteredDomains.All[0].Name, "Linkbase", RegisteredDomains.All.Select(d => d.Key).ToList(), 0)];
         }
+
+        _all = _configured;
     }
 
-    public IReadOnlyList<ModelInfo> Models { get; }
+    // The configured models in order, then the ones made in the app, oldest first.
+    public IReadOnlyList<ModelInfo> Models => _all;
+
+    // Replaces the models made in the app with these, which is how a new one appears and how another instance's are seen.
+    // A key that configuration already uses is ignored, so configuration always wins.
+    public void SetMade(IEnumerable<ModelInfo> made)
+    {
+        lock (_configured)
+        {
+            _all = [.. _configured, .. made.Where(m => _configured.All(c => c.Key != m.Key))];
+        }
+    }
 
     public ModelInfo Default => Models[0];
 
@@ -60,6 +79,12 @@ public sealed class ModelCatalog
     // and the Insights queries than it saved, and it never made a query faster. See docs/performance.md.
     public string ConnectionString(ModelInfo model)
     {
+        if (model.Database is { } database)
+        {
+            var made = new NpgsqlConnectionStringBuilder(ConnectionString(Default)) { Database = database };
+            return made.ConnectionString;
+        }
+
         var configured = _configuration.GetConnectionString(model.ConnectionStringName)
             ?? throw new InvalidOperationException($"The {model.Name} model needs ConnectionStrings:{model.ConnectionStringName}. See docs/models.md.");
         var builder = new NpgsqlConnectionStringBuilder(configured);

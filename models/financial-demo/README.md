@@ -1,6 +1,6 @@
 # Starting a model from CSV files: financial compliance and KYC
 
-Eight made-up files for the **Start from CSVs** tab of the Import page: a small compliance model of customers, their brokerage accounts,
+Eight made-up files for the **New model** page (`/new-model`): a small compliance model of customers, their brokerage accounts,
 trades in listed companies, and the alerts a compliance team raises, such as buying ahead of an announcement. All the people,
 companies and figures are invented.
 

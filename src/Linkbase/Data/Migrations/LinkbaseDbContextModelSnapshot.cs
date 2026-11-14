@@ -1016,6 +1016,32 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("staged_item");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.UserModel", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Database")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("database");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Key")
+                        .HasName("pk_user_model");
+
+                    b.ToTable("user_model");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")
