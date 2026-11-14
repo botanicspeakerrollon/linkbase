@@ -629,6 +629,13 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await _page.Keyboard.PressAsync("e");
         await WaitForNodesAsync(2);
 
+        // Ctrl+O opens the selected node's page in a new tab, and the graph stays where it is.
+        var opened = await _page.Context.RunAndWaitForPageAsync(() => _page.Keyboard.PressAsync("Control+o"));
+        await opened.WaitForLoadStateAsync();
+        Assert.Contains($"/data/Crag/{s.CragId}", opened.Url, StringComparison.Ordinal);
+        await opened.CloseAsync();
+        await Assertions.Expect(_page.Locator("aside h2")).ToHaveTextAsync(s.Crag);
+
         // / goes back to the box from anywhere, with its suggestions open. Esc closes them, then leaves again.
         await _page.Keyboard.PressAsync("/");
         await Assertions.Expect(search).ToBeFocusedAsync();

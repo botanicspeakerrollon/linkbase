@@ -116,7 +116,7 @@ It stops looking through a hub that is too busy and says so.
 
 *What changed nearby* (`d`). Edits since a date to the record, the records it links to and their links, up to 500.
 
-*Open and edit* (`o`). Opens the selected record's own page.
+*Open and edit* (`o`). Opens the selected record's own page; `Ctrl+O` opens it in a new tab, so the graph stays as it is.
 
 *Link history.* Selecting a link lists its changes under its values.
 

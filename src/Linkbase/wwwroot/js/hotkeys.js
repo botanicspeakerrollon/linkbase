@@ -76,6 +76,19 @@ function onKeyDown(event) {
         return;
     }
 
+    // Ctrl+O opens, in a new tab, the page that a visible link marked data-hotkey-open points to, so the page you're on
+    // (an Explore graph, say) stays as it is. With no such link it's left to the browser's own Open file.
+    if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'o'
+        && !typingInto(event.target) && !document.querySelector('.mud-dialog-container')) {
+        const link = [...document.querySelectorAll('a[data-hotkey-open]')].find(visible);
+        if (link) {
+            event.preventDefault();
+            window.open(link.href, '_blank', 'noopener');
+        }
+
+        return;
+    }
+
     if (leaveSearch(event)) {
         return;
     }
