@@ -8,8 +8,7 @@
     <div class="ask-box mt-2">
         <div class="pattern-bar" @onclick="FocusAsync">
             <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" Style="color: var(--mud-palette-text-secondary)" />
-            <input @ref="_input"
-                   value="@_question"
+            <input @ref="_input" @key="_inputKey"
                    @oninput="OnInput"
                    @onkeydown="OnKeyDownAsync"
                    disabled="@_asking"
@@ -21,7 +20,7 @@
                    placeholder="@Placeholder" />
             @if (!string.IsNullOrWhiteSpace(_question))
             {
-                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="ClearAsync" aria-label="Clear question" />
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="Clear" aria-label="Clear question" />
                 <MudButton OnClick="AskAsync" Disabled="_asking" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">Ask</MudButton>
             }
         </div>
@@ -43,6 +42,20 @@
 
     private ElementReference _input;
     private string? _question;
+
+    // The box is never given its text to show: over a slow link the server's reply to an earlier key would put it back. Clearing
+    // it replaces the element, which then takes focus.
+    private int _inputKey;
+    private bool _refocus;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_refocus)
+        {
+            _refocus = false;
+            await FocusAsync();
+        }
+    }
     private string? _error;
     private bool _asking;
     private CancellationTokenSource? _cancel;
@@ -83,11 +96,12 @@
         }
     }
 
-    private async Task ClearAsync()
+    private void Clear()
     {
         _question = null;
+        _inputKey++;
+        _refocus = true;
         _error = null;
-        await FocusAsync();
     }
 
     private async Task AskAsync()

@@ -32,8 +32,7 @@
                 }
             </span>
         }
-        <input @ref="_input"
-               value="@_text"
+        <input @ref="_input" @key="_inputKey"
                @oninput="OnInputAsync"
                @onkeydown="OnKeyDownAsync"
                @onfocus="OnFocusAsync"
@@ -94,7 +93,11 @@
     private PatternBuilder? _builder;
     private GraphSchema? _builderSchema;
     private ElementReference _input;
+    // The box is never given its text to show, because over a slow link the server's reply to an earlier key would arrive after
+    // later ones were typed and put the box back. The browser owns what is typed. Emptying it replaces the element instead.
     private string _text = "";
+    private int _inputKey;
+    private bool _refocus;
     private bool _open;
     private int _highlight = -1;
     private IReadOnlyList<PatternSuggestion> _suggestions = [];
@@ -123,17 +126,36 @@
 
     public async Task FocusAsync() => await _input.FocusAsync();
 
+    private void ClearText()
+    {
+        _text = "";
+        _inputKey++;
+    }
+
+    // The emptied box is a new element, which takes focus once it has been drawn.
+    private void Refocus()
+    {
+        _refocus = true;
+        StateHasChanged();
+    }
+
     // Puts a pattern in the bar without running it, so an answer to a question can be learned from and edited.
     public void ShowPattern(GraphPattern pattern)
     {
         _builder?.Load(pattern);
-        _text = "";
+        ClearText();
         _open = false;
         StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_refocus)
+        {
+            _refocus = false;
+            await _input.FocusAsync();
+        }
+
         if (AutoFocus && !_autoFocused && _builder is not null)
         {
             _autoFocused = true;
@@ -214,17 +236,17 @@
     {
         if (suggestion.Kind == SuggestionKind.Model)
         {
-            _text = "";
+            ClearText();
             _open = false;
             await OnShowModel.InvokeAsync();
             return;
         }
 
         _builder!.Apply(suggestion);
-        _text = "";
+        ClearText();
         _open = true;
         await RefreshAsync();
-        await FocusAsync();
+        Refocus();
 
         // Free text is a whole search in itself, so one Enter runs it.
         if (suggestion.Kind == SuggestionKind.FreeText)
@@ -245,10 +267,10 @@
     private async Task FocusChipAsync(int index)
     {
         _builder?.FocusOn(index);
-        _text = "";
+        ClearText();
         _open = true;
         await RefreshAsync();
-        await FocusAsync();
+        Refocus();
     }
 
     private async Task RemoveFilterAsync(int nodeIndex, int filterIndex)
@@ -261,9 +283,9 @@
     private async Task ClearAsync()
     {
         _builder?.Clear();
-        _text = "";
+        ClearText();
         await RefreshAsync();
-        await FocusAsync();
+        Refocus();
     }
 
     private async Task RefreshAsync()
