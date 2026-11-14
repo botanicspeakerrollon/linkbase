@@ -26,7 +26,8 @@ One resource group (`rg-linkbase-demo` in `newzealandnorth`; `-ResourceGroup` an
 | Managed identity | How the app reaches the vault and registry, so no password does that job | free |
 
 `az group delete --name rg-linkbase-demo` removes everything and stops the charges. The vault is then soft-deleted for
-seven days; `az keyvault purge` frees its name sooner.
+seven days, holding its name; the next `deploy.ps1` purges it for you. Each run also deletes all but the newest three images
+from the registry, so repeated deploys leave one app, one database and one vault, not a pile.
 
 ## Where the secrets are
 

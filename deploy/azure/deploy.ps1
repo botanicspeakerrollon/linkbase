@@ -100,6 +100,17 @@ try {
     }
     Invoke-Az group create --name $ResourceGroup --location $Location --output none
 
+    # Deleting a resource group leaves its vault in "soft delete" for a week, still holding its name, and the same group always
+    # gets the same names. So a delete-and-redeploy fails with "vault already exists" unless the old one is purged first.
+    # Only vaults that belonged to this resource group are purged, and only deleted ones: a live vault is never touched.
+    $deletedVaults = Invoke-Az keyvault list-deleted --output json | ConvertFrom-Json
+    foreach ($old in @($deletedVaults)) {
+        if ($old.properties.vaultId -and $old.properties.vaultId.ToLowerInvariant().Contains("/resourcegroups/$($ResourceGroup.ToLowerInvariant())/")) {
+            Write-Host "Purging the deleted vault $($old.name), which would block the new one's name..."
+            Invoke-Az keyvault purge --name $old.name --location $old.properties.location --output none
+        }
+    }
+
     # The database password: kept if a previous run made one, otherwise new. Letters and digits only, so it needs no escaping
     # in a connection string.
     $vault = $null
@@ -190,6 +201,17 @@ try {
 
     Write-Host "`n4/4  The app..."
     $app = Invoke-Deployment $true $tag
+
+    # Every run pushes a new image and the registry never forgets old ones, so keep the newest few (the running one is among
+    # them) and delete the rest. A failure here only leaves clutter, so it doesn't stop the deployment.
+    try {
+        $tags = @((Invoke-Az acr repository show-tags --name $registry --repository linkbase --orderby time_desc --output tsv) -split "`n" |
+            ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        foreach ($oldTag in ($tags | Select-Object -Skip 3)) {
+            Invoke-Az acr repository delete --name $registry --image "linkbase:$oldTag" --yes --output none
+            Write-Host "  removed old image linkbase:$oldTag"
+        }
+    } catch { Write-Warning "Couldn't remove old images: $($_.Exception.Message)" }
 
     Write-Host "`nDone: $($app.appUrl.value)"
     Write-Host 'The first start loads the example data into four databases, which takes a minute or two.'
