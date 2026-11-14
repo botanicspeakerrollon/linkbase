@@ -62,7 +62,7 @@ links between them. The rail's switcher moves between them; one model alone hide
 ## 3. Three rules that run through everything
 
 1. **History is automatic.** Anything that adds, changes or removes a record or link writes the audit trail in the same
-   transaction ([chapter 10](#10-history-and-revert)). A failed save leaves neither the change nor its history.
+   transaction ([chapter 11](#11-history-and-revert)). A failed save leaves neither the change nor its history.
 2. **Nothing the AI says is trusted.** Read text and Ask both treat the model's answer as untrusted data: every name and value
    is checked against the source or the schema before it is used, and the result is a pattern or a staged review, never SQL
    or a direct write.
@@ -127,7 +127,7 @@ matches reopens. An address over 8,000 characters is ignored.
 **Not yet.** As of cannot show a record deleted since, and a link made before history was kept looks as if it always existed.
 Totals cannot be saved apart from their search. No chart views.
 
-**See also.** [Saved views](#11-saved-views-and-permalinks), [Quick-find](#13-quick-find), `Core/Explore`, `Core/Graph`,
+**See also.** [Saved views](#12-saved-views-and-permalinks), [Quick-find](#14-quick-find), `Core/Explore`, `Core/Graph`,
 `Core/Ask`, `Core/Paths`, `wwwroot/js/graph.js`.
 
 ## 5. Lists and record pages
@@ -141,7 +141,7 @@ heading (blank values last) and a filter per field: contains for text and lists,
 numbers and dates. State is in the address, so it can be saved and shared.
 
 *The record page* shows every value, every link grouped by relationship in either direction (25 shown, with a count), the
-record's ids in other systems, and its [history](#10-history-and-revert).
+record's ids in other systems, and its [history](#11-history-and-revert).
 
 *Forms* have a box per field checked against its type. Lists and multiple values take one per line. A new record's key is made
 from its name unless given, and cannot change afterwards. A record can **create the records it requires as it is made**
@@ -191,22 +191,25 @@ this way. List values split on `|`.
 clears a value, and with no name column the name stays. The review lists each change as `city: Bern → Zurich`, and commit writes
 one history entry per field, so the values can be put back. It needs history on, and cannot touch types a module owns.
 
+*Update links that are already here*, offered when the relationship carries values, does the same for a link's values, but
+only when the two records are linked that way exactly once; an ambiguous pair (none yet, or more than one already) is left
+alone and the row becomes a further link, same as unticked.
+
 *Review first* stages the batch (`staged_item`); the batch survives a reload, and is listed under Recent imports and on Home.
 Untick items, then Commit or Discard. Commit is one transaction and skips anything that became a duplicate or lost an end.
 
-*Undo* (Recent imports) removes what the import added and puts back values it changed. It leaves, and lists, a record edited
-since, one something now links to, one a staying record needs through a required link, and a value changed again since.
-The import stays committed; undo can be repeated.
+*Undo* (Recent imports) removes what the import added and puts back values it changed, records and links alike. It leaves,
+and lists, a record edited since, one something now links to, one a staying record needs through a required link, and a
+value changed again since. The import stays committed; undo can be repeated.
 
-**Not yet.** Updates work for CSV records only: links, and Read text, still skip what exists. A link's own columns (both
-ends, and Start from CSVs) still need a real key column on both sides; a link to a record identified by name, rather than
-a key, isn't resolved yet.
+**Not yet.** Read text still skips what exists, for both records and links. A link's own columns (both ends, and Start from
+CSVs) still need a real key column on both sides; a link to a record identified by name, rather than a key, isn't resolved yet.
 
 **See also.** [models](models.md#importing-a-csv-file), `Core/CsvImport`, `Core/Staging`.
 
 ## 7. Importing: Start from CSVs
 
-**Built.** Partial: the result cannot be edited in the app afterwards.
+**Built.** Partial: link values and hierarchies need the model editor afterwards.
 
 **Synopsis.** Import → Start from CSVs.
 
@@ -216,10 +219,42 @@ not a field; a file of two such columns and no key of its own is links. Every gu
 nothing. *Create the model* then imports each file's records, then the links, one import each, so each can be undone. Types
 already in the model are added to.
 
-**Not yet.** Link values and hierarchies, descriptions, groups and limits come from a model file only. An editor for the
-result is the next piece of work ([extensibility-plan](history/extensibility-plan.md)).
+**Not yet.** Link values and hierarchies come from a model file or [the model editor](#8-the-model-editor) only.
 
-## 8. Importing: Read text
+## 8. The model editor
+
+**Built.** Partial: no bulk edit, and a type can't be renamed.
+
+**Synopsis.** Model, in the rail (`/model`), keys `t` and `r` for its tabs.
+
+**Description.** Changes the generic store's types, fields, relationships and link values from the app, so a model needs no
+developer once it is started. Every change is checked against the records and links already there — a choice option still
+in use can't be taken away, a field or relationship can't be made required until everything already has a value, a type or
+relationship with records or links in it can't be deleted — and is refused with the reason when it wouldn't fit. Each is one
+transaction that also writes the [history](#11-history-and-revert), so it can be read back under a `type:`, `field:`,
+`relationship:` or `attribute:` entry. A type or field a domain module derives can't be touched at all; one it only reads or
+writes, such as a required link a module relies on, can be added to but not taken away or changed underneath it.
+
+*Types* tab. **Add type** names a new type, with an optional colour and icon. Each type lists its fields, with buttons to add
+one, edit it (description, group, required, a choice's options), rename it (its values move with it), change its type (Text
+to a number, date, yes/no or choice and back, checked against the values already there), or delete it (asks again, and
+offers to discard the values, if any record still has one). **Hierarchy** sets or clears how the type's records form a tree:
+a required choice field says the level, and a non-required relationship from the type to itself says the parent; the levels
+always cover the field's options exactly, with one at the top and a way down to every other. Deleting a type only works
+once it has no records and is in no relationship.
+
+*Relationships* tab. **Add relationship** names two types and a relationship between them, with required and a max optional.
+Required and max are checked against the links already there, the same way [a model file's are](models.md#the-model-file).
+Each relationship lists its values ([link attributes](models.md#link-attributes)), edited the same way as a type's fields. A
+relationship can be renamed (its links keep their ends and values) or deleted, which only works with no links in it.
+
+**Not yet.** Renaming a type: a node's id embeds its type in lower case, so every record and reference to it would need
+rewriting. Bulk-editing many records' values at once, beyond what a CSV update does. Groups, descriptions and limits for a
+relationship's values only come through here or a model file, same as a type's fields.
+
+**See also.** [models](models.md#editing-a-model-in-the-app), `Core/Models/ModelEditor.cs`.
+
+## 9. Importing: Read text
 
 **Built.** Partial: it fills text fields and text lists, not `multiple` numbers, dates or choices.
 
@@ -236,7 +271,7 @@ Only the extracted facts and the source address are kept, in the batch, never th
 
 **Limits.** Long text is read in pieces of at most 24,000 characters. Hierarchies are checked when you commit.
 
-## 9. Home, Timeline and Cleanup
+## 10. Home, Timeline and Cleanup
 
 **Built.** Phone layout not checked.
 
@@ -256,7 +291,7 @@ a rule (a `max`, a hierarchy).
 
 **Not yet.** Fuzzy duplicates (spelling variants) are not found. Merge cannot be reverted.
 
-## 10. History and revert
+## 11. History and revert
 
 **Built.** Partial: see below.
 
@@ -285,7 +320,7 @@ since" by `updated_at`, and notices no link edits.
 
 **See also.** [audit-history-plan](history/audit-history-plan.md), `Core/History`.
 
-## 11. Saved views and permalinks
+## 12. Saved views and permalinks
 
 **Built.** Partial: no read-only share links.
 
@@ -298,12 +333,12 @@ fresh. Whatever the state names is checked against the model before use, so a st
 
 **Not yet.** Sharing a view as read-only waits for sign-in.
 
-## 12. Ask (plain-English questions)
+## 13. Ask (plain-English questions)
 
 Described with Explore in [chapter 4](#4-explore). In short: question in, checked pattern out, shown and editable. **Built.**
 Disabled by `Extraction:Enabled: false`. `Ask:Fixture` answers every question from a file, for tests and demos.
 
-## 13. Quick-find
+## 14. Quick-find
 
 **Built.** Partial: the only action is adding.
 
@@ -311,17 +346,17 @@ Disabled by `Extraction:Enabled: false`. `Ask:Fixture` answers every question fr
 those starting with the text first. Choosing a record opens it, a page goes there, and **Add *Type*** opens the new-record form.
 Types a module derives are not offered for adding.
 
-## 14. The Guide
+## 15. The Guide
 
 **Built.** `/guide` for every model, `/guide/climbing` for the climbing model, from `IDomainModule.GuideHref`. Written for the
 people using the app; its keyboard table is generated from the same list as the `?` dialog, so they cannot disagree.
 
-## 15. Keyboard
+## 16. Keyboard
 
 **Built.** Every page is drivable from the keys in [Appendix A](#appendix-a-keyboard). Keys are ignored while typing in a field
 (except Quick-find and the search bar's own keys). New pages and dialogs must add their own handling and hotkeys.
 
-## 16. The climbing domain
+## 17. The climbing domain
 
 **Built.** The one domain module (`Domains/Climbing`), for models that list it under `Domains`.
 
@@ -343,7 +378,7 @@ Six types: **Area** (country → region → area), **Crag**, **Route**, **Ascent
 **Not yet.** The real climbing model's areas have no hierarchy rules. The UKC and Mountain Project importers write areas
 themselves and are not checked against hierarchy rules. Phone-width Logbook and quick one-handed logging.
 
-## 17. Command line
+## 18. Command line
 
 **Built.** Run as `dotnet run --project src/Linkbase --launch-profile http -- <command>`, or as arguments to the image.
 
@@ -416,12 +451,13 @@ The `?` dialog is the source of truth; this is its content.
 | Explore: patterns, canvas, table, totals, export | Built | |
 | Explore: Ask | Built | |
 | Explore: path, nearby changes, as of, link history | Built | Deleted records not shown as of |
-| Lists and record pages, forms, hierarchies, link values | Built | No bulk edit; no model editor |
+| Lists and record pages, forms, hierarchies, link values | Built | No bulk edit |
+| Model editor | Partial | No bulk edit; a type can't be renamed |
 | Saved views, pinned layouts, permalinks | Built | No read-only share |
 | Quick-find | Partial | Only "add" as an action |
 | Import: CSV records and links | Built | |
-| Import: update existing records | Partial | CSV records only |
-| Import: Start from CSVs | Partial | No editor afterwards |
+| Import: update existing records | Partial | CSV only, not Read text |
+| Import: Start from CSVs | Partial | No hierarchies or link values from the files; use the model editor after |
 | Import: Read text | Partial | Not `multiple` numbers, dates, choices |
 | Review, commit, undo | Built | Undo's "edited since" uses `updated_at` |
 | Audit trail, reasons | Built | |

@@ -41,6 +41,7 @@ public static class PatternChecker
             checkedNodes.Add(new PatternNode(node.Label, (node.Filters ?? []).Select(f => CheckFilter(f, node.Label, schema, question)).ToList()));
         }
 
+        var checkedRels = new List<PatternRel>();
         for (var i = 0; i < pattern.Rels.Count; i++)
         {
             var rel = pattern.Rels[i];
@@ -55,9 +56,34 @@ public static class PatternChecker
             {
                 throw new QuestionFailedException($"This model has no '{rel.RelType}' link between {from ?? "those"} and {to ?? "those"} records in that direction.");
             }
+
+            if ((rel.Filters?.Count ?? 0) > MaxFiltersPerNode)
+            {
+                throw new QuestionFailedException("That question has too many conditions. Use the search bar.");
+            }
+
+            checkedRels.Add(rel with { Filters = (rel.Filters ?? []).Select(f => CheckLinkFilter(f, rel.RelType, schema, question)).ToList() });
         }
 
-        return new GraphPattern(checkedNodes, pattern.Rels.ToList());
+        return new GraphPattern(checkedNodes, checkedRels);
+    }
+
+    private static PatternFilter CheckLinkFilter(PatternFilter filter, string relType, GraphSchema schema, string question)
+    {
+        var value = filter.Value?.Trim() ?? "";
+        if (value.Length is 0 or > MaxValueLength)
+        {
+            throw new QuestionFailedException("A condition in the answer had no usable value.");
+        }
+
+        if (filter.Key == PatternFilter.AnyField)
+        {
+            throw new QuestionFailedException("A link's own condition needs one of its values, not free text.");
+        }
+
+        var info = schema.LinkProperties.FirstOrDefault(p => p.RelType == relType && p.Key == filter.Key)
+            ?? throw new QuestionFailedException($"'{relType}' has no value called '{filter.Key}'.");
+        return CheckAgainst(filter with { Value = value }, info.Type, info.Options, question);
     }
 
     private static PatternFilter CheckFilter(PatternFilter filter, string? label, GraphSchema schema, string question)
@@ -77,23 +103,30 @@ public static class PatternChecker
 
         var info = schema.Properties.FirstOrDefault(p => p.Key == filter.Key && (label is null || p.Label == label))
             ?? throw new QuestionFailedException($"{(label is null ? "No type" : label)} has no field '{filter.Key}'.");
+        return CheckAgainst(filter with { Value = value }, info.Type, info.Options, question);
+    }
 
-        if (!PatternBuilder.OperatorsFor(info.Type).Contains(filter.Operator))
+    // Shared by a node's own filter and a link's: the value matches the field's (or link value's) type, and a choice or
+    // free-text value is never invented — it has to be one of the choices, or a word the question itself used.
+    private static PatternFilter CheckAgainst(PatternFilter filter, GraphValueType type, IReadOnlyList<string> options, string question)
+    {
+        var value = filter.Value;
+        if (!PatternBuilder.OperatorsFor(type).Contains(filter.Operator))
         {
-            throw new QuestionFailedException($"'{PatternBuilder.OperatorText(filter.Operator)}' doesn't work on {info.Key}.");
+            throw new QuestionFailedException($"'{PatternBuilder.OperatorText(filter.Operator)}' doesn't work on {filter.Key}.");
         }
 
-        switch (info.Type)
+        switch (type)
         {
             case GraphValueType.Number when !decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out _):
-                throw new QuestionFailedException($"'{value}' isn't a number for {info.Key}.");
+                throw new QuestionFailedException($"'{value}' isn't a number for {filter.Key}.");
             case GraphValueType.Date when !DateOnly.TryParse(value, CultureInfo.InvariantCulture, out _):
-                throw new QuestionFailedException($"'{value}' isn't a date for {info.Key}. Dates look like 2024-06-30.");
+                throw new QuestionFailedException($"'{value}' isn't a date for {filter.Key}. Dates look like 2024-06-30.");
             case GraphValueType.Boolean when !value.Equals("true", StringComparison.OrdinalIgnoreCase) && !value.Equals("false", StringComparison.OrdinalIgnoreCase):
-                throw new QuestionFailedException($"{info.Key} is true or false.");
+                throw new QuestionFailedException($"{filter.Key} is true or false.");
             case GraphValueType.Choice:
-                value = info.Options.FirstOrDefault(o => o.Equals(value, StringComparison.OrdinalIgnoreCase))
-                    ?? throw new QuestionFailedException($"'{value}' isn't one of the choices for {info.Key}.");
+                value = options.FirstOrDefault(o => o.Equals(value, StringComparison.OrdinalIgnoreCase))
+                    ?? throw new QuestionFailedException($"'{value}' isn't one of the choices for {filter.Key}.");
                 break;
             case GraphValueType.Text or GraphValueType.List:
                 RequireInQuestion(value, question);

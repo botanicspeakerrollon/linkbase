@@ -16,7 +16,7 @@ Current:
 - [extensibility-plan](history/extensibility-plan.md): what's built and what to do next, in order.
 - [security-roadmap](security-roadmap.md): sign-in, roles and field-level permissions (not started).
 - [audit-history-plan](history/audit-history-plan.md): the audit trail, with a reason for each change (built, apart from reverting changes that touched several records).
-- [relationship-attributes](history/relationship-attributes.md): values on links, such as a partner's role (idea, not started).
+- [relationship-attributes](history/relationship-attributes.md): values on links, such as a partner's role (built, with filtering and updating a link's value on CSV re-import; Read text still skips it).
 - [deployment-plan](history/deployment-plan.md) and [`deploy/`](../deploy/README.md): running the one image on Kubernetes, OpenShift or Docker.
 
 Finished, kept for the record: [history/](history/).

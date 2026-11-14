@@ -1,0 +1,87 @@
+@inject ModelEditor Editor
+@inject ISnackbar Snackbar
+
+@* Adds a type, or changes an existing one's colour, icon and name template. The name can't change once there's a type. *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            @if (Existing is null)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_name" Label="Name" AutoFocus="true"
+                              HelperText="Letters and digits, starting with a capital, such as Supplier." Required="true" RequiredError="A type needs a name" />
+            }
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_color" Label="Colour (optional)" HelperText="Written like #3a7bd5." />
+            <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_icon" Label="Icon (optional)" HelperText="A Material icon's name, such as Train, Person or Folder." />
+            @if (Existing is not null)
+            {
+                <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_template" Label="Name template (optional)"
+                              HelperText="Makes a record's name from its fields, such as {name_first} {name_last}. Leave empty for people to type a name." />
+            }
+            @if (Settings.Record)
+            {
+                <ReasonInput Draft="_reason" Settings="Settings" OnSubmit="SaveAsync" />
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Instance.Cancel())">Cancel</MudButton>
+        <MudButton OnClick="SaveAsync" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy">@(Existing is null ? "Add" : "Save")</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Instance { get; set; } = null!;
+    [Parameter] public TypeOutline? Existing { get; set; }
+    [Parameter] public HistorySettings Settings { get; set; } = HistorySettings.Default;
+
+    private MudForm? _form;
+    private string _name = "";
+    private string? _color;
+    private string? _icon;
+    private string? _template;
+    private readonly ReasonDraft _reason = new();
+    private bool _busy;
+
+    protected override void OnInitialized()
+    {
+        if (Existing is { } type)
+        {
+            _name = type.Name;
+            _color = type.Color;
+            _icon = type.Icon;
+            _template = type.NameTemplate;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            if (Existing is null)
+            {
+                await Editor.AddTypeAsync(_name, _color, _icon, _reason.ToReason());
+            }
+            else
+            {
+                await Editor.UpdateTypeAsync(Existing.Name, _color, _icon, _template, _reason.ToReason());
+            }
+
+            Instance.Close(DialogResult.Ok(true));
+        }
+        catch (LinkbaseValidationException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

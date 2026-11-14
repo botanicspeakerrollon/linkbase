@@ -81,6 +81,24 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     }
 
     [Fact]
+    public async Task Explore_filters_on_a_links_own_value()
+    {
+        var factory = await ExampleAsync();
+        var graph = new GraphRepository(factory);
+        var schema = await graph.SchemaAsync();
+        Assert.Contains(new GraphLinkPropertyInfo("WORKS_ON", "role", GraphValueType.Text), schema.LinkProperties);
+        Assert.Contains(new GraphLinkPropertyInfo("WORKS_ON", "days_a_week", GraphValueType.Number), schema.LinkProperties);
+
+        var pattern = new GraphPattern(
+            [new PatternNode("Person", []), new PatternNode("Project", [])],
+            [new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter("role", FilterOperator.Equals, "Reviewer")] }]);
+
+        var result = await graph.RunPatternAsync(pattern, schema, 50, 0);
+
+        Assert.Equal(["person:p4", "project:pr4"], result.NodeIds);
+    }
+
+    [Fact]
     public async Task A_new_records_links_take_values_and_a_required_one_blocks_the_save()
     {
         var factory = await ExampleAsync();

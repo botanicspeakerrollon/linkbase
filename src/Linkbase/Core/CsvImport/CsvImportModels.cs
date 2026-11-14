@@ -36,8 +36,14 @@ public sealed record CsvRecordMapping(string Type, int KeyColumn, int? NameColum
 
 // Each row links the record of one type whose key is in one column to the record of another whose key is in another.
 // Attributes are columns holding the link's own values, such as a role: each Key is one of the relationship's attributes,
-// which the model already has. The same two records can be linked again in the file when the values differ.
-public sealed record CsvLinkMapping(string FromType, int FromColumn, string RelType, string ToType, int ToColumn, IReadOnlyList<CsvFieldMapping>? Attributes = null);
+// which the model already has. The same two records can be linked again in the file when the values differ, unless
+// UpdateExisting is set: then, when the two are already linked that way exactly once, its values change to the file's
+// instead of a second link being added. Two or more links already between them is left alone either way, since which one
+// the file means isn't clear.
+public sealed record CsvLinkMapping(string FromType, int FromColumn, string RelType, string ToType, int ToColumn, IReadOnlyList<CsvFieldMapping>? Attributes = null)
+{
+    public bool UpdateExisting { get; init; }
+}
 
 // What an import would do. Problems stop it; rows that are skipped don't.
 public sealed record CsvImportPlan(int Rows, int ToAdd, int AlreadyThere, int Skipped, IReadOnlyList<string> Problems, IReadOnlyList<string> Notes)

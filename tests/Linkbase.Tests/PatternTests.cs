@@ -308,15 +308,20 @@ public class PatternBuilderTests
 public class GraphPatternSqlTests
 {
     private static readonly GraphSchema Schema = new(
-        [],
+        [new GraphConnection("Crag", "WORKS_ON", "Route")],
         [
             new GraphPropertyInfo("Crag", "name", GraphValueType.Text),
             new GraphPropertyInfo("Route", "length_m", GraphValueType.Number),
             new GraphPropertyInfo("Ascent", "date", GraphValueType.Date),
             new GraphPropertyInfo("Crag", "bad'; DROP TABLE route; --", GraphValueType.Text),
-        ]);
+        ])
+    {
+        LinkProperties = [new GraphLinkPropertyInfo("WORKS_ON", "role", GraphValueType.Text)],
+    };
 
     private static GraphPattern Single(string? label, params PatternFilter[] filters) => new([new PatternNode(label, filters)], []);
+
+    private static GraphPattern Linked(PatternRel rel) => new([new PatternNode("Crag", []), new PatternNode(null, [])], [rel]);
 
     [Fact]
     public void Values_are_parameters_and_never_reach_the_sql_text()
@@ -347,6 +352,25 @@ public class GraphPatternSqlTests
     public void Unknown_or_unsafe_property_names_are_rejected(string key) =>
         Assert.Throws<LinkbaseValidationException>(() =>
             GraphPatternSql.Build(Single("Crag", new PatternFilter(key, FilterOperator.Contains, "x")), Schema, 10, 0));
+
+    [Fact]
+    public void A_filter_on_a_links_own_value_reaches_the_edges_props()
+    {
+        var (sql, parameters) = GraphPatternSql.Build(Linked(new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter("role", FilterOperator.Contains, "Lead")] }), Schema, 10, 0);
+
+        Assert.Contains("e0.props->>'role'", sql);
+        Assert.Contains(parameters, p => p.Value is string text && text.Contains("Lead"));
+    }
+
+    [Fact]
+    public void An_unknown_value_on_a_link_is_rejected() =>
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Linked(new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter("nope", FilterOperator.Equals, "x")] }), Schema, 10, 0));
+
+    [Fact]
+    public void Free_text_doesnt_work_on_a_links_own_filter() =>
+        Assert.Throws<LinkbaseValidationException>(() =>
+            GraphPatternSql.Build(Linked(new PatternRel("WORKS_ON", true) { Filters = [new PatternFilter(PatternFilter.AnyField, FilterOperator.Contains, "x")] }), Schema, 10, 0));
 
     [Fact]
     public void Bad_numbers_and_dates_are_rejected()

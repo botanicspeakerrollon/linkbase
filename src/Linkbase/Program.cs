@@ -63,6 +63,7 @@ builder.Services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("database
 builder.Services.AddScoped<GraphRepository>();
 builder.Services.AddScoped<Linkbase.Core.Views.SavedViewRepository>();
 builder.Services.AddScoped<ModelLoader>();
+builder.Services.AddScoped<ModelEditor>();
 builder.Services.AddScoped<RecordHooks>();
 builder.Services.AddScoped<RecordRepository>();
 builder.Services.AddScoped<Linkbase.Core.History.HistoryRepository>();

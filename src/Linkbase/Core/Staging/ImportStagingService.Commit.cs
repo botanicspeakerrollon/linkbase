@@ -70,6 +70,11 @@ public sealed partial class ImportStagingService
         // record whose key is there is updated only when the import was staged to update, else it is skipped as before.
         var updates = (bool?)summary["update"] == true ? await PlanUpdatesAsync(connection, transaction, batchId, cancellationToken) : [];
 
+        // Likewise, links already there, linked this way exactly once, that the import has different values for. Excluded
+        // from the insert below so they don't become a second link; applied once the insert has run.
+        var linkUpdates = (bool?)summary["update"] == true ? await PlanLinkUpdatesAsync(connection, transaction, batchId, cancellationToken) : [];
+        var updatingIds = linkUpdates.Select(u => u.StagedItemId).ToArray();
+
         var records = await ExecuteAsync(connection, transaction,
             """
             INSERT INTO node (id, user_id, type, key, name, props, import_batch_id)
@@ -87,7 +92,7 @@ public sealed partial class ImportStagingService
             """
             WITH eligible AS (
                 SELECT s.type, s.rel_type, s.source_id, s.target_id, s.target_type, coalesce(s.props, '{}'::jsonb) AS props FROM staged_item s
-                WHERE s.import_batch_id = @batch AND s.kind = 'link' AND s.included
+                WHERE s.import_batch_id = @batch AND s.kind = 'link' AND s.included AND s.id <> ALL(@updating)
                   AND EXISTS (SELECT 1 FROM node n WHERE n.id = s.source_id)
                   AND EXISTS (SELECT 1 FROM node n WHERE n.id = s.target_id)
                   AND NOT EXISTS (SELECT 1 FROM node_link l WHERE l.source_id = s.source_id AND l.rel_type = s.rel_type AND l.target_id = s.target_id AND (coalesce(s.props, '{}'::jsonb) = '{}'::jsonb OR l.props = s.props))
@@ -104,6 +109,7 @@ public sealed partial class ImportStagingService
         { CommandTimeout = 0 })
         {
             command.Parameters.Add(new NpgsqlParameter("batch", NpgsqlDbType.Bigint) { Value = batchId });
+            command.Parameters.Add(new NpgsqlParameter("updating", NpgsqlDbType.Array | NpgsqlDbType.Bigint) { Value = updatingIds });
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
             {
@@ -118,6 +124,14 @@ public sealed partial class ImportStagingService
                 ("name", update.NewName, NpgsqlDbType.Text),
                 ("props", update.NewProps, NpgsqlDbType.Jsonb),
                 ("id", update.Id, NpgsqlDbType.Text));
+        }
+
+        foreach (var update in linkUpdates)
+        {
+            await ExecuteAsync(connection, transaction,
+                "UPDATE node_link SET props = @props WHERE id = @id",
+                ("props", update.NewProps, NpgsqlDbType.Jsonb),
+                ("id", update.LinkId, NpgsqlDbType.Bigint));
         }
 
         // A link that would break a type's hierarchy stops the commit, which rolls back, and the batch stays staged. A record
@@ -162,9 +176,11 @@ public sealed partial class ImportStagingService
         {
             var logged = new List<PendingChange>
             {
-                new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create, NewValue: JsonSerializer.Serialize(new { records, links, updated = updates.Count })),
+                new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create,
+                    NewValue: JsonSerializer.Serialize(new { records, links, updated = updates.Count + linkUpdates.Count })),
             };
             logged.AddRange(updates.SelectMany(u => ChangeRecorder.NodeUpdated(u.Id, u.OldName, RecordRepository.Values(u.OldProps), u.NewName, RecordRepository.Values(u.NewProps))));
+            logged.AddRange(linkUpdates.SelectMany(u => ChangeRecorder.LinkUpdated(u.SourceId, u.RelType, u.TargetId, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
             logged.AddRange(newTypes.Select(t => new PendingChange(ChangeEntityKind.Definition, $"type:{t}", ChangeOp.Create)));
             logged.AddRange(newFields.Select(f => new PendingChange(ChangeEntityKind.Definition, $"field:{f}", ChangeOp.Create)));
             logged.AddRange(newRelationships.OfType<JsonObject>().Select(r => new PendingChange(
@@ -180,7 +196,7 @@ public sealed partial class ImportStagingService
         await ExecuteAsync(connection, transaction,
             "UPDATE import_batch SET status = 'committed', raw_payload = raw_payload || jsonb_build_object('added', @added, 'updated', @updated, 'created', @created::jsonb), updated_at = now() WHERE id = @batch",
             ("added", records + links, NpgsqlDbType.Integer),
-            ("updated", updates.Count, NpgsqlDbType.Integer),
+            ("updated", updates.Count + linkUpdates.Count, NpgsqlDbType.Integer),
             ("created", created.ToJsonString(), NpgsqlDbType.Text),
             ("batch", batchId, NpgsqlDbType.Bigint));
         await transaction.CommitAsync(cancellationToken);
@@ -190,13 +206,58 @@ public sealed partial class ImportStagingService
             var watched = _hooks.Watched;
             changes.AddRange(updates.Where(u => watched.Contains(u.Type)).Select(u =>
                 new RecordChange(RecordChangeKind.Updated, u.Type, u.Id, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
+            changes.AddRange(linkUpdates.Where(u => watched.Contains(u.SourceType) || watched.Contains(u.TargetType)).SelectMany(u =>
+            {
+                var before = RecordRepository.Values(u.OldProps);
+                var after = RecordRepository.Values(u.NewProps);
+                return new[]
+                {
+                    new RecordChange(RecordChangeKind.LinkUpdated, u.SourceType, u.SourceId, before, after, u.RelType, u.TargetId),
+                    new RecordChange(RecordChangeKind.LinkUpdated, u.TargetType, u.TargetId, before, after, u.RelType, u.SourceId),
+                };
+            }));
             await _hooks.AfterChangeAsync(changes, cancellationToken);
         }
 
-        return new StagedCommit(batchId, records, links) { Updated = updates.Count };
+        return new StagedCommit(batchId, records, links) { Updated = updates.Count + linkUpdates.Count };
     }
 
     private sealed record PlannedUpdate(string Id, string Type, string OldName, string OldProps, string NewName, string NewProps);
+
+    private sealed record PlannedLinkUpdate(long StagedItemId, long LinkId, string SourceId, string SourceType, string RelType, string TargetId, string TargetType, string OldProps, string NewProps);
+
+    // The staged links already there, linked exactly once, whose values the file would change. Read before the insert
+    // above runs, so it sees what was there beforehand, not what the import itself might add.
+    private static async Task<List<PlannedLinkUpdate>> PlanLinkUpdatesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, long batchId, CancellationToken cancellationToken)
+    {
+        var found = new List<PlannedLinkUpdate>();
+        await using var command = new NpgsqlCommand(
+            """
+            SELECT s.id, l.id, l.source_id, src.type, l.rel_type, l.target_id, tgt.type, l.props::text, (l.props || coalesce(s.props, '{}'::jsonb))::text
+            FROM staged_item s
+            JOIN node_link l ON l.source_id = s.source_id AND l.rel_type = s.rel_type AND l.target_id = s.target_id
+            JOIN node src ON src.id = l.source_id
+            JOIN node tgt ON tgt.id = l.target_id
+            WHERE s.import_batch_id = @batch AND s.kind = 'link' AND s.included
+              AND (SELECT count(*) FROM node_link l2 WHERE l2.source_id = s.source_id AND l2.rel_type = s.rel_type AND l2.target_id = s.target_id) = 1
+            ORDER BY s.id
+            """, connection, transaction)
+        { CommandTimeout = 0 };
+        command.Parameters.Add(new NpgsqlParameter("batch", NpgsqlDbType.Bigint) { Value = batchId });
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            var oldProps = reader.GetString(7);
+            var newProps = reader.GetString(8);
+            if (!RecordRepository.Values(oldProps).OrderBy(v => v.Key).SequenceEqual(RecordRepository.Values(newProps).OrderBy(v => v.Key)))
+            {
+                found.Add(new PlannedLinkUpdate(
+                    reader.GetInt64(0), reader.GetInt64(1), reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetString(6), oldProps, newProps));
+            }
+        }
+
+        return found;
+    }
 
     // The staged records whose key is already there, with what each would become: the staged name, and the record's values with
     // the staged ones laid over them. Those that would come out the same aren't included.

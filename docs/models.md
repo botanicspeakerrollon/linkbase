@@ -354,8 +354,12 @@ since it was staged. Things already here are never staged, only counted.
 file has changes: an empty cell leaves the value alone, and with no name column the record keeps its name. Check counts the
 records it would update, the review lists each one by what changes (`city: Bern → Zurich`), and commit writes one field-level
 entry per change to the audit trail, under the import. It needs the model to keep a history, because that is what puts the values
-back, and it can't update a type a domain module keeps up to date. Only CSV records update so far: links and Read text still skip
-what is already here.
+back, and it can't update a type a domain module keeps up to date.
+
+A links file offers the same box, **Update links that are already here**, when the relationship carries values. It only
+changes a link's values when the two records are linked that way exactly once: a row that would otherwise match an
+ambiguous pair (none yet, or more than one already) is added as a further link instead, same as when the box is unticked.
+Read text still only skips what is already here, for both records and links.
 
 Undoing an import also puts back the values it changed. A value someone has changed again since stays as it is and is listed
 with the records that stay. A value already back at its old value is skipped, so an undo that left something can be run again.
@@ -381,7 +385,35 @@ Everything guessed can be corrected before **Check**, which reports problems in 
 model** then imports each file's records, and then the links, through the same service as the CSV tab, so each file is an
 import of its own in **Recent imports** and can be undone there. Records are checked before anything is written; a problem
 found only in the links is reported once the records are in. Types already in the model are added to, as in the CSV tab.
-Editing the model afterwards, in the app, isn't built yet.
+Its result, like any model's, can then be edited in the app (below).
+
+## Editing a model in the app
+
+**Model** (`/model`) adds, changes and removes a model's types, fields, relationships and link values without a developer or
+a model file, through `Core/Models/ModelEditor.cs`. It's checked the same way a model file is: a type's or a relationship's
+name follows the same rules, a choice needs 1 to 50 options, and so on. It's also checked against the records and links
+already there, which a model file never has to be, because loading one replaces them:
+
+- A choice option still held by a value can't be taken away. A field or relationship can't be made required until every
+  record or link already has one. A type can't be deleted while it has records, or is in a relationship; a relationship
+  can't be deleted while it has links.
+- Changing a field's type (Text to a number, date, yes/no or choice, and back to Text) checks every value fits first, and
+  stops with examples when some don't. A choice's options default to the values already there when none are given.
+- Renaming a field, or a relationship, keeps its values; only the key moves. A type's name template and hierarchy field
+  follow a field it uses when that field is renamed.
+- A type or field a domain module derives or keeps can't be changed here. One a module only reads or writes — such as a
+  relationship it expects every record to have — can be added to (another field, say) but not renamed, retyped, deleted,
+  or have its required or max rules changed.
+- Every change is one transaction, and writes the [history](audit-history-plan.md) the same way a hand edit does, under a
+  `type:`, `field:`, `relationship:` or `attribute:` entry, so it can be reverted the same way.
+
+A type's hierarchy is set from its required choice field (the level) and a non-required relationship from the type to
+itself (the parent): both need to exist first. The levels always cover the field's options exactly, with one at the top and
+every other reachable from it, the same rules [a model file's hierarchy](#hierarchies) follows.
+
+**Not built.** Renaming a type: its records' ids embed it (`route:stanage-millstone-edge`), so renaming would mean rewriting
+every one and everything that refers to it. Bulk-editing many records' values at once. Groups, descriptions and a
+relationship's own limits beyond required and max.
 
 ## Reading text
 

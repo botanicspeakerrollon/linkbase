@@ -45,7 +45,9 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var (pairs, problems, notes, skipped) = await ReadLinksAsync(db, file, mapping, cancellationToken);
         var existing = await ExistingLinksAsync(db, mapping.RelType, pairs, cancellationToken);
-        return new CsvImportPlan(file.Rows, pairs.Count - existing.Count, existing.Count, skipped, problems, notes);
+        var rest = pairs.Where(p => !existing.Contains(p)).ToList();
+        var updating = mapping.UpdateExisting && problems.Count == 0 ? (await UpdatableLinksAsync(db, mapping.RelType, rest, cancellationToken)).Count : 0;
+        return new CsvImportPlan(file.Rows, rest.Count - updating, existing.Count, skipped, problems, notes) { ToUpdate = updating };
     }
 
     public async Task<CsvImportResult> ImportAsync(CsvFile file, CsvRecordMapping mapping, CancellationToken cancellationToken = default) =>
@@ -108,11 +110,17 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
         Stop(problems);
 
         var existing = await ExistingLinksAsync(db, mapping.RelType, pairs, cancellationToken);
+        var rest = pairs.Where(p => !existing.Contains(p)).ToList();
+        var updating = mapping.UpdateExisting ? await UpdatableLinksAsync(db, mapping.RelType, rest, cancellationToken) : [];
         var model = new ModelChanges([], [], [new StagedRelationship(mapping.FromType, mapping.RelType, mapping.ToType)]);
         return await _staging.StageAsync(
-            new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.FromType} {mapping.RelType} {mapping.ToType} links", model, existing.Count, skipped, notes),
+            new StagingRequest(DataSource.Csv, file.FileName, $"{mapping.FromType} {mapping.RelType} {mapping.ToType} links", model, existing.Count, skipped, notes)
+            {
+                UpdateExisting = mapping.UpdateExisting,
+                Updating = updating.Count,
+            },
             [],
-            pairs.Where(p => !existing.Contains(p)).Select(p => new StagedLink(mapping.FromType, mapping.RelType, p.Source, mapping.ToType, p.Target, p.Props)),
+            rest.Select(p => new StagedLink(mapping.FromType, mapping.RelType, p.Source, mapping.ToType, p.Target, p.Props)),
             cancellationToken);
     }
 

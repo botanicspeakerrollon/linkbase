@@ -187,6 +187,14 @@
                                      HelperText="@RelationshipHelp()" />
                 </MudItem>
             </MudGrid>
+            @if (Attributes().Count > 0)
+            {
+                <MudCheckBox T="bool" Value="_update" ValueChanged="@(v => Changed(() => _update = v))" Dense="true" Class="mt-2"
+                             Label="Update links that are already here" aria-label="Update links that are already here" />
+                <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
+                    Only when the two are linked this way exactly once. Only values the file has change, and undoing the import puts them back.
+                </MudText>
+            }
             <MudGrid Spacing="2">
                 <MudItem xs="12" md="3">
                     <MudSelect T="string" Variant="Variant.Outlined" Margin="Margin.Dense" Label="To type" Value="_toType" ValueChanged="@(v => Changed(() => { _toType = v; SuggestRelationship(); }))">

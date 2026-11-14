@@ -1,0 +1,158 @@
+@page "/model"
+@inject ModelEditor Editor
+@inject Linkbase.Core.Records.RecordRepository Records
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+
+<PageTitle>Model</PageTitle>
+<PageHotkeys Keys="Hotkeys" OnKey="OnHotkeyAsync" />
+
+<MudText Typo="Typo.h4" HtmlTag="h1" Class="mb-1">Model</MudText>
+<MudText Typo="Typo.body2" Class="mb-3" Style="color: var(--mud-palette-text-secondary)">
+    The model's types, fields, relationships and link values. A type or field a domain module keeps can't be changed here;
+    one it reads or writes can only be added to. Every change is checked against what's already there, and kept in the
+    <MudLink Href="history">history</MudLink>.
+</MudText>
+
+@if (_outline is null)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else
+{
+    <MudTabs Elevation="1" ApplyEffectsToContainer="true" TabPanelsClass="pt-4" ActivePanelIndex="_tab" ActivePanelIndexChanged="ChooseTabAsync">
+        <MudTabPanel Text="Types (t)">
+            <MudButton OnClick="AddTypeAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Class="mb-3" data-hotkey-search>
+                Add type
+            </MudButton>
+            @foreach (var type in _outline.Types)
+            {
+                <MudPaper Elevation="1" Class="pa-3 mb-3">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@GraphStyle.For(type.Name, type.Color, type.Icon).Icon" Style="@TypeStyle(type)" />
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h2">@type.Name</MudText>
+                            @if (type.Owner is { } owner)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Derived by @owner</MudChip>
+                            }
+                            else if (type.Watched)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Used by a module</MudChip>
+                            }
+                            <MudText Typo="Typo.caption">@Count(type.Name) record(s)</MudText>
+                        </MudStack>
+                        @if (type.Owner is null)
+                        {
+                            <MudStack Row="true" Spacing="1">
+                                <MudButton OnClick="@(() => AddFieldAsync(FieldHome.OfType(type.Name)))" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add">Field</MudButton>
+                                <MudButton OnClick="@(() => SetHierarchyAsync(type))" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccountTree">Hierarchy</MudButton>
+                                <MudIconButton OnClick="@(() => EditTypeAsync(type))" Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" aria-label="@($"Edit {type.Name}")" />
+                                <MudIconButton OnClick="@(() => DeleteTypeAsync(type))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" Disabled="type.Watched" aria-label="@($"Delete {type.Name}")" />
+                            </MudStack>
+                        }
+                    </MudStack>
+                    @if (type.Hierarchy is { } hierarchy)
+                    {
+                        <MudText Typo="Typo.caption" Class="mb-2 d-block">
+                            A tree by @hierarchy.By, via @type.Name @hierarchy.Via @type.Name: @string.Join(", ", hierarchy.Levels.Select(l => l.Kind))
+                            <MudButton OnClick="@(() => ClearHierarchyAsync(type))" Size="Size.Small" Variant="Variant.Text">Remove</MudButton>
+                        </MudText>
+                    }
+                    @if (type.Fields.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2">No fields yet.</MudText>
+                    }
+                    else
+                    {
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <thead><tr><th>Key</th><th>Type</th><th>Required</th><th>Several</th><th>Group</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var field in type.Fields)
+                                {
+                                    <tr>
+                                        <td>@field.Key</td>
+                                        <td>@Labelled(field.Type)@(field.Type == FieldType.Choice ? $" ({field.OptionList.Count})" : "")</td>
+                                        <td>@(field.Required ? "Yes" : "")</td>
+                                        <td>@(field.Multiple ? "Yes" : "")</td>
+                                        <td>@field.Group</td>
+                                        <td>
+                                            @if (field.Owner is null)
+                                            {
+                                                <MudIconButton OnClick="@(() => EditFieldAsync(FieldHome.OfType(type.Name), field))" Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" aria-label="@($"Edit {field.Key}")" />
+                                                <MudIconButton OnClick="@(() => RenameFieldAsync(FieldHome.OfType(type.Name), field))" Icon="@Icons.Material.Outlined.DriveFileRenameOutline" Size="Size.Small" aria-label="@($"Rename {field.Key}")" />
+                                                <MudIconButton OnClick="@(() => RetypeFieldAsync(FieldHome.OfType(type.Name), field))" Icon="@Icons.Material.Outlined.SwapHoriz" Size="Size.Small" aria-label="@($"Change {field.Key}'s type")" />
+                                                <MudIconButton OnClick="@(() => DeleteFieldAsync(FieldHome.OfType(type.Name), field))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" aria-label="@($"Delete {field.Key}")" />
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.caption">Kept by @field.Owner</MudText>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    }
+                </MudPaper>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Relationships (r)">
+            <MudButton OnClick="AddRelationshipAsync" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Class="mb-3" Disabled="_outline.Types.Count == 0">
+                Add relationship
+            </MudButton>
+            @foreach (var rel in _outline.Relationships)
+            {
+                <MudPaper Elevation="1" Class="pa-3 mb-3">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudText Typo="Typo.subtitle1" HtmlTag="h2">@rel.Label</MudText>
+                            @if (rel.Required)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Required</MudChip>
+                            }
+                            @if (rel.Max is { } max)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Max @max</MudChip>
+                            }
+                            @if (rel.Watched)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Default">Used by a module</MudChip>
+                            }
+                            <MudText Typo="Typo.caption">@rel.Links.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) link(s)</MudText>
+                        </MudStack>
+                        <MudStack Row="true" Spacing="1">
+                            <MudButton OnClick="@(() => AddFieldAsync(FieldHome.OfLink(rel.From, rel.Rel, rel.To)))" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add">Value</MudButton>
+                            <MudIconButton OnClick="@(() => EditRelationshipAsync(rel))" Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" Disabled="rel.Watched" aria-label="@($"Edit {rel.Label}")" />
+                            <MudIconButton OnClick="@(() => RenameRelationshipAsync(rel))" Icon="@Icons.Material.Outlined.DriveFileRenameOutline" Size="Size.Small" aria-label="@($"Rename {rel.Label}")" />
+                            <MudIconButton OnClick="@(() => DeleteRelationshipAsync(rel))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" Disabled="rel.Watched" aria-label="@($"Delete {rel.Label}")" />
+                        </MudStack>
+                    </MudStack>
+                    @if (rel.Attributes.Count > 0)
+                    {
+                        <MudSimpleTable Dense="true" Elevation="0">
+                            <thead><tr><th>Key</th><th>Type</th><th>Required</th><th>Several</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var attr in rel.Attributes)
+                                {
+                                    <tr>
+                                        <td>@attr.Key</td>
+                                        <td>@Labelled(attr.Type)@(attr.Type == FieldType.Choice ? $" ({attr.OptionList.Count})" : "")</td>
+                                        <td>@(attr.Required ? "Yes" : "")</td>
+                                        <td>@(attr.Multiple ? "Yes" : "")</td>
+                                        <td>
+                                            <MudIconButton OnClick="@(() => EditFieldAsync(FieldHome.OfLink(rel.From, rel.Rel, rel.To), attr))" Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" aria-label="@($"Edit {attr.Key}")" />
+                                            <MudIconButton OnClick="@(() => RenameFieldAsync(FieldHome.OfLink(rel.From, rel.Rel, rel.To), attr))" Icon="@Icons.Material.Outlined.DriveFileRenameOutline" Size="Size.Small" aria-label="@($"Rename {attr.Key}")" />
+                                            <MudIconButton OnClick="@(() => RetypeFieldAsync(FieldHome.OfLink(rel.From, rel.Rel, rel.To), attr))" Icon="@Icons.Material.Outlined.SwapHoriz" Size="Size.Small" aria-label="@($"Change {attr.Key}'s type")" />
+                                            <MudIconButton OnClick="@(() => DeleteFieldAsync(FieldHome.OfLink(rel.From, rel.Rel, rel.To), attr))" Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" aria-label="@($"Delete {attr.Key}")" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    }
+                </MudPaper>
+            }
+        </MudTabPanel>
+    </MudTabs>
+}
