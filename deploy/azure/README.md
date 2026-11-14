@@ -6,7 +6,7 @@ Key Vault. It's one script, and running it again after a change redeploys.
 ```powershell
 winget install Microsoft.AzureCLI      # once
 az login
-./deploy/azure/deploy.ps1
+powershell -ExecutionPolicy Bypass -File ./deploy/azure/deploy.ps1   # Bypass is for this one run only; it changes no setting
 ```
 
 It asks for the Anthropic key at a hidden prompt and ends by printing the address. The first start takes a minute or two,
