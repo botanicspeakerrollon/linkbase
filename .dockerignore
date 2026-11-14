@@ -20,3 +20,6 @@ scripts/
 tests/
 deploy/
 *.md
+
+# Local secrets (git-ignored too) must never be baked into an image.
+**/appsettings.*.local.json
