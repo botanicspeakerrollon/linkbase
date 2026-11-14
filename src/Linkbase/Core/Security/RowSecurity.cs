@@ -141,15 +141,23 @@ public sealed class RowSecurityState(TimeProvider time)
         }
 
         var generation = Interlocked.Read(ref _generation);
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            select coalesce((select relrowsecurity from pg_class where oid = 'public.node'::regclass), false),
-                   (select security::text from model_setting limit 1)
-            """;
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        await reader.ReadAsync(cancellationToken);
-        var enabled = reader.GetBoolean(0);
-        var security = reader.IsDBNull(1) ? null : LabelCodec.FromJson(reader.GetString(1));
+        // The security setting is read only once row security is on, so a database that hasn't been migrated yet (no such
+        // column) still opens, and the pending migration is reported where it belongs.
+        bool enabled;
+        ModelSecurity? security = null;
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "select coalesce((select relrowsecurity from pg_class where oid = 'public.node'::regclass), false)";
+            enabled = (bool)(await command.ExecuteScalarAsync(cancellationToken))!;
+        }
+
+        if (enabled)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "select security::text from model_setting limit 1";
+            security = await command.ExecuteScalarAsync(cancellationToken) is string json ? LabelCodec.FromJson(json) : null;
+        }
+
         _entries[key] = new Entry(enabled, security, now + Lifetime, generation);
         return enabled ? security ?? new ModelSecurity() : null;
     }
