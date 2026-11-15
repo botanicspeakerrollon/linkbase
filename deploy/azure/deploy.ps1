@@ -18,6 +18,9 @@
   Deploys without an Anthropic key. Read text and Ask are then switched off.
 .PARAMETER ReplaceAnthropicKey
   Asks for the key again, even if the vault already holds one.
+.PARAMETER ShowAnthropicKey
+  Shows the key as you type or paste it. Use it when a paste into the hidden prompt arrives as a single character, which some
+  terminals do. Keys shorter than 20 characters are refused either way.
 .PARAMETER Size
   Light (the default) or Heavy. Light is B1ms Postgres with a 0.5 vCPU app, enough for the small models. Heavy is B2ms Postgres
   with a 128 GiB disk and a 1 vCPU app, for the large ArchiMate model, at about three times the cost. Postgres storage can only
@@ -35,6 +38,7 @@ param(
     [switch] $AllowAnyone,
     [switch] $NoAnthropic,
     [switch] $ReplaceAnthropicKey,
+    [switch] $ShowAnthropicKey,
     [ValidateSet('Light', 'Heavy')]
     [string] $Size = 'Light',
     [ValidateSet('climbing_demo', 'consultancy', 'linkbase_code', 'archimate')]
@@ -45,6 +49,7 @@ $ErrorActionPreference = 'Stop'
 $repo = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ("linkbase-azure-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tmp | Out-Null
+$minKeyLength = 20   # real keys are far longer; anything shorter is a failed paste
 
 # Runs az and stops on failure. Windows PowerShell treats anything az writes to stderr as an error, so it's let through.
 function Invoke-Az {
@@ -184,13 +189,35 @@ try {
         Set-VaultSecret $vault $secret $connection
     }
     if (-not $NoAnthropic) {
-        if ($ReplaceAnthropicKey -or -not (Test-VaultSecret $vault 'anthropic-api-key')) {
-            $secure = Read-Host -AsSecureString 'Anthropic API key (hidden; goes straight to the vault)'
-            $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-            try { $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer) }
-            finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }
-            if ([string]::IsNullOrWhiteSpace($key)) { throw 'No key entered. Run again, or use -NoAnthropic.' }
-            Set-VaultSecret $vault 'anthropic-api-key' $key.Trim()
+        # A key stored by an earlier run in which the hidden prompt kept only one pasted character is replaced, not kept.
+        $keyStored = Test-VaultSecret $vault 'anthropic-api-key'
+        if ($keyStored -and -not $ReplaceAnthropicKey) {
+            $storedLength = Invoke-Az keyvault secret show --vault-name $vault --name 'anthropic-api-key' --query value --output tsv
+            if ($storedLength.Length -lt $minKeyLength) {
+                Write-Warning "The vault's Anthropic key is only $($storedLength.Length) characters long, so it was probably a failed paste. Asking again."
+                $keyStored = $false
+            }
+        }
+        if ($ReplaceAnthropicKey -or -not $keyStored) {
+            $key = $null
+            for ($attempt = 1; $attempt -le 3; $attempt++) {
+                if ($ShowAnthropicKey) {
+                    $key = Read-Host 'Anthropic API key (VISIBLE on screen; goes straight to the vault)'
+                } else {
+                    $secure = Read-Host -AsSecureString 'Anthropic API key (hidden; goes straight to the vault)'
+                    $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+                    try { $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer) }
+                    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }
+                }
+                $key = "$key".Trim()
+                if ($key.Length -ge $minKeyLength) { break }
+                if ($key.Length -eq 0) { throw 'No key entered. Run again, or use -NoAnthropic.' }
+                # Some terminals pass only one character of a paste to a hidden prompt.
+                Write-Warning "Only $($key.Length) character(s) arrived, which is too short for a key. Some terminals lose a paste at a hidden prompt: try again in a plain PowerShell window, or run with -ShowAnthropicKey."
+                $key = $null
+            }
+            if (-not $key) { throw 'No usable key entered. Run again with -ShowAnthropicKey, or use -NoAnthropic.' }
+            Set-VaultSecret $vault 'anthropic-api-key' $key
             $key = $null
         } else {
             Write-Host '  The vault already holds an Anthropic key. -ReplaceAnthropicKey changes it.'

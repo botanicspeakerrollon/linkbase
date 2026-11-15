@@ -52,6 +52,10 @@ it. To make yours write-only once the demo is up, remove your Secrets Officer as
 change the key). To change the key later, run `./deploy/azure/deploy.ps1 -ReplaceAnthropicKey`, then
 `az containerapp revision restart` (or just run the script, which makes a new revision).
 
+Some terminals pass only one character of a paste to a hidden prompt. The script refuses a key under 20 characters and asks
+again (and replaces a too-short key a previous run stored). If pasting keeps failing, run it with `-ShowAnthropicKey`, which
+shows the key as you paste it.
+
 Also set a monthly spend limit for the key in the Anthropic Console, since anyone who can use the demo can spend it.
 
 ## Who can reach it
