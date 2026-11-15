@@ -447,8 +447,10 @@ public sealed class EverydayUsePageTests(PostgresFixture fixture) : UiTestBase(f
         var reference = await Dialogs.InvokeAsync(() => dialogs.ShowAsync<TraceDialog>("Trace", new DialogParameters<TraceDialog> { { d => d.Start, start } }));
 
         Sees(Dialogs, place.Crag);
-        Press(Dialogs, "Show on graph (2)");
+        // It opens two levels by default, so the crag's area is shown as well.
+        Sees(Dialogs, place.Country);
+        Press(Dialogs, "Show on graph (3)");
         var trace = Assert.IsType<TraceResult>((await reference.Result)!.Data);
-        Assert.Equal([place.RouteId, place.CragId], trace.NodeIds);
+        Assert.Equal([place.RouteId, place.CragId, place.AreaId], trace.NodeIds);
     }
 }
