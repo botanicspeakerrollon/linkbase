@@ -1,6 +1,6 @@
 # Linkbase — Requirements Specification
 
-Status: **Draft**, derived from the current build (revised 2026-11-15). Document owner: n/a (single maintainer).
+Status: **Draft**, derived from the current build (revised 2026-11-16). Document owner: n/a (single maintainer).
 
 This is a formal requirements specification in the IEEE/ISO 29148 tradition, scaled down to one maintainer's needs: numbered,
 testable requirements with a priority and a status, rather than prose. [reference.md](reference.md) describes what the
@@ -36,7 +36,8 @@ someone... see" mean in testable terms, for the one app and one database design 
 One ASP.NET Core / Blazor Interactive Server app, one Postgres instance holding one database per model. In scope: the
 generic data model and its pages (Explore, lists, records, import, the model editor, home, timeline, cleanup, history, saved
 views, Quick-find, the guide), the climbing domain module (logbook, insights, trips, importers), label-based row and field
-security, the operational requirements to run one instance, and the demo (one command, and on Azure). Out of scope for this version: a production sign-in scheme, roles and who-may-label permissions (§1.5), and a
+security, the operational requirements to run one instance, the demo (one command, and on Azure), and, planned, change
+hooks and a read-only HTTP API for other systems (INT-\*). Out of scope for this version: a production sign-in scheme, roles and who-may-label permissions (§1.5), and a
 managed offering for customers.
 
 ### 1.3 Intended readers
@@ -78,7 +79,8 @@ Deliberately not required by this version, and not to be treated as a defect:
 ### 2.1 Product perspective
 
 Self-hosted. The app is the only writer of its databases; nothing else may write `node`, `node_link` or the history tables
-directly. The one external dependency that is optional is the LLM provider (Anthropic or an OpenAI-compatible server, for Read text and Ask); the app is fully usable with
+directly; other systems learn of changes through change hooks and read through the API (both planned, INT-\*), never
+from the tables. The one external dependency that is optional is the LLM provider (Anthropic or an OpenAI-compatible server, for Read text and Ask); the app is fully usable with
 it disabled.
 
 ### 2.2 User classes
@@ -251,6 +253,17 @@ Crag, Route, Ascent, Partner and Trip.
 | CLM-4 | S | The UKC export and the Mountain Project ticks shall import from the command line (`climbing import <model> ukc\|mp\|all`), one undoable batch per file, re-runnable without duplicates, and shall rebuild trips; crags and routes may also be added from text through Read text. | Met — the importers don't check hierarchy rules, and the real model's areas have none |
 | CLM-5 | S | The climbing module shall add no tables or views to the database: its pages and Insights queries read the generic store, and the types and fields it derives shall be protected from hand editing (REC-6, MOD-5). | Met |
 
+### 3.11 Integration (INT)
+
+How other systems learn of changes and read records without the browser. Both are planned; the shape is in §5.
+
+| Id | Priority | Requirement | Status |
+| --- | --- | --- | --- |
+| INT-1 | M | Every committed change to records or links (a create, edit or delete, and the change sets that import, import undo, revert, merge, correction and derived rebuild write) shall raise a change event, recorded in the same transaction as the change, so a change that rolls back raises nothing and a change that commits is never lost. This shall hold whether or not the model records history (HIS-3). An event shall carry the model, the change set's id and justification kind, and each record or link affected with its operation; a bulk change shall be one event, not one per record (as HIS-7). | Planned |
+| INT-2 | M | Change events shall be handed, after commit and in commit order per model, to any number of hooks: code registered through one documented extension point, each configured by settings, with a built-in hook that posts the event to an HTTP address. Delivery shall be at least once, with retry and back-off; a hook that fails or is slow shall never delay, block or undo the change that raised the event; each hook's position and failures shall be visible to the operator. | Planned |
+| INT-3 | M | An HTTP API shall let another program read a model's records without the browser: at least a free-text search (`GET /api/{model}/search?q=…`, answering as Quick-find does), and a record by type and key with its values and links, as JSON. It shall be read-only, versioned, shall authenticate every caller, and shall read as that caller so row and field security apply exactly as on the pages (SEC-2, SEC-3, SEC-9). | Planned |
+| INT-4 | S | The pages, the API and the event dispatcher shall be startable as one process (as today) or as separate processes from the same image, chosen by configuration, sharing only the database; no feature shall depend on two of them sharing memory. | Planned |
+
 ---
 
 ## 4. Non-functional requirements
@@ -339,7 +352,9 @@ security on; a model that doesn't is unaffected (SEC-6).
 
 | Interface | Direction | Requirement |
 | --- | --- | --- |
-| Browser (Blazor Server, SignalR circuit) | In/out | The only end-user interface; no separate public API is required by this version. |
+| Browser (Blazor Server, SignalR circuit) | In/out | The end-user interface. |
+| HTTP API | In, planned | Read-only JSON over HTTPS for other programs: search and read records as the authenticated caller (INT-3). Not routable pages, so not listed in §5.1. |
+| Change hooks | Out, planned | Change events handed after commit, at least once, to registered hooks such as an HTTP post or a message bus (INT-1, INT-2). |
 | Postgres | Out | One connection string per model; `pg_trgm` extension required for trigram search. |
 | LLM provider (Anthropic API, or an OpenAI-compatible server) | Out, optional | Used only for Read text and Ask (IMP-7, FUN-4); absence shall degrade those two features only (ASM-3). |
 | Container runtime | In | Environment variables only (OPS-3); port 8080; no mounted config files required. |
@@ -392,6 +407,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | PERF | Part IV | [performance.md](performance.md) |
 | SEC | [security-design](history/security-design.md), [models.md](models.md#security) | `RowSecurityTests`, `SecurityRuleTests`, `SecurityLabelsTests`, `FieldPolicyTests`, `HistorySecurityTests`, `IdentityTests`, `LabelUiTests` |
 | TIM, CLM | §10 Home, Timeline and Cleanup; §17 climbing | `EverydayUseTests`, `LogbookRepositoryTests`, `InsightsRepositoryTests`, `TripBuilderTests`, `ClimbingHookTests`, `GradeRankingTests` |
+| INT | Not yet (planned) | Not yet (planned) |
 | DEM | [deploy/azure/README.md](../deploy/azure/README.md), `docker-compose.demo.yml` | CI `demo` job; `ModelSetupTests` |
 | REL, USE, OPS, MNT | Part IV | CI (`.github/workflows/ci.yml`), `.gitlab-ci.yml` |
 
@@ -408,6 +424,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-15 | FUN-2, FUN-11, FUN-14: Explore gains a cards view in the `t` cycle (graph, table, cards), `x` exports the nodes CSV, and that CSV carries every defined field of the types shown, even when empty. |
 | 2026-11-15 | PERF-4: `LINKBASE_LOAD_ONLY` runs one step alone; performance.md records the limits found (database CPU, no caching, one replica, connection arithmetic). |
 | 2026-11-15 | DEM-4: `deploy.ps1 -ResetAllModels` resets all four example databases at once; `-ResetModel` still takes one or more. |
+| 2026-11-16 | New group INT (Planned): change events raised in the change's transaction and delivered to hooks after commit (INT-1, INT-2), a read-only HTTP API (INT-3), and pages, API and dispatcher runnable as separate processes (INT-4). §1.2, §2.1 and §5 updated. |
 | 2026-11-15 | IMP-9: language-model providers sit behind one `ILlmToolClient` contract and a `LlmProviders` registry, so the OpenAI path no longer borrows Anthropic classes and a new provider is one client class. No behaviour change. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a

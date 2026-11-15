@@ -50,7 +50,7 @@ public class RequirementsDocTests
     public void Every_requirement_mentioned_in_the_text_exists()
     {
         var ids = Requirements().Select(r => r.Id).ToHashSet();
-        var unknown = Regex.Matches(Doc, @"\b(?:DAT|FUN|REC|IMP|HIS|MOD|UI|CLN|TIM|CLM|PERF|SEC|REL|USE|OPS|MNT|DEM)-\d+\b")
+        var unknown = Regex.Matches(Doc, @"\b(?:DAT|FUN|REC|IMP|HIS|MOD|UI|CLN|TIM|CLM|PERF|SEC|REL|USE|OPS|MNT|DEM|INT)-\d+\b")
             .Select(m => m.Value)
             .Distinct()
             .Where(id => !ids.Contains(id));
