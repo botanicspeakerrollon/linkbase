@@ -176,8 +176,19 @@ public sealed class ModelExtractionService(
 
         links = links.Distinct().ToList();
 
+        // A link between records that are already linked that way is left out, so the review shows only what would be new.
+        var linkEnds = links.SelectMany(l => new[] { l.SourceId, l.TargetId }).Distinct().ToList();
+        var linkedAlready = (await db.NodeLinks.AsNoTracking()
+            .Where(l => linkEnds.Contains(l.SourceId) && linkEnds.Contains(l.TargetId))
+            .Select(l => new { l.SourceId, l.RelType, l.TargetId })
+            .ToListAsync(cancellationToken))
+            .Select(l => (l.SourceId, l.RelType, l.TargetId))
+            .ToHashSet();
+        var linksThere = links.Count(l => linkedAlready.Contains((l.SourceId, l.RelType, l.TargetId)));
+        links = links.Where(l => !linkedAlready.Contains((l.SourceId, l.RelType, l.TargetId))).ToList();
+
         var added = kept.Where(r => !existing.ContainsKey((r.Type, ModelExtractionValidator.Normalise(r.Name)))).ToList();
-        var alreadyThere = kept.Count - added.Count - updates.Count;
+        var alreadyThere = kept.Count - added.Count - updates.Count + linksThere;
         added = added.Select(r => Hooked(types, r)).ToList();
         if (added.Count == 0 && links.Count == 0 && updates.Count == 0)
         {

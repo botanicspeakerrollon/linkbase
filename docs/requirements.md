@@ -429,6 +429,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-16 | INT-1 and INT-2 reworded to match [change-hooks-plan](history/change-hooks-plan.md): events name types and changed field keys but no values, an import names its batch, ids are stable, and one hook can't hold up another. Still Planned. |
 | 2026-11-15 | IMP-9: language-model providers sit behind one `ILlmToolClient` contract and a `LlmProviders` registry, so the OpenAI path no longer borrows Anthropic classes and a new provider is one client class. No behaviour change. |
 | 2026-11-16 | IMP-11 added: Read text can update records already here by exact name, opt-in, with the changes shown in review and undoable; IMP-5 reworded. |
+| 2026-11-16 | Read text no longer stages a link between two records that are already linked that way; the review shows only links that would be new. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.

@@ -261,7 +261,18 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
         Assert.True(await db.Nodes.AnyAsync(n => n.Id == "client:c1"));
     }
 
-    private const string UpdateText = "Ava Lindqvist is now Principal Designer. Zed Quinn joined the Design team.";
+    [Fact]
+    public async Task Links_already_here_between_records_already_here_are_not_staged_again()
+    {
+        var (_, service, staging) = await ExampleAsync(Answer);
+        await staging.CommitAsync(await service.ExtractFromTextAsync(Text, null, null, CancellationToken.None));
+
+        var again = await Assert.ThrowsAsync<ExtractionFailedException>(() => service.ExtractFromTextAsync(Text, null, null, CancellationToken.None));
+
+        Assert.Contains("already here", again.Message, StringComparison.Ordinal);
+    }
+
+    private const string UpdateText ="Ava Lindqvist is now Principal Designer. Zed Quinn joined the Design team.";
 
     [Fact]
     public async Task Text_leaves_a_record_already_here_alone_unless_asked_to_update()
