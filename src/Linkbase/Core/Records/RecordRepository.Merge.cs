@@ -147,10 +147,7 @@ public sealed partial class RecordRepository
         await db.Nodes.Where(n => n.Id == dropId && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
         var changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
         await transaction.CommitAsync(cancellationToken);
-        using (ChangeRecorder.Causing(changeSet))
-        {
-            await hooks.AfterChangeAsync(changes, cancellationToken);
-        }
+        await hooks.AfterChangeAsync(changes, changeSet, cancellationToken);
 
         return new MergeResult(moved, dropped, filled, refs.Count);
     }

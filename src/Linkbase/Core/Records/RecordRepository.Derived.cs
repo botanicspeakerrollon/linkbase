@@ -16,7 +16,8 @@ public sealed partial class RecordRepository
     // module that owns the type can, and no hooks run. Each link needs one end among the new records, and a relationship
     // the model has. Returns how many records there are now.
     public async Task<int> ReplaceDerivedAsync(
-        string domain, string type, IReadOnlyList<DerivedRecord> records, IReadOnlyList<DerivedLink> links, CancellationToken cancellationToken = default)
+        string domain, string type, IReadOnlyList<DerivedRecord> records, IReadOnlyList<DerivedLink> links,
+        long? causeChangeSetId = null, CancellationToken cancellationToken = default)
     {
         var definition = await TypeAsync(type, cancellationToken) ?? throw new InvalidOperationException($"There's no type called {type}.");
         if (definition.Owner != domain)
@@ -123,7 +124,7 @@ public sealed partial class RecordRepository
         if (settings.Record)
         {
             await ChangeRecorder.WriteAsync(db, JustificationKind.Derived, new ChangeReason($"{domain} rebuilt its {type} records"), logged,
-                causeChangeSetId: ChangeRecorder.Cause, cancellationToken: cancellationToken);
+                causeChangeSetId: causeChangeSetId, cancellationToken: cancellationToken);
         }
 
         await transaction.CommitAsync(cancellationToken);

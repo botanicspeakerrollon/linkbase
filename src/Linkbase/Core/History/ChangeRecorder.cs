@@ -41,23 +41,6 @@ public static class ChangeRecorder
     public const int NoteLimit = 500;
     public const int SourceIdLimit = 500;
 
-    // The change set whose hooks are running, so a module's rebuild can say what caused it.
-    private static readonly AsyncLocal<long?> CurrentCause = new();
-
-    public static long? Cause => CurrentCause.Value;
-
-    public static IDisposable Causing(long? changeSetId)
-    {
-        var previous = CurrentCause.Value;
-        CurrentCause.Value = changeSetId;
-        return new Restore(previous);
-    }
-
-    private sealed class Restore(long? previous) : IDisposable
-    {
-        public void Dispose() => CurrentCause.Value = previous;
-    }
-
     public static async Task<HistorySettings> SettingsAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
         await db.ModelSettings.AsNoTracking()
             .Select(s => HistorySettings.From(s.RecordHistory, s.RequireReason, s.SourceKinds))

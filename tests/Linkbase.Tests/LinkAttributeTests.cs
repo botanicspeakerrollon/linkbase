@@ -23,7 +23,7 @@ internal sealed class LinkWatcher : IRecordHook
     {
     }
 
-    public Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, CancellationToken cancellationToken)
+    public Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, long? changeSetId, CancellationToken cancellationToken)
     {
         Changes.AddRange(changes);
         return Task.CompletedTask;

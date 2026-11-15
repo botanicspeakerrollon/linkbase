@@ -301,14 +301,9 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         await using var transaction = await db.Database.BeginTransactionAsync();
         var cause = await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, new ChangeReason("Edited"), [ChangeRecorder.NodeDeleted("person:p1", "A", new Dictionary<string, string>())]);
 
-        long? derived;
-        using (ChangeRecorder.Causing(cause))
-        {
-            derived = await ChangeRecorder.WriteAsync(db, JustificationKind.Derived, new ChangeReason("Rebuilt"), [ChangeRecorder.NodeDeleted("person:p2", "B", new Dictionary<string, string>())],
-                causeChangeSetId: ChangeRecorder.Cause);
-        }
+        var derived = await ChangeRecorder.WriteAsync(db, JustificationKind.Derived, new ChangeReason("Rebuilt"), [ChangeRecorder.NodeDeleted("person:p2", "B", new Dictionary<string, string>())],
+            causeChangeSetId: cause);
 
         Assert.Equal(cause, (await db.ChangeSets.SingleAsync(s => s.Id == derived)).CauseChangeSetId);
-        Assert.Null(ChangeRecorder.Cause);
     }
 }
