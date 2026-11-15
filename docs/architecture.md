@@ -1,6 +1,6 @@
 # Where things live
 
-A map of the code for anyone about to add a feature, a domain or access control. Rules for writing code are in `CLAUDE.md`;
+A map of the code for anyone about to add a feature, a domain or a security rule. Rules for writing code are in `CLAUDE.md`;
 what a model is, is in [models](models.md).
 
 ## Layout
@@ -57,18 +57,28 @@ The one exception is a scoped `LinkbaseDbContext` registered in `Program.cs` for
 | A new importer | Work out records and links, then stage them with `ImportStagingService` so review, commit and undo come free |
 | A new table or column | Change the entities and add a migration; add a view to the migration's SQL if the graph needs it |
 
-## Where access control would go
+## Where access control lives
 
-Nothing here is implemented (see [security-roadmap](history/security-roadmap.md) and [security-design](history/security-design.md)). The places a policy has to reach:
+Built, and off unless a model turns it on (`model security on`). The design is in [security-design](history/security-design.md);
+what a model file says is in [models](models.md#security). Where each piece is:
 
-- **Who is asking.** Every owned row has a `user_id`, and the app assumes one user (`AppUser.DefaultId`). Sign-in replaces that
-  assumption in the repositories' write paths and in the context factory.
-- **Reads.** Every read is a repository method returning a DTO. Record values come from `node.props` JSON, so a field policy
-  has to filter in `RecordRepository` (`Reads`, `Values`), `GraphRepository`, and the climbing repositories, which read
-  props directly. Moving a sensitive field out of JSON into a typed column is the other route.
-- **Writes.** `RecordRepository.Writes`, `ImportStagingService` and the loader. All write in one
-  transaction, so a check at the start covers the batch.
+- **Who is asking.** `ICurrentUserAccessor` (`Core/Security/CurrentUser.cs`) gives the user, from `Security:Identity`:
+  `configured`, `principal` (whoever ASP.NET Core authentication signed in) or `demo`. `DirectoryViewerResolver` turns that
+  user into a `Viewer` using the grant sources the model names (its `users` table, a directory API, claims or a custom
+  provider). With no identity a viewer holds nothing and sees nothing of a model that uses levels.
+- **Rows.** Postgres row-level security does it (`RowSecurity.cs`). `ModelDbContextFactory` gives every context a
+  `ViewerConnectionInterceptor`, which tells the database the viewer each time a connection opens, so raw SQL, the graph views
+  and free-text search are covered as well as LINQ. A model with security off pays nothing.
+- **Values.** Row security can't mask one field of a visible record, so `FieldPolicy` does it in code: a hidden value shows
+  as a mask and can't be filtered, sorted or searched on. The readers that do their own reads (`RecordRepository`,
+  `GraphRepository`, history, Insights) ask it. `PropertyLabelSql` covers the per-record locks in SQL.
+- **Labels.** `LabelRepository` changes them, in bulk or one at a time, as one history change set. `LoaderLabels` reads them
+  from the model file and CSVs.
+- **One rule.** `VisibilityRule` states it in C#; the policies and the field policy are tested against it.
+- **Writes.** Row policies apply to them too, so a viewer can't change what they can't see. Nobody is checked yet for
+  *who may change labels* (SEC-8). Writes still go through `RecordRepository.Writes`, `ImportStagingService` and the loader,
+  each in one transaction.
+- **Not built.** A production sign-in scheme. A deployment adds its own and uses `principal`. Until then run the app only where
+  you trust everyone who can reach it.
 - **Model choice.** `ModelCatalog` decides which models exist and `/model/{key}` switches; per-customer instances are
   configured by listing only their models.
-- **Search and export.** Explore's search text (`node.search_text`) holds every property value, and the export methods
-  in `ExploreExport` write what is on the canvas, so both need to respect a field policy too.

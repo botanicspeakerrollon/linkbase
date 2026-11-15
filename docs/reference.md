@@ -469,7 +469,8 @@ Models are listed under `Models` in configuration: `Name`, `ConnectionString` (n
 - **Backups** are `scripts/backup-db.ps1`; restoring, rebuilding and rehearsing are in [operations](operations.md).
 - **Tests.** Unit, database (Testcontainers on real Postgres), bUnit page tests and Playwright browser tests, run in CI on every
   push; coverage uses an in-memory collector.
-- **Security.** Single user, no sign-in: run it on one machine until [security-roadmap](history/security-roadmap.md) is done.
+- **Security.** Row security and field masking are built and off by default (see [models](models.md#security)), but no production sign-in
+  scheme ships: a deployment adds its own, and until then run it only where everyone who can reach it is trusted.
   Reading text and Ask send text to the configured model provider; records and values are never sent by Ask, and Read text sends only the text you give it.
 
 ---

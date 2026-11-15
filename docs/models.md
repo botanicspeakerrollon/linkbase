@@ -197,9 +197,9 @@ See [audit-history-plan](history/audit-history-plan.md) for the design.
 
 ### Security
 
-A model can say who may see what. Nothing in the app enforces it yet: this is the part of the
-[design](history/security-design.md) that is built so far, which is the model file's section, the rule, where people's grants
-come from, and the labels themselves (stored, loaded from CSV, changeable in bulk). A model with no `security` section
+A model can say who may see what. Run `model security on [model]` as the database owner to enforce it: Postgres row
+security hides records and links, and a field policy masks values (see [design](history/security-design.md) and
+[architecture](architecture.md#where-access-control-lives)). A model with no `security` section, or with security off,
 behaves exactly as it always has.
 
 A model chooses which of three **kinds** of part it uses, and names each in its own words. Any one is optional.
@@ -210,7 +210,7 @@ A model chooses which of three **kinds** of part it uses, and names each in its 
 | `anyOf` | A set | a set | a set | they share **any one** value, or the item has none |
 | `allOf` | A set | a set | a set | the person has **every one** of the item's values |
 
-An item is visible only if every part the model uses passes. Items, links and properties will each carry a label; a link is
+An item is visible only if every part the model uses passes. Items, links and properties can each carry a label; a link is
 visible only if its own label and both its records pass.
 
 ```json
@@ -224,7 +224,7 @@ visible only if its own label and both its records pass.
 }
 ```
 
-- `name` is what the app will call the part: Classification, Department and Project suit a bank, Sensitivity, Practice and
+- `name` is what the app calls the part: Classification, Department and Project suit a bank, Sensitivity, Practice and
   NDA suit [the consultancy example](#security-in-the-consultancy-example). A part the model doesn't list doesn't exist for it.
 - `values` is required for `level`, which is ordered. For the others it is optional: leave it out to accept any value. A value
   is 1 to 60 characters, matched exactly (including case), with no braces, commas, quotes, backslashes or asterisks and no

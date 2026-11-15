@@ -1,8 +1,10 @@
 # Security roadmap
 
-Nothing here is implemented. The design for labels, row-level security and masking is in
-[security-design](security-design.md), which supersedes step 4 below. The app is single-user with no sign-in, and should only be run locally
-until the first step below is done.
+> **Historical.** This was the original plan. Labels, row-level security, field masking and the identity seam are built (see
+> [security-design](security-design.md), which supersedes step 4 below, and the SEC requirements). Steps 1 to 3 were not
+> followed as written, and no production sign-in scheme ships.
+
+The design for labels, row-level security and masking is in [security-design](security-design.md).
 
 The goal is field-level visibility later: for example, ascent notes and partners stay private while
 routes and crags are shareable, or some crags' locations are hidden.
