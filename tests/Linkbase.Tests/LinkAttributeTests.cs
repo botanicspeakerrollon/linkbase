@@ -68,7 +68,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     [Fact]
     public async Task Explore_gets_each_links_values_and_tells_repeats_apart()
     {
-        var graph = new GraphRepository(await ExampleAsync());
+        var graph = new GraphRepository(await ExampleAsync(), Linkbase.Domains.RegisteredDomains.Registry);
 
         var edges = (await graph.SubgraphAsync(["person:p4", "project:pr4", "team:t2"])).Edges;
 
@@ -84,7 +84,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     public async Task Explore_filters_on_a_links_own_value()
     {
         var factory = await ExampleAsync();
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
         var schema = await graph.SchemaAsync();
         Assert.Contains(new GraphLinkPropertyInfo("WORKS_ON", "role", GraphValueType.Text), schema.LinkProperties);
         Assert.Contains(new GraphLinkPropertyInfo("WORKS_ON", "days_a_week", GraphValueType.Number), schema.LinkProperties);

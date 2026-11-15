@@ -96,7 +96,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         Assert.Equal(26, summary.Links);
         Assert.Contains("Person: 8 from people.csv", output.ToString());
 
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
         var schema = await graph.SchemaAsync();
         Assert.Equal(["Person", "Project", "Client", "Team"], schema.Labels);
         Assert.Contains(new GraphConnection("Person", "WORKS_ON", "Project"), schema.Connections);
@@ -243,6 +243,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
 
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
+        services.AddSingleton(Linkbase.Domains.RegisteredDomains.Registry);
         services.AddSingleton<ModelCatalog>();
         services.AddScoped<CurrentModel>();
         services.AddLogging();
@@ -325,7 +326,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
     [Fact]
     public void Without_models_configured_there_is_one_using_the_linkbase_connection()
     {
-        var catalog = new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Linkbase"] = "Host=x" }).Build());
+        var catalog = new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Linkbase"] = "Host=x" }).Build(), Linkbase.Domains.RegisteredDomains.Registry);
         var model = catalog.Models.Single();
         Assert.Equal("Linkbase", model.ConnectionStringName);
         Assert.Equal(["Climbing"], model.Domains);
@@ -339,7 +340,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         var catalog = new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["ConnectionStrings:Linkbase"] = "Host=x;Options=-c statement_timeout=5s",
-        }).Build());
+        }).Build(), Linkbase.Domains.RegisteredDomains.Registry);
         var builder = new NpgsqlConnectionStringBuilder(catalog.ConnectionString(catalog.Default));
         Assert.Equal("-c statement_timeout=5s -c jit=off", builder.Options);
     }
@@ -355,10 +356,10 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
             ["Models:climbing:ConnectionString"] = "Linkbase",
             ["Models:climbing:Domains:0"] = "Climbing",
             ["Models:climbing:Order"] = "1",
-        }).Build());
+        }).Build(), Linkbase.Domains.RegisteredDomains.Registry);
 
         Assert.Equal(["climbing", "rail"], catalog.Models.Select(m => m.Key));
-        var current = new CurrentModel(catalog);
+        var current = new CurrentModel(catalog, Linkbase.Domains.RegisteredDomains.Registry);
         current.Select("rail");
         Assert.Equal("Swiss rail", current.Info.Name);
         Assert.Empty(current.Domains);

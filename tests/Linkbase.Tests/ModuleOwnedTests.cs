@@ -89,8 +89,8 @@ public sealed class RecordHooksTests
             ["Models:plain:Order"] = "1",
             ["Models:climbing:ConnectionString"] = "Climbing",
             ["Models:climbing:Domains:0"] = "Climbing",
-        }).Build());
-        var current = new CurrentModel(catalog);
+        }).Build(), Linkbase.Domains.RegisteredDomains.Registry);
+        var current = new CurrentModel(catalog, Linkbase.Domains.RegisteredDomains.Registry);
         var hooks = new RecordHooks([new FakeClimbingHook()], current);
 
         Assert.False(hooks.Watch("Route"));
@@ -164,7 +164,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
     {
         var path = OwnedModel.Write(_folder, OwnedModel.Json.Replace("\"owner\": \"Climbing\" }", "\"owner\": \"Bouldering\" }"));
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("Field 'grade_rank' of type 'Route' is owned by 'Bouldering', which isn't a domain. The domains are: Climbing.", ex.Message);
     }
@@ -175,7 +175,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
         var path = OwnedModel.Write(_folder, OwnedModel.Json.Replace(
             "\"toColumn\": \"trip\" } }", "\"toColumn\": \"trip\" }, \"fields\": [ { \"key\": \"inferred\", \"owner\": \"Climbing\" } ] }"));
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("'inferred' has an owner, which only a type's fields can have", ex.Message);
     }
@@ -310,7 +310,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
     {
         var path = OwnedModel.Write(_folder, OwnedModel.Json.Replace("\"toColumn\": \"trip\" } }", "\"toColumn\": \"trip\" }, \"required\": true }"));
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("Relationship Ascent ON_TRIP Trip is required, but Trip records are derived by Climbing, so people couldn't add Ascent records.", ex.Message);
     }

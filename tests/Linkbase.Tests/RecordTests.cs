@@ -243,7 +243,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         var records = new RecordRepository(factory);
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
         long WrittenBy(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WRITTEN_BY").Links;
         Dictionary<string, string?> Isbn() => new() { ["isbn"] = "333" };
 
@@ -326,7 +326,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         Assert.Equal("Patient portal", project.Name);
         Assert.Single(await records.FindAsync("Project", project.Key, 10));
 
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
         long WorksOn(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WORKS_ON").Links;
         await records.AddLinkAsync(id, "WORKS_ON", project.Id);
         Assert.Equal(14, WorksOn(await graph.ConnectionCountsAsync()));

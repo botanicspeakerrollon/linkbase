@@ -388,7 +388,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         var result = await importer.ImportAsync(file, mapping);
 
         Assert.Equal(3, result.Added);
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
         Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 3), await graph.ConnectionCountsAsync());
         Assert.Equal(3, (await importer.PlanAsync(file, mapping)).AlreadyThere);
 
@@ -448,7 +448,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         await importer.ImportAsync(people, peopleMapping);
         Assert.Equal(3, (await importer.ImportAsync(people, new CsvLinkMapping("Person", 0, "MEMBER_OF", "Team", 3))).Added);
 
-        Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 7), await new GraphRepository(factory).ConnectionCountsAsync());
+        Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 7), await new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry).ConnectionCountsAsync());
     }
 
     [Fact]

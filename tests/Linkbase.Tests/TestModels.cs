@@ -23,7 +23,7 @@ internal static class TestModels
     // turns on unless the model file says otherwise. Most tests aren't about reasons. HistoryTests use the loader directly.
     public static async Task<ModelLoadSummary> LoadAsync(IDbContextFactory<LinkbaseDbContext> factory, string path, TextWriter output)
     {
-        var summary = await new ModelLoader(factory).LoadAsync(path, output);
+        var summary = await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(path, output);
         await using var db = factory.CreateDbContext();
         await db.Database.ExecuteSqlRawAsync("UPDATE model_setting SET require_reason = false");
         return summary;

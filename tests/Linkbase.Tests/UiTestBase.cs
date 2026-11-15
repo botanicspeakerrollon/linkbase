@@ -38,7 +38,8 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<Linkbase.Core.Security.IViewerResolver, EveryoneHoldsEverything>();
         AddEverydayRepositories();
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
-        Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
+        Services.AddSingleton(Linkbase.Domains.RegisteredDomains.Registry);
+        Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build(), Linkbase.Domains.RegisteredDomains.Registry));
         Services.AddSingleton<CurrentModel>();
 
         // Explore has a question box. A test that wants one to answer registers its own compiler after this.

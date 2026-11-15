@@ -55,7 +55,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     [Fact]
     public void A_valid_hierarchy_is_read()
     {
-        var model = ModelFile.Read(Write(Model()));
+        var model = ModelFile.Read(Write(Model()), Linkbase.Domains.RegisteredDomains.Registry);
 
         var rules = model.Types.Single().Hierarchy!.ToRules("Area");
         Assert.Equal(["top", "mid", "low"], rules.Levels.Select(l => l.Kind));
@@ -75,7 +75,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     [InlineData("", "needs levels")]
     public void A_hierarchy_that_doesnt_add_up_is_refused(string levels, string expected)
     {
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(levels))));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(levels)), Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains(expected, ex.Message);
     }
@@ -83,10 +83,10 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     [Fact]
     public void The_field_and_relationship_have_to_exist_and_suit()
     {
-        Assert.Contains("needs to be a choice field", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(by: "nope")))).Message);
-        Assert.Contains("needs to be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(kindRequired: false)))).Message);
-        Assert.Contains("the model has no relationship Area OUT Area", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(via: "OUT")))).Message);
-        Assert.Contains("can't be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(required: true)))).Message);
+        Assert.Contains("needs to be a choice field", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(by: "nope")), Linkbase.Domains.RegisteredDomains.Registry)).Message);
+        Assert.Contains("needs to be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(kindRequired: false)), Linkbase.Domains.RegisteredDomains.Registry)).Message);
+        Assert.Contains("the model has no relationship Area OUT Area", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(via: "OUT")), Linkbase.Domains.RegisteredDomains.Registry)).Message);
+        Assert.Contains("can't be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(required: true)), Linkbase.Domains.RegisteredDomains.Registry)).Message);
     }
 
     [Theory]

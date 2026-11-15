@@ -16,7 +16,7 @@ namespace Linkbase.Domains.Climbing.Import;
 // trips. With --fresh it first reloads the model file, which empties the store, so a climbing model can be rebuilt from the
 // exports alone.
 public sealed class GenericImportCommands(
-    IDbContextFactory<LinkbaseDbContext> target, TextWriter output, Func<string, string>? resolvePath = null)
+    IDbContextFactory<LinkbaseDbContext> target, DomainRegistry registry, TextWriter output, Func<string, string>? resolvePath = null)
 {
     private const string ModelFilePath = "models/climbing/model.json";
     private const string DefaultUkcPath = "data/samples/import.csv";
@@ -25,7 +25,7 @@ public sealed class GenericImportCommands(
     public static bool IsCommand(string[] args) => args is ["climbing", "import", _, "ukc" or "mp" or "all", ..];
 
     // Finds the target model, and refuses to empty the real database unless that was asked for twice.
-    public static async Task<int> RunAsync(ModelCatalog catalog, string[] args, TextWriter output)
+    public static async Task<int> RunAsync(ModelCatalog catalog, DomainRegistry registry, string[] args, TextWriter output)
     {
         var model = catalog.Find(args[2]);
         if (model is null)
@@ -44,7 +44,7 @@ public sealed class GenericImportCommands(
         var factory = new ConnectionFactory(catalog.ConnectionString(model));
         try
         {
-            return await new GenericImportCommands(factory, output).RunAsync(args[3], args[4..]);
+            return await new GenericImportCommands(factory, registry, output).RunAsync(args[3], args[4..]);
         }
         catch (LinkbaseValidationException ex)
         {
@@ -59,7 +59,7 @@ public sealed class GenericImportCommands(
         var corrections = Corrections.Load(Resolve("data/corrections.json"));
         if (what == "all" && rest.Contains("--fresh"))
         {
-            await new ModelLoader(target).LoadAsync(Resolve(ModelFilePath), TextWriter.Null);
+            await new ModelLoader(target, registry).LoadAsync(Resolve(ModelFilePath), TextWriter.Null);
             await output.WriteLineAsync("Reloaded the model file. The generic store is empty.");
         }
 

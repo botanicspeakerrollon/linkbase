@@ -19,7 +19,7 @@ public sealed class HealthTests(PostgresFixture fixture) : IClassFixture<Postgre
             settings[$"ConnectionStrings:{models[i].Key}"] = models[i].Connection;
         }
 
-        return new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
+        return new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(settings).Build(), Linkbase.Domains.RegisteredDomains.Registry);
     }
 
     private static Task<HealthCheckResult> CheckAsync(ModelCatalog catalog) =>

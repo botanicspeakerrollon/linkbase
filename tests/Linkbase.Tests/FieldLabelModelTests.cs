@@ -23,7 +23,7 @@ public sealed class FieldLabelModelTests
             """);
         try
         {
-            return Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path)).Message;
+            return Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry)).Message;
         }
         finally
         {

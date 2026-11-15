@@ -174,7 +174,7 @@ public sealed class SecurityLabelsTests(PostgresFixture fixture) : IDisposable, 
         var column = csv.Contains("sens", StringComparison.Ordinal) ? "\"level\": \"sens\"" : csv.Contains("dept", StringComparison.Ordinal) ? "\"anyOf\": \"dept\"" : "\"allOf\": \"nda\"";
         var path = WriteModel(security, $$""", "label": { {{column}} }""", csv);
 
-        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(async () => await new ModelLoader(await NewDatabaseAsync()).LoadAsync(path, TextWriter.Null));
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(async () => await new ModelLoader(await NewDatabaseAsync(), Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(path, TextWriter.Null));
 
         Assert.Contains(expected, ex.Message);
     }
@@ -185,7 +185,7 @@ public sealed class SecurityLabelsTests(PostgresFixture fixture) : IDisposable, 
         var path = WriteModel(Parts, ", \"label\": { \"level\": \"sens\" }", "id,sens\na,public\n");
         File.WriteAllText(path, File.ReadAllText(path).Replace($"\"security\": {Parts},", ""));
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("no security section", ex.Message);
     }
@@ -238,7 +238,7 @@ public sealed class SecurityLabelsTests(PostgresFixture fixture) : IDisposable, 
     public async Task A_bulk_edit_needs_a_reason_where_the_model_asks_for_one_and_changes_nothing_without_it()
     {
         var factory = await NewDatabaseAsync();
-        await new ModelLoader(factory).LoadAsync(Consultancy, TextWriter.Null); // the loader leaves reasons required
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(Consultancy, TextWriter.Null); // the loader leaves reasons required
         var repository = new LabelRepository(factory);
 
         await Assert.ThrowsAsync<LinkbaseValidationException>(() => repository.EditNodesAsync(["project:pr1"], new LabelEdit(Level: "confidential"), null));

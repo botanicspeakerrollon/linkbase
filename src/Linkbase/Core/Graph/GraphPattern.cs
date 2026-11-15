@@ -1,5 +1,4 @@
 using Linkbase.Data;
-using Linkbase.Domains;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -51,6 +50,9 @@ public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IRe
     public IReadOnlyList<string> Labels { get; } = Properties.Select(p => p.Label).Distinct().ToList();
 
     public IReadOnlyList<string> RelTypes { get; } = Connections.Select(c => c.RelType).Distinct().OrderBy(r => r, StringComparer.Ordinal).ToList();
+
+    // Types that take their name from another node, from the domain modules in use, so free text skips their name.
+    public string[] LabelsNamedAfterParent { get; init; } = [];
 
     // How the model file says its types should look, where it says so.
     public IReadOnlyList<GraphTypeInfo> Types { get; init; } = [];
@@ -418,7 +420,7 @@ public static partial class GraphPatternSql
         var node = $"n{index}";
         var like = add($"%{EscapeLike(filter.Value)}%", NpgsqlDbType.Text);
         var term = add(filter.Value, NpgsqlDbType.Text);
-        var borrowed = add(RegisteredDomains.LabelsNamedAfterParent, NpgsqlDbType.Array | NpgsqlDbType.Text);
+        var borrowed = add(schema.LabelsNamedAfterParent, NpgsqlDbType.Array | NpgsqlDbType.Text);
 
         // search_text holds the name too, so a type named after another node would match on that borrowed name and repeat it in
         // every one of them. Those match only where the text is in their own values: graph_search_text with an empty name. Both

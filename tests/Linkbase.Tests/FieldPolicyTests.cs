@@ -55,7 +55,7 @@ public sealed class FieldPolicyTests(PostgresFixture fixture) : IClassFixture<Po
         var resolver = new Resolver(security, user);
         var factory = new Factory(connectionString, new ViewerConnectionInterceptor(state, resolver));
         var policy = new FieldPolicy(state, resolver);
-        return new Viewing(new RecordRepository(factory, null, policy), new GraphRepository(factory, policy), policy, new(factory));
+        return new Viewing(new RecordRepository(factory, null, policy), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, policy), policy, new(factory));
     }
 
     [Fact]

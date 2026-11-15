@@ -50,7 +50,7 @@ public sealed class HistorySecurityTests(PostgresFixture fixture) : IClassFixtur
         var resolver = new Resolver(security, user);
         var factory = new Factory(connectionString, new ViewerConnectionInterceptor(state, resolver));
         var policy = new FieldPolicy(state, resolver);
-        return (new HistoryRepository(factory, policy), new GraphRepository(factory, policy));
+        return (new HistoryRepository(factory, policy), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, policy));
     }
 
     private static async Task ChangeBudgetAsync(Factory owner, string id, string budget)

@@ -166,7 +166,7 @@ public sealed class SecurityRuleTests
     [Fact]
     public async Task The_consultancy_example_gives_its_people_what_the_models_doc_says()
     {
-        var model = ModelFile.Read(RepoPaths.Resolve("models/consultancy/model.json"));
+        var model = ModelFile.Read(RepoPaths.Resolve("models/consultancy/model.json"), Linkbase.Domains.RegisteredDomains.Registry);
         var security = model.Security!;
         var directory = ViewerDirectory.Create(security);
 
@@ -199,7 +199,7 @@ public sealed class SecurityRuleTests
         Directory.CreateDirectory(Folder);
         var path = Path.Combine(Folder, $"{Guid.NewGuid():N}.json");
         File.WriteAllText(path, $$"""{ "name": "Test", "types": [ { "name": "Thing", "fields": [] } ]{{(security.Length == 0 ? "" : $", \"security\": {security}")}} }""");
-        return ModelFile.Read(path);
+        return ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry);
     }
 
     private static string Problems(string security) =>

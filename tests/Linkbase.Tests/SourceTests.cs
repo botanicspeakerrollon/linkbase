@@ -28,7 +28,7 @@ public sealed class SourceTests(PostgresFixture fixture) : IDisposable, IClassFi
         File.WriteAllText(path, $$"""{ "name": "Sources", "types": [ { "name": "Thing" } ], "history": {{history}} }""");
         _files.Add(path);
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(path, TextWriter.Null);
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(path, TextWriter.Null);
         return (factory, new RecordRepository(factory));
     }
 
@@ -79,7 +79,7 @@ public sealed class SourceTests(PostgresFixture fixture) : IDisposable, IClassFi
         File.WriteAllText(path, """{ "name": "Sources", "types": [ { "name": "Thing" } ], "history": { "sourceKinds": [ "Wiki", "wiki", " " ] } }""");
         _files.Add(path);
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("more than once", ex.Message);
         Assert.Contains("1 to 60", ex.Message);

@@ -45,7 +45,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     private async Task<(ModelFactory Factory, RecordRepository Records)> LoadAsync(JsonObject? history = null)
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(ModelWith(history), TextWriter.Null);
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(ModelWith(history), TextWriter.Null);
         return (factory, new RecordRepository(factory));
     }
 
@@ -150,7 +150,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     public async Task Deleting_a_record_keeps_the_required_links_and_ids_that_went_with_it()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(Library.Write(), TextWriter.Null);
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(Library.Write(), TextWriter.Null);
         var records = new RecordRepository(factory);
         await records.CreateAsync("Book", "x1", new RecordInput("Quiet Ice", new Dictionary<string, string?> { ["isbn"] = "333" })
         {
@@ -203,12 +203,12 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     {
         var path = ModelWith(new JsonObject { ["record"] = false, ["requireReason"] = true });
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("History can't both be off and require a reason", ex.Message);
-        Assert.False(ModelFile.Read(ModelWith(new JsonObject { ["record"] = false })).RequireReason);
-        Assert.True(ModelFile.Read(ModelWith(null)).RequireReason);
-        Assert.True(ModelFile.Read(ModelWith(null)).RecordHistory);
+        Assert.False(ModelFile.Read(ModelWith(new JsonObject { ["record"] = false }), Linkbase.Domains.RegisteredDomains.Registry).RequireReason);
+        Assert.True(ModelFile.Read(ModelWith(null), Linkbase.Domains.RegisteredDomains.Registry).RequireReason);
+        Assert.True(ModelFile.Read(ModelWith(null), Linkbase.Domains.RegisteredDomains.Registry).RecordHistory);
     }
 
     [Fact]
@@ -218,13 +218,13 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         await records.CreateAsync("Person", "z1", Person("Zoe Adams"), new ChangeReason("Added"));
         var before = (await ChangesAsync(factory)).Count;
 
-        await new ModelLoader(factory).LoadAsync(ModelWith(new JsonObject { ["record"] = false }), TextWriter.Null);
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(ModelWith(new JsonObject { ["record"] = false }), TextWriter.Null);
         await records.CreateAsync("Person", "z2", Person("Zed Hall"));
 
         Assert.Equal(before, (await ChangesAsync(factory)).Count);
         Assert.Contains((await ChangesAsync(factory)), c => c.EntityId == "person:z1");
 
-        await new ModelLoader(factory).LoadAsync(ModelWith(null), TextWriter.Null);
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(ModelWith(null), TextWriter.Null);
         Assert.True((await records.HistorySettingsAsync()).NeedsReason);
         await using var db = factory.CreateDbContext();
         Assert.Contains(await db.Justifications.Select(j => j.Note).ToListAsync(), n => n != null && n.StartsWith("Loaded the Example consultancy model", StringComparison.Ordinal));

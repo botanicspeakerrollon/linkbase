@@ -42,6 +42,7 @@ builder.Services.AddHttpLogging(options =>
 });
 
 // Each model has its own database, and the factory connects to whichever model is current.
+builder.Services.AddSingleton(RegisteredDomains.Registry);
 builder.Services.AddSingleton<ModelCatalog>();
 builder.Services.AddSingleton<ModelCreator>();
 // Docs:Pages names repo documents to show in the app (the demo shows the requirements). None by default.

@@ -39,9 +39,9 @@ public sealed class ModelSetupTests(PostgresFixture fixture) : IClassFixture<Pos
             settings["Models:demo:RowSecurity"] = "true";
         }
 
-        var catalog = new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(settings).Build());
-        var current = new CurrentModel(catalog);
-        return (catalog, new ModelSetup(catalog, current, new ModelLoader(new Factory(catalog, current))));
+        var catalog = new ModelCatalog(new ConfigurationBuilder().AddInMemoryCollection(settings).Build(), Linkbase.Domains.RegisteredDomains.Registry);
+        var current = new CurrentModel(catalog, Linkbase.Domains.RegisteredDomains.Registry);
+        return (catalog, new ModelSetup(catalog, current, new ModelLoader(new Factory(catalog, current), Linkbase.Domains.RegisteredDomains.Registry)));
     }
 
     private static async Task<long> NodeCountAsync(ModelCatalog catalog)

@@ -39,7 +39,7 @@ public sealed class GenericImportTests : IDisposable, IClassFixture<PostgresFixt
     private async Task<ModelFactory> ImportedAsync()
     {
         var generic = new ModelFactory(await _fixture.CreateModelDatabaseAsync("SELECT 1"));
-        Assert.Equal(0, await new GenericImportCommands(generic, _output, InRoot).RunAsync("all", ["--fresh"]));
+        Assert.Equal(0, await new GenericImportCommands(generic, Linkbase.Domains.RegisteredDomains.Registry, _output, InRoot).RunAsync("all", ["--fresh"]));
         return generic;
     }
 
@@ -71,7 +71,7 @@ public sealed class GenericImportTests : IDisposable, IClassFixture<PostgresFixt
         var nodes = await before.Nodes.CountAsync();
         var links = await before.NodeLinks.CountAsync();
 
-        Assert.Equal(0, await new GenericImportCommands(generic, TextWriter.Null, InRoot).RunAsync("all", []));
+        Assert.Equal(0, await new GenericImportCommands(generic, Linkbase.Domains.RegisteredDomains.Registry, TextWriter.Null, InRoot).RunAsync("all", []));
 
         await using var after = generic.CreateDbContext();
         Assert.Equal(nodes, await after.Nodes.CountAsync());

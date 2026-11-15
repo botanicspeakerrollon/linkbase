@@ -39,7 +39,7 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Example, TextWriter.Null);
-        return new World(factory, new RecordRepository(factory), new GraphRepository(factory));
+        return new World(factory, new RecordRepository(factory), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry));
     }
 
     private static async Task<string> PersonAsync(World world, string name, Dictionary<string, string?>? values = null, IEnumerable<NewLink>? links = null) =>
@@ -348,7 +348,7 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
             ["Models:two:Name"] = "Two",
         }).Build();
 
-        var catalog = new Linkbase.Core.Models.ModelCatalog(configuration);
+        var catalog = new Linkbase.Core.Models.ModelCatalog(configuration, Linkbase.Domains.RegisteredDomains.Registry);
 
         var one = catalog.Find("one")!;
         Assert.False(one.ShowsOnHome(HomeRepository.Growth));

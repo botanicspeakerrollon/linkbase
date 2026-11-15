@@ -1,5 +1,4 @@
 using Linkbase.Data;
-using Linkbase.Domains;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -58,7 +57,7 @@ public sealed record GraphNeighbours(IReadOnlyList<GraphNode> Nodes, int Remaini
 public sealed record Subgraph(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
 
-public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, Security.FieldPolicy? fieldPolicy = null)
+public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, DomainRegistry registry, Security.FieldPolicy? fieldPolicy = null)
 {
     // A type and key joined, to test against in SQL: n.label || chr(31) || key <> ALL(pairs).
     private const char PairSeparator = '\u001f';
@@ -252,6 +251,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             LinkProperties = linkInfos,
             HiddenKeys = hidden.AnyType.ToList(),
             HasOverrides = hidden.HasOverrides,
+            LabelsNamedAfterParent = registry.LabelsNamedAfterParent,
         };
     }
 
@@ -344,7 +344,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             ORDER BY m."Score" DESC, m."Label", m."Value"
             LIMIT {{MatchLimit}}
             """;
-        var rows = await db.Database.SqlQueryRaw<MatchRow>(sql1, pattern, term, RegisteredDomains.LabelsNamedAfterParent, labelParameter, RegisteredDomains.LongTextProperties, pairs).ToListAsync(cancellationToken);
+        var rows = await db.Database.SqlQueryRaw<MatchRow>(sql1, pattern, term, registry.LabelsNamedAfterParent, labelParameter, registry.LongTextProperties, pairs).ToListAsync(cancellationToken);
 
         return rows.Select(r => new PropertyMatch(r.Label, r.Key, r.Value)).ToList();
     }

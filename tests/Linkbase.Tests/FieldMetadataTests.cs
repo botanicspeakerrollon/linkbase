@@ -77,7 +77,7 @@ public sealed class FieldMetadataFileTests : IDisposable
     [Fact]
     public void A_model_can_describe_group_and_repeat_its_fields_and_limit_its_links()
     {
-        var model = ModelFile.Read(Write(FieldMetadataModel.Json));
+        var model = ModelFile.Read(Write(FieldMetadataModel.Json), Linkbase.Domains.RegisteredDomains.Registry);
 
         var person = model.Types[0];
         Assert.Equal("{name_first} {name_middle} {name_last}", person.Template);
@@ -91,7 +91,7 @@ public sealed class FieldMetadataFileTests : IDisposable
     [Fact]
     public void A_text_list_is_the_same_as_text_with_several_values()
     {
-        var model = ModelFile.Read(Write(FieldMetadataModel.Json.Replace("\"key\": \"skills\", \"multiple\": true", "\"key\": \"skills\", \"type\": \"list\"")));
+        var model = ModelFile.Read(Write(FieldMetadataModel.Json.Replace("\"key\": \"skills\", \"multiple\": true", "\"key\": \"skills\", \"type\": \"list\"")), Linkbase.Domains.RegisteredDomains.Registry);
 
         var skills = model.Types[0].Fields.Single(f => f.Key == "skills");
         Assert.True(skills.IsMany);
@@ -109,7 +109,7 @@ public sealed class FieldMetadataFileTests : IDisposable
     [InlineData("{name_first} {name_middle} {name_last}", "{name_first} {name_last}{", "has a stray brace")]
     public void Settings_that_make_no_sense_are_refused(string find, string replace, string expected)
     {
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(FieldMetadataModel.Json.Replace(find, replace))));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(FieldMetadataModel.Json.Replace(find, replace)), Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains(expected, ex.Message);
     }
@@ -120,7 +120,7 @@ public sealed class FieldMetadataFileTests : IDisposable
         var json = FieldMetadataModel.Json.Replace(
             "\"required\": true, \"max\": 1,", "\"required\": true, \"max\": 1, \"fields\": [ { \"key\": \"role\", \"group\": \"Who\" } ],");
 
-        Assert.Contains("which only a type's fields can have", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(json))).Message);
+        Assert.Contains("which only a type's fields can have", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(json), Linkbase.Domains.RegisteredDomains.Registry)).Message);
     }
 
     [Theory]
