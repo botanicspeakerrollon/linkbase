@@ -219,7 +219,7 @@ public class PatternCheckerTests
     }
 }
 
-public class AnthropicQuestionCompilerTests
+public class QuestionPromptsTests
 {
     private static readonly GraphSchema Schema = new(
         [new GraphConnection("Route", "AT", "Crag")],
@@ -234,7 +234,7 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void The_tool_schema_only_names_what_the_model_has()
     {
-        var schema = JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!;
+        var schema = JsonNode.Parse(QuestionPrompts.InputSchemaJson(Schema))!;
         var node = schema["properties"]!["records"]!["items"]!["properties"]!;
 
         Assert.Equal(["Route", "Crag", "Anything"], node["type"]!["enum"]!.AsArray().Select(n => n!.GetValue<string>()));
@@ -246,18 +246,18 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void The_tool_schema_lets_the_model_rank_or_leave_it_null()
     {
-        var rank = JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!["properties"]!["rank"]!["anyOf"]!.AsArray();
+        var rank = JsonNode.Parse(QuestionPrompts.InputSchemaJson(Schema))!["properties"]!["rank"]!["anyOf"]!.AsArray();
 
         Assert.Equal("null", rank[0]!["type"]!.GetValue<string>());
         Assert.Equal(["group", "count", "top", "measure", "key", "order"], rank[1]!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
         Assert.Equal(PatternChecker.MaxNodes, rank[1]!["properties"]!["group"]!["enum"]!.AsArray().Count);
-        Assert.Contains("rank", JsonNode.Parse(AnthropicQuestionCompiler.InputSchemaJson(Schema))!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Contains("rank", JsonNode.Parse(QuestionPrompts.InputSchemaJson(Schema))!["required"]!.AsArray().Select(n => n!.GetValue<string>()));
     }
 
     [Fact]
     public void A_ranking_by_a_number_in_the_answer_keeps_its_measure_key_and_order()
     {
-        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+        var pattern = QuestionPrompts.ReadResponse("tool_use", Input(
             """
             {"records":[{"type":"Crag","filters":[]},{"type":"Route","filters":[]}],"links":[{"rel_type":"AT","direction":"incoming","filters":[]}],
              "rank":{"group":0,"count":1,"top":3,"measure":"sum","key":"length_m","order":"fewest"}}
@@ -269,14 +269,14 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void A_ranking_in_the_answer_becomes_part_of_the_pattern()
     {
-        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+        var pattern = QuestionPrompts.ReadResponse("tool_use", Input(
             """
             {"records":[{"type":"Route","filters":[]},{"type":"Crag","filters":[]}],"links":[{"rel_type":"AT","direction":"outgoing","filters":[]}],
              "rank":{"group":1,"count":0,"top":5}}
             """));
         Assert.Equal(new PatternRank(1, 0, 5), pattern.Rank);
 
-        var plain = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+        var plain = QuestionPrompts.ReadResponse("tool_use", Input(
             """{"records":[{"type":"Route","filters":[]}],"links":[],"rank":null}"""));
         Assert.Null(plain.Rank);
     }
@@ -284,7 +284,7 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void The_prompt_lists_the_model_and_treats_the_question_as_data()
     {
-        var prompt = AnthropicQuestionCompiler.SystemPrompt(Schema, new DateOnly(2026, 5, 1));
+        var prompt = QuestionPrompts.SystemPrompt(Schema, new DateOnly(2026, 5, 1));
 
         Assert.Contains("Route: grade (text)", prompt);
         Assert.Contains("Route AT Crag, carrying: pitch (a number)", prompt);
@@ -296,7 +296,7 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void A_links_filters_become_part_of_the_pattern()
     {
-        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+        var pattern = QuestionPrompts.ReadResponse("tool_use", Input(
             """
             {"records":[{"type":"Route","filters":[]},{"type":"Crag","filters":[]}],
              "links":[{"rel_type":"AT","direction":"outgoing","filters":[{"field":"pitch","operator":"equals","value":"2"}]}]}
@@ -309,7 +309,7 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void A_link_with_no_filters_key_is_read_as_having_none()
     {
-        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+        var pattern = QuestionPrompts.ReadResponse("tool_use", Input(
             """{"records":[{"type":"Route","filters":[]},{"type":"Crag","filters":[]}],"links":[{"rel_type":"AT","direction":"outgoing"}]}"""));
 
         Assert.Empty(pattern.Rels[0].Filters);
@@ -318,7 +318,7 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void An_answer_becomes_a_pattern()
     {
-        var pattern = AnthropicQuestionCompiler.ReadResponse("tool_use", Input(
+        var pattern = QuestionPrompts.ReadResponse("tool_use", Input(
             """
             {"records":[{"type":"Route","filters":[{"field":"grade","operator":"greaterThan","value":"7a"}]},{"type":"Anything","filters":[]}],
              "links":[{"rel_type":"AT","direction":"outgoing"}]}
@@ -333,16 +333,16 @@ public class AnthropicQuestionCompilerTests
     [Fact]
     public void A_refusal_a_cut_off_or_a_missing_call_is_a_failure()
     {
-        Assert.Throws<QuestionFailedException>(() => AnthropicQuestionCompiler.ReadResponse("refusal", null));
-        Assert.Throws<QuestionFailedException>(() => AnthropicQuestionCompiler.ReadResponse("max_tokens", null));
-        Assert.Throws<QuestionFailedException>(() => AnthropicQuestionCompiler.ReadResponse("end_turn", null));
-        Assert.Throws<QuestionFailedException>(() => AnthropicQuestionCompiler.ReadResponse("tool_use", Input("""{"records":[{"type":"Route"}],"links":[]}""")));
+        Assert.Throws<QuestionFailedException>(() => QuestionPrompts.ReadResponse("refusal", null));
+        Assert.Throws<QuestionFailedException>(() => QuestionPrompts.ReadResponse("max_tokens", null));
+        Assert.Throws<QuestionFailedException>(() => QuestionPrompts.ReadResponse("end_turn", null));
+        Assert.Throws<QuestionFailedException>(() => QuestionPrompts.ReadResponse("tool_use", Input("""{"records":[{"type":"Route"}],"links":[]}""")));
     }
 
     [Fact]
     public async Task A_missing_key_is_reported_not_thrown_as_something_else()
     {
-        var compiler = new AnthropicQuestionCompiler(new ConfigurationBuilder().Build());
+        var compiler = new LlmQuestionCompiler(new Linkbase.Core.Llm.Providers.AnthropicToolClient(new ConfigurationBuilder().Build()));
         var service = new QuestionService(compiler, TimeProvider.System);
 
         var ex = await Assert.ThrowsAsync<QuestionFailedException>(() => service.AskAsync(Schema, "routes", CancellationToken.None));
@@ -389,16 +389,20 @@ public class QuestionServiceTests
     [Fact]
     public async Task The_api_failures_come_out_as_question_failures()
     {
-        var service = new QuestionService(new FailingCompiler(), TimeProvider.System);
+        var service = new QuestionService(new LlmQuestionCompiler(new FailingClient()), TimeProvider.System);
 
         var ex = await Assert.ThrowsAsync<QuestionFailedException>(() => service.AskAsync(Schema, "routes", CancellationToken.None));
         Assert.Equal("rate limited", ex.Message);
     }
 
-    private sealed class FailingCompiler : IQuestionCompiler
+    private sealed class FailingClient : Linkbase.Core.Llm.ILlmToolClient
     {
-        public Task<GraphPattern> CompileAsync(GraphSchema schema, string question, DateOnly today, CancellationToken cancellationToken) =>
-            throw new ExtractionFailedException("rate limited");
+        public string Provider => "failing";
+
+        public string Model => "";
+
+        public Task<Linkbase.Core.Llm.ToolCallResult> CallToolAsync(Linkbase.Core.Llm.ToolCallRequest request, CancellationToken cancellationToken) =>
+            throw new Linkbase.Core.Llm.LlmCallFailedException("rate limited");
     }
 }
 

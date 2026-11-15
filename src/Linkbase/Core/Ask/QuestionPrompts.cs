@@ -2,21 +2,20 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Anthropic.Models.Beta.Messages;
-using Linkbase.Core.Extraction;
 using Linkbase.Core.Graph;
+using Linkbase.Core.Llm;
 
 namespace Linkbase.Core.Ask;
 
-// Compiles a question with Claude, through a strict tool whose type, field, relationship and operator names are enums, so the
-// answer can't name anything outside the model. Like the extractor, the tool choice stays on "auto" because newer models reject
-// a forced one, and an answer without the call counts as a failure.
-public sealed class AnthropicQuestionCompiler(IConfiguration configuration, HttpClient? httpClient = null) : IQuestionCompiler
+// Everything about asking a model to compile a question that doesn't depend on who the model is: the prompt, the strict tool's
+// schema (whose type, field, relationship and operator names are enums, so the answer can't name anything outside the model),
+// and the reading of the answer. Any ILlmToolClient is given these, and PatternChecker checks every answer afterwards.
+public static class QuestionPrompts
 {
     public const string ToolName = "build_search";
+    public const string ToolDescription = "Builds the search that answers the question. Call this once.";
     public const string Anything = "Anything";
-    private const int MaxTokens = 2_000;
-    private const string FallbackBeta = "server-side-fallback-2026-07-01";
+    public const int MaxTokens = 2_000;
 
     // The sizes a ranking can ask for: the answer is a short list, so a question for "the top few" gets 5.
     private static readonly int[] RankSizes = [1, 3, 5, 10, PatternRank.MaxTop];
@@ -27,48 +26,10 @@ public sealed class AnthropicQuestionCompiler(IConfiguration configuration, Http
 
     private static readonly string[] OperatorNames = ["equals", "contains", "startsWith", "endsWith", "greaterThan", "greaterOrEqual", "lessThan", "lessOrEqual"];
 
-    public string Model => configuration["Anthropic:Model"] is { Length: > 0 } model ? model : AnthropicModelExtractor.DefaultModel;
+    public static ToolCallRequest BuildRequest(GraphSchema schema, string question, DateOnly today) => new(
+        SystemPrompt(schema, today), BuildUserMessage(question), ToolName, ToolDescription, InputSchemaJson(schema), MaxTokens, LlmEffort.Low);
 
-    public async Task<GraphPattern> CompileAsync(GraphSchema schema, string question, DateOnly today, CancellationToken cancellationToken)
-    {
-        return await AnthropicCall.RunAsync(configuration, httpClient, Model, async client =>
-        {
-            var response = await client.Beta.Messages.Create(BuildRequest(schema, question, today), cancellationToken);
-
-            IReadOnlyDictionary<string, JsonElement>? toolInput = null;
-            foreach (var block in response.Content)
-            {
-                if (block.TryPickToolUse(out var toolUse) && toolUse.Name == ToolName)
-                {
-                    toolInput = toolUse.Input;
-                    break;
-                }
-            }
-
-            return ReadResponse(response.StopReason?.Raw(), toolInput);
-        });
-    }
-
-    public MessageCreateParams BuildRequest(GraphSchema schema, string question, DateOnly today) => new()
-    {
-        Model = Model,
-        MaxTokens = MaxTokens,
-        System = SystemPrompt(schema, today),
-        OutputConfig = new BetaOutputConfig { Effort = Effort.Low },
-        Tools =
-        [
-            new BetaTool
-            {
-                Name = ToolName,
-                Description = "Builds the search that answers the question. Call this once.",
-                Strict = true,
-                InputSchema = InputSchema.FromRawUnchecked(JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(InputSchemaJson(schema))!),
-            },
-        ],
-        Messages = [new BetaUserMessageParam { Content = $"<question>\n{question}\n</question>" }],
-        Betas = [FallbackBeta],
-        Fallbacks = new Default(),
-    };
+    public static string BuildUserMessage(string question) => $"<question>\n{question}\n</question>";
 
     public static string SystemPrompt(GraphSchema schema, DateOnly today)
     {
@@ -236,9 +197,9 @@ public sealed class AnthropicQuestionCompiler(IConfiguration configuration, Http
     {
         switch (stopReason)
         {
-            case "refusal":
+            case StopReasons.Refusal:
                 throw new QuestionFailedException("The model declined to answer that question.");
-            case "max_tokens":
+            case StopReasons.MaxTokens:
                 throw new QuestionFailedException("The answer was cut off. Try a shorter question.");
         }
 

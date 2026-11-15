@@ -225,9 +225,9 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
 
         var schema = ExtractionSchema.From(await records.TypesAsync(), await records.RelationshipsAsync(), null,
             new Dictionary<(string, string, string), IReadOnlyList<RecordField>> { [("Person", "WORKS_ON", "Project")] = await records.LinkAttributesAsync("Person", "WORKS_ON", "Project") });
-        var tool = AnthropicModelExtractor.InputSchemaJson(schema);
+        var tool = ExtractionPrompts.InputSchemaJson(schema);
         Assert.Contains("days_a_week", tool, StringComparison.Ordinal);
-        Assert.Contains("Each link can carry these values: role (text); days_a_week (a number)", AnthropicModelExtractor.SystemPrompt(schema), StringComparison.Ordinal);
+        Assert.Contains("Each link can carry these values: role (text); days_a_week (a number)", ExtractionPrompts.SystemPrompt(schema), StringComparison.Ordinal);
     }
 }
 

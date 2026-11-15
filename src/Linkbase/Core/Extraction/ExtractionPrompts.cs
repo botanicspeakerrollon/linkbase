@@ -1,71 +1,24 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Anthropic;
-using Anthropic.Models.Beta.Messages;
+using Linkbase.Core.Llm;
 using Linkbase.Data;
 
 namespace Linkbase.Core.Extraction;
 
-// Extracts records and links for any model with Claude, through a strict tool built from the model's own definitions: the
-// types, their fields and the relationships between them. Like the climbing extractor, the tool stays on "auto" because
-// newer models reject forced tool choice, and an answer without the call counts as a failure.
-public sealed class AnthropicModelExtractor(IConfiguration configuration, HttpClient? httpClient = null) : IModelExtractor
+// Everything about asking a model to extract records that doesn't depend on who the model is: the prompt, the strict tool's
+// schema, and the reading of the answer. Any ILlmToolClient is given these, so every provider gets the same instructions and
+// ModelExtractionValidator and the record hooks check every answer the same way.
+public static class ExtractionPrompts
 {
-    public const string DefaultModel = "claude-haiku-5-5";
     public const string ToolName = "record_data";
-    private const int MaxTokens = 16_000;
-    private const string FallbackBeta = "server-side-fallback-2026-07-01";
+    public const string ToolDescription = "Records the records and links the text states. Call this once.";
+    public const int MaxTokens = 16_000;
 
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower, PropertyNameCaseInsensitive = true };
 
-    public string Model => configuration["Anthropic:Model"] is { Length: > 0 } model ? model : DefaultModel;
-
-    public async Task<ExtractedData> ExtractAsync(ExtractionSchema schema, string text, IReadOnlyList<string> knownRecords, CancellationToken cancellationToken)
-    {
-        if (schema.Types.Count == 0)
-        {
-            throw new ExtractionFailedException("This model has no types that can be filled from text.");
-        }
-
-        return await AnthropicCall.RunAsync(configuration, httpClient, Model, async client =>
-        {
-            var response = await client.Beta.Messages.Create(BuildRequest(schema, text, knownRecords), cancellationToken);
-
-            IReadOnlyDictionary<string, JsonElement>? toolInput = null;
-            foreach (var block in response.Content)
-            {
-                if (block.TryPickToolUse(out var toolUse) && toolUse.Name == ToolName)
-                {
-                    toolInput = toolUse.Input;
-                    break;
-                }
-            }
-
-            return ReadResponse(response.StopReason?.Raw(), toolInput);
-        });
-    }
-
-    public MessageCreateParams BuildRequest(ExtractionSchema schema, string text, IReadOnlyList<string> knownRecords) => new()
-    {
-        Model = Model,
-        MaxTokens = MaxTokens,
-        System = SystemPrompt(schema),
-        OutputConfig = new BetaOutputConfig { Effort = Effort.Medium },
-        Tools =
-        [
-            new BetaTool
-            {
-                Name = ToolName,
-                Description = "Records the records and links the text states. Call this once.",
-                Strict = true,
-                InputSchema = InputSchema.FromRawUnchecked(JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(InputSchemaJson(schema))!),
-            },
-        ],
-        Messages = [new BetaUserMessageParam { Content = BuildUserMessage(text, knownRecords) }],
-        Betas = [FallbackBeta],
-        Fallbacks = new Default(),
-    };
+    public static ToolCallRequest BuildRequest(ExtractionSchema schema, string text, IReadOnlyList<string> knownRecords) => new(
+        SystemPrompt(schema), BuildUserMessage(text, knownRecords), ToolName, ToolDescription, InputSchemaJson(schema), MaxTokens, LlmEffort.Medium);
 
     // The model's types, fields and relationships, then the rules that keep the answer to what the text says.
     public static string SystemPrompt(ExtractionSchema schema)
@@ -239,9 +192,9 @@ public sealed class AnthropicModelExtractor(IConfiguration configuration, HttpCl
     {
         switch (stopReason)
         {
-            case "refusal":
+            case StopReasons.Refusal:
                 throw new ExtractionFailedException("The model declined to process this text.");
-            case "max_tokens":
+            case StopReasons.MaxTokens:
                 throw new ExtractionFailedException("This text produced too many results for one request, so the answer was cut off.");
         }
 

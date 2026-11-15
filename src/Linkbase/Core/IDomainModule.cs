@@ -5,7 +5,7 @@ namespace Linkbase.Core;
 public sealed record NavItem(string Href, string Title, string Icon, bool ExactMatch = false);
 
 // A way of importing that belongs to a domain, shown as a tab on the Import page. Panel is a component with no parameters.
-// UsesAi is for one that sends text to Anthropic, which is hidden when Extraction:Enabled is false.
+// UsesAi is for one that sends text to the configured language model, which is hidden when Extraction:Enabled is false.
 public sealed record ImportSource(string Title, Type Panel, bool UsesAi = false);
 
 // What a domain, such as climbing, adds to the app. The core knows nothing else about it.

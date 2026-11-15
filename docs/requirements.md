@@ -184,7 +184,7 @@ Each requirement is independently testable. "Record" and "link" are as defined i
 | IMP-10 | S | A CSV file (comma or semicolon, up to 100 MB) shall be importable as records of one type or links between records already there, with types guessed from the first 1,000 rows; a row with no key column may be identified by name instead. List values split on `\|`. | Met |
 | IMP-7 | S | Text pasted or fetched from a web page may be read by an LLM to propose records and links of the current model's types; every proposed name and value shall be verified against the source text before being kept, and anything not verified shall be dropped and reported. | Met |
 | IMP-8 | M | An import from text shall store only extracted facts and a brief, paraphrased summary with the source address; it shall never store the source page's full text. | Met |
-| IMP-9 | M | Reading text or asking a question (FUN-4, IMP-7) shall be disableable by configuration, and shall be unavailable (not merely hidden) when no model provider is configured. The provider is Anthropic or any OpenAI-compatible server, chosen by configuration. | Met |
+| IMP-9 | M | Reading text or asking a question (FUN-4, IMP-7) shall be disableable by configuration, and shall be unavailable (not merely hidden) when no model provider is configured. The provider is Anthropic or any OpenAI-compatible server, chosen by configuration, and a further provider is added by one client class and one entry in `LlmProviders` (`models.md`). | Met |
 
 ### 3.5 History and audit (HIS)
 
@@ -408,6 +408,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-15 | FUN-2, FUN-11, FUN-14: Explore gains a cards view in the `t` cycle (graph, table, cards), `x` exports the nodes CSV, and that CSV carries every defined field of the types shown, even when empty. |
 | 2026-11-15 | PERF-4: `LINKBASE_LOAD_ONLY` runs one step alone; performance.md records the limits found (database CPU, no caching, one replica, connection arithmetic). |
 | 2026-11-15 | DEM-4: `deploy.ps1 -ResetAllModels` resets all four example databases at once; `-ResetModel` still takes one or more. |
+| 2026-11-15 | IMP-9: language-model providers sit behind one `ILlmToolClient` contract and a `LlmProviders` registry, so the OpenAI path no longer borrows Anthropic classes and a new provider is one client class. No behaviour change. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.

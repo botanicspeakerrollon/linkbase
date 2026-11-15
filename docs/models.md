@@ -587,6 +587,23 @@ including changes made to them since, and a type or relationship it added once n
 something added since links to one of its records, or if it would leave a record without a link its type requires. Files
 can be up to 100 MB, with commas or semicolons. The batch records the file's name and what it added, never its contents.
 
+### Adding a language-model provider
+
+Read text and Ask talk to a model through one small contract, `ILlmToolClient` (`Core/Llm/`): send a prompt and a tool schema,
+get the tool's arguments back. The prompts, the tool schemas and the checking of the answer are the same for every provider
+(`ExtractionPrompts`, `QuestionPrompts`), so a new provider only has to speak its own wire format.
+
+1. Write a client in `Core/Llm/Providers/`, deriving from `LlmToolClientBase`. Implement `SendAsync` to make the call and map
+   the answer to a `ToolCallResult`, using the stop reasons in `StopReasons` (`tool_use`, `refusal`, `max_tokens`) and throwing
+   `Fail("...")` for every way the call can fail, with a message that says what to check. `AnthropicToolClient` and
+   `OpenAiToolClient` are the two examples to copy.
+2. Derive from `LlmProvider` in the same file: give it an `Id` (the `Llm:Provider` value) and register the client as an
+   `ILlmToolClient` in `AddServices`.
+3. Add the provider to `LlmProviders.All`, and document its settings in the README's configuration table and, if it has a secret,
+   in the Secrets table in `operations.md`.
+
+Nothing else changes: `Program.cs`, the extractor and the question compiler already work with whichever provider is picked.
+
 ## Link attributes
 
 A relationship can carry values that belong to a link rather than to either record, such as how many days a week a person

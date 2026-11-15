@@ -112,7 +112,7 @@ public class ModelExtractionValidatorTests
     }
 }
 
-public class AnthropicModelExtractorTests
+public class ExtractionPromptsTests
 {
     private static readonly ExtractionSchema Schema = ExtractionSchema.From(
         [new RecordType("Project", null, null, [new RecordField("status", FieldType.Choice, ["proposed", "active"]) { Required = true }]), new RecordType("Client", null, null, [])],
@@ -121,7 +121,7 @@ public class AnthropicModelExtractorTests
     [Fact]
     public void The_tool_schema_only_allows_the_models_own_names()
     {
-        var schema = JsonDocument.Parse(AnthropicModelExtractor.InputSchemaJson(Schema)).RootElement;
+        var schema = JsonDocument.Parse(ExtractionPrompts.InputSchemaJson(Schema)).RootElement;
 
         var record = schema.GetProperty("properties").GetProperty("records").GetProperty("items").GetProperty("properties");
         Assert.Equal(["Project", "Client"], record.GetProperty("type").GetProperty("enum").EnumerateArray().Select(e => e.GetString()));
@@ -136,7 +136,7 @@ public class AnthropicModelExtractorTests
     {
         var schema = ExtractionSchema.From([new RecordType("Note", null, null, [])], []);
 
-        var json = JsonDocument.Parse(AnthropicModelExtractor.InputSchemaJson(schema)).RootElement;
+        var json = JsonDocument.Parse(ExtractionPrompts.InputSchemaJson(schema)).RootElement;
 
         Assert.False(json.GetProperty("properties").TryGetProperty("links", out _));
         Assert.Equal(["records"], json.GetProperty("required").EnumerateArray().Select(e => e.GetString()));
@@ -145,10 +145,10 @@ public class AnthropicModelExtractorTests
     [Fact]
     public void The_prompt_describes_the_model_and_the_request_uses_a_strict_tool()
     {
-        var extractor = new AnthropicModelExtractor(new ConfigurationBuilder().Build());
+        var client = new Linkbase.Core.Llm.Providers.AnthropicToolClient(new ConfigurationBuilder().Build());
 
-        var prompt = AnthropicModelExtractor.SystemPrompt(Schema);
-        var request = extractor.BuildRequest(Schema, "Atlas is for Northwind", ["Earlier"]);
+        var prompt = ExtractionPrompts.SystemPrompt(Schema);
+        var request = client.BuildRequest(ExtractionPrompts.BuildRequest(Schema, "Atlas is for Northwind", ["Earlier"]));
 
         Assert.Contains("status (one of proposed, active, required)", prompt, StringComparison.Ordinal);
         Assert.Contains("Project FOR Client", prompt, StringComparison.Ordinal);
@@ -160,7 +160,7 @@ public class AnthropicModelExtractorTests
     {
         var input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>("""{"records":"not a list"}""")!;
 
-        var ex = Assert.Throws<ExtractionFailedException>(() => AnthropicModelExtractor.ReadResponse("tool_use", input));
+        var ex = Assert.Throws<ExtractionFailedException>(() => ExtractionPrompts.ReadResponse("tool_use", input));
 
         Assert.Contains("expected shape", ex.Message, StringComparison.Ordinal);
     }
@@ -168,8 +168,8 @@ public class AnthropicModelExtractorTests
     [Fact]
     public void The_page_text_is_fenced_and_earlier_records_are_named_only_for_a_continuation()
     {
-        var first = AnthropicModelExtractor.BuildUserMessage("Atlas is active.", []);
-        var later = AnthropicModelExtractor.BuildUserMessage("Atlas is for Northwind.", ["Atlas", "Northwind"]);
+        var first = ExtractionPrompts.BuildUserMessage("Atlas is active.", []);
+        var later = ExtractionPrompts.BuildUserMessage("Atlas is for Northwind.", ["Atlas", "Northwind"]);
 
         Assert.StartsWith("<page_text>", first, StringComparison.Ordinal);
         Assert.DoesNotContain("continues", first, StringComparison.Ordinal);
@@ -183,15 +183,15 @@ public class AnthropicModelExtractorTests
         var input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
             """{"records":[{"type":"Project","name":"Atlas","fields":[{"field":"status","value":"active"}]}],"links":[{"rel_type":"FOR","from_type":"Project","from_name":"Atlas","to_type":"Client","to_name":"Northwind"}]}""")!;
 
-        var data = AnthropicModelExtractor.ReadResponse("tool_use", input);
+        var data = ExtractionPrompts.ReadResponse("tool_use", input);
 
         Assert.Equal("Atlas", data.Records[0].Name);
         Assert.Equal("active", data.Records[0].Fields[0].Value);
         Assert.Equal("Northwind", data.Links[0].ToName);
-        Assert.Throws<ExtractionFailedException>(() => AnthropicModelExtractor.ReadResponse("max_tokens", input));
-        Assert.Throws<ExtractionFailedException>(() => AnthropicModelExtractor.ReadResponse("refusal", null));
-        Assert.Throws<ExtractionFailedException>(() => AnthropicModelExtractor.ReadResponse("end_turn", null));
-        Assert.Empty(AnthropicModelExtractor.ReadResponse("tool_use", JsonSerializer.Deserialize<Dictionary<string, JsonElement>>("""{"records":[]}""")!).Links);
+        Assert.Throws<ExtractionFailedException>(() => ExtractionPrompts.ReadResponse("max_tokens", input));
+        Assert.Throws<ExtractionFailedException>(() => ExtractionPrompts.ReadResponse("refusal", null));
+        Assert.Throws<ExtractionFailedException>(() => ExtractionPrompts.ReadResponse("end_turn", null));
+        Assert.Empty(ExtractionPrompts.ReadResponse("tool_use", JsonSerializer.Deserialize<Dictionary<string, JsonElement>>("""{"records":[]}""")!).Links);
     }
 }
 

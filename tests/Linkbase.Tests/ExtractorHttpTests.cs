@@ -60,7 +60,7 @@ public class ExtractorHttpTests
     public async Task A_real_response_is_read_through_the_sdk()
     {
         var handler = new StubHandler(_ => Json(HttpStatusCode.OK, ToolResponse));
-        var extractor = new AnthropicModelExtractor(Config(), new HttpClient(handler));
+        var extractor = new LlmModelExtractor(new Linkbase.Core.Llm.Providers.AnthropicToolClient(Config(), new HttpClient(handler)));
 
         var data = await extractor.ExtractAsync(Schema, "Slab Theory at Larkfield", ["Earlier"], CancellationToken.None);
 
@@ -80,7 +80,7 @@ public class ExtractorHttpTests
     public async Task Api_errors_become_clear_messages(HttpStatusCode status, string expected)
     {
         var handler = new StubHandler(_ => Json(status, """{"type":"error","error":{"type":"x","message":"nope"}}"""));
-        var extractor = new AnthropicModelExtractor(Config(), new HttpClient(handler));
+        var extractor = new LlmModelExtractor(new Linkbase.Core.Llm.Providers.AnthropicToolClient(Config(), new HttpClient(handler)));
 
         var ex = await Assert.ThrowsAsync<ExtractionFailedException>(() => extractor.ExtractAsync(Schema, "text", [], CancellationToken.None));
 
@@ -91,7 +91,7 @@ public class ExtractorHttpTests
     public async Task A_network_failure_is_a_clear_message()
     {
         var handler = new StubHandler(_ => throw new HttpRequestException("down"));
-        var extractor = new AnthropicModelExtractor(Config(), new HttpClient(handler));
+        var extractor = new LlmModelExtractor(new Linkbase.Core.Llm.Providers.AnthropicToolClient(Config(), new HttpClient(handler)));
 
         var ex = await Assert.ThrowsAsync<ExtractionFailedException>(() => extractor.ExtractAsync(Schema, "text", [], CancellationToken.None));
 
@@ -103,6 +103,6 @@ public class ExtractorHttpTests
     {
         // JSON null deserialises to nothing at all, which isn't the same as empty lists.
         var input = new Dictionary<string, JsonElement> { ["records"] = JsonSerializer.SerializeToElement(1) };
-        Assert.Throws<ExtractionFailedException>(() => AnthropicModelExtractor.ReadResponse("tool_use", input));
+        Assert.Throws<ExtractionFailedException>(() => ExtractionPrompts.ReadResponse("tool_use", input));
     }
 }

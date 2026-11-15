@@ -115,28 +115,18 @@ builder.Services.AddHttpClient<Linkbase.Core.Extraction.PageTextFetcher>(client 
         : new SocketsHttpHandler { MaxAutomaticRedirections = 5, ConnectCallback = Linkbase.Core.Extraction.PublicAddress.ConnectAsync });
 builder.Services.AddScoped<Linkbase.Core.Extraction.ModelExtractionService>();
 // Llm:Provider picks who reads text and answers questions: "anthropic" (the default) or "openai", which is any server that
-// speaks the OpenAI chat completions format. See the Configuration section of README.md.
-var llmProvider = (builder.Configuration["Llm:Provider"] ?? "anthropic").Trim().ToLowerInvariant();
-if (llmProvider is not ("anthropic" or "openai"))
-{
-    throw new InvalidOperationException($"Llm:Provider is '{llmProvider}', which isn't one of: anthropic, openai.");
-}
-
-builder.Services.AddHttpClient<Linkbase.Core.Extraction.OpenAiCompatibleClient>(client => client.Timeout = TimeSpan.FromMinutes(5));
+// speaks the OpenAI chat completions format. See the Configuration section of README.md, and LlmProviders for how to add one.
+Linkbase.Core.Llm.LlmProviders.AddLlm(builder.Services, builder.Configuration);
 builder.Services.AddScoped<Linkbase.Core.Extraction.IModelExtractor>(sp =>
     builder.Configuration["Extraction:Fixture"] is { Length: > 0 } fixture
         ? new Linkbase.Core.Extraction.FixtureModelExtractor(Linkbase.Core.RepoPaths.Resolve(fixture))
-        : llmProvider == "openai"
-            ? new Linkbase.Core.Extraction.OpenAiModelExtractor(sp.GetRequiredService<Linkbase.Core.Extraction.OpenAiCompatibleClient>())
-            : new Linkbase.Core.Extraction.AnthropicModelExtractor(builder.Configuration));
+        : new Linkbase.Core.Extraction.LlmModelExtractor(sp.GetRequiredService<Linkbase.Core.Llm.ILlmToolClient>()));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<Linkbase.Core.Ask.QuestionService>();
 builder.Services.AddScoped<Linkbase.Core.Ask.IQuestionCompiler>(sp =>
     builder.Configuration["Ask:Fixture"] is { Length: > 0 } fixture
         ? new Linkbase.Core.Ask.FixtureQuestionCompiler(Linkbase.Core.RepoPaths.Resolve(fixture))
-        : llmProvider == "openai"
-            ? new Linkbase.Core.Ask.OpenAiQuestionCompiler(sp.GetRequiredService<Linkbase.Core.Extraction.OpenAiCompatibleClient>())
-            : new Linkbase.Core.Ask.AnthropicQuestionCompiler(builder.Configuration));
+        : new Linkbase.Core.Ask.LlmQuestionCompiler(sp.GetRequiredService<Linkbase.Core.Llm.ILlmToolClient>()));
 foreach (var domain in RegisteredDomains.All)
 {
     domain.AddServices(builder.Services, builder.Configuration);

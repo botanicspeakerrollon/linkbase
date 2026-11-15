@@ -82,8 +82,8 @@ public class ClimbingExtractionRulesTests
         var withRoutes = ExtractionSchema.From([new RecordType("Route", null, null, [])], [], hooks);
         var without = ExtractionSchema.From([new RecordType("Client", null, null, [])], [], hooks);
 
-        Assert.Contains("uk_trad", AnthropicModelExtractor.SystemPrompt(withRoutes), StringComparison.Ordinal);
-        Assert.DoesNotContain("uk_trad", AnthropicModelExtractor.SystemPrompt(without), StringComparison.Ordinal);
+        Assert.Contains("uk_trad", ExtractionPrompts.SystemPrompt(withRoutes), StringComparison.Ordinal);
+        Assert.DoesNotContain("uk_trad", ExtractionPrompts.SystemPrompt(without), StringComparison.Ordinal);
     }
 }
 

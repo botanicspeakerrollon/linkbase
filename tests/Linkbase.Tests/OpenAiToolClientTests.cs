@@ -1,11 +1,12 @@
 using System.Net;
 using System.Text.Json.Nodes;
-using Linkbase.Core.Extraction;
+using Linkbase.Core.Llm;
+using Linkbase.Core.Llm.Providers;
 using Microsoft.Extensions.Configuration;
 
 namespace Linkbase.Tests;
 
-public class OpenAiCompatibleClientTests
+public class OpenAiToolClientTests
 {
     private sealed class FakeHandler(HttpStatusCode status, string body) : HttpMessageHandler
     {
@@ -23,8 +24,8 @@ public class OpenAiCompatibleClientTests
     private static IConfiguration Config(params (string Key, string Value)[] values) =>
         new ConfigurationBuilder().AddInMemoryCollection(values.ToDictionary(v => v.Key, v => (string?)v.Value)).Build();
 
-    private static Task<ToolCallResult> Call(OpenAiCompatibleClient client) =>
-        client.CallToolAsync("system", "user", "record_data", "Records.", """{"type":"object"}""", 100, CancellationToken.None);
+    private static Task<ToolCallResult> Call(OpenAiToolClient client) =>
+        client.CallToolAsync(new ToolCallRequest("system", "user", "record_data", "Records.", """{"type":"object"}""", 100), CancellationToken.None);
 
     private const string ToolAnswer = """
         {"choices":[{"finish_reason":"tool_calls","message":{"tool_calls":[{"function":{"name":"record_data","arguments":"{\"records\":[]}"}}]}}]}
@@ -34,7 +35,7 @@ public class OpenAiCompatibleClientTests
     public async Task Sends_a_chat_completion_with_one_tool_and_reads_the_call()
     {
         var handler = new FakeHandler(HttpStatusCode.OK, ToolAnswer);
-        var client = new OpenAiCompatibleClient(
+        var client = new OpenAiToolClient(
             Config(("Llm:Model", "some-model"), ("Llm:BaseUrl", "http://localhost:11434/v1/"), ("Llm:ApiKey", "k")), new HttpClient(handler));
 
         var result = await Call(client);
@@ -55,7 +56,7 @@ public class OpenAiCompatibleClientTests
     public async Task Honours_the_max_tokens_field_and_strict_settings_and_needs_no_key()
     {
         var handler = new FakeHandler(HttpStatusCode.OK, ToolAnswer);
-        var client = new OpenAiCompatibleClient(
+        var client = new OpenAiToolClient(
             Config(("Llm:Model", "m"), ("Llm:MaxTokensField", "max_tokens"), ("Llm:Strict", "true")), new HttpClient(handler));
 
         await Call(client);
@@ -65,22 +66,22 @@ public class OpenAiCompatibleClientTests
         Assert.Null(body["max_completion_tokens"]);
         Assert.True(body["tools"]![0]!["function"]!["strict"]!.GetValue<bool>());
         Assert.Null(handler.Request!.Headers.Authorization);
-        Assert.StartsWith(OpenAiCompatibleClient.DefaultBaseUrl, handler.Request.RequestUri!.ToString());
+        Assert.StartsWith(OpenAiToolClient.DefaultBaseUrl, handler.Request.RequestUri!.ToString());
     }
 
     [Fact]
     public async Task Fails_with_a_message_that_says_what_to_check()
     {
-        var noModel = await Assert.ThrowsAsync<ExtractionFailedException>(() => Call(new OpenAiCompatibleClient(Config(), new HttpClient(new FakeHandler(HttpStatusCode.OK, "{}")))));
+        var noModel = await Assert.ThrowsAsync<LlmCallFailedException>(() => Call(new OpenAiToolClient(Config(), new HttpClient(new FakeHandler(HttpStatusCode.OK, "{}")))));
         Assert.Contains("Llm:Model", noModel.Message);
 
-        var badUrl = await Assert.ThrowsAsync<ExtractionFailedException>(() => Call(new OpenAiCompatibleClient(Config(("Llm:Model", "m"), ("Llm:BaseUrl", "ftp://x")), new HttpClient(new FakeHandler(HttpStatusCode.OK, "{}")))));
+        var badUrl = await Assert.ThrowsAsync<LlmCallFailedException>(() => Call(new OpenAiToolClient(Config(("Llm:Model", "m"), ("Llm:BaseUrl", "ftp://x")), new HttpClient(new FakeHandler(HttpStatusCode.OK, "{}")))));
         Assert.Contains("Llm:BaseUrl", badUrl.Message);
 
-        var rejected = await Assert.ThrowsAsync<ExtractionFailedException>(() => Call(new OpenAiCompatibleClient(Config(("Llm:Model", "m")), new HttpClient(new FakeHandler(HttpStatusCode.Unauthorized, "{}")))));
+        var rejected = await Assert.ThrowsAsync<LlmCallFailedException>(() => Call(new OpenAiToolClient(Config(("Llm:Model", "m")), new HttpClient(new FakeHandler(HttpStatusCode.Unauthorized, "{}")))));
         Assert.Contains("Llm:ApiKey", rejected.Message);
 
-        var badRequest = await Assert.ThrowsAsync<ExtractionFailedException>(() => Call(new OpenAiCompatibleClient(Config(("Llm:Model", "m")), new HttpClient(new FakeHandler(HttpStatusCode.BadRequest, """{"error":{"message":"no tools here"}}""")))));
+        var badRequest = await Assert.ThrowsAsync<LlmCallFailedException>(() => Call(new OpenAiToolClient(Config(("Llm:Model", "m")), new HttpClient(new FakeHandler(HttpStatusCode.BadRequest, """{"error":{"message":"no tools here"}}""")))));
         Assert.Contains("no tools here", badRequest.Message);
         Assert.Contains("Llm:Model", badRequest.Message);
     }
@@ -88,15 +89,15 @@ public class OpenAiCompatibleClientTests
     [Fact]
     public void Maps_stop_reasons_and_treats_missing_or_broken_calls_as_failures_not_crashes()
     {
-        Assert.Equal("max_tokens", OpenAiCompatibleClient.ReadResult("""{"choices":[{"finish_reason":"length","message":{}}]}""").StopReason);
-        Assert.Equal("refusal", OpenAiCompatibleClient.ReadResult("""{"choices":[{"finish_reason":"stop","message":{"refusal":"No."}}]}""").StopReason);
+        Assert.Equal("max_tokens", OpenAiToolClient.ReadResult("""{"choices":[{"finish_reason":"length","message":{}}]}""").StopReason);
+        Assert.Equal("refusal", OpenAiToolClient.ReadResult("""{"choices":[{"finish_reason":"stop","message":{"refusal":"No."}}]}""").StopReason);
 
-        var text = OpenAiCompatibleClient.ReadResult("""{"choices":[{"finish_reason":"stop","message":{"content":"Here you go"}}]}""");
+        var text = OpenAiToolClient.ReadResult("""{"choices":[{"finish_reason":"stop","message":{"content":"Here you go"}}]}""");
         Assert.Null(text.ToolInput);
 
-        Assert.Throws<ExtractionFailedException>(() => OpenAiCompatibleClient.ReadResult("""{"choices":[]}"""));
-        Assert.Throws<ExtractionFailedException>(() => OpenAiCompatibleClient.ReadResult("not json"));
-        Assert.Throws<ExtractionFailedException>(() => OpenAiCompatibleClient.ReadResult(
+        Assert.Throws<LlmCallFailedException>(() => OpenAiToolClient.ReadResult("""{"choices":[]}"""));
+        Assert.Throws<LlmCallFailedException>(() => OpenAiToolClient.ReadResult("not json"));
+        Assert.Throws<LlmCallFailedException>(() => OpenAiToolClient.ReadResult(
             """{"choices":[{"finish_reason":"tool_calls","message":{"tool_calls":[{"function":{"arguments":"{broken"}}]}}]}"""));
     }
 }

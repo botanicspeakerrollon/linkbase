@@ -1,4 +1,3 @@
-using Linkbase.Core.Extraction;
 using Linkbase.Core.Graph;
 
 namespace Linkbase.Core.Ask;
@@ -21,15 +20,7 @@ public sealed class QuestionService(IQuestionCompiler compiler, TimeProvider tim
             throw new QuestionFailedException($"Keep the question under {MaxQuestionLength} characters.");
         }
 
-        try
-        {
-            var raw = await compiler.CompileAsync(schema, question, DateOnly.FromDateTime(time.GetLocalNow().Date), cancellationToken);
-            return PatternChecker.Check(raw, schema, question);
-        }
-        catch (ExtractionFailedException ex)
-        {
-            // The shared API call reports its failures this way.
-            throw new QuestionFailedException(ex.Message);
-        }
+        var raw = await compiler.CompileAsync(schema, question, DateOnly.FromDateTime(time.GetLocalNow().Date), cancellationToken);
+        return PatternChecker.Check(raw, schema, question);
     }
 }
