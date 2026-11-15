@@ -91,6 +91,8 @@ resources carry. Changing the name makes the next deploy create a new Container 
   its small hand-written form to the large generated one) does not reach a deployed demo by itself. Run
   `./deploy/azure/deploy.ps1 -ResetModel archimate` to drop that database and have the new app load the current file (the
   large model takes several minutes). Anything people changed in it is lost.
+- `./deploy/azure/deploy.ps1 -ResetAllModels` does that for all four databases. Use it when the migrations were squashed (a
+  database made before then fails setup with "already exists") or when you want the demo back to its example data.
 - To reset the whole demo, delete the databases (or the Postgres server and run the script again).
 - `main.bicep` and `deploy.ps1` compile cleanly with `az bicep build` but haven't been run against a real subscription yet: expect to fix a detail or two the first time.
 - **Region.** Blazor Server sends every keystroke and click to the server and waits for the reply, so the app feels slow to

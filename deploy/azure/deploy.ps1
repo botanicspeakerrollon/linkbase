@@ -29,6 +29,9 @@
   Drops the named example databases (climbing_demo, consultancy, linkbase_code, archimate) before the app starts, so the new
   app's `model setup` creates them again and loads the current example data. Anything people changed in them is lost. Use it
   when a model's example file has changed, because setup never loads over a database that already has data.
+.PARAMETER ResetAllModels
+  The same as -ResetModel with all four example databases. Use it after the migrations were squashed, because a database
+  made before then has the old names in its migration history and the new app's setup fails on it.
 #>
 [CmdletBinding()]
 param(
@@ -42,10 +45,12 @@ param(
     [ValidateSet('Light', 'Heavy')]
     [string] $Size = 'Light',
     [ValidateSet('climbing_demo', 'consultancy', 'linkbase_code', 'archimate')]
-    [string[]] $ResetModel
+    [string[]] $ResetModel,
+    [switch] $ResetAllModels
 )
 
 $ErrorActionPreference = 'Stop'
+if ($ResetAllModels) { $ResetModel = @('climbing_demo', 'consultancy', 'linkbase_code', 'archimate') }
 $repo = Resolve-Path (Join-Path $PSScriptRoot '..\..')
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ("linkbase-azure-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tmp | Out-Null

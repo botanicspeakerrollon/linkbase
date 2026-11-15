@@ -407,6 +407,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-15 | PERF-4 added: a load test simulates several users at once against small, medium and large models (`LoadTests`, `scripts/load-test.ps1`). |
 | 2026-11-15 | FUN-2, FUN-11, FUN-14: Explore gains a cards view in the `t` cycle (graph, table, cards), `x` exports the nodes CSV, and that CSV carries every defined field of the types shown, even when empty. |
 | 2026-11-15 | PERF-4: `LINKBASE_LOAD_ONLY` runs one step alone; performance.md records the limits found (database CPU, no caching, one replica, connection arithmetic). |
+| 2026-11-15 | DEM-4: `deploy.ps1 -ResetAllModels` resets all four example databases at once; `-ResetModel` still takes one or more. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.
