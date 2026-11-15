@@ -17,17 +17,17 @@ public partial class ExplorePage
     {
         switch (key)
         {
-            case "t" when _nodes.Count > 0:
+            case "t" when _shown.Count > 0:
                 await ShowViewAsync(_view switch { ExploreView.Graph => ExploreView.Table, ExploreView.Table => ExploreView.Cards, _ => ExploreView.Graph });
                 break;
-            case "x" when _nodes.Count > 0:
+            case "x" when _shown.Count > 0:
                 await ExportNodesAsync();
                 break;
             case "f":
                 await ShowViewAsync(ExploreView.Graph);
                 await FitAsync();
                 break;
-            case "c" when _nodes.Count > 0:
+            case "c" when _shown.Count > 0:
                 await ShowViewAsync(ExploreView.Graph);
                 await ClearAsync();
                 break;
@@ -43,7 +43,7 @@ public partial class ExplorePage
             case "e" when _selected is { } node:
                 await ExpandAsync(node.Id);
                 break;
-            case "s" when _lastPattern is not null && _nodes.Count > 0:
+            case "s" when _lastPattern is not null && _shown.Count > 0:
                 await ToggleSummaryAsync();
                 break;
             case "v":

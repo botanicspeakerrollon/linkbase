@@ -26,14 +26,14 @@ public partial class ExplorePage
 
     private ExploreState CurrentState()
     {
-        var onCanvas = _nodes.Count > 0 && !_showingModel;
+        var onCanvas = _shown.Count > 0 && !_showingModel;
         return new ExploreState
         {
             Pattern = onCanvas ? _lastPattern : null,
-            Nodes = onCanvas && _nodes.Count <= ExploreState.MaxNodes ? _nodes.Keys.ToList() : null,
+            Nodes = onCanvas && _shown.Count <= ExploreState.MaxNodes ? _shown.Keys.ToList() : null,
             Model = _showingModel,
-            Table = _table && _nodes.Count > 0,
-            Cards = _cards && _nodes.Count > 0,
+            Table = _table && _shown.Count > 0,
+            Cards = _cards && _shown.Count > 0,
             Totals = _summaryOpen && onCanvas && _lastPattern is not null,
             RelTypes = _relTypes.Count > 0 ? _relTypes.ToList() : null,
             Filters = _propertyFilters.Count > 0 ? _propertyFilters.ToList() : null,
@@ -130,7 +130,7 @@ public partial class ExplorePage
             var queryMs = clock.ElapsedMilliseconds;
             foreach (var node in subgraph.Nodes)
             {
-                _nodes[node.Id] = node;
+                _shown.Set(node);
             }
 
             _edges = subgraph.Edges;
@@ -155,7 +155,7 @@ public partial class ExplorePage
             await DrawAsync(null);
         }
 
-        _view = _nodes.Count == 0 ? ExploreView.Graph : state.Table ? ExploreView.Table : state.Cards ? ExploreView.Cards : ExploreView.Graph;
+        _view = _shown.Count == 0 ? ExploreView.Graph : state.Table ? ExploreView.Table : state.Cards ? ExploreView.Cards : ExploreView.Graph;
     }
 
     private static GraphPattern? CleanPattern(GraphPattern? pattern)
@@ -182,7 +182,7 @@ public partial class ExplorePage
         {
             { d => d.State, CurrentState().Encode() },
             { d => d.Kind, SavedViewKind.Explore },
-            { d => d.CanPinLayout, _nodes.Count > 0 && !_showingModel },
+            { d => d.CanPinLayout, _shown.Count > 0 && !_showingModel },
             { d => d.PinnedState, PinnedStateAsync },
         };
         await Dialogs.ShowAsync<SavedViewsDialog>("Saved views", parameters, new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true });
@@ -192,7 +192,7 @@ public partial class ExplorePage
     // layout rather than a fresh one. What used to be a separate "scene" is now this: a saved view with its layout pinned.
     private async Task<string?> PinnedStateAsync()
     {
-        if (_module is null || _nodes.Count == 0 || _showingModel)
+        if (_module is null || _shown.Count == 0 || _showingModel)
         {
             return CurrentState().Encode();
         }
