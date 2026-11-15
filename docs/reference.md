@@ -309,7 +309,11 @@ the right way for sites that forbid scraping). The model's types, fields, relati
 tool's schema, so the answer from the LLM can only name what the model has. Then `ModelExtractionValidator` drops any name or value not in the
 source text, or over 200 characters, and a domain's `CheckExtracted` drops what it can tell is wrong. A type that requires links
 is kept only when the text gives them. Records already here, matched by key or exact name,
-are left alone but can be linked to. The rest is staged for review, committed and undone exactly as a CSV import.
+are left alone but can be linked to, unless *Update records that are already here* is ticked (off by default). Then a record with
+exactly the same name gets the values the text gives where they differ, and the review lists each change ("title: Design lead →
+Principal Designer"). A record that only has a similar name, a type a domain module keeps up to date (climbing's Area, Crag, Route
+and Ascent) and links are never updated, and the notes say so. It needs the model's history on, and undoing the import puts the
+values back. The rest is staged for review, committed and undone exactly as a CSV import.
 
 Only the extracted facts and the source address are kept, in the batch, never the page's text.
 

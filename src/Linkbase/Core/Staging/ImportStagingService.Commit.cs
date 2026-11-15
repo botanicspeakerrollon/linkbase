@@ -83,7 +83,7 @@ public sealed partial class ImportStagingService
 
         // Likewise, links already there, linked this way exactly once, that the import has different values for. Excluded
         // from the insert below so they don't become a second link; applied once the insert has run.
-        var linkUpdates = (bool?)summary["update"] == true ? await PlanLinkUpdatesAsync(connection, transaction, batchId, cancellationToken) : [];
+        var linkUpdates = (bool?)summary["update"] == true && (bool?)summary["updateLinks"] != false ? await PlanLinkUpdatesAsync(connection, transaction, batchId, cancellationToken) : [];
         var updatingIds = linkUpdates.Select(u => u.StagedItemId).ToArray();
 
         var records = await ExecuteAsync(connection, transaction,

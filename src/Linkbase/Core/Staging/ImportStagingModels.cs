@@ -52,6 +52,10 @@ public sealed record StagingRequest(DataSource Source, string File, string What,
     public bool UpdateExisting { get; init; }
 
     public int Updating { get; init; }
+
+    // Whether links already there, with different values, are updated too when UpdateExisting is set. A text import changes
+    // records only, so it turns this off.
+    public bool UpdateLinks { get; init; } = true;
 }
 
 public sealed record StagedBatch(

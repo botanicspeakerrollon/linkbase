@@ -24,6 +24,13 @@
     </MudTabPanel>
 </MudTabs>
 
+<MudCheckBox T="bool" @bind-Value="_update" Dense="true" Class="mt-2" Disabled="_running"
+             Label="Update records that are already here" aria-label="Update records that are already here" />
+<MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
+    Only a record with exactly the same name changes, and only the values the text gives. A record that merely looks similar
+    is left alone. Links aren't updated. You see each change before it's made, and undoing the import puts it back.
+</MudText>
+
 <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-3">
     <MudButton OnClick="StartAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_running || !CanStart)">Read</MudButton>
     @if (_running)
@@ -58,6 +65,7 @@
     private string? _sourceUrl;
     private string? _url;
     private bool _running;
+    private bool _update;
     private string? _progressMessage;
     private int _progressCompleted;
     private int _progressTotal;
@@ -86,8 +94,8 @@
         try
         {
             var batch = _tab == 0
-                ? await Extraction.ExtractFromTextAsync(_text!, _sourceUrl, progress, _cancellation.Token)
-                : await Extraction.ExtractFromUrlAsync(_url!, progress, _cancellation.Token);
+                ? await Extraction.ExtractFromTextAsync(_text!, _sourceUrl, progress, _cancellation.Token, _update)
+                : await Extraction.ExtractFromUrlAsync(_url!, progress, _cancellation.Token, _update);
             Navigation.NavigateTo($"/import/review/{batch}");
         }
         catch (OperationCanceledException)

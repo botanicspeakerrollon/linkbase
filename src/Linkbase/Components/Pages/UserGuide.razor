@@ -253,8 +253,9 @@
             <p>
                 Paste text, or fetch a page if the site allows it, and Claude looks for records and links of the types in the current model.
                 Only what the text actually says is kept: a name or value that is not in it is dropped and
-                listed in the review's notes. Records already here are left as they are but can still be linked to. Everything is staged
-                for review first.
+                listed in the review's notes. Records already here are left as they are but can still be linked to, unless you tick <em>Update records that are already here</em>:
+                then a record with exactly the same name takes the values the text gives where they differ, and the review shows each change. Everything is staged
+                for review first, and undoing the import puts changed values back.
             </p>
             <MudAlert Severity="Severity.Info" Dense="true" Class="mb-3">
                 The text is sent to an AI model to be read, so it only works once your administrator has set it up, and they can turn it off. Your own records are never sent.

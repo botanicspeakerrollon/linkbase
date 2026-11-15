@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Linkbase.Core.Extraction;
 
 // Reads text for any model: fetches a page or takes pasted text, has the extractor read it part by part against the model's
-// own types, checks the answer against the text, and stages what's new for review and commit by ImportStagingService. Like
-// a CSV import, records already there are left as they are, so undoing only ever removes what the import added.
+// own types, checks the answer against the text, and stages what's new for review and commit by ImportStagingService. Unless
+// the caller asks to update, records already there are left as they are, so undoing only ever removes what the import added.
 public sealed class ModelExtractionService(
     IRecordRepository records,
     IModelExtractor extractor,
@@ -21,24 +21,43 @@ public sealed class ModelExtractionService(
     private const int NotesShown = 20;
     private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
 
-    public async Task<long> ExtractFromUrlAsync(string url, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken)
+    // With updateExisting, a record in the text that matches one already here by its exact name has the text's values laid over
+    // it, where they differ, instead of being left as it is. Links and records matched only by a similar name are never updated.
+    public async Task<long> ExtractFromUrlAsync(string url, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken, bool updateExisting = false)
     {
+        await CheckCanUpdateAsync(updateExisting, cancellationToken);
         progress?.Report(new ExtractionProgress("Fetching the page", 0, 1));
         var page = await fetcher.FetchAsync(url, cancellationToken);
-        return await ExtractAsync(page.Text, url.Trim(), progress, cancellationToken);
+        return await ExtractAsync(page.Text, url.Trim(), progress, updateExisting, cancellationToken);
     }
 
-    public Task<long> ExtractFromTextAsync(string text, string? sourceUrl, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken)
+    public async Task<long> ExtractFromTextAsync(string text, string? sourceUrl, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken, bool updateExisting = false)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new ExtractionFailedException("There's no text to import.");
         }
 
-        return ExtractAsync(text, string.IsNullOrWhiteSpace(sourceUrl) ? null : sourceUrl.Trim(), progress, cancellationToken);
+        await CheckCanUpdateAsync(updateExisting, cancellationToken);
+        return await ExtractAsync(text, string.IsNullOrWhiteSpace(sourceUrl) ? null : sourceUrl.Trim(), progress, updateExisting, cancellationToken);
     }
 
-    private async Task<long> ExtractAsync(string text, string? source, IProgress<ExtractionProgress>? progress, CancellationToken cancellationToken)
+    // Checked before the text is read, so a model that can't take updates doesn't cost a call to the AI first.
+    private async Task CheckCanUpdateAsync(bool updateExisting, CancellationToken cancellationToken)
+    {
+        if (!updateExisting)
+        {
+            return;
+        }
+
+        await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+        if (!(await Linkbase.Core.History.ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
+        {
+            throw new ExtractionFailedException("Updating records needs the model to keep a history, so the changes can be put back. This model doesn't.");
+        }
+    }
+
+    private async Task<long> ExtractAsync(string text, string? source, IProgress<ExtractionProgress>? progress, bool updateExisting, CancellationToken cancellationToken)
     {
         var types = await records.TypesAsync(cancellationToken);
         var relationships = await records.RelationshipsAsync(cancellationToken);
@@ -65,25 +84,27 @@ public sealed class ModelExtractionService(
         progress?.Report(new ExtractionProgress("Checking the results", chunks.Count, chunks.Count));
         var checkedData = ModelExtractionValidator.Validate(
             schema, new ExtractedData(found.SelectMany(d => d.Records).ToList(), found.SelectMany(d => d.Links).ToList()), text, _hooks);
-        var batch = await StageAsync(schema, types, checkedData, source ?? "Pasted text", cancellationToken);
+        var batch = await StageAsync(schema, types, checkedData, source ?? "Pasted text", updateExisting, cancellationToken);
         progress?.Report(new ExtractionProgress("Done", chunks.Count, chunks.Count));
         return batch;
     }
 
     private async Task<long> StageAsync(
-        ExtractionSchema schema, IReadOnlyList<RecordType> types, ModelExtractionValidator.Result data, string source, CancellationToken cancellationToken)
+        ExtractionSchema schema, IReadOnlyList<RecordType> types, ModelExtractionValidator.Result data, string source, bool updateExisting, CancellationToken cancellationToken)
     {
         var notes = data.Warnings.ToList();
         var dropped = notes.Count;
 
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        // Records already in the model, matched by name, are left as they are and can still be linked to. A similar name
-        // matches when there is only one, and a record that must be linked, such as a route, only matches one linked the same way.
+        // Records already in the model, matched by name, are left as they are (unless updating) and can still be linked to. A
+        // similar name matches when there is only one, and a record that must be linked, such as a route, only matches one linked
+        // the same way.
         var (existing, taken) = await ExistingAsync(
             db, data.Records.Select(r => (r.Type, r.Key, r.Name)).Concat(data.Links.SelectMany(l => new[] { (l.FromType, Key(l.FromName), l.FromName), (l.ToType, Key(l.ToName), l.ToName) })),
             cancellationToken);
         existing = await ExistingRecordMatcher.MatchAsync(db, schema, data, existing, notes, cancellationToken);
+        var updates = updateExisting ? await PlanUpdatesAsync(db, data, existing, notes, cancellationToken) : [];
 
         // A new record whose key is taken by a different record gets the next free one.
         var rekeyed = new List<StagedRecord>();
@@ -156,9 +177,9 @@ public sealed class ModelExtractionService(
         links = links.Distinct().ToList();
 
         var added = kept.Where(r => !existing.ContainsKey((r.Type, ModelExtractionValidator.Normalise(r.Name)))).ToList();
-        var alreadyThere = kept.Count - added.Count;
+        var alreadyThere = kept.Count - added.Count - updates.Count;
         added = added.Select(r => Hooked(types, r)).ToList();
-        if (added.Count == 0 && links.Count == 0)
+        if (added.Count == 0 && links.Count == 0 && updates.Count == 0)
         {
             throw new ExtractionFailedException(alreadyThere > 0
                 ? "Everything found in the text is already here."
@@ -169,6 +190,7 @@ public sealed class ModelExtractionService(
         {
             added.Count > 0 ? $"{added.Count:N0} records" : null,
             links.Count > 0 ? $"{links.Count:N0} links" : null,
+            updates.Count > 0 ? $"{updates.Count:N0} updates" : null,
         }.Where(s => s is not null)) + " read from text";
         var shown = notes.Take(NotesShown).ToList();
         if (notes.Count > NotesShown)
@@ -182,8 +204,80 @@ public sealed class ModelExtractionService(
             : kept.Select(r => new StagedRef(Resolve(r.Type, r.Name) ?? r.Id, r.Type, ExternalId(address, r), source)).ToList();
 
         return await staging.StageAsync(
-            new StagingRequest(DataSource.Ai, source, what, ModelChanges.None, alreadyThere, notes.Count, shown) { Refs = refs },
-            added, links, cancellationToken);
+            new StagingRequest(DataSource.Ai, source, what, ModelChanges.None, alreadyThere, notes.Count, shown)
+            {
+                Refs = refs,
+                UpdateExisting = updateExisting,
+                Updating = updates.Count,
+                UpdateLinks = false,
+            },
+            added.Concat(updates), links, cancellationToken);
+    }
+
+    // The records in the text that are the same as one already here, by an exact name, and whose values differ. Each is staged
+    // under the record's own key and name with only the values that change, so the review shows just those and a commit leaves
+    // the rest alone. A name that only looks similar is not updated, because a wrong match would overwrite another record. A type
+    // a module keeps up to date isn't either, since the module would have to set its fields again.
+    private async Task<List<StagedRecord>> PlanUpdatesAsync(
+        LinkbaseDbContext db,
+        ModelExtractionValidator.Result data,
+        Dictionary<(string Type, string Name), string> existing,
+        List<string> notes,
+        CancellationToken cancellationToken)
+    {
+        var matched = data.Records
+            .Select(r => (Record: r, Id: existing.GetValueOrDefault((r.Type, ModelExtractionValidator.Normalise(r.Name)))))
+            .Where(m => m.Id is not null)
+            .ToList();
+        var ids = matched.Select(m => m.Id!).Distinct().ToList();
+        var nodes = ids.Count == 0
+            ? []
+            : (await db.Nodes.AsNoTracking().Where(n => ids.Contains(n.Id)).Select(n => new { n.Id, n.Key, n.Name, n.Props }).ToListAsync(cancellationToken))
+                .ToDictionary(n => n.Id);
+
+        var updates = new List<StagedRecord>();
+        var done = new HashSet<string>(StringComparer.Ordinal);
+        var moduleTypes = new HashSet<string>();
+        foreach (var (record, id) in matched)
+        {
+            if (!nodes.TryGetValue(id!, out var node) || !done.Add(node.Id))
+            {
+                continue;
+            }
+
+            if (_hooks.Watch(record.Type))
+            {
+                if (moduleTypes.Add(record.Type))
+                {
+                    notes.Add($"{record.Type} records are kept up to date by a module, so none were updated.");
+                }
+
+                continue;
+            }
+
+            if (ModelExtractionValidator.Normalise(node.Name) != ModelExtractionValidator.Normalise(record.Name))
+            {
+                notes.Add($"{record.Type} '{record.Name}' is like '{node.Name}' already here, but only an exact name is updated, so it was left as it is.");
+                continue;
+            }
+
+            var now = RecordRepository.Values(node.Props);
+            var changed = RecordRepository.Values(record.Props).Where(v => now.GetValueOrDefault(v.Key) != v.Value).Select(v => v.Key).ToHashSet();
+            if (changed.Count == 0)
+            {
+                continue;
+            }
+
+            var props = JsonNode.Parse(record.Props) as JsonObject ?? [];
+            foreach (var key in props.Select(p => p.Key).Where(k => !changed.Contains(k)).ToList())
+            {
+                props.Remove(key);
+            }
+
+            updates.Add(new StagedRecord(record.Type, node.Key, node.Name, props.ToJsonString()));
+        }
+
+        return updates;
     }
 
     // A module's hooks set the fields it keeps, so they're staged with the record.

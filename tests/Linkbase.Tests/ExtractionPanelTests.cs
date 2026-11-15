@@ -56,6 +56,15 @@ public class ExtractionPanelTests(PostgresFixture fixture) : UiTestBase(fixture)
     }
 
     [Fact]
+    public async Task Updating_records_already_here_is_offered_and_off_by_default()
+    {
+        var cut = await PanelAsync(() => ExtractedData.Empty);
+
+        Sees(cut, "Update records that are already here");
+        Assert.False(cut.Find("input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    [Fact]
     public async Task A_failed_reading_says_why_and_stays_on_the_page()
     {
         var cut = await PanelAsync(() => throw new ExtractionFailedException("The reader declined this text."));

@@ -51,6 +51,10 @@ public sealed partial class ImportStagingService(IDbContextFactory<LinkbaseDbCon
         {
             summary["update"] = true;
             summary["updating"] = request.Updating;
+            if (!request.UpdateLinks)
+            {
+                summary["updateLinks"] = false;
+            }
         }
 
         if (request.Refs.Count > 0)

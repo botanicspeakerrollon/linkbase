@@ -504,7 +504,7 @@ back, and it can't update a type a domain module keeps up to date.
 A links file offers the same box, **Update links that are already here**, when the relationship carries values. It only
 changes a link's values when the two records are linked that way exactly once: a row that would otherwise match an
 ambiguous pair (none yet, or more than one already) is added as a further link instead, same as when the box is unticked.
-Read text still only skips what is already here, for both records and links.
+Read text skips what is already here unless you tick its own *Update records that are already here* (see below), and then only records change, never links.
 
 Undoing an import also puts back the values it changed. A value someone has changed again since stays as it is and is listed
 with the records that stay. A value already back at its old value is skipped, so an undo that left something can be run again.
@@ -576,7 +576,9 @@ relationships become the extraction tool's schema, so the answer can only name w
 then checked against the source text, and anything not in it, or longer than 200 characters, is dropped and listed in the
 review's notes. A type that requires links is only kept when the text gives them. The rest is the same as a CSV import: it is
 staged for review, committed in one transaction, and can be undone from **Recent imports**. A record is keyed by the slug of its
-name, and one already here, by key or by exact name, is left as it is but can be linked to.
+name, and one already here, by key or by exact name, is left as it is but can be linked to. Ticking **Update records that are already here**
+changes a record with exactly the same name to the text's values where they differ (the review shows each change, and undo puts it back).
+A merely similar name, a type a domain module keeps up to date, and links are not updated, and the model needs history on.
 
 The text is sent to the configured AI model (Anthropic unless `Llm:Provider` says otherwise), and the tab says so. Set `Extraction:Enabled` to `false` to hide it.
 

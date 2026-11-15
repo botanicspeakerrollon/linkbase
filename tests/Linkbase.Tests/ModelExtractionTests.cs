@@ -261,6 +261,63 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
         Assert.True(await db.Nodes.AnyAsync(n => n.Id == "client:c1"));
     }
 
+    private const string UpdateText = "Ava Lindqvist is now Principal Designer. Zed Quinn joined the Design team.";
+
+    [Fact]
+    public async Task Text_leaves_a_record_already_here_alone_unless_asked_to_update()
+    {
+        var (factory, service, staging) = await ExampleAsync((_, _) => new ExtractedData(
+            [new ExtractedRecord("Person", "Ava Lindqvist", [new ExtractedValue("title", "Principal Designer")]), new ExtractedRecord("Person", "Zed Quinn", [])], []));
+
+        var batch = await service.ExtractFromTextAsync(UpdateText, null, null, CancellationToken.None);
+        await staging.CommitAsync(batch);
+
+        await using var db = factory.CreateDbContext();
+        Assert.Contains("Design lead", await db.Nodes.Where(n => n.Id == "person:p1").Select(n => n.Props).SingleAsync(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Updating_changes_only_the_values_the_text_gives_on_an_exact_name_and_undo_puts_them_back()
+    {
+        var (factory, service, staging) = await ExampleAsync((_, _) => new ExtractedData(
+            [new ExtractedRecord("Person", "Ava Lindqvist", [new ExtractedValue("title", "Principal Designer")]), new ExtractedRecord("Person", "Zed Quinn", [])], []));
+        await using var db = factory.CreateDbContext();
+        var before = await db.Nodes.Where(n => n.Id == "person:p1").Select(n => n.Props).SingleAsync();
+
+        var batch = await service.ExtractFromTextAsync(UpdateText, null, null, CancellationToken.None, updateExisting: true);
+
+        var staged = (await staging.GetAsync(batch))!;
+        Assert.Equal(1, staged.Updating);
+        var row = (await staging.ReviewAsync(batch, StagedKind.Record, 0, 10)).Rows.Single(r => r.Updating);
+        Assert.Contains("title: Design lead → Principal Designer", row.Detail, StringComparison.Ordinal);
+
+        var committed = await staging.CommitAsync(batch);
+        Assert.Equal(1, committed.Updated);
+        var after = await db.Nodes.AsNoTracking().Where(n => n.Id == "person:p1").Select(n => new { n.Name, n.Props }).SingleAsync();
+        Assert.Equal("Ava Lindqvist", after.Name);
+        Assert.Contains("Principal Designer", after.Props, StringComparison.Ordinal);
+        Assert.Contains("Service design", after.Props, StringComparison.Ordinal);
+        Assert.Equal(1, await db.Nodes.CountAsync(n => n.Type == "Person" && n.Name == "Ava Lindqvist"));
+
+        await staging.UndoAsync(batch);
+        Assert.Equal(before, await db.Nodes.AsNoTracking().Where(n => n.Id == "person:p1").Select(n => n.Props).SingleAsync());
+    }
+
+    [Fact]
+    public async Task Updating_skips_a_record_that_only_has_a_similar_name_and_says_so()
+    {
+        var (factory, service, staging) = await ExampleAsync((_, _) => new ExtractedData(
+            [new ExtractedRecord("Person", "Ava Lindqvist-Smith", [new ExtractedValue("title", "Principal Designer")]), new ExtractedRecord("Person", "Zed Quinn", [])], []));
+
+        var batch = await service.ExtractFromTextAsync("Ava Lindqvist-Smith is now Principal Designer. Zed Quinn joined.", null, null, CancellationToken.None, updateExisting: true);
+
+        var staged = (await staging.GetAsync(batch))!;
+        Assert.Equal(0, staged.Updating);
+        await staging.CommitAsync(batch);
+        await using var db = factory.CreateDbContext();
+        Assert.Contains("Design lead", await db.Nodes.Where(n => n.Id == "person:p1").Select(n => n.Props).SingleAsync(), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task A_different_record_with_the_same_key_gets_the_next_free_one()
     {
