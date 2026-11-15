@@ -71,7 +71,9 @@ up to date. The user guide is in the app, under Guide in the rail (`/guide`), wi
 
 There are three kinds. Unit tests need nothing. Database tests, including those that render pages with bUnit, start
 their own Postgres in Docker, so they never touch your data. Browser tests start the real app against that
-same test database and drive it in Chromium, which has to be installed once, after a build:
+same test database and drive it in Chromium. The tests install Chromium themselves the first time it's missing (this needs
+network access, and on Linux root for the system libraries). To install it ahead of time, for a CI cache or an offline run,
+use the script in the test output folder after a build:
 
 ```
 powershell -ExecutionPolicy Bypass -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium

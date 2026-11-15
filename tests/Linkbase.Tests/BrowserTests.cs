@@ -118,7 +118,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         _store = s_store;
         _url = await RunningApp.StartAsync(_store.ConnectionString);
         _playwright = await Playwright.CreateAsync();
-        _browser = await _playwright.Chromium.LaunchAsync();
+        _browser = await ChromiumLauncher.LaunchAsync(_playwright);
         _page = await _browser.NewPageAsync(new() { ViewportSize = new() { Width = 1400, Height = 900 } });
         _page.Console += (_, message) =>
         {

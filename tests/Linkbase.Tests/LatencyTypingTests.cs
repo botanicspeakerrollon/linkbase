@@ -120,7 +120,7 @@ public sealed class LatencyTypingTests(PostgresFixture fixture) : IAsyncLifetime
         var app = await RunningApp.StartAsync(_store.ConnectionString);
         _proxy = new DelayProxy(new Uri(app), OneWay);
         _playwright = await Playwright.CreateAsync();
-        _browser = await _playwright.Chromium.LaunchAsync();
+        _browser = await ChromiumLauncher.LaunchAsync(_playwright);
         _page = await _browser.NewPageAsync(new() { ViewportSize = new() { Width = 1400, Height = 900 } });
     }
 
