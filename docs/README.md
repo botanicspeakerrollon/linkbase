@@ -16,13 +16,4 @@ Current:
 - [performance](performance.md): the large Swiss rail sample and how queries are checked against it.
 - [deploy/](../deploy/README.md): running the image on Kubernetes, OpenShift or Docker.
 
-History, kept for the record (plans and designs, mostly built; see [history/](history/)):
-
-- [extensibility-plan](history/extensibility-plan.md): what's built and what to do next, in order.
-- [security-roadmap](history/security-roadmap.md): the original plan for sign-in, roles and field-level permissions (see the requirements, SEC, for what is built).
-- [security-design](history/security-design.md): the design for labels, row-level security and masking, with the Postgres mechanics (built; see the requirements, SEC).
-- [audit-history-plan](history/audit-history-plan.md): the audit trail, with a reason for each change (built, apart from reverting changes that touched several records).
-- [relationship-attributes](history/relationship-attributes.md): values on links, such as a partner's role (built, with filtering and updating a link's value on CSV re-import; Read text still skips it).
-- [deployment-plan](history/deployment-plan.md): running the one image on Kubernetes, OpenShift or Docker (the files are in [`deploy/`](../deploy/README.md)).
-- [climbing-to-generic-plan](history/climbing-to-generic-plan.md) and [climbing-switch](history/climbing-switch.md): moving climbing into the generic store, and the switch of a real logbook (done).
-- [import-mapping](history/import-mapping.md): how the UKC and Mountain Project exports map to records (the parsers still follow it).
+Plans and designs from building the app are kept in [history/](history/). They are historical: most are built, so read them for why, and the pages above for what is true now.
