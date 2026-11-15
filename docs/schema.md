@@ -294,10 +294,9 @@ Written as raw SQL in the migration, because the EF model can't describe them.
 
 Climbing's Insights shapes (`climbing_ascent_facts`, `climbing_trip` and the others) are not views. They are a `WITH` clause in
 `ClimbingInsightsSql`, put in front of each Insights query, so no model's database carries climbing SQL and the queries read
-`node` and `node_link` as the viewer, through their row policies. `InitialCreate` still creates the old `climbing_*` views and
-`DropClimbingViews` drops them.
+`node` and `node_link` as the viewer, through their row policies.
 
 ## Migration history
 
-`__EFMigrationsHistory` has `20261113025612_InitialCreate`, the one baseline, then any later migrations in
+`__EFMigrationsHistory` has `20261115053007_InitialCreate`, the one baseline, then any later migrations in
 `src/Linkbase/Data/Migrations`.

@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Linkbase.Data.Migrations
 {
     [DbContext(typeof(LinkbaseDbContext))]
-    [Migration("20261113223957_DropGraphScene")]
-    partial class DropGraphScene
+    [Migration("20261115053007_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -235,6 +235,26 @@ namespace Linkbase.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("key");
+
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
 
                     b.Property<bool>("Multiple")
                         .ValueGeneratedOnAdd()
@@ -606,6 +626,10 @@ namespace Linkbase.Data.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("require_reason");
 
+                    b.Property<string>("Security")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("security");
+
                     b.PrimitiveCollection<string[]>("SourceKinds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -642,6 +666,26 @@ namespace Linkbase.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("key");
+
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -718,6 +762,26 @@ namespace Linkbase.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("import_batch_id");
 
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
+
                     b.Property<string>("Props")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -753,6 +817,42 @@ namespace Linkbase.Data.Migrations
                         .HasDatabaseName("ix_node_link_target_id");
 
                     b.ToTable("node_link");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.NodePropertyLabel", b =>
+                {
+                    b.Property<string>("NodeId")
+                        .HasColumnType("text")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.PrimitiveCollection<string[]>("LabelAll")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_all")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<string[]>("LabelAny")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("label_any")
+                        .HasDefaultValueSql("'{*}'");
+
+                    b.Property<short>("LabelLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0)
+                        .HasColumnName("label_level");
+
+                    b.HasKey("NodeId", "Key")
+                        .HasName("pk_node_property_label");
+
+                    b.ToTable("node_property_label");
                 });
 
             modelBuilder.Entity("Linkbase.Data.NodeType", b =>
@@ -917,6 +1017,32 @@ namespace Linkbase.Data.Migrations
                         .HasDatabaseName("ix_staged_item_import_batch_id_kind_id");
 
                     b.ToTable("staged_item");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.UserModel", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Database")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("database");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Key")
+                        .HasName("pk_user_model");
+
+                    b.ToTable("user_model");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
