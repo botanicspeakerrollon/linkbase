@@ -109,6 +109,10 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             try
             {
                 act();
+
+                // bUnit keeps an event sent to a retired handler as an unhandled error and only throws it at the next wait,
+                // so wait once here to have it thrown where it can be retried, not in a later assertion.
+                cut.WaitForAssertion(() => { });
                 return;
             }
             catch (Bunit.Rendering.UnknownEventHandlerIdException) when (attempt < 5)

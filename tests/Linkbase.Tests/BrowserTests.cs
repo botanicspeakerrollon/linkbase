@@ -465,8 +465,23 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await _page.Locator("[role=option]", new() { HasText = "platforms" }).First.WaitForAsync();
         await search.PressAsync("Enter");
         await _page.Locator("[role=option]", new() { HasText = ">" }).First.ClickAsync();
-        await search.FillAsync("20");
-        await _page.Locator("[role=option]", new() { HasText = "> 20" }).First.ClickAsync();
+
+        // The box can still be re-rendering from the click above, which drops what is typed, so type again until the value shows.
+        var twenty = _page.Locator("[role=option]", new() { HasText = "> 20" }).First;
+        for (var attempt = 1; ; attempt++)
+        {
+            await search.FillAsync("20");
+            try
+            {
+                await twenty.WaitForAsync(new() { Timeout = 3000 });
+                break;
+            }
+            catch (TimeoutException) when (attempt < 8)
+            {
+            }
+        }
+
+        await twenty.ClickAsync();
         await _page.Locator(".pattern-node-filter", new() { HasText = "platforms > " }).WaitForAsync();
         await search.PressAsync("Enter");
         await WaitForExactNodesAsync(1);
