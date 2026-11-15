@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Claims;
 using Linkbase.Core.Models;
 using Linkbase.Core.Security;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -39,13 +40,15 @@ public static class DemoSignIn
 
     public static void Map(WebApplication app)
     {
-        app.MapGet("/signin", async (HttpContext context, IServiceProvider services, ModelCatalog catalog, ILoggerFactory loggers) =>
+        app.MapGet("/signin", async (HttpContext context, IServiceProvider services, ModelCatalog catalog, ILoggerFactory loggers, IAntiforgery antiforgery) =>
         {
             var groups = await UsersAsync(services, catalog, loggers.CreateLogger(nameof(DemoSignIn)), context.RequestAborted);
-            return Results.Content(Page(groups, context.Request.Query["error"].Count > 0), "text/html; charset=utf-8");
+            var token = antiforgery.GetAndStoreTokens(context);
+            return Results.Content(Page(groups, context.Request.Query["error"].Count > 0, token.FormFieldName, token.RequestToken ?? ""), "text/html; charset=utf-8");
         }).AllowAnonymous();
 
-        app.MapGet("/signin/as/{user}", async (string user, HttpContext context, IServiceProvider services, ModelCatalog catalog, ILoggerFactory loggers) =>
+        // A POST with an anti-forgery token, so another site can't sign a visitor in as someone by sending them a link.
+        app.MapPost("/signin/as", async ([Microsoft.AspNetCore.Mvc.FromForm] string user, HttpContext context, IServiceProvider services, ModelCatalog catalog, ILoggerFactory loggers) =>
         {
             // Only someone a model lists, so the endpoint can't be used to be anybody.
             var groups = await UsersAsync(services, catalog, loggers.CreateLogger(nameof(DemoSignIn)), context.RequestAborted);
@@ -113,7 +116,7 @@ public static class DemoSignIn
         return parts.Count == 0 ? "no access to restricted records" : string.Join(" · ", parts);
     }
 
-    private static string Page(IReadOnlyList<ModelPeople> groups, bool failed)
+    private static string Page(IReadOnlyList<ModelPeople> groups, bool failed, string tokenName, string token)
     {
         var p = AppTheme.Theme.PaletteDark;
         string C(MudColor c) => c.ToString(MudColorOutputFormats.Hex);
@@ -130,7 +133,7 @@ public static class DemoSignIn
             body.Append(System.Globalization.CultureInfo.InvariantCulture, $"<h2>{E(group.Model)}</h2><ul>");
             foreach (var person in group.Users)
             {
-                body.Append(System.Globalization.CultureInfo.InvariantCulture, $"<li><a href=\"/signin/as/{Uri.EscapeDataString(person.Id)}\"><b>{E(person.Id)}</b><span>{E(person.Summary)}</span></a></li>");
+                body.Append(System.Globalization.CultureInfo.InvariantCulture, $"<li><form method=post action=\"/signin/as\"><input type=hidden name=\"{E(tokenName)}\" value=\"{E(token)}\"><button name=user value=\"{E(person.Id)}\"><b>{E(person.Id)}</b><span>{E(person.Summary)}</span></button></form></li>");
             }
 
             body.Append("</ul>");
@@ -146,9 +149,9 @@ public static class DemoSignIn
               h1 { font-size: 22px; margin: 0 0 4px; } h2 { font-size: 15px; margin: 28px 0 8px; color: {{C(p.TextSecondary)}}; }
               .muted, .note { color: {{C(p.TextSecondary)}}; } .err { color: {{C(p.Error)}}; }
               ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-              a { display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border: 1px solid {{C(p.LinesDefault)}}; border-radius: 6px;
-                  background: {{C(p.Surface)}}; color: inherit; text-decoration: none; }
-              a:hover, a:focus-visible { border-color: {{C(p.Primary)}}; outline: none; } a span { color: {{C(p.TextSecondary)}}; text-align: right; }
+              button { width: 100%; font: inherit; cursor: pointer; display: flex; justify-content: space-between; gap: 16px; padding: 10px 14px; border: 1px solid {{C(p.LinesDefault)}}; border-radius: 6px;
+                  background: {{C(p.Surface)}}; color: inherit; text-align: left; }
+              button:hover, button:focus-visible { border-color: {{C(p.Primary)}}; outline: none; } button span { color: {{C(p.TextSecondary)}}; text-align: right; }
               code { background: {{C(p.Surface)}}; padding: 1px 4px; border-radius: 3px; }
             </style></head>
             <body><main>

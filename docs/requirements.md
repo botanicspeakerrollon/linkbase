@@ -279,6 +279,10 @@ security on; a model that doesn't is unaffected (SEC-6).
 | SEC-7 | S | Labels shall be assignable in bulk by selection ("Label (n)…" on a record list), by every record a list matches ("Label all n…"), CSV import and model default, each part offering "Leave as it is" so a bulk change touches only what is set. | Partial — for records; links are labelled only by import or default |
 | SEC-8 | S | Only a person permitted to label shall be able to change labels, and import and saved views shall respect the viewer. | Planned — nobody is checked yet |
 | SEC-9 | M | History, counts, search hits and graph edges shall not reveal that anything the viewer can't see exists. | Met — history is filtered and masked, link counts are live for restricted viewers |
+| SEC-10 | M | Fetching a web page for Read text shall connect only to public addresses: loopback, private, link-local (including a cloud's metadata address), carrier-grade NAT and multicast addresses shall be refused, whatever name or redirect leads to them, and the body shall be limited to 5 MB however it is sent. The reason a fetch failed shall not be shown. | Met — checked on the address connected to; `Extraction:AllowPrivateAddresses=true` lifts it for a deployment whose pages are on its own network |
+| SEC-11 | S | Every response shall forbid being framed, sniffed or sending its address on (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, and a Content-Security-Policy of `frame-ancestors`, `base-uri`, `object-src` and `form-action` only); the model cookie shall be `Secure` over HTTPS. | Met — no script or style policy, which Blazor and MudBlazor would need relaxed |
+| SEC-12 | S | Demo sign-in shall be a POST carrying an anti-forgery token, so a link on another site can't sign a visitor in as someone. | Met — still no password (DEM-4) |
+| SEC-13 | S | Anyone who can reach the app can make a model, so no more than 50 may be made in the app, and abandoned CSV uploads shall be removed after a day. | Met |
 
 ### 4.3 Reliability and data integrity (REL)
 
@@ -397,6 +401,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-14 | First draft, derived from `reference.md` and the plans under `docs/`. |
 | 2026-11-15 | SEC-\* no longer Deferred: restated against what is built (row security, field labels, identity seam, demo sign-in), with SEC-8 and SEC-9 added. MOD-4 and MOD-5 built (MOD-4 partial); MOD-6 added. New DEM group, DAT-9, FUN-15, OPS-7; DAT-6, IMP-9 and OPS-3 reworded; §1.5 and §2 updated; security links point at `history/`. |
 | 2026-11-15 | DEM-5 met: the demo shows this document in the app (`Docs:Pages`). |
+| 2026-11-15 | Security review fixes: SEC-10 to SEC-13 added (public addresses only when fetching a page, response headers and a Secure model cookie, demo sign-in as a POST with a token, a cap on models made in the app and a sweep of old uploads). |
 | 2026-11-15 | Full check against the app. FUN-13 (saved scenes) Withdrawn: a layout is now a saved view with pinned positions (FUN-12 reworded). Added FUN-18 (trace), FUN-19, FUN-20, REC-8, REC-9, IMP-10, HIS-8, MOD-7, MOD-8, UI-6 to UI-8, OPS-8, and new groups TIM and CLM (timeline; the climbing domain). Reworded FUN-3, FUN-5, FUN-8, FUN-9, FUN-11, FUN-15, REC-2, REC-7, IMP-5, IMP-6, HIS-4, HIS-6, MOD-4, UI-2, UI-4, UI-5, CLN-1, SEC-7, OPS-5, DEM-1, DEM-4; §1.5's stale claim that the model editor can't edit link values, groups, descriptions or `max` removed; statuses stated where a limit is known. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a

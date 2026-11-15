@@ -30,9 +30,9 @@ public static class AnthropicCall
         {
             throw new ExtractionFailedException("The Anthropic API is rate limiting this key. Try again in a minute.");
         }
-        catch (AnthropicBadRequestException ex)
+        catch (AnthropicBadRequestException)
         {
-            throw new ExtractionFailedException($"The Anthropic API rejected the request. Check Anthropic:Model ({model}). {ex.Message} {ex.ResponseBody}".TrimEnd());
+            throw new ExtractionFailedException($"The Anthropic API rejected the request. Check Anthropic:Model ({model}).");
         }
         catch (Anthropic5xxException)
         {
