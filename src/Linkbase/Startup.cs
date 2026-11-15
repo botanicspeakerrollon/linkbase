@@ -91,6 +91,7 @@ public static class Startup
         services.AddScoped<ModelEditor>();
         services.AddScoped<RecordHooks>();
         services.AddScoped<RecordRepository>();
+        services.AddScoped<IRecordRepository>(provider => provider.GetRequiredService<RecordRepository>());
         services.AddScoped<Core.History.HistoryRepository>();
         services.AddScoped<Core.History.ChangeReverter>();
         services.AddScoped<ExternalRefRepository>();

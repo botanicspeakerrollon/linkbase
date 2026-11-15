@@ -11,7 +11,7 @@ namespace Linkbase.Core.Records;
 
 // Lists, shows and edits the generic store's data, guided by the model's definitions. See docs/models.md.
 // Domain modules' hooks run on every change made through it, except ReplaceDerivedAsync, which is the modules' own.
-public sealed partial class RecordRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks hooks, Linkbase.Core.Security.FieldPolicy fieldPolicy)
+public sealed partial class RecordRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks hooks, Linkbase.Core.Security.FieldPolicy fieldPolicy) : IRecordRepository
 {
     public const int LinksShown = 25;
 

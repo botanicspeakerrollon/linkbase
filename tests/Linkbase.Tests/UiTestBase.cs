@@ -32,6 +32,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<IGraphRepository>(sp => sp.GetRequiredService<GraphRepository>());
         Services.AddSingleton<Linkbase.Core.Views.SavedViewRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+        Services.AddSingleton<Linkbase.Core.Records.IRecordRepository>(p => p.GetRequiredService<Linkbase.Core.Records.RecordRepository>());
         Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
         Services.AddSingleton<Linkbase.Core.History.ChangeReverter>();
         Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
@@ -221,6 +222,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             Services.AddSingleton<IGraphRepository>(sp => sp.GetRequiredService<GraphRepository>());
             Services.AddSingleton<Linkbase.Core.Views.SavedViewRepository>();
             Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+            Services.AddSingleton<Linkbase.Core.Records.IRecordRepository>(p => p.GetRequiredService<Linkbase.Core.Records.RecordRepository>());
             Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
             Services.AddSingleton<Linkbase.Core.History.ChangeReverter>();
             Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();

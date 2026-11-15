@@ -2,7 +2,7 @@
 @page "/import-csv/review/{BatchId:long}"
 @using System.Globalization
 @inject ImportStagingService Staging
-@inject RecordRepository Records
+@inject IRecordRepository Records
 @using Linkbase.Core.Explore
 @using Linkbase.Core.Records
 @inject IDialogService Dialogs
