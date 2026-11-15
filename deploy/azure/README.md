@@ -18,8 +18,8 @@ One resource group (`rg-linkbase` in `newzealandnorth`; `-ResourceGroup` and `-L
 
 | Resource | Why | Rough cost a month |
 | --- | --- | --- |
-| Container App, 0.5 vCPU and 1 GiB, one replica | The app. One replica, because Blazor Server keeps each browser's session in its process | about £15 |
-| Postgres Flexible Server, Burstable B1ms | The four example models' databases | about £12 |
+| Container App, 1 vCPU and 2 GiB, one replica | The app. One replica, because Blazor Server keeps each browser's session in its process | about £30 |
+| Postgres Flexible Server, Burstable B2ms (2 vCPU, 8 GiB), 128 GiB disk | The four example models' databases. The large ArchiMate model needs the memory, and the bigger disk gives more IOPS | about £60 |
 | Container Registry, Basic | Holds the image the script builds (with Docker on your PC, then pushes) | about £4 |
 | Key Vault | Holds the secrets | pennies |
 | Log Analytics | The app's logs | pennies at demo volume |

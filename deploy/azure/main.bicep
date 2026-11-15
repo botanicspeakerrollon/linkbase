@@ -105,12 +105,12 @@ resource appCanPullImage 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2023-12-01-preview' = {
   name: '${baseName}-pg'
   location: location
-  sku: { name: 'Standard_B1ms', tier: 'Burstable' }
+  sku: { name: 'Standard_B2ms', tier: 'Burstable' }
   properties: {
     version: '16'
     administratorLogin: postgresAdmin
     administratorLoginPassword: postgresPassword
-    storage: { storageSizeGB: 32 }
+    storage: { storageSizeGB: 128 }
     backup: { backupRetentionDays: 7, geoRedundantBackup: 'Disabled' }
     highAvailability: { mode: 'Disabled' }
     network: { publicNetworkAccess: 'Enabled' }
@@ -247,7 +247,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
           image: '${registry.properties.loginServer}/linkbase:${imageTag}'
           args: [ 'model', 'setup' ]
           env: appEnv
-          resources: { cpu: json('0.5'), memory: '1Gi' }
+          resources: { cpu: json('1.0'), memory: '2Gi' }
         }
       ]
       containers: [
@@ -255,7 +255,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (deployApp) {
           name: 'linkbase'
           image: '${registry.properties.loginServer}/linkbase:${imageTag}'
           env: appEnv
-          resources: { cpu: json('0.5'), memory: '1Gi' }
+          resources: { cpu: json('1.0'), memory: '2Gi' }
           probes: [
             {
               type: 'Startup'
