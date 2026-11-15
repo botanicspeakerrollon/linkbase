@@ -146,6 +146,52 @@ With row security on, the relationship counts in Explore's model view are counte
 the viewer can't see. That is a grouped count over every link, joined to both ends, so on tens of millions of links it will be
 slow. Not measured on the large sample; if it hurts, cache it per viewer shape for a few minutes.
 
+## Several users at once
+
+`LoadTests` (`Category=Performance`) simulates people using one model together. Each simulated user loops over the queries
+the Explore page runs, through the real `GraphRepository`, pausing about 200 ms between steps, and all of them share one
+connection pool as the circuits of a real server would. What it searches for and expands is sampled from the model, so
+it runs on any model. It reads only.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/load-test.ps1                      # small, medium and large samples, 1/5/10/25 users
+powershell -ExecutionPolicy Bypass -File scripts/load-test.ps1 -Users 1,10,50 -Seconds 30 -Think 0 -Models "mine=Host=...;Database=..."
+```
+
+The script sets `LINKBASE_LOAD_MODELS` (`name=connection` pairs separated by `|`), `LINKBASE_LOAD_USERS`, `LINKBASE_LOAD_SECONDS`
+and `LINKBASE_LOAD_THINK_MS`, then writes a markdown report. Without `LINKBASE_LOAD_MODELS` the test is skipped. It never
+writes, but point it at the samples container, not at the real logbook.
+
+Measured on 15 November 2026 on this PC, which also ran the load generator and Docker, so the figures are indicative. Each level
+ran 15 seconds after a warm-up, with JIT off.
+
+| Model | Records | Users | Requests per second | Median | 95th | Slowest |
+| --- | --- | --- | --- | --- | --- | --- |
+| Small (consultancy) | 25 | 1 / 25 | 4.7 / 114.7 | 4 / 4 ms | 12 / 15 ms | 18 / 43 ms |
+| Medium (demo climbing) | 2,267 | 1 / 25 | 4.6 / 114.5 | 5 / 5 ms | 11 / 16 ms | 24 / 60 ms |
+| Large (Swiss public transport) | 3.6 M | 1 | 2.8 | 21 ms | 921 ms | 1.1 s |
+| | | 5 | 14.0 | 18 ms | 606 ms | 1.3 s |
+| | | 10 | 27.3 | 24 ms | 722 ms | 2.2 s |
+| | | 25 | 38.4 | 54 ms | 2.4 s | 3.3 s |
+
+- **Small and medium models don't notice 25 people.** Throughput grew in step with the users and latency didn't move, so the
+  limit is people, not the database.
+- **The large model's typical request is still fast, but the slow ones queue.** At 25 users the median stayed at 54 ms and the
+  95th percentile went from 0.9 to 2.4 s. By step, the slow ones were opening the page (1.9 s median: the schema query samples
+  5,000 rows of each type), the first 100 of a type, keystroke suggestions and free text. Expanding, drawing, the right-click
+  menu and name-contains stayed under 100 ms at the 95th percentile.
+- **Opening the page is the one to fix first for many users.** It costs about 1 s alone and 2 s at 25 users, and every new
+  visitor pays it. The generic store reads the schema from the definition tables, which removes the sampling (see above).
+- **The sample container fails under parallel queries.** At 25 users 4 of 605 requests failed with `could not resize shared
+  memory segment ... No space left on device`: parallel query workers share the container's 64 MB `/dev/shm`. Recreate it with
+  `--shm-size=1g`, or set `max_parallel_workers_per_gather = 0`, before reading much into a run at that level. A real server
+  needs enough shared memory for its expected concurrency.
+- **An unfiltered relationship search is the worst case.** Following a relationship from every record of a type took 11 s for
+  one user on the large model, so the scenario starts from a named record, as a person would.
+
+Not covered: row-security viewers (the test connects as the database owner, who bypasses the policies), writes alongside readers,
+the real climbing logbook, the browser and SignalR circuits, and the memory a circuit costs.
+
 ## Timing a slow Explore load
 
 Explore shows a thin bar over the canvas while it works (opening the page, applying a link or saved view, searching,
@@ -164,7 +210,8 @@ The table above times the queries only, so a slow load that is mostly "draw and 
   a time.
 - **For the generic store:** read the schema from the definition tables, which removes the sampling, and keep `extra_node`'s plain
   shape. Climbing's Insights queries (the `WITH` clause in `ClimbingInsightsSql`) are written for a logbook's size and have not been measured on a model this big.
-- **Not tested:** several users at once, a real server, and writes, including how much the indexes slow them. The busiest stop
+- **Not tested:** a real server with real circuits, and writes, including how much the indexes slow them. Several users at once is
+  measured below, for reads only. The busiest stop
   measured is the busiest one named Zürich HB, so a stop with more links may exist. The link columns are indexed here by the
   loader, which a real climbing logbook's are not.
 

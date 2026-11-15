@@ -89,7 +89,7 @@ dotnet test -c Release
 
 **CI** runs the same build and every test on GitHub Actions for each push to `main` and each pull request
 (`.github/workflows/ci.yml`), on Ubuntu with the runner's Docker. Results are kept with each run for two weeks. The
-performance test is skipped there, as it is locally unless `LINKBASE_PERF_CONNECTION` is set.
+performance and load tests are skipped there, as they are locally unless `LINKBASE_PERF_CONNECTION` or `LINKBASE_LOAD_MODELS` is set (see `scripts/load-test.ps1`).
 
 Coverage measures the code we wrote, leaving out migrations and generated code. It uses Microsoft's collector rather
 than coverlet, because Windows Smart App Control blocks the rewritten copy of `Linkbase.dll` that coverlet produces.

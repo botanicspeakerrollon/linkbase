@@ -262,6 +262,7 @@ Crag, Route, Ascent, Partner and Trip.
 | PERF-1 | M | Graph search and record lists shall remain usable (sub-second typical queries) on a model of at least 3.5 million records and 45 million links, verified against the Swiss rail sample. | Met — see [performance.md](performance.md) |
 | PERF-2 | S | A query that sorts the graph view with a `LIMIT` shall be written so Postgres can find matching rows first, not scan the whole graph. | Met (standing rule, checked per change) |
 | PERF-3 | C | Counting links for display (home page, graph-type view) shall use a maintained counter rather than a live count, on models where counting live is too slow. | Met (`link_definition.links`) |
+| PERF-4 | S | The app shall be measured with several users at once on models of small, medium and large size, using a repeatable load test that reports throughput and latency percentiles. | Partial — `LoadTests` and `scripts/load-test.ps1` cover reads as the database owner; not covered: row-security viewers, writes, real circuits ([performance.md](performance.md)) |
 
 ### 4.2 Security (SEC)
 
@@ -403,6 +404,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-15 | DEM-5 met: the demo shows this document in the app (`Docs:Pages`). |
 | 2026-11-15 | Security review fixes: SEC-10 to SEC-13 added (public addresses only when fetching a page, response headers and a Secure model cookie, demo sign-in as a POST with a token, a cap on models made in the app and a sweep of old uploads). |
 | 2026-11-15 | Full check against the app. FUN-13 (saved scenes) Withdrawn: a layout is now a saved view with pinned positions (FUN-12 reworded). Added FUN-18 (trace), FUN-19, FUN-20, REC-8, REC-9, IMP-10, HIS-8, MOD-7, MOD-8, UI-6 to UI-8, OPS-8, and new groups TIM and CLM (timeline; the climbing domain). Reworded FUN-3, FUN-5, FUN-8, FUN-9, FUN-11, FUN-15, REC-2, REC-7, IMP-5, IMP-6, HIS-4, HIS-6, MOD-4, UI-2, UI-4, UI-5, CLN-1, SEC-7, OPS-5, DEM-1, DEM-4; §1.5's stale claim that the model editor can't edit link values, groups, descriptions or `max` removed; statuses stated where a limit is known. |
+| 2026-11-15 | PERF-4 added: a load test simulates several users at once against small, medium and large models (`LoadTests`, `scripts/load-test.ps1`). |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.
