@@ -33,6 +33,28 @@ public class ExploreExportTests
     }
 
     [Fact]
+    public void Every_field_the_model_defines_for_the_types_shown_is_a_column_even_when_nobody_has_a_value()
+    {
+        var schema = new GraphSchema([],
+        [
+            new("Person", "name", GraphValueType.Text), new("Person", "role", GraphValueType.Text),
+            new("Person", "nickname", GraphValueType.Text), new("Person", "grade", GraphValueType.Text),
+            new("Office", "name", GraphValueType.Text), new("Office", "address", GraphValueType.Text),
+            new("Crag", "area", GraphValueType.Text),
+        ]);
+
+        var lines = Lines(ExploreExport.NodesCsv([Ada, Office], schema));
+
+        // Crag isn't shown, so its field isn't a column. A property a node has that the model doesn't define still is.
+        Assert.Equal("id,type,name,role,nickname,grade,address", lines[0]);
+        Assert.Equal("person:1,Person,Ada Quill,Engineer,,7,", lines[1]);
+        Assert.Equal("place:9,Office,North Yard,,,,", lines[2]);
+
+        var stray = new GraphNode("person:3", "Person", "Cy", [new("pet", "Cat")]);
+        Assert.Equal("id,type,name,role,nickname,grade,address,pet", Lines(ExploreExport.NodesCsv([Ada, Office, stray], schema))[0]);
+    }
+
+    [Fact]
     public void A_cell_a_spreadsheet_would_run_as_a_formula_is_escaped()
     {
         var sneaky = new GraphNode("x:1", "Note", "=HYPERLINK(\"http://example.test\")", [new("sum", "+1+2"), new("at", "@cmd")]);

@@ -16,10 +16,15 @@ public static class ExploreExport
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
-    // One row per node: its id, type and name, then a column for every property any of them has, in the order first seen.
-    public static string NodesCsv(IReadOnlyList<GraphNode> nodes)
+    // One row per node: its id, type and name, then a column for every property the model defines for the types shown, even
+    // when none of the nodes has a value (so the file can be filled in and imported again), then any other property a node has.
+    public static string NodesCsv(IReadOnlyList<GraphNode> nodes, GraphSchema? schema = null)
     {
-        var keys = nodes.SelectMany(n => n.Properties.Select(p => p.Key)).Distinct(StringComparer.Ordinal).ToList();
+        var shown = nodes.Select(n => n.Label).ToHashSet(StringComparer.Ordinal);
+        var defined = schema?.Properties.Where(p => shown.Contains(p.Label)).Select(p => p.Key) ?? [];
+        var keys = defined.Concat(nodes.SelectMany(n => n.Properties.Select(p => p.Key)))
+            .Where(k => k != "name")
+            .Distinct(StringComparer.Ordinal).ToList();
         using var text = new StringWriter(CultureInfo.InvariantCulture);
         using (var csv = new CsvWriter(text, Csv))
         {

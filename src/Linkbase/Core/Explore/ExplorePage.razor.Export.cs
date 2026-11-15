@@ -13,7 +13,7 @@ namespace Linkbase.Core.Explore;
 public partial class ExplorePage
 {
     private Task ExportNodesAsync() =>
-        SaveAsync(ExploreExport.FileName("nodes", "csv", DateTimeOffset.Now), "text/csv", ExploreExport.NodesCsv(VisibleNodes.ToList()));
+        SaveAsync(ExploreExport.FileName("nodes", "csv", DateTimeOffset.Now), "text/csv", ExploreExport.NodesCsv(VisibleNodes.ToList(), _schema));
 
     private Task ExportLinksAsync() =>
         SaveAsync(ExploreExport.FileName("links", "csv", DateTimeOffset.Now), "text/csv", ExploreExport.LinksCsv(VisibleNodes.ToList(), _edges));
