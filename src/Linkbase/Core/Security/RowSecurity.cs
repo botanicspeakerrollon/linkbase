@@ -9,7 +9,7 @@ namespace Linkbase.Core.Security;
 
 // Turns Postgres row-level security on or off for one model's database. It has to run as the database owner, so callers pass
 // a context they made themselves (as `model` commands do), never one from the circuit's factory. Everything is in one
-// transaction, so a failed step can't leave security on with no policy. See docs/security-design.md, "Postgres mechanics".
+// transaction, so a failed step can't leave security on with no policy. See docs/history/security-design.md, "Postgres mechanics".
 public static class RowSecurity
 {
     // The role viewers' queries run as. It's a plain role that can't bypass policies; the connection sets it per query.

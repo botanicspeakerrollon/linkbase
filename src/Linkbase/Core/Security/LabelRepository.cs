@@ -17,7 +17,7 @@ public sealed record LabelEdit(string? Level = null, SetEdit? AnyOf = null, SetE
 
 // Reads and changes labels. Every change is validated against the model's own parts and is written to the audit trail in the
 // same transaction, a change set for the whole batch. Visibility itself (who may read or change a label) is the database's job
-// once row security is on. See docs/security-design.md.
+// once row security is on. See docs/history/security-design.md.
 public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
     private const int Chunk = 1000;

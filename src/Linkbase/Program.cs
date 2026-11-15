@@ -52,7 +52,7 @@ builder.Services.AddScoped<Linkbase.Core.Security.ViewerConnectionInterceptor>()
 // Who is asking. Security:Identity picks where the user comes from: "configured" (the default, the user named by Security:User,
 // for demos and development) or "principal" (whoever ASP.NET Core authentication has signed in, which is how a deployment
 // brings OpenID Connect, Active Directory and the like). Register your own ICurrentUserAccessor and ICustomGrantProvider to
-// go further. See docs/security-design.md, "Users and sign-in".
+// go further. See docs/history/security-design.md, "Users and sign-in".
 builder.Services.AddSingleton<Linkbase.Core.Security.ViewerDirectories>();
 var demoSignIn = builder.Configuration["Security:Identity"] == "demo";
 if (demoSignIn)

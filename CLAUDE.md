@@ -20,7 +20,7 @@ choice between clever and boring, choose boring. See `README.md` for commands.
 - **Raw SQL:** graph and recursive queries may use raw SQL via `FromSql` / `SqlQuery` with keyless types.
 - **Bulk writes:** one transaction per import batch.
 - **Graph views:** build `props` in `graph_nodes` / `graph_edges` from named columns, never `to_jsonb(row)`.
-- **Sensitive fields:** keep them in typed columns, not inside JSON. See `docs/security-roadmap.md`.
+- **Sensitive fields:** keep them in typed columns, not inside JSON. See `docs/history/security-roadmap.md`.
 - **History:** code that adds, changes or removes records or links writes the audit trail in the same transaction, through
   `ChangeRecorder`. A hand edit needs a reason unless the model file says `history.requireReason: false`. See
   `docs/history/audit-history-plan.md`; `ChangeRecorderCoverageTests` fails when a new write path forgets it.

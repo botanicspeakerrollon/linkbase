@@ -27,7 +27,7 @@ public class ModelSetting
     public string[] SourceKinds { get; set; } = [];
 
     // The model file's security section as JSON (the parts, their names and values, where grants come from, and any users
-    // written in the file), or null when the model has none. See docs/security-design.md.
+    // written in the file), or null when the model has none. See docs/history/security-design.md.
     public string? Security { get; set; }
 }
 

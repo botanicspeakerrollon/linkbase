@@ -59,7 +59,7 @@ The one exception is a scoped `LinkbaseDbContext` registered in `Program.cs` for
 
 ## Where access control would go
 
-Nothing here is implemented (see [security-roadmap](security-roadmap.md) and [security-design](security-design.md)). The places a policy has to reach:
+Nothing here is implemented (see [security-roadmap](history/security-roadmap.md) and [security-design](history/security-design.md)). The places a policy has to reach:
 
 - **Who is asking.** Every owned row has a `user_id`, and the app assumes one user (`AppUser.DefaultId`). Sign-in replaces that
   assumption in the repositories' write paths and in the context factory.

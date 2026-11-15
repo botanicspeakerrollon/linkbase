@@ -29,7 +29,7 @@ public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> conte
         fieldPolicy is null ? HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
 
     // With row security on, a change is shown only if what it touched can still be seen: the record, or the link and both its
-    // ends. Anything deleted can't be checked, so it's hidden (docs/security-design.md, "History"). Values of hidden fields are
+    // ends. Anything deleted can't be checked, so it's hidden (docs/history/security-design.md, "History"). Values of hidden fields are
     // masked, including inside the JSON of a create or delete. With security off this returns the changes as they were.
     private static async Task<List<Change>> SecureAsync(LinkbaseDbContext db, HiddenFields hidden, List<Change> changes, CancellationToken cancellationToken)
     {

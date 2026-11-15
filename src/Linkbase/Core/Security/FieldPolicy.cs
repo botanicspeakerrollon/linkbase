@@ -108,7 +108,7 @@ public sealed class HiddenFields
 
 // Decides which properties a viewer sees masked. Row security already hides records the viewer may not see, so this checks only
 // each field definition's own label, with the same rule as everything else (VisibilityRule). The values stay in `props`, so this
-// is application code, not the database: every reader of props has to ask (docs/security-design.md, "Properties").
+// is application code, not the database: every reader of props has to ask (docs/history/security-design.md, "Properties").
 public sealed class FieldPolicy(RowSecurityState state, IViewerResolver resolver)
 {
     // Uses the caller's context, so a read with security off adds no connection and no query.

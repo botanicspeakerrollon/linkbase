@@ -23,7 +23,7 @@ public sealed partial class ModelFile
     public ModelHistory? History { get; init; }
 
     // Which of the three kinds of visibility part the model uses, what it calls them, and where people's grants come from.
-    // Security is off if left out. See docs/security-design.md.
+    // Security is off if left out. See docs/history/security-design.md.
     public ModelSecurity? Security { get; init; }
 
     [JsonIgnore] public bool RecordHistory => History?.Record ?? true;

@@ -469,7 +469,7 @@ Models are listed under `Models` in configuration: `Name`, `ConnectionString` (n
 - **Backups** are `scripts/backup-db.ps1`; restoring, rebuilding and rehearsing are in [operations](operations.md).
 - **Tests.** Unit, database (Testcontainers on real Postgres), bUnit page tests and Playwright browser tests, run in CI on every
   push; coverage uses an in-memory collector.
-- **Security.** Single user, no sign-in: run it on one machine until [security-roadmap](security-roadmap.md) is done.
+- **Security.** Single user, no sign-in: run it on one machine until [security-roadmap](history/security-roadmap.md) is done.
   Reading text and Ask send text to the configured model provider; records and values are never sent by Ask, and Read text sends only the text you give it.
 
 ---
@@ -506,8 +506,8 @@ The `?` dialog is the source of truth; this is its content.
 | Revert | Partial | One record's manual edits only |
 | Home, Timeline, Cleanup, Merge | Built | No fuzzy duplicates; phone untested |
 | Climbing: Logbook, Insights, trips, importers | Built | Phone logging |
-| Security parts, the visibility rule, grant sources (model file or API), label columns, labels from CSV, bulk label edits, row policies, field labels and masking, per-record property labels | Built | [security-design](security-design.md), [models](models.md#security) |
-| Sign-in | Not built | [security-design](security-design.md) |
+| Security parts, the visibility rule, grant sources (model file or API), label columns, labels from CSV, bulk label edits, row policies, field labels and masking, per-record property labels | Built | [security-design](history/security-design.md), [models](models.md#security) |
+| Sign-in | Not built | [security-design](history/security-design.md) |
 | Off-site backups, per-customer hosting | Not built | [operations](operations.md#still-to-do) |
 | Phone layouts | Not built | |
 

@@ -198,7 +198,7 @@ See [audit-history-plan](history/audit-history-plan.md) for the design.
 ### Security
 
 A model can say who may see what. Nothing in the app enforces it yet: this is the part of the
-[design](security-design.md) that is built so far, which is the model file's section, the rule, where people's grants
+[design](history/security-design.md) that is built so far, which is the model file's section, the rule, where people's grants
 come from, and the labels themselves (stored, loaded from CSV, changeable in bulk). A model with no `security` section
 behaves exactly as it always has.
 
@@ -246,7 +246,7 @@ visible only if its own label and both its records pass.
   those the `map` lists and ignoring the rest; without a `map` the claim's values are used as they are. And
   `{ "type": "custom", "provider": "hr" }` asks an `ICustomGrantProvider` named `hr` that the deployment registered. A
   claims source needs the app's `Security:Identity` set to `principal` and a sign-in scheme (see
-  [security design](security-design.md#users-and-sign-in)); a source can't mix settings, so `claims` can't have a `url` and
+  [security design](history/security-design.md#users-and-sign-in)); a source can't mix settings, so `claims` can't have a `url` and
   `api` can't have a `claim`.
 - A directory that is down, slow or returns something unexpected grants **nothing** for that part, so people see less,
   never more. An answer is never used after `cacheSeconds`, so a revoked grant stops working within that time. Failures are
@@ -444,7 +444,7 @@ The choice is kept in a cookie for a year, and switching reloads the page. `/mod
 | `model list` | Lists the configured models |
 | `model migrate` | Applies migrations to every configured and app-made model's database, **including your real one** |
 | `model load <file> [model]` | Loads a model file into a model, the first one if none is named |
-| `model security on\|off [model]` | Turns Postgres row security on or off for a model that has a `security` section (see [security-design](security-design.md)) |
+| `model security on\|off [model]` | Turns Postgres row security on or off for a model that has a `security` section (see [security-design](history/security-design.md)) |
 | `climbing import <model> ukc\|mp\|all [--fresh] [--same-database]` | Loads the UKC and Mountain Project exports into `<model>`, one undoable batch per file, and rebuilds the trips. `--fresh` first reloads the model file, which empties the model's records, and needs `--same-database` for the climbing model's own database |
 
 Run them with `dotnet run --project src/Linkbase --launch-profile http -- <command>`. The launch profile matters: without it,
@@ -557,7 +557,7 @@ already there, which a model file never has to be, because loading one replaces 
 - A type or field a domain module derives or keeps can't be changed here. One a module only reads or writes — such as a
   relationship it expects every record to have — can be added to (another field, say) but not renamed, retyped, deleted,
   or have its required or max rules changed.
-- Every change is one transaction, and writes the [history](audit-history-plan.md) the same way a hand edit does, under a
+- Every change is one transaction, and writes the [history](history/audit-history-plan.md) the same way a hand edit does, under a
   `type:`, `field:`, `relationship:` or `attribute:` entry, so it can be reverted the same way.
 
 A type's hierarchy is set from its required choice field (the level) and a non-required relationship from the type to
@@ -646,7 +646,7 @@ model's data in the app, the app is where it lives, so don't load into that mode
 ## Limits
 - Every model's database has climbing's tables too, empty, because there's one schema for all of them.
 - Values are stored as JSON, so the rule about keeping sensitive fields in typed columns doesn't hold for generic models yet.
-  See [security](security-roadmap.md).
+  See [security](history/security-roadmap.md).
 - Climbing's rule that an ascent's name is its route's applies to any type called `Ascent`.
 - Link attributes are defined in the model file, not by an import or by reading text. See
   [relationship attributes](history/relationship-attributes.md).

@@ -5,7 +5,7 @@ namespace Linkbase.Core.Security;
 
 // The model file's security section: which of the three kinds of part the model uses, what it calls them, and where people's
 // grants come from. Nothing here is specific to any one organisation; the names and values are the model's own. See
-// docs/security-design.md.
+// docs/history/security-design.md.
 public sealed partial class ModelSecurity
 {
     public const string LevelKey = "level";

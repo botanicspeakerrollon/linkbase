@@ -11,14 +11,14 @@ views, Quick-find and plain-English questions, CSV import (also from several fil
 undo, the Model editor (types, fields, relationships and link values, without a developer), the audit history with revert,
 Home, Timeline and Cleanup, the climbing domain, CI, the container image, and performance checked on a large sample
 ([performance](../performance.md)). What each part does is in the [reference](../reference.md). Whether climbing should move into the generic store is
-argued in [history/climbing-to-generic-plan.md](history/climbing-to-generic-plan.md).
+argued in [history/climbing-to-generic-plan.md](climbing-to-generic-plan.md).
 
 Settled, and not to reopen without a reason:
 
 - One app instance and one database per customer, so a missed filter can't expose another customer's data.
 - The generic store is the product. Climbing is the demo and a personal instance.
 - One permission check on every read, including Explore's raw SQL and free-text search. When sign-in is designed, update
-  `CLAUDE.md` and [security-roadmap](../security-roadmap.md), because "sensitive fields are typed columns" doesn't hold in a
+  `CLAUDE.md` and [security-roadmap](security-roadmap.md), because "sensitive fields are typed columns" doesn't hold in a
   generic store.
 
 Set aside here: sign-in, roles and field permissions. They must finish before a pilot uses real data. The single-user assumption

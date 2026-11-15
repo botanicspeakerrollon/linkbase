@@ -15,7 +15,7 @@ namespace Linkbase.Components.Layout;
 // as one is a click, with no password. It shows row and field security working for different people, and nothing more: anyone
 // who can reach the app can be anyone, so a hosted demo must be kept behind something that knows who may open it (the host's
 // own sign-in, or an address allowlist). For real people, use Security:Identity = "principal" and a real scheme. See
-// docs/security-design.md, "Users and sign-in".
+// docs/history/security-design.md, "Users and sign-in".
 public static class DemoSignIn
 {
     public const string Scheme = CookieAuthenticationDefaults.AuthenticationScheme;

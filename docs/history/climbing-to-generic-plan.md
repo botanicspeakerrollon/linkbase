@@ -187,5 +187,5 @@ Each step leaves the app working, and the real data isn't touched until step 6.
 - **Route descriptions.** Dropped from the model file, because no route has one. Say if that's wrong before step 6.
 - **Demo.** A made-up climbing logbook can be generated once step 2 exists, the same way the consultancy sample is. The
   real logbook can't be the demo, because the repo must stay anonymous.
-- **Field-level security.** Still unsolved for the generic store (see [security-roadmap.md](../security-roadmap.md)). This
+- **Field-level security.** Still unsolved for the generic store (see [security-roadmap.md](security-roadmap.md)). This
   move doesn't make it worse for customers, but climbing loses its typed columns.

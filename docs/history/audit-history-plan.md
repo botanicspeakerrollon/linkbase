@@ -78,7 +78,7 @@ later keeps the log already written but stops adding to it.
 - **Undo.** "Edited since the import" becomes "has a change after the batch committed", replacing the `updated_at`
   heuristic. Reverting one change set becomes possible.
 - **Field-level security.** History keeps old values, so it can leak fields hidden elsewhere. Every change row carries its
-  field key so the same rules can redact it. Add this to [security-roadmap](../security-roadmap.md) when permissions are
+  field key so the same rules can redact it. Add this to [security-roadmap](security-roadmap.md) when permissions are
   designed.
 
 ## Steps

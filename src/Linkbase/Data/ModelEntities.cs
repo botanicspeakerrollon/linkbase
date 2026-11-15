@@ -79,7 +79,7 @@ public class FieldDefinition
     public bool Multiple { get; set; }
 
     // Who may see this field's value on any record that has it, in the same three parts as a record's label. A viewer who can see
-    // the record but doesn't pass this sees the field masked. The defaults ask for nothing. See docs/security-design.md.
+    // the record but doesn't pass this sees the field masked. The defaults ask for nothing. See docs/history/security-design.md.
     public short LabelLevel { get; set; }
     public string[] LabelAny { get; set; } = [Linkbase.Core.Security.LabelCodec.Everyone];
     public string[] LabelAll { get; set; } = [];
@@ -149,7 +149,7 @@ public class Node : ITimestamped
     public DateTimeOffset UpdatedAt { get; set; }
 
     // Who may see it, for a model that uses security. The defaults, level 0 and everyone, ask for nothing. A level is a rank in
-    // the model's list. See docs/security-design.md.
+    // the model's list. See docs/history/security-design.md.
     public short LabelLevel { get; set; }
     public string[] LabelAny { get; set; } = [Linkbase.Core.Security.LabelCodec.Everyone];
     public string[] LabelAll { get; set; } = [];
@@ -166,7 +166,7 @@ public class NodeLink
     public string Props { get; set; } = "{}";
 
     // Who may see it, for a model that uses security. The defaults, level 0 and everyone, ask for nothing. A level is a rank in
-    // the model's list. See docs/security-design.md.
+    // the model's list. See docs/history/security-design.md.
     public short LabelLevel { get; set; }
     public string[] LabelAny { get; set; } = [Linkbase.Core.Security.LabelCodec.Everyone];
     public string[] LabelAll { get; set; } = [];

@@ -169,7 +169,7 @@ Who is exempt, which matters for our two roles:
   already exists in a hidden row gets a duplicate-key error, which reveals that the row exists. This is why the design
   turns errors about hidden rows into a generic message.
 - `pg_dump` fails under RLS unless the role can bypass it (or `row_security` is off), so backups use the owner role
-  (see [operations](operations.md)).
+  (see [operations](../operations.md)).
 
 Reading: [Row Security Policies](https://www.postgresql.org/docs/16/ddl-rowsecurity.html),
 [CREATE POLICY](https://www.postgresql.org/docs/16/sql-createpolicy.html),
@@ -286,7 +286,7 @@ Reading: [CREATE VIEW](https://www.postgresql.org/docs/16/sql-createview.html) (
 
 Use `EXPLAIN (ANALYZE, BUFFERS)` on the `swiss_rail` sample with security on and off, and with several viewers (all-seeing,
 narrow, none). Look for: helpers as `InitPlan`, no per-row `SubPlan` for the settings, and `graph_nodes … order by … limit`
-still reaching its rows without walking the graph. See [performance](performance.md).
+still reaching its rows without walking the graph. See [performance](../performance.md).
 Reading: [EXPLAIN](https://www.postgresql.org/docs/16/sql-explain.html), [Using EXPLAIN](https://www.postgresql.org/docs/16/using-explain.html).
 
 ### What this does not protect against
@@ -383,7 +383,7 @@ to the deployment. Nothing here is tied to one directory or protocol.
 ## Model and UI
 
 - The model file gains a `security` section: the parts it uses (`level`, `anyOf`, `allOf`), each with a `name`, the level's
-  ordered `values`, and where grants come from. The model editor gets a matching tab. See [models](models.md#security).
+  ordered `values`, and where grants come from. The model editor gets a matching tab. See [models](../models.md#security).
 - With security off, none of it appears. With it on, records show a label chip, the editor has a label picker, and masked
   values show as `••••`. Everything stays drivable from the keyboard.
 
@@ -391,7 +391,7 @@ to the deployment. Nothing here is tied to one directory or protocol.
 
 - Off: the only difference is three defaulted columns. No policy, no interceptor work, no changed query plans.
 - On: measure on the `swiss_rail` sample, with realistic labels, against the current numbers in
-  [performance](performance.md) before choosing between policy shapes. The budget is set after the baseline is measured, and
+  [performance](../performance.md) before choosing between policy shapes. The budget is set after the baseline is measured, and
   `graph_nodes … order by … limit` must still find its rows first.
 
 ## Testing

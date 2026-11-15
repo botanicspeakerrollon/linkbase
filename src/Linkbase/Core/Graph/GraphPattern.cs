@@ -58,7 +58,7 @@ public sealed record GraphSchema(IReadOnlyList<GraphConnection> Connections, IRe
     // The values each relationship's links can carry. Empty for a relationship with none.
     public IReadOnlyList<GraphLinkPropertyInfo> LinkProperties { get; init; } = [];
 
-    // Property keys the viewer may not see on some type. Free text must not match them (docs/security-design.md, "Properties").
+    // Property keys the viewer may not see on some type. Free text must not match them (docs/history/security-design.md, "Properties").
     // Empty unless a model labels fields and row security is on, which leaves the search as it was.
     public IReadOnlyList<string> HiddenKeys { get; init; } = [];
 
