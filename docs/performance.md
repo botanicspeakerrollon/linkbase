@@ -154,8 +154,8 @@ connection pool as the circuits of a real server would. What it searches for and
 it runs on any model. It reads only.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/load-test.ps1                      # small, medium and large samples, 1/5/10/25 users
-powershell -ExecutionPolicy Bypass -File scripts/load-test.ps1 -Users 1,10,50 -Seconds 30 -Think 0 -Models "mine=Host=...;Database=..."
+pwsh -File scripts/load-test.ps1                      # small, medium and large samples, 1/5/10/25 users
+pwsh -File scripts/load-test.ps1 -Users 1,10,50 -Seconds 30 -Think 0 -Models "mine=Host=...;Database=..."
 ```
 
 The script sets `LINKBASE_LOAD_MODELS` (`name=connection` pairs separated by `|`), `LINKBASE_LOAD_USERS`, `LINKBASE_LOAD_SECONDS`

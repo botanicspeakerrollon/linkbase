@@ -25,7 +25,8 @@ The requirements specification is in the demo's rail, under Requirements, so you
 ## Prerequisites
 
 - [.NET 10 SDK](https://dot.net) (the exact version is pinned in `global.json`)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) for the database and for the database tests
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) for the database and for the database tests (on Linux, Docker Engine with the Compose plugin)
+- [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (`pwsh`) for the scripts in `scripts/` and the Playwright browser install. It is cross-platform. On Windows, Windows PowerShell 5.1 also runs the scripts, but commands below use `pwsh`.
 
 ## First-time setup
 
@@ -76,7 +77,7 @@ network access, and on Linux root for the system libraries). To install it ahead
 use the script in the test output folder after a build:
 
 ```
-powershell -ExecutionPolicy Bypass -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium
+pwsh -File tests/Linkbase.Tests/bin/Release/net10.0/playwright.ps1 install chromium
 ```
 
 Without Docker, point the tests at any Postgres server whose user can create databases. Each run creates its own databases
