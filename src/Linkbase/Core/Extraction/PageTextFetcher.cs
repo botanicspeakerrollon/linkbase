@@ -1,3 +1,4 @@
+using System.Net;
 using SmartReader;
 
 namespace Linkbase.Core.Extraction;
@@ -21,9 +22,9 @@ public sealed class PageTextFetcher(HttpClient httpClient)
             throw new PageFetchFailedException("Enter a full web address starting with http:// or https://.");
         }
 
-        if (uri.IsLoopback)
+        if (uri.IsLoopback || (IPAddress.TryParse(uri.Host.Trim('[', ']'), out var literal) && !PublicAddress.IsAllowed(literal)))
         {
-            throw new PageFetchFailedException("Addresses on this computer can't be imported.");
+            throw new PageFetchFailedException("Addresses inside a private network can't be imported.");
         }
 
         string html;
@@ -49,11 +50,12 @@ public sealed class PageTextFetcher(HttpClient httpClient)
                 throw new PageFetchFailedException($"This page is too large to fetch. {PasteHint}");
             }
 
-            html = await response.Content.ReadAsStringAsync(cancellationToken);
+            html = await ReadLimitedAsync(response.Content, cancellationToken);
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
-            throw new PageFetchFailedException($"Couldn't fetch the page: {ex.Message} {PasteHint}");
+            // The reason is left out: it can say what is on the network behind the app.
+            throw new PageFetchFailedException($"Couldn't fetch the page. {PasteHint}");
         }
         catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -61,6 +63,37 @@ public sealed class PageTextFetcher(HttpClient httpClient)
         }
 
         return ExtractMainText(uri, html);
+    }
+
+    // The size limit holds even when the site sends no Content-Length.
+    private static async Task<string> ReadLimitedAsync(HttpContent content, CancellationToken cancellationToken)
+    {
+        await using var stream = await content.ReadAsStreamAsync(cancellationToken);
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        int read;
+        while ((read = await stream.ReadAsync(chunk, cancellationToken)) > 0)
+        {
+            buffer.Write(chunk, 0, read);
+            if (buffer.Length > MaxBytes)
+            {
+                throw new PageFetchFailedException($"This page is too large to fetch. {PasteHint}");
+            }
+        }
+
+        var encoding = System.Text.Encoding.UTF8;
+        try
+        {
+            if (content.Headers.ContentType?.CharSet is { Length: > 0 } charset)
+            {
+                encoding = System.Text.Encoding.GetEncoding(charset.Trim('"'));
+            }
+        }
+        catch (ArgumentException)
+        {
+        }
+
+        return encoding.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
     }
 
     public static PageText ExtractMainText(Uri uri, string html)

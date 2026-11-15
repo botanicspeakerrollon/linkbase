@@ -106,7 +106,13 @@ builder.Services.AddScoped<Linkbase.Core.Timeline.TimelineRepository>();
 builder.Services.AddScoped<CsvImportService>();
 builder.Services.AddScoped<CsvModelStarter>();
 builder.Services.AddScoped<Linkbase.Core.Staging.ImportStagingService>();
-builder.Services.AddHttpClient<Linkbase.Core.Extraction.PageTextFetcher>(client => client.Timeout = TimeSpan.FromSeconds(30));
+// The fetcher connects only to public addresses, so a page address can't be used to reach the network the app runs in.
+// Extraction:AllowPrivateAddresses lifts that, for a deployment whose pages are on its own network.
+var allowPrivateFetch = builder.Configuration.GetValue("Extraction:AllowPrivateAddresses", false);
+builder.Services.AddHttpClient<Linkbase.Core.Extraction.PageTextFetcher>(client => client.Timeout = TimeSpan.FromSeconds(30))
+    .ConfigurePrimaryHttpMessageHandler(() => allowPrivateFetch
+        ? new SocketsHttpHandler { MaxAutomaticRedirections = 5 }
+        : new SocketsHttpHandler { MaxAutomaticRedirections = 5, ConnectCallback = Linkbase.Core.Extraction.PublicAddress.ConnectAsync });
 builder.Services.AddScoped<Linkbase.Core.Extraction.ModelExtractionService>();
 // Llm:Provider picks who reads text and answers questions: "anthropic" (the default) or "openai", which is any server that
 // speaks the OpenAI chat completions format. See the Configuration section of README.md.
@@ -172,6 +178,12 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Robots-Tag"] = "noindex, nofollow, noarchive";
+    // Nothing here is meant to be framed, sniffed or to leak its address. The policy limits only framing, the base address,
+    // plugins and where forms post, so Blazor's and MudBlazor's own scripts and styles are untouched.
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    context.Response.Headers["Content-Security-Policy"] = "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'";
     await next();
 });
 
@@ -182,10 +194,21 @@ if (app.Configuration.GetValue("HttpsRedirection", true))
     app.UseHttpsRedirection();
 }
 
+// "principal" reads whoever the deployment's own authentication scheme signed in, so the middleware has to run when it has one.
 if (demoSignIn)
 {
     app.UseAuthentication();
     app.UseAuthorization();
+}
+else if (builder.Configuration["Security:Identity"] == "principal" && app.Services.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() is not null)
+{
+    app.UseAuthentication();
+}
+
+if (!demoSignIn && !app.Environment.IsDevelopment() && builder.Configuration["Security:Identity"] != "principal")
+{
+    app.Logger.LogWarning("Security:Identity is 'configured', so nobody signs in: everyone who can reach this app is {User}. Keep it behind something that decides who may open it. See docs/operations.md.",
+        builder.Configuration["Security:User"] ?? "the default user");
 }
 
 app.UseAntiforgery();
@@ -217,7 +240,7 @@ app.MapGet("/model/{key}", async (string key, ModelCatalog catalog, ModelCreator
         return Results.NotFound();
     }
 
-    context.Response.Cookies.Append(CurrentModel.Cookie, key, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Lax, MaxAge = TimeSpan.FromDays(365) });
+    context.Response.Cookies.Append(CurrentModel.Cookie, key, new CookieOptions { HttpOnly = true, Secure = context.Request.IsHttps, SameSite = SameSiteMode.Lax, MaxAge = TimeSpan.FromDays(365) });
     return Results.LocalRedirect("~/");
 });
 app.MapRazorComponents<App>()

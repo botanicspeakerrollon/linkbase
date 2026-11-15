@@ -21,10 +21,29 @@ public sealed partial class CsvImportService
     {
         var folder = Path.Combine(Path.GetTempPath(), "linkbase-imports");
         Directory.CreateDirectory(folder);
+        SweepOld(folder);
         var path = Path.Combine(folder, $"{Guid.NewGuid():N}.csv");
         await using var file = File.Create(path);
         await upload.CopyToAsync(file, cancellationToken);
         return path;
+    }
+
+    // Uploads are only needed while an import is being set up, so a day-old one is abandoned.
+    private static void SweepOld(string folder)
+    {
+        foreach (var old in Directory.EnumerateFiles(folder, "*.csv").Where(f => File.GetLastWriteTimeUtc(f) < DateTime.UtcNow.AddDays(-1)))
+        {
+            try
+            {
+                File.Delete(old);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
     }
 
     public static CsvFile Read(string path, string fileName)

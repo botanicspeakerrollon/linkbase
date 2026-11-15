@@ -42,7 +42,7 @@ public class PageTextFetcherFailureTests
     {
         var ex = await Assert.ThrowsAsync<PageFetchFailedException>(() =>
             Fetcher(() => throw new HttpRequestException("no route")).FetchAsync("https://example.com/x", CancellationToken.None));
-        Assert.Contains("no route", ex.Message);
+        Assert.DoesNotContain("no route", ex.Message);
         Assert.Contains("paste", ex.Message);
     }
 

@@ -12,6 +12,9 @@ public sealed partial class ModelCreator(ModelCatalog catalog, ILogger<ModelCrea
 {
     public const int MaxNameLength = 60;
 
+    // Each model is a database, and anyone who can reach the app can make one, so there is a limit.
+    public const int MaxMadeModels = 50;
+
     // Database names start with this, so a model made here can't share a name with one set up by hand.
     public const string DatabasePrefix = "model_";
 
@@ -63,6 +66,11 @@ public sealed partial class ModelCreator(ModelCatalog catalog, ILogger<ModelCrea
         if (catalog.Models.Any(m => m.Key == key || string.Equals(m.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
             throw new LinkbaseValidationException($"There is already a model called {name}. Pick another name, so nothing in it is changed.");
+        }
+
+        if (catalog.Models.Count(m => m.Database is not null) >= MaxMadeModels)
+        {
+            throw new LinkbaseValidationException($"There are already {MaxMadeModels} models made in the app, which is the most there can be.");
         }
 
         var database = DatabaseFor(key);

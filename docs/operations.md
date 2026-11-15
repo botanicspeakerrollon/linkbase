@@ -107,6 +107,7 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `Llm__Provider`, `Llm__BaseUrl`, `Llm__Model`, `Llm__MaxTokensField`, `Llm__Strict` | Use an OpenAI-compatible server instead of Anthropic, as in the [README](../README.md#configuration) | `anthropic` |
 | `Llm__ApiKey` | The key for that server, if it wants one. A secret | None, so no key is sent |
 | `Extraction__Enabled` | `false` hides every import that sends text to the model provider, and Explore's Ask box | `true` |
+| `Extraction__AllowPrivateAddresses` | `true` lets Read text fetch pages from private network addresses. By default it refuses them, and cloud metadata addresses, so a web address can't be used to reach the network the app runs in | `false` |
 | `Extraction__Fixture`, `Ask__Fixture` | A file of canned results instead of calling the API, for trying the flow with no key. Not for production | None |
 | `Models__<key>__Home__Hide__0` | A home-page panel this model leaves out (`records`, `changes`, `imports`, `growth`) | None |
 | `ASPNETCORE_ENVIRONMENT` | `Development` for plain-text logs and detailed errors | `Production` |
@@ -141,7 +142,14 @@ open `/signin`, pick a person, and compare what each sees. It has **no password*
 anyone. When hosting it, put the host behind its own sign-in (Entra "require authentication") or an IP allowlist, and load
 only made-up data. [deploy/azure](../deploy/azure/README.md) does this on Azure with an IP allowlist. The consultancy model sets `Models__consultancy__RowSecurity=true`
 (`"RowSecurity": true` in its entry under `Models`), so `model setup` turns row security on after loading it. Real sign-in
-needs `principal` and an authentication package, which this repo doesn't ship.
+needs `principal` and an authentication package, which this repo doesn't ship. With `principal`, the app runs
+authentication middleware if the deployment has registered a scheme. In the default `configured` mode nobody signs in, and
+outside Development the app logs a warning saying so: keep it behind something that decides who may open it.
+
+Responses carry `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` and a
+Content-Security-Policy that only forbids framing, a changed base address, plugins and forms posting elsewhere. Add a
+host allowlist (`AllowedHosts`) for the hostnames you serve, since the image ships with `*`. A deployment that makes outbound calls
+should also have an egress policy: the app's own check only covers page fetches.
 
 The app writes logs only to stdout, and files only to `/tmp`. It runs at the root of its host, so give it its own hostname
 rather than a path such as `/linkbase`.
