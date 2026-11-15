@@ -236,7 +236,7 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
         Assert.Empty((await world.Trace.StepAsync([person], TraceDirection.Upstream, null, 0, 10)).Children);
 
         var both = await world.Trace.StepAsync([project], TraceDirection.Both, null, 0, 10);
-        Assert.Equal([(person, false), (client, true)], both.Children.OrderBy(c => c.Label).Select(c => (c.NodeId, c.Outgoing)));
+        Assert.Equal([(client, true), (person, false)], both.Children.Select(c => (c.NodeId, c.Outgoing)));
 
         Assert.Empty((await world.Trace.StepAsync([person], TraceDirection.Downstream, ["FOR"], 0, 10)).Children);
 
@@ -447,7 +447,7 @@ public sealed class EverydayUsePageTests(PostgresFixture fixture) : UiTestBase(f
         var reference = await Dialogs.InvokeAsync(() => dialogs.ShowAsync<TraceDialog>("Trace", new DialogParameters<TraceDialog> { { d => d.Start, start } }));
 
         Sees(Dialogs, place.Crag);
-        Press(Dialogs, "Show on graph");
+        Press(Dialogs, "Show on graph (2)");
         var trace = Assert.IsType<TraceResult>((await reference.Result)!.Data);
         Assert.Equal([place.RouteId, place.CragId], trace.NodeIds);
     }
