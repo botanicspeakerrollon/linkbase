@@ -18,6 +18,10 @@
   Deploys without an Anthropic key. Read text and Ask are then switched off.
 .PARAMETER ReplaceAnthropicKey
   Asks for the key again, even if the vault already holds one.
+.PARAMETER Size
+  Light (the default) or Heavy. Light is B1ms Postgres with a 0.5 vCPU app, enough for the small models. Heavy is B2ms Postgres
+  with a 128 GiB disk and a 1 vCPU app, for the large ArchiMate model, at about three times the cost. Postgres storage can only
+  grow, so going from Heavy back to Light needs the server recreated.
 .PARAMETER ResetModel
   Drops the named example databases (climbing_demo, consultancy, linkbase_code, archimate) before the app starts, so the new
   app's `model setup` creates them again and loads the current example data. Anything people changed in them is lost. Use it
@@ -31,6 +35,8 @@ param(
     [switch] $AllowAnyone,
     [switch] $NoAnthropic,
     [switch] $ReplaceAnthropicKey,
+    [ValidateSet('Light', 'Heavy')]
+    [string] $Size = 'Light',
     [ValidateSet('climbing_demo', 'consultancy', 'linkbase_code', 'archimate')]
     [string[]] $ResetModel
 )
@@ -147,6 +153,7 @@ try {
                 deployApp = @{ value = $DeployApp }
                 imageTag = @{ value = $ImageTag }
                 extractionEnabled = @{ value = (-not $NoAnthropic) }
+                size = @{ value = $Size.ToLowerInvariant() }
             }
         }
         [IO.File]::WriteAllText($parametersFile, ($parameters | ConvertTo-Json -Depth 6), (New-Object Text.UTF8Encoding($false)))

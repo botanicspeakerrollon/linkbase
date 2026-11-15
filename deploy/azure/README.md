@@ -18,13 +18,15 @@ One resource group (`rg-linkbase` in `newzealandnorth`; `-ResourceGroup` and `-L
 
 | Resource | Why | Rough cost a month |
 | --- | --- | --- |
-| Container App, 1 vCPU and 2 GiB, one replica | The app. One replica, because Blazor Server keeps each browser's session in its process | about £30 |
-| Postgres Flexible Server, Burstable B2ms (2 vCPU, 8 GiB), 128 GiB disk | The four example models' databases. The large ArchiMate model needs the memory, and the bigger disk gives more IOPS | about £60 |
+| Container App, 0.5 vCPU and 1 GiB (Heavy: 1 vCPU and 2 GiB), one replica | The app. One replica, because Blazor Server keeps each browser's session in its process | about £15 (Heavy £30) |
+| Postgres Flexible Server, Burstable B1ms (Heavy: B2ms with 8 GiB and a 128 GiB disk) | The four example models' databases. The large ArchiMate model is sluggish on Light, because it can't be cached | about £12 (Heavy £60) |
 | Container Registry, Basic | Holds the image the script builds (with Docker on your PC, then pushes) | about £4 |
 | Key Vault | Holds the secrets | pennies |
 | Log Analytics | The app's logs | pennies at demo volume |
 | Application Insights | The app's OpenTelemetry traces and logs, sent by the environment's managed agent (no setting in the app). Find them under Transaction search or Logs in the portal. Metrics aren't sent, because this agent can't send them to Application Insights | pennies at demo volume |
 | Managed identity | How the app reaches the vault and registry, so no password does that job | free |
+
+**Size.** `deploy.ps1` is Light by default, which suits the small models. Add `-Size Heavy` for the large ArchiMate model, and run again to change. Postgres storage can only grow, so Heavy to Light needs the Postgres server recreated.
 
 `az group delete --name rg-linkbase` removes everything and stops the charges. The vault is then soft-deleted for
 seven days, holding its name; the next `deploy.ps1` purges it for you. Each run also deletes all but the newest three images
