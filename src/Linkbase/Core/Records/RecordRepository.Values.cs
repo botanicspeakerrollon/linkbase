@@ -12,7 +12,9 @@ namespace Linkbase.Core.Records;
 public sealed partial class RecordRepository
 {
     // Lets the modules' hooks set the fields they keep.
-    private string Hooked(RecordType type, string name, string props)
+    private string Hooked(RecordType type, string name, string props) => Hooked(hooks, type, name, props);
+
+    internal static string Hooked(RecordHooks hooks, RecordType type, string name, string props)
     {
         if (!hooks.Watch(type.Name))
         {

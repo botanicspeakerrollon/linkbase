@@ -8,7 +8,7 @@ namespace Linkbase.Core.Records;
 // The rules of a type's hierarchy, where records are created, edited and linked. The loader and imports check the same
 // rules in SQL (HierarchyChecks). A record below the top level can lose its parent, so that it can be moved by removing
 // the link and adding another, and a type's records may arrive without one from an import.
-public sealed partial class RecordRepository
+internal static class RecordHierarchy
 {
     // The record's level, from its values.
     private static string? KindOf(string props, string field)
@@ -34,7 +34,7 @@ public sealed partial class RecordRepository
     }
 
     // A new record: below the top level it needs one parent of a level it may be in, and at the top it has none.
-    private static async Task CheckNewHierarchyAsync(
+    internal static async Task CheckNewHierarchyAsync(
         LinkbaseDbContext db, RecordType type, string props, IReadOnlyList<(string RelType, string TargetId, string TargetType)> links, CancellationToken cancellationToken)
     {
         if (type.Hierarchy is not { } rules)
@@ -68,7 +68,7 @@ public sealed partial class RecordRepository
     }
 
     // Changing a record's level has to suit the record it's in and the records in it.
-    private static async Task CheckKindChangeAsync(
+    internal static async Task CheckKindChangeAsync(
         LinkbaseDbContext db, RecordType type, string id, string oldProps, string newProps, CancellationToken cancellationToken)
     {
         if (type.Hierarchy is not { } rules)
@@ -114,7 +114,7 @@ public sealed partial class RecordRepository
 
     // A link from a record to its parent has to suit both levels, the record can have only one parent, and the tree can't
     // go round in a circle.
-    private static async Task CheckAddedParentAsync(
+    internal static async Task CheckAddedParentAsync(
         LinkbaseDbContext db, string sourceId, string sourceType, string relType, string targetId, string targetType, CancellationToken cancellationToken)
     {
         if (sourceType != targetType || await HierarchyOfAsync(db, sourceType, cancellationToken) is not { } rules || rules.RelType != relType)

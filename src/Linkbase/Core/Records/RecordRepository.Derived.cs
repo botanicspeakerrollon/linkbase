@@ -22,9 +22,9 @@ public sealed partial class RecordRepository
         long? causeChangeSetId = null, CancellationToken cancellationToken = default) =>
         derived.ReplaceDerivedAsync(domain, type, records, links, causeChangeSetId, cancellationToken);
 
-    private static readonly IReadOnlyDictionary<string, string> NoValues = new Dictionary<string, string>();
+    internal static readonly IReadOnlyDictionary<string, string> NoValues = new Dictionary<string, string>();
 
-    private static List<RecordChange> LinkChanges(
+    internal static List<RecordChange> LinkChanges(
         RecordChangeKind kind, string sourceType, string sourceId, string relType, string targetType, string targetId,
         IReadOnlyDictionary<string, string>? before = null, IReadOnlyDictionary<string, string>? after = null) =>
     [
@@ -32,7 +32,7 @@ public sealed partial class RecordRepository
         new(kind, targetType, targetId, before ?? NoValues, after ?? NoValues, relType, sourceId),
     ];
 
-    private static void RefuseDerived(RecordType type)
+    internal static void RefuseDerived(RecordType type)
     {
         if (type.Owner is not null)
         {
