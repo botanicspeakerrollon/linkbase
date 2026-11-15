@@ -46,15 +46,6 @@ public static class ChangeRecorder
             .Select(s => HistorySettings.From(s.RecordHistory, s.RequireReason, s.SourceKinds))
             .SingleOrDefaultAsync(cancellationToken) ?? HistorySettings.Default;
 
-    public static async Task<HistorySettings> SettingsAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, CancellationToken cancellationToken)
-    {
-        await using var command = new NpgsqlCommand("SELECT record_history, require_reason, source_kinds FROM model_setting WHERE id = 1", connection, transaction);
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        return await reader.ReadAsync(cancellationToken)
-            ? HistorySettings.From(reader.GetBoolean(0), reader.GetBoolean(1), reader.GetFieldValue<string[]>(2))
-            : HistorySettings.Default;
-    }
-
     // Checks the reason a person gave, before any work is done. Returns it trimmed, or null where none is kept. A reason
     // that was given is checked even when it isn't needed, so a bad link doesn't get through.
     public static ChangeReason? Check(HistorySettings settings, ChangeReason? reason)

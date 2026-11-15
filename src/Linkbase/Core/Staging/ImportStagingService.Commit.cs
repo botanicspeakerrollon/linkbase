@@ -31,6 +31,7 @@ public sealed partial class ImportStagingService
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        await db.Database.UseTransactionAsync(transaction, cancellationToken);
 
         var created = new JsonObject();
         var newTypes = new JsonArray();
@@ -182,7 +183,7 @@ public sealed partial class ImportStagingService
         // link. The record's own history starts from the batch (see HistoryRepository). New types, fields and relationships
         // are listed, because they change the model.
         long? changeSet = null;
-        if ((await ChangeRecorder.SettingsAsync(connection, transaction, cancellationToken)).Record)
+        if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
         {
             var logged = new List<PendingChange>
             {
