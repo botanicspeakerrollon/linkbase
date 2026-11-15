@@ -14,7 +14,7 @@ because it loads the example data.
 
 ## What it creates
 
-One resource group (`rg-linkbase` in `newzealandnorth`; `-ResourceGroup` and `-Location` change them):
+One resource group (`rg-linkbase` in `australiaeast`; `-ResourceGroup` and `-Location` change them):
 
 | Resource | Why | Rough cost a month |
 | --- | --- | --- |
@@ -93,4 +93,6 @@ resources carry. Changing the name makes the next deploy create a new Container 
   anyone far from it (about 280 ms a round trip between New Zealand and the UK). Pick the region nearest the people using
   it with `-Location`. A region can't be changed in place: delete the group (`az group delete --name rg-linkbase --yes`,
   which removes the data and secrets, so the key is asked for again) and run the script again. Colleagues on other continents will
-  still feel the distance; one region is all this script sets up.
+  still feel the distance; one region is all this script sets up. Not every region sells every database size to every
+  subscription: `newzealandnorth` listed Standard_B1ms but refused it with `SkuNotAvailable`, and has no Standard_B2ms
+  (Heavy), so the default is `australiaeast`. Check a region with `az postgres flexible-server list-skus --location <region>`.

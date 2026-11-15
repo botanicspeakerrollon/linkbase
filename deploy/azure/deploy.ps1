@@ -30,7 +30,7 @@
 [CmdletBinding()]
 param(
     [string] $ResourceGroup = 'rg-linkbase',
-    [string] $Location = 'newzealandnorth',
+    [string] $Location = 'australiaeast',
     [string[]] $AllowedCidr,
     [switch] $AllowAnyone,
     [switch] $NoAnthropic,
