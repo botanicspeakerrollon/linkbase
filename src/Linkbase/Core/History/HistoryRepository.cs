@@ -21,12 +21,12 @@ public sealed record HistoryEntry(
 public sealed record NearbyChange(long ChangeSetId, DateTimeOffset When, JustificationKind Kind, string? Note, string RecordId, string RecordName, string Description);
 
 // Reads the audit trail. See docs/history/audit-history-plan.md.
-public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, FieldPolicy? fieldPolicy = null)
+public sealed class HistoryRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, FieldPolicy fieldPolicy)
 {
     public const string MaskText = "••••";
 
     private async ValueTask<HiddenFields> HiddenAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
-        fieldPolicy is null ? HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        await fieldPolicy.HiddenAsync(db, cancellationToken);
 
     // With row security on, a change is shown only if what it touched can still be seen: the record, or the link and both its
     // ends. Anything deleted can't be checked, so it's hidden (docs/history/security-design.md, "History"). Values of hidden fields are

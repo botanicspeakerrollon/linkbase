@@ -28,8 +28,8 @@ public sealed class SourceTests(PostgresFixture fixture) : IDisposable, IClassFi
         File.WriteAllText(path, $$"""{ "name": "Sources", "types": [ { "name": "Thing" } ], "history": {{history}} }""");
         _files.Add(path);
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
-        await new ModelLoader(factory).LoadAsync(path, TextWriter.Null);
-        return (factory, new RecordRepository(factory));
+        await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(path, TextWriter.Null);
+        return (factory, new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     private static RecordInput Thing(string name) => new(name, new Dictionary<string, string?>());
@@ -41,7 +41,7 @@ public sealed class SourceTests(PostgresFixture fixture) : IDisposable, IClassFi
 
         await records.CreateAsync("Thing", "t1", Thing("Alpha"), new ChangeReason("Added", "HELP-114", "ticket SYSTEM", "Second comment on the ticket"));
 
-        var entry = (await new HistoryRepository(factory).ForRecordAsync("thing:t1")).Single();
+        var entry = (await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("thing:t1")).Single();
         Assert.Equal(("HELP-114", "Ticket system", "Second comment on the ticket"), (entry.SourceId, entry.SourceKind, entry.SourceComment));
         await using var db = factory.CreateDbContext();
         Assert.Equal(["Internet", "Ticket system"], (await ChangeRecorder.SettingsAsync(db, default)).SourceKinds);
@@ -68,7 +68,7 @@ public sealed class SourceTests(PostgresFixture fixture) : IDisposable, IClassFi
         await Assert.ThrowsAsync<LinkbaseValidationException>(
             () => records.CreateAsync("Thing", "t2", Thing("Beta"), new ChangeReason("Added", "x", "Wiki")));
 
-        var entry = (await new HistoryRepository(factory).ForRecordAsync("thing:t1")).Single();
+        var entry = (await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("thing:t1")).Single();
         Assert.Equal(("https://example.com/a", "Internet"), (entry.SourceId, entry.SourceKind));
     }
 
@@ -79,7 +79,7 @@ public sealed class SourceTests(PostgresFixture fixture) : IDisposable, IClassFi
         File.WriteAllText(path, """{ "name": "Sources", "types": [ { "name": "Thing" } ], "history": { "sourceKinds": [ "Wiki", "wiki", " " ] } }""");
         _files.Add(path);
 
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(path, Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains("more than once", ex.Message);
         Assert.Contains("1 to 60", ex.Message);

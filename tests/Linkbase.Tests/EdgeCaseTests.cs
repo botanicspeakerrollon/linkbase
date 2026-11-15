@@ -78,5 +78,5 @@ public class ContextEdgeCaseTests(PostgresFixture fixture) : IClassFixture<Postg
 
     [Fact]
     public async Task Nothing_typed_matches_nothing() =>
-        Assert.Empty(await new GraphRepository(fixture.ContextFactory()).MatchPropertiesAsync(null, " "));
+        Assert.Empty(await new GraphRepository(fixture.ContextFactory(), Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted).MatchPropertiesAsync(null, " "));
 }

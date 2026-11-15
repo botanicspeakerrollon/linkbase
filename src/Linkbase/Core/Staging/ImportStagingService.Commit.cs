@@ -31,6 +31,7 @@ public sealed partial class ImportStagingService
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+        await db.Database.UseTransactionAsync(transaction, cancellationToken);
 
         var created = new JsonObject();
         var newTypes = new JsonArray();
@@ -182,7 +183,7 @@ public sealed partial class ImportStagingService
         // link. The record's own history starts from the batch (see HistoryRepository). New types, fields and relationships
         // are listed, because they change the model.
         long? changeSet = null;
-        if ((await ChangeRecorder.SettingsAsync(connection, transaction, cancellationToken)).Record)
+        if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
         {
             var logged = new List<PendingChange>
             {
@@ -210,24 +211,22 @@ public sealed partial class ImportStagingService
             ("created", created.ToJsonString(), NpgsqlDbType.Text),
             ("batch", batchId, NpgsqlDbType.Bigint));
         await transaction.CommitAsync(cancellationToken);
-        using (ChangeRecorder.Causing(changeSet))
+        await db.Database.UseTransactionAsync(null, cancellationToken);
+        var changes = await ChangesAsync(db, batchId, removing: false, [], cancellationToken);
+        var watched = _hooks.Watched;
+        changes.AddRange(updates.Where(u => watched.Contains(u.Type)).Select(u =>
+            new RecordChange(RecordChangeKind.Updated, u.Type, u.Id, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
+        changes.AddRange(linkUpdates.Where(u => watched.Contains(u.SourceType) || watched.Contains(u.TargetType)).SelectMany(u =>
         {
-            var changes = await ChangesAsync(db, batchId, removing: false, [], cancellationToken);
-            var watched = _hooks.Watched;
-            changes.AddRange(updates.Where(u => watched.Contains(u.Type)).Select(u =>
-                new RecordChange(RecordChangeKind.Updated, u.Type, u.Id, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
-            changes.AddRange(linkUpdates.Where(u => watched.Contains(u.SourceType) || watched.Contains(u.TargetType)).SelectMany(u =>
+            var before = RecordRepository.Values(u.OldProps);
+            var after = RecordRepository.Values(u.NewProps);
+            return new[]
             {
-                var before = RecordRepository.Values(u.OldProps);
-                var after = RecordRepository.Values(u.NewProps);
-                return new[]
-                {
-                    new RecordChange(RecordChangeKind.LinkUpdated, u.SourceType, u.SourceId, before, after, u.RelType, u.TargetId),
-                    new RecordChange(RecordChangeKind.LinkUpdated, u.TargetType, u.TargetId, before, after, u.RelType, u.SourceId),
-                };
-            }));
-            await _hooks.AfterChangeAsync(changes, cancellationToken);
-        }
+                new RecordChange(RecordChangeKind.LinkUpdated, u.SourceType, u.SourceId, before, after, u.RelType, u.TargetId),
+                new RecordChange(RecordChangeKind.LinkUpdated, u.TargetType, u.TargetId, before, after, u.RelType, u.SourceId),
+            };
+        }));
+        await _hooks.AfterChangeAsync(changes, changeSet, cancellationToken);
 
         return new StagedCommit(batchId, records, links) { Updated = updates.Count + linkUpdates.Count };
     }

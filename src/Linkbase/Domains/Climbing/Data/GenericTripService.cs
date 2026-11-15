@@ -14,9 +14,9 @@ public sealed record TripRebuildSummary(int Trips, int LinkedAscents, int Inferr
 // found by its trip_key field, so its id and any saved view stay the same. New trips take the next number.
 public sealed class GenericTripService(IDbContextFactory<LinkbaseDbContext> contextFactory)
 {
-    public async Task<TripRebuildSummary> RebuildAsync(IReadOnlyList<TripMerge> merges, CancellationToken cancellationToken = default)
+    public async Task<TripRebuildSummary> RebuildAsync(IReadOnlyList<TripMerge> merges, long? causeChangeSetId = null, CancellationToken cancellationToken = default)
     {
-        var records = new RecordRepository(contextFactory);
+        var records = new RecordRepository(contextFactory, RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var areaParents = FirstTargets(await db.NodeLinks.AsNoTracking()
@@ -130,7 +130,7 @@ public sealed class GenericTripService(IDbContextFactory<LinkbaseDbContext> cont
             return area;
         }
 
-        await records.ReplaceDerivedAsync("Climbing", "Trip", derived, links, cancellationToken);
+        await records.ReplaceDerivedAsync("Climbing", "Trip", derived, links, causeChangeSetId, cancellationToken);
         return new TripRebuildSummary(plan.Count, plan.Sum(p => p.AscentIds.Count), plan.Sum(p => p.InferredAscentIds.Count));
     }
 

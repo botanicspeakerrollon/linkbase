@@ -55,7 +55,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     [Fact]
     public void A_valid_hierarchy_is_read()
     {
-        var model = ModelFile.Read(Write(Model()));
+        var model = ModelFile.Read(Write(Model()), Linkbase.Domains.RegisteredDomains.Registry);
 
         var rules = model.Types.Single().Hierarchy!.ToRules("Area");
         Assert.Equal(["top", "mid", "low"], rules.Levels.Select(l => l.Kind));
@@ -75,7 +75,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     [InlineData("", "needs levels")]
     public void A_hierarchy_that_doesnt_add_up_is_refused(string levels, string expected)
     {
-        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(levels))));
+        var ex = Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(levels)), Linkbase.Domains.RegisteredDomains.Registry));
 
         Assert.Contains(expected, ex.Message);
     }
@@ -83,10 +83,10 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     [Fact]
     public void The_field_and_relationship_have_to_exist_and_suit()
     {
-        Assert.Contains("needs to be a choice field", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(by: "nope")))).Message);
-        Assert.Contains("needs to be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(kindRequired: false)))).Message);
-        Assert.Contains("the model has no relationship Area OUT Area", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(via: "OUT")))).Message);
-        Assert.Contains("can't be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(required: true)))).Message);
+        Assert.Contains("needs to be a choice field", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(by: "nope")), Linkbase.Domains.RegisteredDomains.Registry)).Message);
+        Assert.Contains("needs to be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(kindRequired: false)), Linkbase.Domains.RegisteredDomains.Registry)).Message);
+        Assert.Contains("the model has no relationship Area OUT Area", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(via: "OUT")), Linkbase.Domains.RegisteredDomains.Registry)).Message);
+        Assert.Contains("can't be required", Assert.Throws<LinkbaseValidationException>(() => ModelFile.Read(Write(Model(required: true)), Linkbase.Domains.RegisteredDomains.Registry)).Message);
     }
 
     [Theory]
@@ -114,7 +114,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
 
         await TestModels.LoadAsync(factory, path, TextWriter.Null);
 
-        var area = (await new RecordRepository(factory).TypeAsync("Area"))!;
+        var area = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Area"))!;
         Assert.Equal("kind", area.Hierarchy!.FieldKey);
         Assert.Equal("IN", area.Hierarchy.RelType);
         Assert.Equal(["top", "mid", "low"], area.Hierarchy.Levels.Select(l => l.Kind));
@@ -127,18 +127,18 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
 
-        var area = (await new RecordRepository(factory).TypeAsync("Area"))!;
+        var area = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Area"))!;
 
         Assert.Equal(["country", "region", "area"], area.Hierarchy!.Levels.Select(l => l.Kind));
         Assert.Equal(["region", "area"], area.Hierarchy.Level("area")!.Under);
-        Assert.Null((await new RecordRepository(factory).TypeAsync("Crag"))!.Hierarchy);
+        Assert.Null((await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Crag"))!.Hierarchy);
     }
 
     private async Task<RecordRepository> DemoAsync()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
-        return new RecordRepository(factory);
+        return new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
     }
 
     private static RecordInput Input(string name, string kind, params string[] parents) =>
@@ -237,7 +237,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var staging = new ImportStagingService(factory);
 
         // A region put in a region is refused, the commit rolls back, and the batch is still there to untick it from.

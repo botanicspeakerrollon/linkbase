@@ -75,11 +75,9 @@ public partial class ExplorePage
     private bool _revealRow;
 
     // The visible graph lives here. The JavaScript module only draws it and reports clicks.
-    private readonly Dictionary<string, GraphNode> _nodes = [];
+    private readonly CanvasGraph _shown = new();
     private sealed record ContextMenu(GraphNode Node, double X, double Y, IReadOnlyList<RelationshipCount> Counts);
 
-    private readonly HashSet<string> _expanded = [];
-    private readonly Dictionary<string, int> _remaining = [];
     private IReadOnlyList<GraphEdge> _edges = [];
     private GraphNode? _selectedNode;
     private GraphEdge? _selectedEdge;
@@ -108,12 +106,12 @@ public partial class ExplorePage
     private FilterOperator _filterOperator;
     private string? _filterValue;
 
-    // While an "as of" day is chosen, what didn't exist yet stays in _nodes (so clearing the day brings it back) but isn't shown.
+    // While an "as of" day is chosen, what didn't exist yet stays in _shown (so clearing the day brings it back) but isn't shown.
     private DateTime? _asOf;
     private DateOnly? _historyStart;
     private Linkbase.Core.Timeline.AsOfView _asOfView = Linkbase.Core.Timeline.AsOfView.None;
 
-    private IEnumerable<GraphNode> VisibleNodes => _nodes.Values.Where(n => !_asOfView.MissingNodes.Contains(n.Id));
+    private IEnumerable<GraphNode> VisibleNodes => _shown.Values.Where(n => !_asOfView.MissingNodes.Contains(n.Id));
 
     private string ShownName(GraphNode node) => _asOfView.Rewound.TryGetValue(node.Id, out var then) ? then.Name : node.Name;
 
@@ -137,7 +135,7 @@ public partial class ExplorePage
     private async Task RefreshAsOfAsync()
     {
         _asOfView = _asOf is { } day && !_showingModel
-            ? await Times.AsOfAsync(_nodes.Values.ToList(), _edges, new DateTimeOffset(day.Date.AddDays(1)))
+            ? await Times.AsOfAsync(_shown.Values.ToList(), _edges, new DateTimeOffset(day.Date.AddDays(1)))
             : Linkbase.Core.Timeline.AsOfView.None;
         if (_selected is { } selected && _asOfView.MissingNodes.Contains(selected.Id))
         {
@@ -298,12 +296,12 @@ public partial class ExplorePage
                 .Select(c => (c.SourceLabel == label ? $"{PatternBuilder.RelText(c.RelType, true)} {c.TargetLabel}" : $"{PatternBuilder.RelText(c.RelType, false)} {c.SourceLabel}")
                     + $" ({LinksOf(c).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)})");
             var id = GraphNode.ModelPrefix + label;
-            _nodes[id] = new GraphNode(id, label, label,
+            _shown.Set(new GraphNode(id, label, label,
             [
                 new GraphProperty("nodes", counts.GetValueOrDefault(label).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)),
                 new GraphProperty("properties", string.Join(", ", fields)),
                 new GraphProperty("links", string.Join(", ", links)),
-            ]);
+            ]));
         }
 
         var attributes = await Graph.LinkAttributeNamesAsync();
@@ -322,12 +320,10 @@ public partial class ExplorePage
 
     private void ForgetCanvas()
     {
-        _nodes.Clear();
+        _shown.Clear();
         _summaryOpen = false;
         _summary = null;
         _ranking = null;
-        _expanded.Clear();
-        _remaining.Clear();
         _edges = [];
         _modelLinks = [];
         _selected = null;
@@ -406,17 +402,17 @@ public partial class ExplorePage
         var found = await Graph.SubgraphAsync(_ranking.Select(r => r.NodeId).ToList());
         foreach (var node in found.Nodes)
         {
-            _nodes.TryAdd(node.Id, node);
+            _shown.TryAdd(node);
         }
 
-        _selected = _nodes.GetValueOrDefault(_ranking[0].NodeId);
+        _selected = _shown.Find(_ranking[0].NodeId);
         await RefreshEdgesAndDrawAsync(anchorId: null);
         await SelectOnCanvasAsync(_selected?.Id);
     }
 
     private async Task SelectRankedAsync(RankedNode ranked)
     {
-        if (_nodes.TryGetValue(ranked.NodeId, out var node))
+        if (_shown.TryGetValue(ranked.NodeId, out var node))
         {
             await SelectFromTableAsync(node);
         }
@@ -451,7 +447,7 @@ public partial class ExplorePage
             var found = await Graph.SubgraphAsync(result.NodeIds);
             foreach (var node in found.Nodes)
             {
-                _nodes.TryAdd(node.Id, node);
+                _shown.TryAdd(node);
             }
 
             _selected = found.Nodes.Count == 1 ? found.Nodes[0] : _selected;

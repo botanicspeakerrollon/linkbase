@@ -27,10 +27,7 @@ public sealed partial class RecordRepository
         var created = await CreateInAsync(db, type, key, input, changes, logged, cancellationToken);
         var changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
         await transaction.CommitAsync(cancellationToken);
-        using (ChangeRecorder.Causing(changeSet))
-        {
-            await _hooks.AfterChangeAsync(changes, cancellationToken);
-        }
+        await hooks.AfterChangeAsync(changes, changeSet, cancellationToken);
 
         return created;
     }
@@ -172,10 +169,7 @@ public sealed partial class RecordRepository
             ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, ChangeRecorder.NodeUpdated(id, oldName, before, node.Name, after).ToList(), cancellationToken: cancellationToken)
             : null;
         await transaction.CommitAsync(cancellationToken);
-        using (ChangeRecorder.Causing(changeSet))
-        {
-            await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, after)], cancellationToken);
-        }
+        await hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, after)], changeSet, cancellationToken);
     }
 
     // Like everything else, a record that still has links can't be deleted. Remove its links first. The links its type
@@ -267,10 +261,7 @@ public sealed partial class RecordRepository
             throw new LinkbaseValidationException("This record was linked to something else while deleting it. Remove its links first.");
         }
 
-        using (ChangeRecorder.Causing(changeSet))
-        {
-            await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
-        }
+        await hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], changeSet, cancellationToken);
     }
 
     // Links only go where the model has a relationship, either way round, and never to a module's derived records. Values are
@@ -313,10 +304,7 @@ public sealed partial class RecordRepository
             ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, [ChangeRecorder.LinkCreated(sourceId, relType, targetId, Values(props))], cancellationToken: cancellationToken)
             : null;
         await transaction.CommitAsync(cancellationToken);
-        using (ChangeRecorder.Causing(changeSet))
-        {
-            await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), cancellationToken);
-        }
+        await hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), changeSet, cancellationToken);
     }
 
     // A relationship with a max stops at it: the record has to lose a link before it can have another.
@@ -374,11 +362,8 @@ public sealed partial class RecordRepository
         await transaction.CommitAsync(cancellationToken);
         if (!before.SequenceEqual(after))
         {
-            using (ChangeRecorder.Causing(changeSet))
-            {
-                await _hooks.AfterChangeAsync(
-                    LinkChanges(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, link.RelType, targetType, link.TargetId, before, after), cancellationToken);
-            }
+            await hooks.AfterChangeAsync(
+                LinkChanges(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, link.RelType, targetType, link.TargetId, before, after), changeSet, cancellationToken);
         }
     }
 
@@ -446,11 +431,8 @@ public sealed partial class RecordRepository
         await transaction.CommitAsync(cancellationToken);
         if (removed > 0)
         {
-            using (ChangeRecorder.Causing(changeSet))
-            {
-                await _hooks.AfterChangeAsync(
-                    LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId, before: Values(link.Props)), cancellationToken);
-            }
+            await hooks.AfterChangeAsync(
+                LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId, before: Values(link.Props)), changeSet, cancellationToken);
         }
     }
 }

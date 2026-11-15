@@ -11,15 +11,13 @@ namespace Linkbase.Core.Records;
 
 // Lists, shows and edits the generic store's data, guided by the model's definitions. See docs/models.md.
 // Domain modules' hooks run on every change made through it, except ReplaceDerivedAsync, which is the modules' own.
-public sealed partial class RecordRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks? hooks = null, Linkbase.Core.Security.FieldPolicy? fieldPolicy = null)
+public sealed partial class RecordRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, RecordHooks hooks, Linkbase.Core.Security.FieldPolicy fieldPolicy) : IRecordRepository
 {
     public const int LinksShown = 25;
 
-    private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
-
     // The properties this viewer may not see. Nothing is hidden without a policy, or with row security off.
     private async ValueTask<Linkbase.Core.Security.HiddenFields> HiddenAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
-        fieldPolicy is null ? Linkbase.Core.Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        await fieldPolicy.HiddenAsync(db, cancellationToken);
 
     // A type's definition without the fields the viewer can't see, so a save neither reads, requires nor overwrites them.
     // With a record id, also without the properties that record's own labels hide from this viewer (the hidden set must have

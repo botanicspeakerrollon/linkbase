@@ -28,7 +28,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Example, TextWriter.Null);
-        return (factory, new RecordRepository(factory));
+        return (factory, new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
             INSERT INTO node_link (source_id, rel_type, target_id) SELECT 'spoke:' || i, 'TO', 'hub:1' FROM generate_series(1, 30) i;
             """));
 
-        var group = (await new RecordRepository(factory).LinksAsync("hub:1")).Single();
+        var group = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).LinksAsync("hub:1")).Single();
 
         Assert.Equal(30, group.Total);
         Assert.Equal(RecordRepository.LinksShown, group.Links.Count);
@@ -242,8 +242,8 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
-        var records = new RecordRepository(factory);
-        var graph = new GraphRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         long WrittenBy(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WRITTEN_BY").Links;
         Dictionary<string, string?> Isbn() => new() { ["isbn"] = "333" };
 
@@ -282,7 +282,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
             INSERT INTO node_type (name, sort_order) VALUES ('Thing', 1);
             INSERT INTO field_definition (node_type_name, key, type) VALUES ('Thing', 'active', 'boolean');
             """));
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         var key = await records.CreateAsync("Thing", null, new RecordInput("Lamp", new Dictionary<string, string?> { ["active"] = "true" }));
 
@@ -302,7 +302,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
             INSERT INTO node (id, user_id, type, key, name, props, created_at, updated_at)
             VALUES ('thing:1', 1, 'Thing', '1', 'Old', '{"size": 3, "colour": "red", "legacy": "kept"}', now() - interval '1 day', now() - interval '1 day');
             """));
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         await records.UpdateAsync("thing:1", new RecordInput("New", new Dictionary<string, string?> { ["size"] = "4.5", ["colour"] = "" }));
 
@@ -326,7 +326,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
         Assert.Equal("Patient portal", project.Name);
         Assert.Single(await records.FindAsync("Project", project.Key, 10));
 
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         long WorksOn(IEnumerable<ConnectionCount> counts) => counts.Single(c => c.RelType == "WORKS_ON").Links;
         await records.AddLinkAsync(id, "WORKS_ON", project.Id);
         Assert.Equal(14, WorksOn(await graph.ConnectionCountsAsync()));
@@ -683,7 +683,7 @@ public sealed class RecordPageTests(PostgresFixture fixture) : UiTestBase(fixtur
     {
         var factory = new ModelFactory(await Fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var none = new Dictionary<string, string?>();
 
         var key = await records.CreateAsync("Book", null, new RecordInput("Quiet Ice", new Dictionary<string, string?> { ["isbn"] = "333" })

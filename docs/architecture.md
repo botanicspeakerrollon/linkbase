@@ -7,14 +7,15 @@ what a model is, is in [models](models.md).
 
 ```
 src/Linkbase/
-  Program.cs            Services, middleware, health probes, the /model/{key} switch, command-line commands
+  Program.cs            The pipeline, health probes and command-line commands
+  Startup.cs            The services (AddLinkbaseSecurity, AddLinkbaseCore), the security headers and the /model/{key} switch
   Components/           App shell and layout (MainLayout, theme, Quick-find, hotkeys help) and the guide's frame (Guide/)
   Core/                 Generic. Knows no domain
     Models/             ModelCatalog (configured and app-made models), ModelCreator and NewModelPage (a new model with its own database), CurrentModel (this circuit's model), ModelFile, ModelLoader
-    Graph/              GraphRepository and GraphPattern: the graph_nodes / graph_edges views and pattern search
-    Explore/            The Explore page, pattern search bar, Ask box, table, export, label styles
+    Graph/              GraphRepository (behind IGraphRepository) and GraphPattern: the graph_nodes / graph_edges views and pattern search
+    Explore/            The Explore page (CanvasGraph holds the nodes on the canvas), pattern search bar, Ask box, table, export, label styles
     Ask/                Plain-English questions: the compiler, PatternChecker (checks the answer), QuestionService
-    Records/            Generated list, record and edit pages, RecordRepository (reads, writes, merge, hierarchy), RecordHooks, ExternalRefRepository
+    Records/            Generated list, record and edit pages, RecordRepository (behind IRecordRepository: writes, merge, hierarchy, with the reads in RecordReader), RecordHooks, ExternalRefRepository
     History/            ChangeRecorder (writes the audit trail), HistoryRepository (reads it), ChangeReverter
     Views/              Saved views and the state a page keeps in its address (ViewState)
     Paths/, Timeline/   Find a path, Trace (TraceRepository), and the timeline page
@@ -44,7 +45,7 @@ tests/Linkbase.Tests/   One project: unit, Postgres (Testcontainers), bUnit page
 3. Reads project to DTO records; writes go through `RecordRepository` or a service, inside one transaction.
 4. Writes through `RecordRepository` run the model's domain hooks (`RecordHooks`) and keep `link_definition.links` in step.
 
-The one exception is a scoped `LinkbaseDbContext` registered in `Program.cs` for Data Protection's key store only.
+The one exception is a scoped `LinkbaseDbContext` registered in `Startup.cs` for Data Protection's key store only.
 
 ## Extension points
 

@@ -23,7 +23,7 @@ internal sealed class LinkWatcher : IRecordHook
     {
     }
 
-    public Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, CancellationToken cancellationToken)
+    public Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, long? changeSetId, CancellationToken cancellationToken)
     {
         Changes.AddRange(changes);
         return Task.CompletedTask;
@@ -68,7 +68,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     [Fact]
     public async Task Explore_gets_each_links_values_and_tells_repeats_apart()
     {
-        var graph = new GraphRepository(await ExampleAsync());
+        var graph = new GraphRepository(await ExampleAsync(), Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         var edges = (await graph.SubgraphAsync(["person:p4", "project:pr4", "team:t2"])).Edges;
 
@@ -84,7 +84,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     public async Task Explore_filters_on_a_links_own_value()
     {
         var factory = await ExampleAsync();
-        var graph = new GraphRepository(factory);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var schema = await graph.SchemaAsync();
         Assert.Contains(new GraphLinkPropertyInfo("WORKS_ON", "role", GraphValueType.Text), schema.LinkProperties);
         Assert.Contains(new GraphLinkPropertyInfo("WORKS_ON", "days_a_week", GraphValueType.Number), schema.LinkProperties);
@@ -102,7 +102,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     public async Task A_new_records_links_take_values_and_a_required_one_blocks_the_save()
     {
         var factory = await ExampleAsync();
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         var key = await records.CreateAsync("Person", null, TestModels.Person("Joiner", links:
         [
@@ -129,7 +129,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     {
         var factory = await ExampleAsync();
         var hook = new LinkWatcher();
-        var records = new RecordRepository(factory, new RecordHooks([hook]));
+        var records = new RecordRepository(factory, new RecordHooks([hook]), Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var engineer = (await WorksOnAsync(records, "person:p4")).Single(l => l.OtherId == "project:pr4" && l.Values["role"] == "Engineer");
 
         await records.UpdateLinkAsync(engineer.Id, Values("Engineer", "3"));
@@ -151,7 +151,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     {
         var factory = await ExampleAsync();
         var importer = new CsvImportService(factory);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var file = Csv("person,project,role,days\np5,pr1,Lead,3\np5,pr1,Cover,1\np5,pr1,Cover,1\np5,pr4,,\np2,pr2,Designer,4\n");
         var mapping = new CsvLinkMapping("Person", 0, "WORKS_ON", "Project", 1, [new CsvFieldMapping(2, "role", FieldType.Text), new CsvFieldMapping(3, "days_a_week", FieldType.Number)]);
 
@@ -208,7 +208,7 @@ public sealed class LinkAttributeTests(PostgresFixture fixture) : IDisposable, I
     public async Task Reading_text_checks_a_links_values_against_the_text_and_stages_them()
     {
         var factory = await ExampleAsync();
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var link = (string Role, string Days) => new ExtractedLink("WORKS_ON", "Person", "Zed Quinn", "Project", "Atlas", [new ExtractedValue("role", Role), new ExtractedValue("days_a_week", Days)]);
         var answer = new ExtractedData(
             [new ExtractedRecord("Person", "Zed Quinn", []), new ExtractedRecord("Project", "Atlas", [new ExtractedValue("status", "active")])],

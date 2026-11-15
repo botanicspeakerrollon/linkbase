@@ -72,7 +72,7 @@ public sealed class ClimbingDomain : IDomainModule
         if (GenericImportCommands.IsCommand(args))
         {
             await using var importScope = services.CreateAsyncScope();
-            return await GenericImportCommands.RunAsync(importScope.ServiceProvider.GetRequiredService<ModelCatalog>(), args, Console.Out);
+            return await GenericImportCommands.RunAsync(importScope.ServiceProvider.GetRequiredService<ModelCatalog>(), importScope.ServiceProvider.GetRequiredService<DomainRegistry>(), args, Console.Out);
         }
 
         return null;

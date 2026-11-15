@@ -13,11 +13,11 @@ public sealed record ModelLoadSummary(int Types, long Nodes, long Links, TimeSpa
 
 // Replaces everything in the generic store with a model file's types and data, in one transaction. Rows whose key is
 // empty are skipped, a repeated key keeps its first row, and a link whose ends aren't both loaded is left out.
-public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFactory)
+public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFactory, DomainRegistry registry)
 {
     public async Task<ModelLoadSummary> LoadAsync(string path, TextWriter output, CancellationToken cancellationToken = default)
     {
-        var model = ModelFile.Read(path);
+        var model = ModelFile.Read(path, registry);
         var started = DateTime.UtcNow;
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         var connection = (NpgsqlConnection)db.Database.GetDbConnection();

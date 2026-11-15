@@ -592,7 +592,7 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await search.FillAsync("graph");
         await _page.Locator("[role=option]", new() { HasText = "Graph model" }).WaitForAsync();
         await search.PressAsync("Enter");
-        await WaitForExactNodesAsync((await new GraphRepository(_store).SchemaAsync()).Labels.Count);
+        await WaitForExactNodesAsync((await new GraphRepository(_store, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted).SchemaAsync()).Labels.Count);
         Assert.All(await NodesAsync(), n => Assert.StartsWith("model:", n.NodeId, StringComparison.Ordinal));
 
         var at = await OnScreenAsync("model:Crag");

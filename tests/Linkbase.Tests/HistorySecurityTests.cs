@@ -50,12 +50,12 @@ public sealed class HistorySecurityTests(PostgresFixture fixture) : IClassFixtur
         var resolver = new Resolver(security, user);
         var factory = new Factory(connectionString, new ViewerConnectionInterceptor(state, resolver));
         var policy = new FieldPolicy(state, resolver);
-        return (new HistoryRepository(factory, policy), new GraphRepository(factory, policy));
+        return (new HistoryRepository(factory, policy), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, policy));
     }
 
     private static async Task ChangeBudgetAsync(Factory owner, string id, string budget)
     {
-        var records = new RecordRepository(owner);
+        var records = new RecordRepository(owner, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var detail = (await records.GetAsync("Project", id.Split(':')[1]))!;
         var values = detail.Values.ToDictionary(v => v.Key, v => (string?)v.Value);
         values["budget"] = budget;
@@ -96,7 +96,7 @@ public sealed class HistorySecurityTests(PostgresFixture fixture) : IClassFixtur
         await using (var db = owner.CreateDbContext())
         {
             var link = await db.NodeLinks.AsNoTracking().Where(l => l.TargetId == "project:pr2" && l.RelType == "WORKS_ON").OrderBy(l => l.Id).FirstAsync();
-            await new RecordRepository(owner).UpdateLinkAsync(link.Id, new Dictionary<string, string?> { ["role"] = "Principal" }, new ChangeReason("Promoted"));
+            await new RecordRepository(owner, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).UpdateLinkAsync(link.Id, new Dictionary<string, string?> { ["role"] = "Principal" }, new ChangeReason("Promoted"));
         }
 
         // The person end is public, the project end is hidden from the guest: nothing about the link may show on the person.
@@ -119,14 +119,14 @@ public sealed class HistorySecurityTests(PostgresFixture fixture) : IClassFixtur
         await using (var db = owner.CreateDbContext())
         {
             var link = await db.NodeLinks.AsNoTracking().Where(l => l.RelType == "WORKS_ON").OrderBy(l => l.Id).FirstAsync();
-            await new RecordRepository(owner).RemoveLinkAsync(link.Id, new ChangeReason("Left the project"));
+            await new RecordRepository(owner, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).RemoveLinkAsync(link.Id, new ChangeReason("Left the project"));
 
             var visible = await As(connection, security, "sam.partner").History.ForLinkAsync(link.SourceId, link.RelType, link.TargetId);
             Assert.Empty(visible.SelectMany(e => e.Changes));
         }
 
         // The same deletion is in the log for the owner, who reads without row security.
-        var all = await new HistoryRepository(owner).NearbyAsync("project:pr1", DateTimeOffset.UtcNow.AddDays(-1));
+        var all = await new HistoryRepository(owner, Linkbase.Core.Security.FieldPolicy.Unrestricted).NearbyAsync("project:pr1", DateTimeOffset.UtcNow.AddDays(-1));
         Assert.NotNull(all);
     }
 

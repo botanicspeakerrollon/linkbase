@@ -648,7 +648,7 @@ public class GraphPatternQueryTests(PostgresFixture fixture) : IAsyncLifetime, I
 
     private static string Word() => Guid.NewGuid().ToString("N")[..12];
 
-    private GraphRepository Graph() => new(_store);
+    private GraphRepository Graph() => new(_store, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
     private async Task<(string Crag, string Route, string AscentId, string RouteId, string CragId)> CreateAsync(
         string grade = "VS 4c", int length = 20, string date = "2020-05-02", string? notes = null)

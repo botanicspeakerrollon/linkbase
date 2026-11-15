@@ -23,7 +23,7 @@ public class LinkValuesDialogTests(PostgresFixture fixture) : UiTestBase(fixture
         }
 
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var link = (await records.LinksAsync("person:p4")).Single(g => g.RelType == "WORKS_ON" && g.Outgoing).Links
             .First(l => l.OtherId == "project:pr4" && l.Values["role"] == "Engineer");
         var attributes = await records.LinkAttributesAsync("Person", "WORKS_ON", "Project");

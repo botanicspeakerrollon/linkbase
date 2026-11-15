@@ -1,5 +1,4 @@
 using Linkbase.Data;
-using Linkbase.Domains;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -58,13 +57,67 @@ public sealed record GraphNeighbours(IReadOnlyList<GraphNode> Nodes, int Remaini
 public sealed record Subgraph(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
 
-public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, Security.FieldPolicy? fieldPolicy = null)
+// What pages and services use of the graph, so a test can stand in for the database.
+public interface IGraphRepository
+{
+    Task<IReadOnlyList<GraphNode>> SearchNodesAsync(
+        string? text,
+        IReadOnlyCollection<string>? labels,
+        CancellationToken cancellationToken = default);
+
+    // The one neighbourhood query: everything linked to a node, in either direction. Property filters only
+    // narrow types that have that property, so a date range doesn't hide a crag or partner.
+    Task<GraphNeighbours> NeighboursAsync(
+        string nodeId,
+        GraphFilter filter,
+        IReadOnlyCollection<string> exclude,
+        int limit,
+        CancellationToken cancellationToken = default);
+
+    Task<GraphSchema> SchemaAsync(CancellationToken cancellationToken = default);
+
+    // How many nodes there are of each type, for the graph model.
+    Task<IReadOnlyDictionary<string, int>> NodeCountsAsync(CancellationToken cancellationToken = default);
+
+    // How many links there are of each kind, most first. They come from the counts kept on the relationship definitions,
+    // because counting tens of millions of links each time takes too long.
+    Task<IReadOnlyList<ConnectionCount>> ConnectionCountsAsync(CancellationToken cancellationToken = default);
+
+    // The names of the values each kind of link can carry, such as role, for the kinds that have any.
+    Task<IReadOnlyDictionary<(string From, string Rel, string To), IReadOnlyList<string>>> LinkAttributeNamesAsync(CancellationToken cancellationToken = default);
+
+    // Everything matching what's been typed, as label, property and value. Long free text is left out,
+    // because a whole note makes a poor suggestion.
+    Task<IReadOnlyList<PropertyMatch>> MatchPropertiesAsync(string? label, string text, CancellationToken cancellationToken = default);
+
+    // Values of one property, for suggestions once a filter's operator is chosen. A list's values come one at a time.
+    // Only a list looks inside arrays, because doing so for every property made each keystroke five times slower on swiss_rail.
+    Task<IReadOnlyList<string>> PropertyValuesAsync(
+        string? label, string key, string? text, bool list = false, CancellationToken cancellationToken = default);
+
+    // Runs a pattern, returning each node in the matches. Limit and offset count whole matches.
+    Task<PatternResult> RunPatternAsync(GraphPattern pattern, GraphSchema schema, int limit, int offset, CancellationToken cancellationToken = default);
+
+    // The top groups of a ranked pattern, most first.
+    Task<IReadOnlyList<RankedNode>> RankPatternAsync(GraphPattern pattern, GraphSchema schema, CancellationToken cancellationToken = default);
+
+    // Count, sum, smallest, largest and average of each number property, over every match of a pattern.
+    Task<IReadOnlyList<PropertySummary>> SummarisePatternAsync(GraphPattern pattern, GraphSchema schema, CancellationToken cancellationToken = default);
+
+    // What a node links to, for the Expand menu.
+    Task<IReadOnlyList<RelationshipCount>> RelationshipCountsAsync(string nodeId, CancellationToken cancellationToken = default);
+
+    // The given nodes and every relationship between them.
+    Task<Subgraph> SubgraphAsync(IReadOnlyCollection<string> nodeIds, CancellationToken cancellationToken = default);
+}
+
+public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, DomainRegistry registry, Security.FieldPolicy fieldPolicy) : IGraphRepository
 {
     // A type and key joined, to test against in SQL: n.label || chr(31) || key <> ALL(pairs).
     private const char PairSeparator = '\u001f';
 
     private async ValueTask<Security.HiddenFields> HiddenAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
-        fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        await fieldPolicy.HiddenAsync(db, cancellationToken);
 
     private static string[] Pairs(Security.HiddenFields hidden) => hidden.Pairs(PairSeparator);
 
@@ -252,6 +305,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             LinkProperties = linkInfos,
             HiddenKeys = hidden.AnyType.ToList(),
             HasOverrides = hidden.HasOverrides,
+            LabelsNamedAfterParent = registry.LabelsNamedAfterParent,
         };
     }
 
@@ -344,7 +398,7 @@ public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> context
             ORDER BY m."Score" DESC, m."Label", m."Value"
             LIMIT {{MatchLimit}}
             """;
-        var rows = await db.Database.SqlQueryRaw<MatchRow>(sql1, pattern, term, RegisteredDomains.LabelsNamedAfterParent, labelParameter, RegisteredDomains.LongTextProperties, pairs).ToListAsync(cancellationToken);
+        var rows = await db.Database.SqlQueryRaw<MatchRow>(sql1, pattern, term, registry.LabelsNamedAfterParent, labelParameter, registry.LongTextProperties, pairs).ToListAsync(cancellationToken);
 
         return rows.Select(r => new PropertyMatch(r.Label, r.Key, r.Value)).ToList();
     }

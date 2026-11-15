@@ -11,7 +11,7 @@ namespace Linkbase.Core.Extraction;
 // own types, checks the answer against the text, and stages what's new for review and commit by ImportStagingService. Like
 // a CSV import, records already there are left as they are, so undoing only ever removes what the import added.
 public sealed class ModelExtractionService(
-    RecordRepository records,
+    IRecordRepository records,
     IModelExtractor extractor,
     PageTextFetcher fetcher,
     IDbContextFactory<LinkbaseDbContext> contextFactory,

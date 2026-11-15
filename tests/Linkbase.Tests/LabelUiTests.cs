@@ -19,6 +19,7 @@ public sealed class LabelUiTests(PostgresFixture fixture) : UiTestBase(fixture),
         await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(factory);
         Services.AddSingleton<RecordRepository>();
+        Services.AddSingleton<IRecordRepository>(p => p.GetRequiredService<RecordRepository>());
         Services.AddSingleton<ExternalRefRepository>();
         Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
         Services.AddSingleton<LabelRepository>();

@@ -17,14 +17,14 @@ public partial class ExplorePage
     public Task OnNodeClicked(string nodeId)
     {
         _menu = null;
-        _selected = _nodes.GetValueOrDefault(nodeId);
+        _selected = _shown.Find(nodeId);
         return InvokeAsync(StateHasChanged);
     }
 
     [JSInvokable]
     public async Task OnNodeDoubleClicked(string nodeId)
     {
-        if (_nodes.TryGetValue(nodeId, out var node))
+        if (_shown.TryGetValue(nodeId, out var node))
         {
             _menu = null;
             _selected = node;
@@ -43,7 +43,7 @@ public partial class ExplorePage
     [JSInvokable]
     public async Task OnNodeRightClicked(string nodeId, double x, double y)
     {
-        if (_nodes.TryGetValue(nodeId, out var node))
+        if (_shown.TryGetValue(nodeId, out var node))
         {
             _selected = node;
             _menu = node.IsModel ? null : new ContextMenu(node, x, y, await Graph.RelationshipCountsAsync(nodeId));
@@ -89,12 +89,7 @@ public partial class ExplorePage
     private async Task RemoveOthersAsync(string nodeId)
     {
         _menu = null;
-        var keep = _nodes[nodeId];
-        _nodes.Clear();
-        _expanded.Clear();
-        _remaining.Clear();
-        _nodes[nodeId] = keep;
-        _selected = keep;
+        _selected = _shown.KeepOnly(nodeId);
         await DrawAsync(null);
     }
 
@@ -107,7 +102,7 @@ public partial class ExplorePage
         GraphNeighbours result;
         try
         {
-            result = await Graph.NeighboursAsync(nodeId, filter, _nodes.Keys, ExpansionLimit);
+            result = await Graph.NeighboursAsync(nodeId, filter, _shown.Keys, ExpansionLimit);
         }
         catch (LinkbaseValidationException ex)
         {
@@ -118,11 +113,10 @@ public partial class ExplorePage
 
         foreach (var node in result.Nodes)
         {
-            _nodes.TryAdd(node.Id, node);
+            _shown.TryAdd(node);
         }
 
-        _expanded.Add(nodeId);
-        _remaining[nodeId] = result.Remaining;
+        _shown.MarkExpanded(nodeId, result.Remaining);
         if (result.Nodes.Count == 0)
         {
             Snackbar.Add("Nothing new to add with the current filters.", Severity.Info);
@@ -135,7 +129,7 @@ public partial class ExplorePage
 
     private async Task RefreshEdgesAndDrawAsync(string? anchorId)
     {
-        var subgraph = await Graph.SubgraphAsync(_nodes.Keys.ToList());
+        var subgraph = await Graph.SubgraphAsync(_shown.Keys.ToList());
         _edges = subgraph.Edges;
         await DrawAsync(anchorId);
     }
@@ -198,11 +192,11 @@ public partial class ExplorePage
 
     public string FirstEdgeKeyForTest() => _edges.First().Key;
 
-    private string EndName(string nodeId) => _nodes.TryGetValue(nodeId, out var node) ? node.Name : nodeId;
+    private string EndName(string nodeId) => _shown.TryGetValue(nodeId, out var node) ? node.Name : nodeId;
 
     private async Task SelectEndAsync(string nodeId)
     {
-        _selected = _nodes.GetValueOrDefault(nodeId);
+        _selected = _shown.Find(nodeId);
         await SelectOnCanvasAsync(nodeId);
     }
 
@@ -227,9 +221,7 @@ public partial class ExplorePage
     // Takes a node off the graph and forgets it, so expanding any of its neighbours brings it back.
     private async Task RemoveAsync(string nodeId)
     {
-        _nodes.Remove(nodeId);
-        _expanded.Remove(nodeId);
-        _remaining.Remove(nodeId);
+        _shown.Remove(nodeId);
         _selected = null;
         await DrawAsync(null);
     }
@@ -274,10 +266,10 @@ public partial class ExplorePage
         var found = await Graph.SubgraphAsync(nodeIds);
         foreach (var node in found.Nodes)
         {
-            _nodes.TryAdd(node.Id, node);
+            _shown.TryAdd(node);
         }
 
-        _selected = _nodes.GetValueOrDefault(nodeIds[0]);
+        _selected = _shown.Find(nodeIds[0]);
         await RefreshEdgesAndDrawAsync(anchorId: null);
         await SelectOnCanvasAsync(nodeIds[0]);
         await InvokeAsync(StateHasChanged);

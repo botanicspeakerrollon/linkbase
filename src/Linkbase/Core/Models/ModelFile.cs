@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Linkbase.Core.Security;
 using Linkbase.Data;
-using Linkbase.Domains;
 
 namespace Linkbase.Core.Models;
 
@@ -41,7 +40,7 @@ public sealed partial class ModelFile
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
-    public static ModelFile Read(string path)
+    public static ModelFile Read(string path, DomainRegistry registry)
     {
         if (!File.Exists(path))
         {
@@ -64,12 +63,12 @@ public sealed partial class ModelFile
         }
 
         model.DataFolder = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(path))!, model.Folder ?? "."));
-        model.Validate();
+        model.Validate(registry);
         return model;
     }
 
     // Names end up in the database and in Explore, and keys and relationship names in SQL text, so they're kept simple.
-    private void Validate()
+    private void Validate(DomainRegistry registry)
     {
         var problems = new List<string>();
         if (string.IsNullOrWhiteSpace(Name))
@@ -108,11 +107,11 @@ public sealed partial class ModelFile
 
             ValidateFields($"Type '{type.Name}'", type.Fields, problems);
             ValidateTemplate(type, problems);
-            ValidateOwner($"Type '{type.Name}'", type.Owner, problems);
+            ValidateOwner(registry, $"Type '{type.Name}'", type.Owner, problems);
             ValidateLabel($"Type '{type.Name}'", type.Label, type.Source?.Label, problems);
             foreach (var field in type.Fields)
             {
-                ValidateOwner($"Field '{field.Key}' of type '{type.Name}'", field.Owner, problems);
+                ValidateOwner(registry, $"Field '{field.Key}' of type '{type.Name}'", field.Owner, problems);
                 ValidateLabel($"Field '{field.Key}' of type '{type.Name}'", field.Label, null, problems);
             }
         }
@@ -329,11 +328,11 @@ public sealed partial class ModelFile
     }
 
     // An owner is one of this app's domain modules, by its key, such as Climbing.
-    private static void ValidateOwner(string what, string? owner, List<string> problems)
+    private static void ValidateOwner(DomainRegistry registry, string what, string? owner, List<string> problems)
     {
-        if (owner is not null && RegisteredDomains.All.All(d => d.Key != owner))
+        if (owner is not null && registry.All.All(d => d.Key != owner))
         {
-            problems.Add($"{what} is owned by '{owner}', which isn't a domain. The domains are: {string.Join(", ", RegisteredDomains.All.Select(d => d.Key))}.");
+            problems.Add($"{what} is owned by '{owner}', which isn't a domain. The domains are: {string.Join(", ", registry.Keys)}.");
         }
     }
 

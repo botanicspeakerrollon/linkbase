@@ -1,4 +1,3 @@
-using Linkbase.Domains;
 using Npgsql;
 
 namespace Linkbase.Core.Models;
@@ -31,7 +30,7 @@ public sealed class ModelCatalog
     private readonly List<ModelInfo> _configured;
     private volatile IReadOnlyList<ModelInfo> _all;
 
-    public ModelCatalog(IConfiguration configuration)
+    public ModelCatalog(IConfiguration configuration, DomainRegistry registry)
     {
         _configuration = configuration;
         _configured = configuration.GetSection("Models").GetChildren()
@@ -52,7 +51,7 @@ public sealed class ModelCatalog
 
         if (_configured.Count == 0)
         {
-            _configured = [new ModelInfo("default", RegisteredDomains.All[0].Name, "Linkbase", RegisteredDomains.All.Select(d => d.Key).ToList(), 0)];
+            _configured = [new ModelInfo("default", registry.All[0].Name, "Linkbase", registry.Keys, 0)];
         }
 
         _all = _configured;

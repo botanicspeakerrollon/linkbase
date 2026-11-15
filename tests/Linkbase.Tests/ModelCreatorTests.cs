@@ -50,7 +50,7 @@ public sealed class ModelCreatorTests(PostgresFixture fixture) : IAsyncLifetime,
             ["Models:real:Name"] = "Real model",
             ["Models:real:ConnectionString"] = "Real",
             ["ConnectionStrings:Real"] = existing,
-        }).Build());
+        }).Build(), Linkbase.Domains.RegisteredDomains.Registry);
         return (catalog, new ModelCreator(catalog, NullLogger<ModelCreator>.Instance), existing);
     }
 
@@ -94,7 +94,7 @@ public sealed class ModelCreatorTests(PostgresFixture fixture) : IAsyncLifetime,
         {
             ["Models:real:ConnectionString"] = "Real",
             ["ConnectionStrings:Real"] = existing,
-        }).Build());
+        }).Build(), Linkbase.Domains.RegisteredDomains.Registry);
         await new ModelCreator(other, NullLogger<ModelCreator>.Instance).LoadAsync();
         Assert.Contains(model.Key, other.Models.Select(m => m.Key));
     }
@@ -104,7 +104,7 @@ public sealed class ModelCreatorTests(PostgresFixture fixture) : IAsyncLifetime,
     {
         var (catalog, creator, existing) = await ArrangeAsync();
         var model = await creator.CreateAsync(Unique("Customers"));
-        var current = new CurrentModel(catalog);
+        var current = new CurrentModel(catalog, Linkbase.Domains.RegisteredDomains.Registry);
         current.Select(model.Key);
         var starter = new CsvModelStarter(new CsvImportService(new Factory(catalog, current)));
 
@@ -149,7 +149,7 @@ public sealed class ModelCreatorTests(PostgresFixture fixture) : IAsyncLifetime,
         Assert.Single(catalog.Models);
 
         var kept = await creator.CreateAsync(Unique("Kept"));
-        var current = new CurrentModel(catalog);
+        var current = new CurrentModel(catalog, Linkbase.Domains.RegisteredDomains.Registry);
         current.Select(kept.Key);
         await new CsvModelStarter(new CsvImportService(new Factory(catalog, current)))
             .ApplyAsync(CsvModelStarter.Propose([Csv("clients.csv", "id,name\nc1,Acme\n")]));

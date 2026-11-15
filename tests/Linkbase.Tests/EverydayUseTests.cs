@@ -27,11 +27,11 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
 
     private sealed record World(ModelFactory Factory, RecordRepository Records, GraphRepository Graph)
     {
-        public CleanupRepository Cleanup => new(Factory);
-        public HistoryRepository History => new(Factory);
+        public CleanupRepository Cleanup => new(Factory, Linkbase.Core.Security.FieldPolicy.Unrestricted);
+        public HistoryRepository History => new(Factory, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         public PathRepository Paths => new(Factory);
         public TraceRepository Trace => new(Factory);
-        public TimelineRepository Timeline => new(Factory);
+        public TimelineRepository Timeline => new(Factory, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         public HomeRepository Home => new(Factory);
     }
 
@@ -39,7 +39,7 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Example, TextWriter.Null);
-        return new World(factory, new RecordRepository(factory), new GraphRepository(factory));
+        return new World(factory, new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     private static async Task<string> PersonAsync(World world, string name, Dictionary<string, string?>? values = null, IEnumerable<NewLink>? links = null) =>
@@ -348,7 +348,7 @@ public sealed class EverydayUseTests(PostgresFixture fixture) : IClassFixture<Po
             ["Models:two:Name"] = "Two",
         }).Build();
 
-        var catalog = new Linkbase.Core.Models.ModelCatalog(configuration);
+        var catalog = new Linkbase.Core.Models.ModelCatalog(configuration, Linkbase.Domains.RegisteredDomains.Registry);
 
         var one = catalog.Find("one")!;
         Assert.False(one.ShowsOnHome(HomeRepository.Growth));

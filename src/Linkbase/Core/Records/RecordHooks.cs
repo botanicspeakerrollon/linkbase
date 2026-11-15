@@ -67,9 +67,9 @@ public interface IRecordHook
     // Runs before each record of a watched type is saved, in the same transaction, to set the fields the module keeps.
     void BeforeSave(RecordSaving record);
 
-    // Runs once the changes are saved, with every change to a watched type that one action made, such as all the records a
+    // Runs once the changes are saved, with the change set that recorded them (null when history is off), and every change to a watched type that one action made, such as all the records a
     // CSV import added. It's for keeping derived records up to date, such as trips.
-    Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, CancellationToken cancellationToken);
+    Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, long? changeSetId, CancellationToken cancellationToken);
 
     // What the module knows about its types that a model reading text can't, such as how a grade is written. It goes into the
     // extractor's prompt when the model has one of the types it watches. Null if there is nothing to add.
@@ -111,14 +111,14 @@ public sealed class RecordHooks(IEnumerable<IRecordHook> hooks, CurrentModel? mo
         }
     }
 
-    public async Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, CancellationToken cancellationToken)
+    public async Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, long? changeSetId, CancellationToken cancellationToken)
     {
         foreach (var hook in Active)
         {
             var watched = changes.Where(c => hook.Types.Contains(c.Type)).ToList();
             if (watched.Count > 0)
             {
-                await hook.AfterChangeAsync(watched, cancellationToken);
+                await hook.AfterChangeAsync(watched, changeSetId, cancellationToken);
             }
         }
     }

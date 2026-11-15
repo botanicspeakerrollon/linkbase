@@ -2,7 +2,7 @@
 @using FilterOperator = Linkbase.Core.Graph.FilterOperator
 @using Linkbase.Core.Views
 @implements IAsyncDisposable
-@inject GraphRepository Graph
+@inject IGraphRepository Graph
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -99,7 +99,7 @@
             <MudProgressLinear Indeterminate="true" Size="Size.Small" Color="Color.Primary" Class="explore-busy" role="progressbar" aria-label="Loading" />
         }
 
-        @if (_nodes.Count > 0)
+        @if (_shown.Count > 0)
         {
             <div class="explore-tools">
                 <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small" OverrideStyles="false">
@@ -127,20 +127,20 @@
             </div>
         }
 
-        @if (_table && _nodes.Count > 0)
+        @if (_table && _shown.Count > 0)
         {
             <div class="explore-table-wrap">
                 <ExploreTable Nodes="VisibleNodes.ToList()" Edges="_edges" Schema="_schema" SelectedId="@_selected?.Id" OnSelect="SelectFromTableAsync" />
             </div>
         }
-        else if (_cards && _nodes.Count > 0)
+        else if (_cards && _shown.Count > 0)
         {
             <div class="explore-table-wrap">
                 <ExploreCards Nodes="VisibleNodes.ToList()" Schema="_schema" SelectedId="@_selected?.Id" OnSelect="SelectFromTableAsync" />
             </div>
         }
 
-        @if (_nodes.Count == 0)
+        @if (_shown.Count == 0)
         {
             <div class="explore-empty">Type anything above and press Enter, or start with a type. Type graph to see the model. Right-click a node to expand it. Press ? for keyboard shortcuts.</div>
         }
@@ -198,14 +198,14 @@
             {
                 <MudButton OnClick="@(() => ShowTypeAsync(node.Label))" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" FullWidth="true" Class="mb-1">Show all @node.Label nodes</MudButton>
             }
-            else if (_remaining.GetValueOrDefault(node.Id) is > 0 and var remaining)
+            else if (_shown.RemainingFor(node.Id) is > 0 and var remaining)
             {
                 <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2">@remaining more linked here weren't added.</MudAlert>
                 <MudButton OnClick="@(() => ExpandAsync(node.Id))" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" FullWidth="true" Class="mb-1">Show more</MudButton>
             }
             else
             {
-                <MudButton OnClick="@(() => ExpandAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1">@(_expanded.Contains(node.Id) ? "Expand again" : "Expand")</MudButton>
+                <MudButton OnClick="@(() => ExpandAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1">@(_shown.IsExpanded(node.Id) ? "Expand again" : "Expand")</MudButton>
             }
 
             @if (!node.IsModel)
@@ -266,7 +266,7 @@
         </div>
         <MudSwitch T="bool" Value="_linkValues" ValueChanged="ToggleLinkValuesAsync" Label="@(_showingModel ? "Show attribute names on links" : "Show values on links")"
                    Color="Color.Primary" Size="Size.Small" Class="mt-1" />
-        @if (!_showingModel && _nodes.Count > 0)
+        @if (!_showingModel && _shown.Count > 0)
         {
             <div class="explore-section-title">As of</div>
             <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="Show the graph as it was on" Date="_asOf" DateChanged="ChooseAsOfAsync"
@@ -286,8 +286,8 @@
             }
         }
         <MudStack Row="true" Spacing="1" Class="mt-2">
-            <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Fit (f)">Fit</MudButton>
-            <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_nodes.Count == 0" title="Clear (c)">Clear</MudButton>
+            <MudButton OnClick="FitAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_shown.Count == 0" title="Fit (f)">Fit</MudButton>
+            <MudButton OnClick="ClearAsync" Variant="Variant.Outlined" Size="Size.Small" Style="flex: 1" Disabled="_shown.Count == 0" title="Clear (c)">Clear</MudButton>
         </MudStack>
 
         <div class="explore-section-title">Saved views</div>

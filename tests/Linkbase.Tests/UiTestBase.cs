@@ -29,8 +29,10 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton(factory);
         Services.AddSingleton<InsightsRepository>();
         Services.AddSingleton<GraphRepository>();
+        Services.AddSingleton<IGraphRepository>(sp => sp.GetRequiredService<GraphRepository>());
         Services.AddSingleton<Linkbase.Core.Views.SavedViewRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+        Services.AddSingleton<Linkbase.Core.Records.IRecordRepository>(p => p.GetRequiredService<Linkbase.Core.Records.RecordRepository>());
         Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
         Services.AddSingleton<Linkbase.Core.History.ChangeReverter>();
         Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();
@@ -38,7 +40,10 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton<Linkbase.Core.Security.IViewerResolver, EveryoneHoldsEverything>();
         AddEverydayRepositories();
         Services.AddSingleton(new DatabaseStatusService(factory, NullLogger<DatabaseStatusService>.Instance));
-        Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build()));
+        Services.AddSingleton(Linkbase.Core.Records.RecordHooks.None);
+        Services.AddSingleton(Linkbase.Core.Security.FieldPolicy.Unrestricted);
+        Services.AddSingleton(Linkbase.Domains.RegisteredDomains.Registry);
+        Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build(), Linkbase.Domains.RegisteredDomains.Registry));
         Services.AddSingleton<CurrentModel>();
 
         // Explore has a question box. A test that wants one to answer registers its own compiler after this.
@@ -214,8 +219,10 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             _climbing = await ClimbingStore.CreateAsync(Fixture);
             Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(_climbing);
             Services.AddSingleton<GraphRepository>();
+            Services.AddSingleton<IGraphRepository>(sp => sp.GetRequiredService<GraphRepository>());
             Services.AddSingleton<Linkbase.Core.Views.SavedViewRepository>();
             Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
+            Services.AddSingleton<Linkbase.Core.Records.IRecordRepository>(p => p.GetRequiredService<Linkbase.Core.Records.RecordRepository>());
             Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
             Services.AddSingleton<Linkbase.Core.History.ChangeReverter>();
             Services.AddSingleton<Linkbase.Core.Records.ExternalRefRepository>();

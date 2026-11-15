@@ -115,7 +115,7 @@ internal sealed class PostgresServer
         var template = await TemplateAsync("climbing", async connectionString =>
         {
             await MigrateAsync(connectionString);
-            await new ModelLoader(new ModelFactory(connectionString)).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
+            await new ModelLoader(new ModelFactory(connectionString), Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(RepoPaths.Resolve("models/climbing/model.json"), TextWriter.Null);
             await WithoutRequiredReasonsAsync(connectionString);
         });
         return await CreateDatabaseAsync($"model_{Guid.NewGuid():N}", template) + ";Pooling=false";

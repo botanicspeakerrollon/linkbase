@@ -99,7 +99,7 @@ public sealed class ClimbingRecordHook(
         record.Set("grade_rank", GradeRanking.Rank(system, grade) is { } rank ? JsonValue.Create(rank) : null);
     }
 
-    public async Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, CancellationToken cancellationToken)
+    public async Task AfterChangeAsync(IReadOnlyList<RecordChange> changes, long? changeSetId, CancellationToken cancellationToken)
     {
         if (changes.Any(NamesAscents))
         {
@@ -119,7 +119,7 @@ public sealed class ClimbingRecordHook(
             return;
         }
 
-        await trips.RebuildAsync(Corrections.Load(path).TripMerges, cancellationToken);
+        await trips.RebuildAsync(Corrections.Load(path).TripMerges, changeSetId, cancellationToken);
     }
 
     // A new or edited ascent, a route that was renamed, or an ascent that now belongs to another route.
