@@ -13,9 +13,9 @@ src/Linkbase/
   Core/                 Generic. Knows no domain
     Models/             ModelCatalog (configured and app-made models), ModelCreator and NewModelPage (a new model with its own database), CurrentModel (this circuit's model), ModelFile, ModelLoader
     Graph/              GraphRepository (behind IGraphRepository) and GraphPattern: the graph_nodes / graph_edges views and pattern search
-    Explore/            The Explore page (CanvasGraph holds the nodes on the canvas), pattern search bar, Ask box, table, export, label styles
+    Explore/            The Explore page (CanvasGraph holds the nodes on the canvas, AsOfState the chosen day and PatternPaging how far through a search it has got), pattern search bar, Ask box, table, export, label styles (GraphStyles, injected, looks them up from the registered domains)
     Ask/                Plain-English questions: the compiler, PatternChecker (checks the answer), QuestionService
-    Records/            Generated list, record and edit pages, RecordRepository (behind IRecordRepository: writes, merge, hierarchy, with the reads in RecordReader), RecordHooks, ExternalRefRepository
+    Records/            Generated list, record and edit pages, RecordRepository (behind IRecordRepository: writes, with the reads in RecordReader, derived records in DerivedRecordWriter, merging in RecordMerger and the hierarchy checks in RecordHierarchy), RecordHooks, ExternalRefRepository
     History/            ChangeRecorder (writes the audit trail), HistoryRepository (reads it), ChangeReverter
     Views/              Saved views and the state a page keeps in its address (ViewState)
     Paths/, Timeline/   Find a path, Trace (TraceRepository), and the timeline page

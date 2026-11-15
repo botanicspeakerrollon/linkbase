@@ -23,10 +23,10 @@
         <PatternSearchBar @ref="_searchBar" Schema="_schema" OnRun="RunPatternAsync" OnShowModel="ShowModelAsync" AutoFocus="true" />
         <AskBox @ref="_askBox" Schema="_schema" OnAnswer="RunAnswerAsync" />
 
-        @if (_lastPattern is not null && _patternRemaining > 0)
+        @if (_lastPattern is not null && _paging.HasMore)
         {
             <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
-                Showing the first @_patternShown matches. @_patternRemaining more.
+                Showing the first @_paging.Shown matches. @_paging.Remaining more.
                 <MudButton OnClick="ShowMorePatternAsync" Variant="Variant.Text" Size="Size.Small">Show more</MudButton>
             </MudAlert>
         }
@@ -270,18 +270,18 @@
         @if (!_showingModel && _shown.Count > 0)
         {
             <div class="explore-section-title">As of</div>
-            <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="Show the graph as it was on" Date="_asOf" DateChanged="ChooseAsOfAsync"
+            <MudDatePicker Variant="Variant.Outlined" Margin="Margin.Dense" Label="Show the graph as it was on" Date="_asOf.Day" DateChanged="ChooseAsOfAsync"
                            Clearable="true" DateFormat="yyyy-MM-dd" MaxDate="DateTime.Today" />
-            @if (_historyStart is not null)
+            @if (_asOf.HistoryStart is not null)
             {
                 <MudSlider T="int" Min="0" Max="HistoryDays" Value="SliderValue" ValueChanged="SlideAsync" Immediate="false" Size="Size.Small" aria-label="Day to show the graph as of" />
             }
-            @if (_asOf is not null)
+            @if (_asOf.Active)
             {
-                var hiddenNodes = _asOfView.MissingNodes.Count;
+                var hiddenNodes = _asOf.View.MissingNodes.Count;
                 <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary)">
-                    As of @_asOf.Value.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture): @hiddenNodes @(hiddenNodes == 1 ? "record" : "records") and
-                    @_asOfView.MissingEdges.Count @(_asOfView.MissingEdges.Count == 1 ? "link" : "links") didn't exist yet, so aren't shown.
+                    As of @_asOf.Day!.Value.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture): @hiddenNodes @(hiddenNodes == 1 ? "record" : "records") and
+                    @_asOf.View.MissingEdges.Count @(_asOf.View.MissingEdges.Count == 1 ? "link" : "links") didn't exist yet, so aren't shown.
                     Values are as they were. Records since deleted can't be shown.
                 </MudText>
             }

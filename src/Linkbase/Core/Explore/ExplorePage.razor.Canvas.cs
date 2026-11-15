@@ -159,7 +159,7 @@ public partial class ExplorePage
         var visible = VisibleNodes.Select(n => n.Id).ToHashSet();
         var nodes = VisibleNodes.Select(n => (object)new { id = n.Id, label = n.Label, kind = n.Property("kind"), caption = Styles.Caption(n) }).ToArray();
         var edges = _edges
-            .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId) && !_asOfView.MissingEdges.Contains(e.Key))
+            .Where(e => visible.Contains(e.SourceId) && visible.Contains(e.TargetId) && !_asOf.View.MissingEdges.Contains(e.Key))
             .Select(e => (object)new { id = e.Key, source = e.SourceId, target = e.TargetId, relType = EdgeCaption(e) })
             .ToArray();
         return (nodes, edges);
