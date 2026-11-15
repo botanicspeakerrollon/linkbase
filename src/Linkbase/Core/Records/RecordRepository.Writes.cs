@@ -29,7 +29,7 @@ public sealed partial class RecordRepository
         await transaction.CommitAsync(cancellationToken);
         using (ChangeRecorder.Causing(changeSet))
         {
-            await _hooks.AfterChangeAsync(changes, cancellationToken);
+            await hooks.AfterChangeAsync(changes, cancellationToken);
         }
 
         return created;
@@ -174,7 +174,7 @@ public sealed partial class RecordRepository
         await transaction.CommitAsync(cancellationToken);
         using (ChangeRecorder.Causing(changeSet))
         {
-            await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, after)], cancellationToken);
+            await hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, after)], cancellationToken);
         }
     }
 
@@ -269,7 +269,7 @@ public sealed partial class RecordRepository
 
         using (ChangeRecorder.Causing(changeSet))
         {
-            await _hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
+            await hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Deleted, node.Type, id, Values(node.Props), NoValues)], cancellationToken);
         }
     }
 
@@ -315,7 +315,7 @@ public sealed partial class RecordRepository
         await transaction.CommitAsync(cancellationToken);
         using (ChangeRecorder.Causing(changeSet))
         {
-            await _hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), cancellationToken);
+            await hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), cancellationToken);
         }
     }
 
@@ -376,7 +376,7 @@ public sealed partial class RecordRepository
         {
             using (ChangeRecorder.Causing(changeSet))
             {
-                await _hooks.AfterChangeAsync(
+                await hooks.AfterChangeAsync(
                     LinkChanges(RecordChangeKind.LinkUpdated, sourceType, link.SourceId, link.RelType, targetType, link.TargetId, before, after), cancellationToken);
             }
         }
@@ -448,7 +448,7 @@ public sealed partial class RecordRepository
         {
             using (ChangeRecorder.Causing(changeSet))
             {
-                await _hooks.AfterChangeAsync(
+                await hooks.AfterChangeAsync(
                     LinkChanges(RecordChangeKind.Unlinked, link.SourceType, link.SourceId, link.RelType, link.TargetType, link.TargetId, before: Values(link.Props)), cancellationToken);
             }
         }

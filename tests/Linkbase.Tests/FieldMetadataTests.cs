@@ -166,7 +166,7 @@ public sealed class FieldMetadataTests(PostgresFixture fixture) : IDisposable, I
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Write(FieldMetadataModel.Json, FieldMetadataModel.Files), TextWriter.Null);
-        return (factory, new RecordRepository(factory));
+        return (factory, new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     [Fact]
@@ -372,7 +372,7 @@ public sealed class FieldMetadataImportTests(PostgresFixture fixture) : IDisposa
         var good = Linkbase.Core.CsvImport.CsvImportService.Read(Csv("id,name,held_on\nc2,Knots,2024-01-02|2025-03-04\nc3,Belay,2026-05-06\n"), "good.csv");
         await importer.ImportAsync(good, mapping);
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Equal("2024-01-02\n2025-03-04", (await records.GetAsync("Course", "c2"))!.Values["held_on"]);
 
         // A single date is still a list of one, so filtering on the field finds both.

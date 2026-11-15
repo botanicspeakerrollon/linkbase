@@ -38,7 +38,7 @@ public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, I
 
         var batchId = await importer.StageAsync(file, Suppliers);
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Null(await records.TypeAsync("Supplier"));
         var batch = (await staging.GetAsync(batchId))!;
         Assert.Equal((ImportStatus.Staged, 3, 0, 3), (batch.Status, batch.Records, batch.Links, batch.Included));
@@ -80,7 +80,7 @@ public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, I
 
         var committed = await staging.CommitAsync(batchId);
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Equal(2, committed.Records);
         Assert.Equal(["Brill", "Cobalt"], (await records.ListAsync("Supplier", null, 0, 10)).Rows.Select(r => r.Name));
     }
@@ -93,7 +93,7 @@ public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, I
 
         await staging.DiscardAsync(batchId);
 
-        Assert.Null(await new RecordRepository(factory).TypeAsync("Supplier"));
+        Assert.Null(await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Supplier"));
         Assert.Equal(ImportStatus.Undone, (await staging.GetAsync(batchId))!.Status);
         await using var db = factory.CreateDbContext();
         Assert.False(await db.StagedItems.AnyAsync());
@@ -106,7 +106,7 @@ public sealed class ImportStagingTests(PostgresFixture fixture) : IDisposable, I
     public async Task Staged_links_are_counted_and_skip_what_changed_since()
     {
         var (factory, importer, staging) = await ExampleAsync();
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var file = Csv("assignments.csv", "person,project\np1,pr1\np1,pr3\np2,pr1\np2,pr2\n");
         var mapping = new CsvLinkMapping("Person", 0, "WORKS_ON", "Project", 1);
         var before = (await records.LinksAsync("person:p1")).Where(g => g.RelType == "WORKS_ON").Sum(g => g.Total);

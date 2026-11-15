@@ -219,7 +219,7 @@ public class LoadTests(ITestOutputHelper output)
             var split = entry.IndexOf('=', StringComparison.Ordinal);
             var name = entry[..split];
             var factory = new Factory(entry[(split + 1)..]);
-            var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
+            var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
             var material = await DiscoverAsync(graph);
             var ops = Operations(graph, material);

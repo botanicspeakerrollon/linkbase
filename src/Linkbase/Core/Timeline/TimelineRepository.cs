@@ -30,7 +30,7 @@ public sealed record AsOfView(
 
 // Dated records on a timeline, and the graph as it was. Dates are kept as text, yyyy-MM-dd, which sorts the same as dates do, so
 // a malformed value can't make a whole query fail.
-public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, Security.FieldPolicy? fieldPolicy = null)
+public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, Security.FieldPolicy fieldPolicy)
 {
     public const int EntryLimit = 300;
     private const int MonthLimit = 600;
@@ -39,7 +39,7 @@ public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> cont
     public async Task<IReadOnlyList<DateFieldOption>> DateFieldsAsync(CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var hidden = fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        var hidden = await fieldPolicy.HiddenAsync(db, cancellationToken);
         var options = await db.FieldDefinitions.AsNoTracking()
             .Where(f => f.Type == FieldType.Date && !f.Multiple)
             .OrderBy(f => f.NodeType.SortOrder).ThenBy(f => f.NodeTypeName).ThenBy(f => f.Id)
@@ -52,7 +52,7 @@ public sealed class TimelineRepository(IDbContextFactory<LinkbaseDbContext> cont
     public async Task<TimelineData> LoadAsync(string type, string field, string? from, string? to, CancellationToken cancellationToken = default)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        var hidden = fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        var hidden = await fieldPolicy.HiddenAsync(db, cancellationToken);
         if (hidden.IsHidden(type, field))
         {
             return new TimelineData([], [], 0, 0);

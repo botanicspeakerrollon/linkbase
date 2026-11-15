@@ -144,7 +144,7 @@ public sealed partial class ImportStagingService
             return (restored, logged);
         }
 
-        var records = new RecordRepository(contextFactory);
+        var records = new RecordRepository(contextFactory, RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var types = new Dictionary<string, RecordType?>(StringComparer.Ordinal);
         var shown = 0;
         foreach (var group in updates.GroupBy(u => u.EntityId))

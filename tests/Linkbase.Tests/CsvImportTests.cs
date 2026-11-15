@@ -91,7 +91,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
     public async Task A_file_of_records_goes_to_the_type_it_looks_like()
     {
         var (factory, importer) = await ExampleAsync();
-        var types = await new RecordRepository(factory).TypesAsync();
+        var types = await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypesAsync();
 
         // Person's fields, and a key that's already a Person, whatever the file is called.
         var people = await importer.GuessTypeAsync(Csv("more-people.csv", "id;name;title;team;joined\np2;Ben;Designer;t1;2022-09-12\np9;Isla;QA;t2;2025-03-03\n"), 0, "MorePeople", types);
@@ -148,7 +148,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         var result = await importer.ImportAsync(file, mapping);
 
         Assert.Equal(2, result.Added);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var type = (await records.TypeAsync("Supplier"))!;
         Assert.Equal([new RecordField("founded", FieldType.Date), new RecordField("staff", FieldType.Number)], type.Fields);
         var acme = (await records.GetAsync("Supplier", "s1"))!;
@@ -188,7 +188,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
 
         await importer.ImportAsync(file, mapping);
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var acme = (await records.GetAsync("Supplier", "acme"))!;
         Assert.Equal(("Acme", "2001-04-02"), (acme.Name, acme.Values["founded"]));
 
@@ -208,7 +208,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
     {
         var (factory, importer) = await ExampleAsync();
         await importer.ImportAsync(Csv("first.csv", "name\nAcme\n"), new CsvRecordMapping("Supplier", -1, 0, []));
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         await records.CreateAsync("Supplier", "acme-again", new RecordInput("Acme", new Dictionary<string, string?>()));
         var file = Csv("suppliers.csv", "name\nAcme\n");
         var mapping = new CsvRecordMapping("Supplier", -1, 0, []);
@@ -240,7 +240,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         var result = await importer.ImportAsync(file, mapping);
 
         Assert.Equal(1, result.Added);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Equal("Ava Lindqvist", (await records.GetAsync("Person", "p1"))!.Name);
         Assert.Equal("6", (await records.GetAsync("Person", "p9"))!.Values["shoe_size"]);
         Assert.Contains(new RecordField("shoe_size", FieldType.Number), (await records.TypeAsync("Person"))!.Fields);
@@ -291,7 +291,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
 
         await importer.ImportAsync(file, mapping);
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Equal(["Gold", "silver"], (await records.TypeAsync("Supplier"))!.Fields.Single().Options);
         Assert.Equal("Gold", (await records.GetAsync("Supplier", "s3"))!.Values["tier"]);
         Assert.False((await records.GetAsync("Supplier", "s4"))!.Values.ContainsKey("tier"));
@@ -308,7 +308,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         Assert.Equal(["Row 3: status is \"paused\", which isn't one of proposed, active, live or closed."], plan.Problems);
 
         await importer.ImportAsync(Csv("projects.csv", "id,name,status\npr8,Intranet,Proposed\n"), mapping);
-        Assert.Equal("proposed", (await new RecordRepository(factory).GetAsync("Project", "pr8"))!.Values["status"]);
+        Assert.Equal("proposed", (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).GetAsync("Project", "pr8"))!.Values["status"]);
     }
 
     [Fact]
@@ -330,7 +330,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
         var importer = new CsvImportService(factory);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         var plan = await importer.PlanAsync(Csv("books.csv", "id,title,isbn\nb9,New,999\n"),
             new CsvRecordMapping("Book", 0, 1, [new CsvFieldMapping(2, "isbn", FieldType.Text)]));
@@ -367,7 +367,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
 
         await importer.ImportAsync(file, new CsvRecordMapping("Supplier", 0, 1, [new CsvFieldMapping(2, "aliases", FieldType.List)]));
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Equal("Acme Ltd\nACME", (await records.GetAsync("Supplier", "s1"))!.Values["aliases"]);
         Assert.False((await records.GetAsync("Supplier", "s2"))!.Values.ContainsKey("aliases"));
         Assert.False((await records.GetAsync("Supplier", "s3"))!.Values.ContainsKey("aliases"));
@@ -388,12 +388,12 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         var result = await importer.ImportAsync(file, mapping);
 
         Assert.Equal(3, result.Added);
-        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 3), await graph.ConnectionCountsAsync());
         Assert.Equal(3, (await importer.PlanAsync(file, mapping)).AlreadyThere);
 
         // A record it added stays while something added since still links to it.
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var suppliers = (await importer.RecentAsync(5)).Single(b => b.What == "Supplier records");
         var stayed = await importer.UndoAsync(suppliers.Id);
         Assert.False(stayed.Complete);
@@ -448,7 +448,7 @@ public sealed class CsvImportTests(PostgresFixture fixture) : IDisposable, IClas
         await importer.ImportAsync(people, peopleMapping);
         Assert.Equal(3, (await importer.ImportAsync(people, new CsvLinkMapping("Person", 0, "MEMBER_OF", "Team", 3))).Added);
 
-        Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 7), await new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry).ConnectionCountsAsync());
+        Assert.Contains(new ConnectionCount("Supplier", "SUPPLIES", "Project", 7), await new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted).ConnectionCountsAsync());
     }
 
     [Fact]
@@ -492,13 +492,13 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         Sees(cut, "Recent imports");
         Press(cut, "See them");
         NavigatedTo("/data/Supplier");
-        Assert.Equal(2, (await new RecordRepository(factory).ListAsync("Supplier", null, 0, 10)).Total);
+        Assert.Equal(2, (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).ListAsync("Supplier", null, 0, 10)).Total);
 
         Press(cut, "Undo");
         Press(Dialogs, "Undo");
         Told("Import undone.");
         Sees(cut, "Undone");
-        Assert.Equal(0, (await new RecordRepository(factory).ListAsync("Supplier", null, 0, 10)).Total);
+        Assert.Equal(0, (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).ListAsync("Supplier", null, 0, 10)).Total);
     }
 
     [Fact]
@@ -517,7 +517,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
 
         Press(cut, "Review first");
         WaitUntil(() => CurrentPath.StartsWith("/import/review/", StringComparison.Ordinal), $"the review, at {CurrentPath}");
-        Assert.Null(await new RecordRepository(factory).TypeAsync("Supplier"));
+        Assert.Null(await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Supplier"));
         var review = RenderPage<StagedImportPage>(p => p.Add(x => x.BatchId, long.Parse(CurrentPath.Split('/')[^1], System.Globalization.CultureInfo.InvariantCulture)));
 
         Sees(review, "Review suppliers.csv");
@@ -529,7 +529,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         Press(review, "Commit 1");
         Press(Dialogs, "Commit");
         Told("Added 1.");
-        Assert.Equal(["Brill"], (await new RecordRepository(factory).ListAsync("Supplier", null, 0, 10)).Rows.Select(r => r.Name));
+        Assert.Equal(["Brill"], (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).ListAsync("Supplier", null, 0, 10)).Rows.Select(r => r.Name));
     }
 
     [Fact]
@@ -594,7 +594,7 @@ public sealed class CsvImportPageTests(PostgresFixture fixture) : UiTestBase(fix
         Press(cut, "Import 1");
         Sees(cut, "Added 0 link(s) and updated 1.");
 
-        var link = (await new RecordRepository(factory).LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
+        var link = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).LinksAsync("person:p1")).Single(g => g.RelType == "WORKS_ON").Links.Single(l => l.OtherKey == "pr2");
         Assert.Equal(("Lead", "3"), (link.Values["role"], link.Values["days_a_week"]));
     }
 }

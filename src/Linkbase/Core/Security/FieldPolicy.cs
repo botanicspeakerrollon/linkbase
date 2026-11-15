@@ -109,11 +109,20 @@ public sealed class HiddenFields
 // Decides which properties a viewer sees masked. Row security already hides records the viewer may not see, so this checks only
 // each field definition's own label, with the same rule as everything else (VisibilityRule). The values stay in `props`, so this
 // is application code, not the database: every reader of props has to ask (docs/history/security-design.md, "Properties").
-public sealed class FieldPolicy(RowSecurityState state, IViewerResolver resolver)
+public sealed class FieldPolicy(RowSecurityState? state, IViewerResolver? resolver)
 {
+    // For code that deliberately reads or writes everything: the module's own writes, imports that show nothing to a viewer,
+    // and tests. A repository that is meant to hide fields is given the real policy, and can't be built without one.
+    public static readonly FieldPolicy Unrestricted = new(null, null);
+
     // Uses the caller's context, so a read with security off adds no connection and no query.
     public async ValueTask<HiddenFields> HiddenAsync(LinkbaseDbContext db, CancellationToken cancellationToken = default)
     {
+        if (state is null || resolver is null)
+        {
+            return HiddenFields.None;
+        }
+
         await db.Database.OpenConnectionAsync(cancellationToken);
         var connection = (Npgsql.NpgsqlConnection)db.Database.GetDbConnection();
         if (await state.SecurityAsync(connection, cancellationToken) is not { Enabled: true } security)

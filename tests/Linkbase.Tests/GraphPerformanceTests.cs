@@ -76,7 +76,7 @@ public class GraphPerformanceTests
     public async Task Measure_every_query_the_explore_page_runs()
     {
         var factory = new Factory();
-        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var lines = new List<string> { "| What | Median | First run | Rows |", "| --- | --- | --- | --- |" };
 
         var schema = Fallback;

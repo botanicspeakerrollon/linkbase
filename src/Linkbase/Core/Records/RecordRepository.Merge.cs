@@ -149,7 +149,7 @@ public sealed partial class RecordRepository
         await transaction.CommitAsync(cancellationToken);
         using (ChangeRecorder.Causing(changeSet))
         {
-            await _hooks.AfterChangeAsync(changes, cancellationToken);
+            await hooks.AfterChangeAsync(changes, cancellationToken);
         }
 
         return new MergeResult(moved, dropped, filled, refs.Count);

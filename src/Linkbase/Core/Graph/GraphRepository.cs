@@ -57,13 +57,13 @@ public sealed record GraphNeighbours(IReadOnlyList<GraphNode> Nodes, int Remaini
 public sealed record Subgraph(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
 
-public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, DomainRegistry registry, Security.FieldPolicy? fieldPolicy = null)
+public sealed class GraphRepository(IDbContextFactory<LinkbaseDbContext> contextFactory, DomainRegistry registry, Security.FieldPolicy fieldPolicy)
 {
     // A type and key joined, to test against in SQL: n.label || chr(31) || key <> ALL(pairs).
     private const char PairSeparator = '\u001f';
 
     private async ValueTask<Security.HiddenFields> HiddenAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
-        fieldPolicy is null ? Security.HiddenFields.None : await fieldPolicy.HiddenAsync(db, cancellationToken);
+        await fieldPolicy.HiddenAsync(db, cancellationToken);
 
     private static string[] Pairs(Security.HiddenFields hidden) => hidden.Pairs(PairSeparator);
 

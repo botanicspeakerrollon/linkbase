@@ -17,7 +17,7 @@ public sealed class ModelEditorTests(PostgresFixture fixture) : IClassFixture<Po
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Example, TextWriter.Null);
-        return (factory, new ModelEditor(factory), new RecordRepository(factory));
+        return (factory, new ModelEditor(factory), new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     // A brand new type with no records, so a hierarchy can be tried without existing records getting in the way.

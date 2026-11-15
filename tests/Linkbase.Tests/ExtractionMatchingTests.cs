@@ -101,7 +101,7 @@ public sealed class ExtractionMatchingTests(PostgresFixture fixture) : IClassFix
         var store = await ClimbingStore.CreateAsync(fixture);
         var staging = new ImportStagingService(store);
         var service = new ModelExtractionService(
-            new RecordRepository(store), extractor, new PageTextFetcher(new HttpClient()), store, staging, hooks ? new RecordHooks([ClimbingExtraction.Hook()]) : null);
+            new RecordRepository(store, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted), extractor, new PageTextFetcher(new HttpClient()), store, staging, hooks ? new RecordHooks([ClimbingExtraction.Hook()]) : null);
         return (store, service, staging);
     }
 

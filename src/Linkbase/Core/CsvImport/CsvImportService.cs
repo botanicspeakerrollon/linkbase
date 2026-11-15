@@ -76,7 +76,7 @@ public sealed partial class CsvImportService(IDbContextFactory<LinkbaseDbContext
         // A module's hooks set the fields it keeps, so they're staged with the record.
         if (_hooks.Watch(mapping.Type))
         {
-            var type = await new RecordRepository(contextFactory).TypeAsync(mapping.Type, cancellationToken)
+            var type = await new RecordRepository(contextFactory, RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync(mapping.Type, cancellationToken)
                 ?? new RecordType(mapping.Type, null, null, mapping.Fields.Select(f => new RecordField(f.Key, f.Type)).ToList());
             rows = rows.Select(row =>
             {

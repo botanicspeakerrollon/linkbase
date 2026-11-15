@@ -209,7 +209,7 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         var staging = new ImportStagingService(factory);
-        var service = new ModelExtractionService(new RecordRepository(factory), new FakeExtractor(answer), new PageTextFetcher(new HttpClient()), factory, staging);
+        var service = new ModelExtractionService(new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted), new FakeExtractor(answer), new PageTextFetcher(new HttpClient()), factory, staging);
         return (factory, service, staging);
     }
 

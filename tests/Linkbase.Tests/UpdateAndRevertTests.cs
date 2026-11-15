@@ -41,7 +41,7 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
         await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
         var importer = new CsvImportService(factory);
         await importer.ImportAsync(Csv("id,name,city,rating\ns1,Acme,Bern,3\ns2,Brill,Basel,4\n"), Mapping(false));
-        return (factory, importer, new RecordRepository(factory));
+        return (factory, importer, new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
         Assert.NotEqual(s1.CreatedAt, s1.UpdatedAt);
 
         // The record's history says what changed and which import did it.
-        var history = await new HistoryRepository(factory).ForRecordAsync("supplier:s1");
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("supplier:s1");
         var entry = history.First(h => h.ImportBatchId == result.BatchId);
         Assert.Equal(JustificationKind.Import, entry.Kind);
         Assert.Equal(("city", "Bern", "Zurich"), entry.Changes.Select(c => (c.FieldKey!, c.OldValue!, c.NewValue!)).Single());
@@ -88,7 +88,7 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
         Assert.Null(await records.GetAsync("Supplier", "s3"));
 
         // The undo is in the history too, and a second one has nothing left to do.
-        Assert.Contains((await new HistoryRepository(factory).ForRecordAsync("supplier:s1")), h => h.Note == $"Import #{result.BatchId} undone");
+        Assert.Contains((await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("supplier:s1")), h => h.Note == $"Import #{result.BatchId} undone");
         await Assert.ThrowsAsync<LinkbaseValidationException>(() => importer.UndoAsync(result.BatchId));
     }
 
@@ -125,7 +125,7 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
         Assert.False(rows[1].Updating);
 
         // Nothing has changed until it is committed.
-        Assert.Equal("Bern", (await new RecordRepository(factory).GetAsync("Supplier", "s1"))!.Values["city"]);
+        Assert.Equal("Bern", (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).GetAsync("Supplier", "s1"))!.Values["city"]);
         var commit = await staging.CommitAsync(batch);
         Assert.Equal((1, 1), (commit.Records, commit.Updated));
     }
@@ -160,7 +160,7 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
-        return (factory, new CsvImportService(factory), new RecordRepository(factory));
+        return (factory, new CsvImportService(factory), new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     [Fact]
@@ -262,13 +262,13 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, RepoPaths.Resolve("models/consultancy/model.json"), TextWriter.Null);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         await records.CreateAsync("Person", "z1", TestModels.Person("Zoe Adams", new() { ["title"] = "Designer" }), new ChangeReason("Added"));
         return (factory, records, new ChangeReverter(factory, records));
     }
 
     private static async Task<long> LatestAsync(ModelFactory factory, string id) =>
-        (await new HistoryRepository(factory).ForRecordAsync(id))[0].ChangeSetId;
+        (await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync(id))[0].ChangeSetId;
 
     [Fact]
     public async Task Reverting_an_edit_puts_the_old_values_back_as_an_edit_of_its_own()
@@ -279,7 +279,7 @@ public sealed class UpdateAndRevertTests(PostgresFixture fixture) : IDisposable,
         await reverter.RevertAsync(await LatestAsync(factory, "person:z1"), "Wrong person");
 
         Assert.Equal("Designer", (await records.GetAsync("Person", "z1"))!.Values["title"]);
-        var history = await new HistoryRepository(factory).ForRecordAsync("person:z1");
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("person:z1");
         Assert.Equal("Reverted change #" + history[1].ChangeSetId + ": Wrong person", history[0].Note);
 
         // It can't be reverted twice.

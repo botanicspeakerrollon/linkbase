@@ -16,7 +16,7 @@ public sealed class GenericTripService(IDbContextFactory<LinkbaseDbContext> cont
 {
     public async Task<TripRebuildSummary> RebuildAsync(IReadOnlyList<TripMerge> merges, CancellationToken cancellationToken = default)
     {
-        var records = new RecordRepository(contextFactory);
+        var records = new RecordRepository(contextFactory, RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var areaParents = FirstTargets(await db.NodeLinks.AsNoTracking()

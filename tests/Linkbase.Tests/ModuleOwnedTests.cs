@@ -137,7 +137,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
     private async Task<(ModelFactory Factory, RecordRepository Records)> LoadAsync()
     {
         var factory = await OwnedModel.LoadAsync(fixture, _folder);
-        return (factory, new RecordRepository(factory, new RecordHooks([_hook])));
+        return (factory, new RecordRepository(factory, new RecordHooks([_hook]), Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     private static async Task<long> LinksCountedAsync(ModelFactory factory, string relType)
@@ -209,7 +209,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
     public async Task Without_a_hook_a_kept_field_keeps_its_value()
     {
         var (factory, _) = await LoadAsync();
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         await using (var db = factory.CreateDbContext())
         {
             await db.Nodes.Where(n => n.Id == "route:r1").ExecuteUpdateAsync(s => s
@@ -291,7 +291,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory,
             OwnedModel.Write(_folder, OwnedModel.Json.Replace("\"toColumn\": \"route\" } }", "\"toColumn\": \"route\" }, \"required\": true }")), TextWriter.Null);
-        var records = new RecordRepository(factory, new RecordHooks([_hook]));
+        var records = new RecordRepository(factory, new RecordHooks([_hook]), Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         await records.CreateAsync("Ascent", "a3", new RecordInput("Wet Slab again", new Dictionary<string, string?>()) { Links = [new NewLink("OF", "route:r2")] });
 
@@ -384,7 +384,7 @@ public sealed class ModuleOwnedTests(PostgresFixture fixture) : IDisposable, ICl
 
         var result = await importer.ImportAsync(file, new CsvRecordMapping("Route", 0, 1, [new(2, "grade", FieldType.Text)]));
 
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Assert.Equal("20", (await records.GetAsync("Route", "r3"))!.Values["grade_rank"]);
         Assert.Equal((RecordChangeKind.Created, "route:r3"), (_hook.Changes.Single().Kind, _hook.Changes.Single().Id));
 

@@ -114,7 +114,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
 
         await TestModels.LoadAsync(factory, path, TextWriter.Null);
 
-        var area = (await new RecordRepository(factory).TypeAsync("Area"))!;
+        var area = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Area"))!;
         Assert.Equal("kind", area.Hierarchy!.FieldKey);
         Assert.Equal("IN", area.Hierarchy.RelType);
         Assert.Equal(["top", "mid", "low"], area.Hierarchy.Levels.Select(l => l.Kind));
@@ -127,18 +127,18 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
 
-        var area = (await new RecordRepository(factory).TypeAsync("Area"))!;
+        var area = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Area"))!;
 
         Assert.Equal(["country", "region", "area"], area.Hierarchy!.Levels.Select(l => l.Kind));
         Assert.Equal(["region", "area"], area.Hierarchy.Level("area")!.Under);
-        Assert.Null((await new RecordRepository(factory).TypeAsync("Crag"))!.Hierarchy);
+        Assert.Null((await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Crag"))!.Hierarchy);
     }
 
     private async Task<RecordRepository> DemoAsync()
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
-        return new RecordRepository(factory);
+        return new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
     }
 
     private static RecordInput Input(string name, string kind, params string[] parents) =>
@@ -237,7 +237,7 @@ public sealed class HierarchyTests(PostgresFixture fixture) : IDisposable, IClas
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await TestModels.LoadAsync(factory, Demo, TextWriter.Null);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var staging = new ImportStagingService(factory);
 
         // A region put in a region is refused, the commit rolls back, and the batch is still there to untick it from.

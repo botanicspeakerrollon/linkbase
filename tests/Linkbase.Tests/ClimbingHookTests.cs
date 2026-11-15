@@ -29,7 +29,7 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable, IC
     {
         File.WriteAllText(_corrections, """{ "partnerRenames": [], "mountainProjectPartners": [], "tripMerges": [] }""");
         var hook = new ClimbingRecordHook(factory, new GenericTripService(factory), () => _corrections, NullLogger<ClimbingRecordHook>.Instance);
-        return new RecordRepository(factory, new RecordHooks([hook]));
+        return new RecordRepository(factory, new RecordHooks([hook]), Linkbase.Core.Security.FieldPolicy.Unrestricted);
     }
 
     private static async Task<string> IdOfAsync(ModelFactory factory, string type, string name)

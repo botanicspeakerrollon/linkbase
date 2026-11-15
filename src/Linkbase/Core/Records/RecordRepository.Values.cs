@@ -14,13 +14,13 @@ public sealed partial class RecordRepository
     // Lets the modules' hooks set the fields they keep.
     private string Hooked(RecordType type, string name, string props)
     {
-        if (!_hooks.Watch(type.Name))
+        if (!hooks.Watch(type.Name))
         {
             return props;
         }
 
         var json = JsonNode.Parse(props) as JsonObject ?? [];
-        _hooks.BeforeSave(type, name, json);
+        hooks.BeforeSave(type, name, json);
         return json.ToJsonString();
     }
 

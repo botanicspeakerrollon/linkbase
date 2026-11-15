@@ -96,7 +96,7 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
         Assert.Equal(26, summary.Links);
         Assert.Contains("Person: 8 from people.csv", output.ToString());
 
-        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry);
+        var graph = new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         var schema = await graph.SchemaAsync();
         Assert.Equal(["Person", "Project", "Client", "Team"], schema.Labels);
         Assert.Contains(new GraphConnection("Person", "WORKS_ON", "Project"), schema.Connections);
@@ -210,10 +210,10 @@ public sealed class ModelLoaderTests(PostgresFixture fixture) : IDisposable, ICl
 
         await TestModels.LoadAsync(factory, Library.Write(), TextWriter.Null);
 
-        var book = (await new RecordRepository(factory).TypeAsync("Book"))!;
+        var book = (await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Book"))!;
         Assert.Equal([new RecordField("isbn", FieldType.Text) { Required = true }], book.Fields);
         Assert.Equal([new RequiredLink("WRITTEN_BY", "Author")], book.RequiredLinks);
-        Assert.Empty((await new RecordRepository(factory).TypeAsync("Author"))!.RequiredLinks);
+        Assert.Empty((await new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted).TypeAsync("Author"))!.RequiredLinks);
     }
 
     [Theory]

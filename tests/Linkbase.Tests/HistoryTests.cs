@@ -46,7 +46,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(ModelWith(history), TextWriter.Null);
-        return (factory, new RecordRepository(factory));
+        return (factory, new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted));
     }
 
     private static RecordInput Person(string name, string? title = null) =>
@@ -112,7 +112,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         await using var db = factory.CreateDbContext();
         Assert.False(await db.Justifications.AnyAsync(j => j.Note == "Nothing changed"));
 
-        var history = await new HistoryRepository(factory).ForRecordAsync("person:z1");
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("person:z1");
         Assert.Equal(["Promoted", "Married", "Added"], history.Select(h => h.Note));
     }
 
@@ -139,9 +139,9 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         Assert.Contains("Zoe Adams", deleted.OldValue);
 
         // The history of a record that's gone is still there, and the project's page shows the links to it.
-        var history = await new HistoryRepository(factory).ForRecordAsync("person:z1");
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("person:z1");
         Assert.Equal("Left the company", history[0].Note);
-        var project = await new HistoryRepository(factory).ForRecordAsync("project:pr1");
+        var project = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("project:pr1");
         Assert.Equal(["Left the project", "More days", "Staffed"], project.Select(h => h.Note));
         Assert.Equal("person:z1", project[0].Changes.Single().OtherName);
     }
@@ -151,7 +151,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
     {
         var factory = new ModelFactory(await fixture.CreateModelDatabaseAsync("SELECT 1"));
         await new ModelLoader(factory, Linkbase.Domains.RegisteredDomains.Registry).LoadAsync(Library.Write(), TextWriter.Null);
-        var records = new RecordRepository(factory);
+        var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
         await records.CreateAsync("Book", "x1", new RecordInput("Quiet Ice", new Dictionary<string, string?> { ["isbn"] = "333" })
         {
             Links = [new NewLink("WRITTEN_BY", "author:a3")],
@@ -164,7 +164,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         Assert.Contains(changes, c => c is { EntityKind: ChangeEntityKind.Link, Op: ChangeOp.Create, RelType: "WRITTEN_BY", RelatedId: "author:a3" });
         Assert.Contains(changes, c => c is { EntityKind: ChangeEntityKind.Link, Op: ChangeOp.Delete, RelType: "WRITTEN_BY", RelatedId: "author:a3" });
         Assert.Contains(changes, c => c is { EntityKind: ChangeEntityKind.ExternalRef, Op: ChangeOp.Delete, OldValue: "ref-9" });
-        var author = await new HistoryRepository(factory).ForRecordAsync("author:a3");
+        var author = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("author:a3");
         Assert.Equal(["Withdrawn", "Acquired"], author.Select(h => h.Note));
         Assert.Equal("book:x1", author[0].Changes.Single().OtherName);
     }
@@ -251,7 +251,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         Assert.Contains(changes, c => c is { EntityKind: ChangeEntityKind.Definition, Op: ChangeOp.Create, EntityId: "type:Supplier" });
         Assert.DoesNotContain(changes, c => c.EntityKind == ChangeEntityKind.Node);
 
-        var history = await new HistoryRepository(factory).ForRecordAsync("supplier:s1");
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("supplier:s1");
         var added = Assert.Single(history);
         Assert.Equal((JustificationKind.Import, batchId), (added.Kind, added.ImportBatchId));
         Assert.Equal($"Added by import #{batchId}", added.Note);
@@ -267,7 +267,7 @@ public sealed class HistoryTests(PostgresFixture fixture) : IDisposable, IClassF
         try
         {
             var factory = await OwnedModel.LoadAsync(fixture, folder);
-            var records = new RecordRepository(factory);
+            var records = new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted);
             var first = new DerivedRecord("2024-wales", "Wales, May 2024", new Dictionary<string, string?> { ["country"] = "Wales" });
             var peaks = new DerivedRecord("2024-peaks", "Peaks, May 2024", new Dictionary<string, string?>());
 

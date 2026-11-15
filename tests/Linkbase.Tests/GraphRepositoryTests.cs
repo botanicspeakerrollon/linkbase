@@ -16,7 +16,7 @@ public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<Postg
     private sealed record Scenario(
         ModelFactory Store, string Country, string Crag, string Route, string Partner, string AscentId, string RouteId, string CragId, string AreaId, string PartnerId);
 
-    private static GraphRepository Graph(Scenario s) => new(s.Store, Linkbase.Domains.RegisteredDomains.Registry);
+    private static GraphRepository Graph(Scenario s) => new(s.Store, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
     private async Task<Scenario> CreateAsync(string date = "2020-05-02", string discipline = "trad")
     {
@@ -187,7 +187,7 @@ public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<Postg
         var crag = await ClimbingStore.AddAsync(store, "Crag", $"Crag {suffix}", null, "IN", area);
         var route = await ClimbingStore.AddAsync(store, "Route", $"Stanage {suffix}", null, "AT", crag);
         var ascent = await ClimbingStore.AddAsync(store, "Ascent", $"Stanage {suffix}", Ascent("2020-01-01", "lead"), "OF", route);
-        var graph = new GraphRepository(store, Linkbase.Domains.RegisteredDomains.Registry);
+        var graph = new GraphRepository(store, Linkbase.Domains.RegisteredDomains.Registry, Linkbase.Core.Security.FieldPolicy.Unrestricted);
 
         var all = await graph.SearchNodesAsync(suffix, null);
         Assert.Contains(all, n => n.Label == "Route");

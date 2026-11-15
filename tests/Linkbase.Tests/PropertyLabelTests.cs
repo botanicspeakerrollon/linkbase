@@ -48,7 +48,7 @@ public sealed class PropertyLabelTests(PostgresFixture fixture) : IClassFixture<
         var resolver = new Resolver(security, user);
         var factory = new Factory(connection, new ViewerConnectionInterceptor(state, resolver));
         var policy = new FieldPolicy(state, resolver);
-        return new Viewing(new RecordRepository(factory, null, policy), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, policy), new LabelRepository(factory),
+        return new Viewing(new RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, policy), new GraphRepository(factory, Linkbase.Domains.RegisteredDomains.Registry, policy), new LabelRepository(factory),
             new HistoryRepository(factory, policy));
     }
 

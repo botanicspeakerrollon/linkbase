@@ -229,7 +229,7 @@ public sealed class SecurityLabelsTests(PostgresFixture fixture) : IDisposable, 
         Assert.Single(changes.Select(c => c.ChangeSetId).Distinct());
         Assert.Equal(("project:pr1", "Sensitivity", "public", "confidential"), (changes[0].EntityId, changes[0].FieldKey, changes[0].OldValue, changes[0].NewValue));
 
-        var history = await new HistoryRepository(factory).ForRecordAsync("project:pr1");
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForRecordAsync("project:pr1");
         var entry = history.First(e => e.Changes.Any(c => c.Kind == ChangeEntityKind.Label));
         Assert.Equal("Budgets became sensitive", entry.Note);
     }
@@ -285,7 +285,7 @@ public sealed class SecurityLabelsTests(PostgresFixture fixture) : IDisposable, 
         var label = await repository.GetLinkAsync(link.Id);
         Assert.Equal("internal", label!.Level);
         Assert.Equal(["Harbourline"], label.AllOf);
-        var history = await new HistoryRepository(factory).ForLinkAsync(link.SourceId, link.RelType, link.TargetId);
+        var history = await new HistoryRepository(factory, Linkbase.Core.Security.FieldPolicy.Unrestricted).ForLinkAsync(link.SourceId, link.RelType, link.TargetId);
         Assert.Equal(2, history.SelectMany(e => e.Changes).Count(c => c.Kind == ChangeEntityKind.Label));
     }
 
@@ -297,7 +297,7 @@ public sealed class SecurityLabelsTests(PostgresFixture fixture) : IDisposable, 
         await using var db = factory.CreateDbContext();
         var set = await db.Changes.AsNoTracking().Where(c => c.EntityKind == ChangeEntityKind.Label).Select(c => c.ChangeSetId).FirstAsync();
 
-        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => new ChangeReverter(factory, new Linkbase.Core.Records.RecordRepository(factory)).RevertAsync(set, null));
+        var ex = await Assert.ThrowsAsync<LinkbaseValidationException>(() => new ChangeReverter(factory, new Linkbase.Core.Records.RecordRepository(factory, Linkbase.Core.Records.RecordHooks.None, Linkbase.Core.Security.FieldPolicy.Unrestricted)).RevertAsync(set, null));
 
         Assert.Contains("can't be reverted", ex.Message);
     }
