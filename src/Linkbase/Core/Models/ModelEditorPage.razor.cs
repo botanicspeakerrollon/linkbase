@@ -47,7 +47,7 @@ public sealed partial class ModelEditorPage : ComponentBase
         _ => type.ToString(),
     };
 
-    private static string TypeStyle(TypeOutline type) => $"color: {GraphStyle.For(type.Name, type.Color, type.Icon).Color}";
+    private string TypeStyle(TypeOutline type) => $"color: {Styles.For(type.Name, type.Color, type.Icon).Color}";
 
     private Task ChooseTabAsync(int tab)
     {

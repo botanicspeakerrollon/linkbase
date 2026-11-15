@@ -1,4 +1,5 @@
 @page "/"
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject DatabaseStatusService DatabaseStatus
 @inject CurrentModel CurrentModel
 @inject IGraphRepository Graph
@@ -233,6 +234,6 @@ else if (_counts is not null)
     private string ColorOf(string label)
     {
         var defined = _types.FirstOrDefault(t => t.Name == label);
-        return GraphStyle.For(label, defined?.Color, defined?.Icon).Color;
+        return Styles.For(label, defined?.Color, defined?.Icon).Color;
     }
 }

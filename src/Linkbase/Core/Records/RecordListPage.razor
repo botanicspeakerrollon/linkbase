@@ -1,4 +1,5 @@
 @page "/data/{Type}"
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject IRecordRepository Records
 @inject IDialogService Dialogs
 @inject NavigationManager Navigation
@@ -131,7 +132,7 @@ else if (_type is not null)
             _history = await Records.HistorySettingsAsync();
             _security = await Labels.SettingsAsync() is { Enabled: true } enabled ? enabled : null;
             _missing = _type is null;
-            _style = _type is null ? null : GraphStyle.For(Type, _type.Color, _type.Icon);
+            _style = _type is null ? null : Styles.For(Type, _type.Color, _type.Icon);
         }
 
         Apply(View);

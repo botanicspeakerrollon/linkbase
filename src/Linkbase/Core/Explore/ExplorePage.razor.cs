@@ -20,9 +20,7 @@ public partial class ExplorePage
     private DotNetObjectReference<ExplorePage>? _self;
     private GraphSchema? _schema;
     private GraphPattern? _lastPattern;
-    private int _patternOffset;
-    private int _patternShown;
-    private int _patternRemaining;
+    private readonly PatternPaging _paging = new();
     private ContextMenu? _menu;
     private string? _loadError;
     private ExploreView _view = ExploreView.Graph;
@@ -107,37 +105,32 @@ public partial class ExplorePage
     private string? _filterValue;
 
     // While an "as of" day is chosen, what didn't exist yet stays in _shown (so clearing the day brings it back) but isn't shown.
-    private DateTime? _asOf;
-    private DateOnly? _historyStart;
-    private Linkbase.Core.Timeline.AsOfView _asOfView = Linkbase.Core.Timeline.AsOfView.None;
+    private readonly AsOfState _asOf = new();
 
-    private IEnumerable<GraphNode> VisibleNodes => _shown.Values.Where(n => !_asOfView.MissingNodes.Contains(n.Id));
+    private IEnumerable<GraphNode> VisibleNodes => _shown.Values.Where(n => !_asOf.View.MissingNodes.Contains(n.Id));
 
-    private string ShownName(GraphNode node) => _asOfView.Rewound.TryGetValue(node.Id, out var then) ? then.Name : node.Name;
+    private string ShownName(GraphNode node) => _asOf.View.Rewound.TryGetValue(node.Id, out var then) ? then.Name : node.Name;
 
-    private IReadOnlyList<GraphProperty> ShownProperties(GraphNode node) => _asOfView.Rewound.TryGetValue(node.Id, out var then) ? then.Properties : node.Properties;
+    private IReadOnlyList<GraphProperty> ShownProperties(GraphNode node) => _asOf.View.Rewound.TryGetValue(node.Id, out var then) ? then.Properties : node.Properties;
 
-    // Days from the start of the history to today, for the slider.
-    private int HistoryDays => _historyStart is { } start ? Math.Max(1, DateOnly.FromDateTime(DateTime.Today).DayNumber - start.DayNumber) : 0;
+    private int HistoryDays => _asOf.HistoryDays(DateTime.Today);
 
-    private int SliderValue => _historyStart is { } start && _asOf is { } day ? Math.Clamp(DateOnly.FromDateTime(day).DayNumber - start.DayNumber, 0, HistoryDays) : HistoryDays;
+    private int SliderValue => _asOf.SliderValue(DateTime.Today);
 
     private async Task ChooseAsOfAsync(DateTime? day)
     {
-        // Today is the same as no day: the graph as it is.
-        _asOf = day is { } d && d.Date >= DateTime.Today ? null : day?.Date;
+        _asOf.Choose(day, DateTime.Today);
         await DrawAsync(null);
     }
 
-    private Task SlideAsync(int days) =>
-        ChooseAsOfAsync(_historyStart is { } start ? start.AddDays(days).ToDateTime(TimeOnly.MinValue) : null);
+    private Task SlideAsync(int days) => ChooseAsOfAsync(_asOf.DayAt(days));
 
     private async Task RefreshAsOfAsync()
     {
-        _asOfView = _asOf is { } day && !_showingModel
+        _asOf.View = _asOf.Day is { } day && !_showingModel
             ? await Times.AsOfAsync(_shown.Values.ToList(), _edges, new DateTimeOffset(day.Date.AddDays(1)))
             : Linkbase.Core.Timeline.AsOfView.None;
-        if (_selected is { } selected && _asOfView.MissingNodes.Contains(selected.Id))
+        if (_selected is { } selected && _asOf.View.MissingNodes.Contains(selected.Id))
         {
             _selected = null;
         }
@@ -236,7 +229,7 @@ public partial class ExplorePage
         var clock = System.Diagnostics.Stopwatch.StartNew();
         _schema = await Graph.SchemaAsync();
         var schemaMs = clock.ElapsedMilliseconds;
-        _historyStart = await Times.EarliestAsync();
+        _asOf.HistoryStart = await Times.EarliestAsync();
         var historyMs = clock.ElapsedMilliseconds - schemaMs;
 
         // The search bar can work before the graph libraries finish loading from the CDN.
@@ -245,7 +238,7 @@ public partial class ExplorePage
         try
         {
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/graph.js");
-            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => GraphStyle.For(label, _schema)).Concat(_schema.Labels.SelectMany(GraphStyle.KindStylesOf)).ToList());
+            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => Styles.For(label, _schema)).Concat(_schema.Labels.SelectMany(Styles.KindStylesOf)).ToList());
         }
         catch (JSException ex)
         {
@@ -351,9 +344,7 @@ public partial class ExplorePage
         }
 
         _lastPattern = pattern;
-        _patternOffset = 0;
-        _patternShown = 0;
-        _patternRemaining = 0;
+        _paging.Reset();
         _ranking = null;
         if (pattern.Rank is null)
         {
@@ -434,10 +425,8 @@ public partial class ExplorePage
     {
         try
         {
-            var result = await Graph.RunPatternAsync(_lastPattern!, _schema!, ExpansionLimit, _patternOffset);
-            _patternOffset += ExpansionLimit;
-            _patternRemaining = result.Remaining;
-            _patternShown = Math.Min(_patternOffset, _patternOffset + result.Remaining);
+            var result = await Graph.RunPatternAsync(_lastPattern!, _schema!, ExpansionLimit, _paging.Offset);
+            _paging.Advance(ExpansionLimit, result.Remaining);
             if (result.NodeIds.Count == 0)
             {
                 Snackbar.Add("Nothing matches that search.", Severity.Info);
@@ -461,7 +450,7 @@ public partial class ExplorePage
     }
 
     private string ChipStyle(string label) =>
-        GraphStyle.ChipStyle(GraphStyle.For(label, _schema).Color);
+        GraphStyle.ChipStyle(Styles.For(label, _schema).Color);
 
     public async ValueTask DisposeAsync()
     {

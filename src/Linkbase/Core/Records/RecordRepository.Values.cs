@@ -12,7 +12,9 @@ namespace Linkbase.Core.Records;
 public sealed partial class RecordRepository
 {
     // Lets the modules' hooks set the fields they keep.
-    private string Hooked(RecordType type, string name, string props)
+    private string Hooked(RecordType type, string name, string props) => Hooked(hooks, type, name, props);
+
+    internal static string Hooked(RecordHooks hooks, RecordType type, string name, string props)
     {
         if (!hooks.Watch(type.Name))
         {
@@ -25,12 +27,12 @@ public sealed partial class RecordRepository
     }
 
     // Keeps the relationship's count, which the home page and the graph model show, in step with its links.
-    private static Task<int> CountAsync(LinkbaseDbContext db, string sourceType, string relType, string targetType, int change, CancellationToken cancellationToken) =>
+    internal static Task<int> CountAsync(LinkbaseDbContext db, string sourceType, string relType, string targetType, int change, CancellationToken cancellationToken) =>
         db.LinkDefinitions
             .Where(d => d.SourceType == sourceType && d.RelType == relType && d.TargetType == targetType)
             .ExecuteUpdateAsync(s => s.SetProperty(d => d.Links, d => d.Links + change), cancellationToken);
 
-    private static string Name(RecordInput input) =>
+    internal static string Name(RecordInput input) =>
         string.IsNullOrWhiteSpace(input.Name) ? throw new LinkbaseValidationException("A record needs a name.") : input.Name.Trim();
 
     // A type with a name template makes the name from the fields, whatever the form sent as the name.
@@ -42,7 +44,7 @@ public sealed partial class RecordRepository
 
     // Values are checked against their field's type and stored typed, as the loader does. Values for keys the type doesn't
     // define are kept as they were, and so are those of fields a module keeps, unless it's the module writing them.
-    private static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false) =>
+    internal static string Props(RecordType type, RecordInput input, string? existing = null, bool includeKept = false) =>
         Props(includeKept ? type.Fields : type.Editable, input.Values, existing);
 
     // The same checks for any set of fields, such as a relationship's attributes.

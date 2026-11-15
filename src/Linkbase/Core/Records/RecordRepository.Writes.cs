@@ -52,7 +52,7 @@ public sealed partial class RecordRepository
         }
 
         var links = await NewLinksAsync(db, definition, requested, cancellationToken);
-        await CheckNewHierarchyAsync(db, definition, props, links.Select(l => (l.RelType, l.TargetId, l.TargetType)).ToList(), cancellationToken);
+        await RecordHierarchy.CheckNewHierarchyAsync(db, definition, props, links.Select(l => (l.RelType, l.TargetId, l.TargetType)).ToList(), cancellationToken);
         if (string.IsNullOrWhiteSpace(key))
         {
             key = await FreeKeyAsync(db, type, Slug(name), cancellationToken);
@@ -162,7 +162,7 @@ public sealed partial class RecordRepository
         var oldName = node.Name;
         node.Name = Name(definition, input);
         node.Props = Hooked(definition, node.Name, Props(definition, input, node.Props));
-        await CheckKindChangeAsync(db, definition, id, oldProps, node.Props, cancellationToken);
+        await RecordHierarchy.CheckKindChangeAsync(db, definition, id, oldProps, node.Props, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         var after = Values(node.Props);
         var changeSet = settings.Record
@@ -291,7 +291,7 @@ public sealed partial class RecordRepository
         }
 
         await CheckLinkLimitAsync(db, sourceId, source.Type, relType, target.Type, cancellationToken);
-        await CheckAddedParentAsync(db, sourceId, source.Type, relType, targetId, target.Type, cancellationToken);
+        await RecordHierarchy.CheckAddedParentAsync(db, sourceId, source.Type, relType, targetId, target.Type, cancellationToken);
         var attributes = await AttributesAsync(db, source.Type, relType, target.Type, cancellationToken);
         var props = Props(attributes, values ?? new Dictionary<string, string?>());
         await EnsureNotRepeatAsync(db, sourceId, relType, targetId, props, 0, attributes.Count > 0, cancellationToken);

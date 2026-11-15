@@ -11,6 +11,7 @@ namespace Linkbase.Tests;
 [Trait("Category", "Database")]
 public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
+    private static readonly Linkbase.Core.Explore.GraphStyles Styles = new(Linkbase.Domains.RegisteredDomains.Registry);
     private static string Unique(string name) => $"{name} {Guid.NewGuid():N}";
 
     private sealed record Scenario(
@@ -206,22 +207,22 @@ public class GraphRepositoryTests(PostgresFixture fixture) : IClassFixture<Postg
     public void Route_captions_include_the_grade_and_ascents_show_date_and_style()
     {
         var route = new GraphNode("route:1", "Route", "Slab", [new GraphProperty("grade", "VS 4c")]);
-        Assert.Equal("Slab VS 4c", GraphStyle.Caption(route));
-        Assert.Equal("Slab", GraphStyle.Caption(new GraphNode("route:2", "Route", "Slab", [])));
+        Assert.Equal("Slab VS 4c", Styles.Caption(route));
+        Assert.Equal("Slab", Styles.Caption(new GraphNode("route:2", "Route", "Slab", [])));
 
         var ascent = new GraphNode("ascent:1", "Ascent", "Slab", [
             new GraphProperty("date", "2012-04-01"),
             new GraphProperty("date_precision", "month"),
             new GraphProperty("style", "top_rope"),
         ]);
-        Assert.Equal("Apr 2012 top rope", GraphStyle.Caption(ascent));
+        Assert.Equal("Apr 2012 top rope", Styles.Caption(ascent));
     }
 
     [Fact]
     public void Links_point_at_the_right_page()
     {
-        Assert.Equal("/data/Ascent/7", GraphStyle.Link(new GraphNode("ascent:7", "Ascent", "X", [])));
-        Assert.Equal("/data/Partner/7", GraphStyle.Link(new GraphNode("partner:7", "Partner", "X", [])));
-        Assert.Equal("/data/Trip/7", GraphStyle.Link(new GraphNode("trip:7", "Trip", "X", [])));
+        Assert.Equal("/data/Ascent/7", Styles.Link(new GraphNode("ascent:7", "Ascent", "X", [])));
+        Assert.Equal("/data/Partner/7", Styles.Link(new GraphNode("partner:7", "Partner", "X", [])));
+        Assert.Equal("/data/Trip/7", Styles.Link(new GraphNode("trip:7", "Trip", "X", [])));
     }
 }
