@@ -18,15 +18,15 @@ public static class QuickFindItems
     public const string PagesGroup = "Go to";
     public const string ActionsGroup = "Actions";
 
-    public static QuickFindItem ForRecord(GraphNode node)
+    public static QuickFindItem ForRecord(GraphStyles styles, GraphNode node)
     {
-        var style = GraphStyle.For(node.Label);
+        var style = styles.For(node.Label);
         return new QuickFindItem(RecordsGroup, node.Name, node.Label, style.Icon, style.Color,
-            new QuickFindChoice(GraphStyle.Link(node) ?? GraphStyle.RecordLink(node.Label, node.Id[(node.Id.IndexOf(':') + 1)..]), null));
+            new QuickFindChoice(styles.Link(node) ?? GraphStyle.RecordLink(node.Label, node.Id[(node.Id.IndexOf(':') + 1)..]), null));
     }
 
     // The pages in the rail, in its order, and a list for each type.
-    public static IReadOnlyList<QuickFindItem> Pages(IEnumerable<IDomainModule> domains, IEnumerable<RecordType> types)
+    public static IReadOnlyList<QuickFindItem> Pages(GraphStyles styles, IEnumerable<IDomainModule> domains, IEnumerable<RecordType> types)
     {
         var pages = new List<QuickFindItem>
         {
@@ -36,7 +36,7 @@ public static class QuickFindItems
         pages.AddRange(domains.SelectMany(d => d.NavItems).Select(n => Page(n.Title, "/" + n.Href.TrimStart('/'), n.Icon)));
         foreach (var type in types)
         {
-            var style = GraphStyle.For(type.Name, type.Color, type.Icon);
+            var style = styles.For(type.Name, type.Color, type.Icon);
             pages.Add(new QuickFindItem(PagesGroup, type.Name, "List", style.Icon, style.Color, new QuickFindChoice(GraphStyle.RecordListLink(type.Name), null)));
         }
 
@@ -46,10 +46,10 @@ public static class QuickFindItems
     }
 
     // Derived types can't be added by hand.
-    public static IReadOnlyList<QuickFindItem> Actions(IEnumerable<RecordType> types) =>
+    public static IReadOnlyList<QuickFindItem> Actions(GraphStyles styles, IEnumerable<RecordType> types) =>
         types.Where(t => t.Owner is null).Select(t =>
         {
-            var style = GraphStyle.For(t.Name, t.Color, t.Icon);
+            var style = styles.For(t.Name, t.Color, t.Icon);
             return new QuickFindItem(ActionsGroup, $"Add {t.Name}", null, Icons.Material.Filled.Add, style.Color, new QuickFindChoice(null, t.Name));
         }).ToList();
 

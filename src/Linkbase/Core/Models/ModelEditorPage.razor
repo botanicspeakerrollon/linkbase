@@ -1,4 +1,5 @@
 @page "/model"
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject ModelEditor Editor
 @inject Linkbase.Core.Records.IRecordRepository Records
 @inject IDialogService Dialogs
@@ -31,7 +32,7 @@ else
                 <MudPaper Elevation="1" Class="pa-3 mb-3">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudIcon Icon="@GraphStyle.For(type.Name, type.Color, type.Icon).Icon" Style="@TypeStyle(type)" />
+                            <MudIcon Icon="@Styles.For(type.Name, type.Color, type.Icon).Icon" Style="@TypeStyle(type)" />
                             <MudText Typo="Typo.subtitle1" HtmlTag="h2">@type.Name</MudText>
                             @if (type.Owner is { } owner)
                             {

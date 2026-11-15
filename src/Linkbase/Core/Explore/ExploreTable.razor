@@ -1,3 +1,4 @@
+@inject GraphStyles Styles
 @using System.Globalization
 
 @* What's on the canvas as tables: one per type, with that type's fields as columns, then the links between them. Clicking
@@ -159,5 +160,5 @@
     private static string Count(int shown, int total) =>
         shown == total ? total.ToString("N0", CultureInfo.InvariantCulture) : $"{shown:N0} of {total:N0}";
 
-    private string ChipStyle(string label) => GraphStyle.ChipStyle(GraphStyle.For(label, Schema).Color);
+    private string ChipStyle(string label) => GraphStyle.ChipStyle(Styles.For(label, Schema).Color);
 }

@@ -21,6 +21,7 @@ internal sealed class ModelFactory(string connectionString) : IDbContextFactory<
 [Trait("Category", "Database")]
 public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
 {
+    private static readonly Linkbase.Core.Explore.GraphStyles Styles = new(Linkbase.Domains.RegisteredDomains.Registry);
     private static readonly string Example = RepoPaths.Resolve("models/consultancy/model.json");
 
     // A fresh database with the example consultancy in it.
@@ -446,7 +447,7 @@ public sealed class RecordRepositoryTests(PostgresFixture fixture) : IClassFixtu
     [Fact]
     public void Explore_opens_a_model_files_types_on_their_record_page()
     {
-        Assert.Equal("/data/Stop/8503000%3A0", GraphStyle.Link(new GraphNode("stop:8503000:0", "Stop", "Zürich HB", [])));
+        Assert.Equal("/data/Stop/8503000%3A0", Styles.Link(new GraphNode("stop:8503000:0", "Stop", "Zürich HB", [])));
         Assert.Equal("/data/Big%20Thing", GraphStyle.RecordListLink("Big Thing"));
     }
 

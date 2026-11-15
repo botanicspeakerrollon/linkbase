@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @implements IAsyncDisposable
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject IJSRuntime JS
 @inject IDialogService Dialogs
 @inject CurrentModel CurrentModel
@@ -61,7 +62,7 @@
             @* A model file's types each get a list, generated from their definitions. *@
             @foreach (var type in _types)
             {
-                <MudNavLink Href="@GraphStyle.RecordListLink(type.Name).TrimStart('/')" Match="NavLinkMatch.Prefix" Icon="@GraphStyle.For(type.Name, type.Color, type.Icon).Icon">@type.Name</MudNavLink>
+                <MudNavLink Href="@GraphStyle.RecordListLink(type.Name).TrimStart('/')" Match="NavLinkMatch.Prefix" Icon="@Styles.For(type.Name, type.Color, type.Icon).Icon">@type.Name</MudNavLink>
             }
             @* A domain has its own imports, so this is for models with none. *@
             @if (!CurrentModel.Domains.Any())

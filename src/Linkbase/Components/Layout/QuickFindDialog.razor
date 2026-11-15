@@ -1,5 +1,6 @@
 @* Quick-find, opened with Ctrl+K: jump to a record or page, or start adding a record. It closes with the choice, and the
    layout carries it out, so the dialog never navigates or opens a second dialog itself. *@
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject IGraphRepository Graph
 @inject IRecordRepository Records
 @inject CurrentModel CurrentModel
@@ -88,7 +89,7 @@
         try
         {
             var nodes = await Graph.SearchNodesAsync(_text, null);
-            found = nodes.Where(n => !n.IsModel).Take(RecordLimit).Select(QuickFindItems.ForRecord).ToList();
+            found = nodes.Where(n => !n.IsModel).Take(RecordLimit).Select(n => QuickFindItems.ForRecord(Styles, n)).ToList();
         }
         catch (Exception ex) when (ex is Npgsql.NpgsqlException or InvalidOperationException)
         {
@@ -108,7 +109,7 @@
 
     private void Rebuild()
     {
-        _all = QuickFindItems.Arrange(_text, _records, QuickFindItems.Pages(CurrentModel.Domains, _types), QuickFindItems.Actions(_types));
+        _all = QuickFindItems.Arrange(_text, _records, QuickFindItems.Pages(Styles, CurrentModel.Domains, _types), QuickFindItems.Actions(Styles, _types));
         _active = 0;
         _scrollNeeded = true;
     }

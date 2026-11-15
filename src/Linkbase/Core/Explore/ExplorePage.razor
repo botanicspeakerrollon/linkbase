@@ -2,6 +2,7 @@
 @using FilterOperator = Linkbase.Core.Graph.FilterOperator
 @using Linkbase.Core.Views
 @implements IAsyncDisposable
+@inject GraphStyles Styles
 @inject IGraphRepository Graph
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
@@ -160,7 +161,7 @@
                 <MudDivider Class="my-1" />
                 <MudButton OnClick="@(() => RemoveFromMenuAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Remove</MudButton>
                 <MudButton OnClick="@(() => RemoveOthersAsync(menu.Node.Id))" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Remove others</MudButton>
-                @if (GraphStyle.Link(menu.Node) is { } menuLink)
+                @if (Styles.Link(menu.Node) is { } menuLink)
                 {
                     <MudButton Href="@menuLink" Variant="Variant.Text" Size="Size.Small" FullWidth="true">Open and edit</MudButton>
                 }
@@ -171,7 +172,7 @@
     <aside class="explore-panel">
         @if (_selected is { } node)
         {
-            <MudChip T="string" Size="Size.Small" Style="@GraphStyle.ChipStyle(GraphStyle.For(node, _schema).Color)" Class="ma-0 mb-1">@node.Label</MudChip>
+            <MudChip T="string" Size="Size.Small" Style="@GraphStyle.ChipStyle(Styles.For(node, _schema).Color)" Class="ma-0 mb-1">@node.Label</MudChip>
             <MudText Typo="Typo.h6" HtmlTag="h2" Class="mb-2">@ShownName(node)</MudText>
 
             @if (ShownProperties(node).Count > 0)
@@ -219,7 +220,7 @@
                 <MudButton OnClick="@(() => RemoveAsync(node.Id))" Variant="Variant.Outlined" Size="Size.Small" FullWidth="true" Class="mb-1"
                            title="Takes it off the graph. Expanding a neighbour brings it back. (Delete)">Remove</MudButton>
             }
-            @if (GraphStyle.Link(node) is { } link)
+            @if (Styles.Link(node) is { } link)
             {
                 <MudButton Href="@link" Variant="Variant.Text" Size="Size.Small" FullWidth="true" EndIcon="@Icons.Material.Filled.OpenInNew" title="Open its page (o), or in a new tab (Ctrl+O)" data-hotkey-open>Open and edit</MudButton>
             }

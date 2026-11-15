@@ -245,7 +245,7 @@ public partial class ExplorePage
         try
         {
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/graph.js");
-            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => GraphStyle.For(label, _schema)).Concat(_schema.Labels.SelectMany(GraphStyle.KindStylesOf)).ToList());
+            await _module.InvokeVoidAsync("create", _canvas, _self, _schema.Labels.Select(label => Styles.For(label, _schema)).Concat(_schema.Labels.SelectMany(Styles.KindStylesOf)).ToList());
         }
         catch (JSException ex)
         {
@@ -461,7 +461,7 @@ public partial class ExplorePage
     }
 
     private string ChipStyle(string label) =>
-        GraphStyle.ChipStyle(GraphStyle.For(label, _schema).Color);
+        GraphStyle.ChipStyle(Styles.For(label, _schema).Color);
 
     public async ValueTask DisposeAsync()
     {

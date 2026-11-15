@@ -1,4 +1,5 @@
 @page "/data/{Type}/{*Key}"
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject IRecordRepository Records
 @inject ExternalRefRepository Refs
 @inject IDialogService Dialogs
@@ -276,7 +277,7 @@ else if (_record is not null && _type is not null)
             return;
         }
 
-        _style = GraphStyle.For(Type, _type!.Color, _type.Icon);
+        _style = Styles.For(Type, _type!.Color, _type.Icon);
         _security = await Labels.SettingsAsync() is { Enabled: true } enabled ? enabled : null;
         _label = _security is null ? null : await Labels.GetNodeAsync(_record.Id);
         _propertyLabels = _security is null ? new Dictionary<string, LabelValue>() : await Labels.GetPropertyLabelsAsync(_record.Id);

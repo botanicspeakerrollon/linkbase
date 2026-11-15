@@ -43,6 +43,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton(Linkbase.Core.Records.RecordHooks.None);
         Services.AddSingleton(Linkbase.Core.Security.FieldPolicy.Unrestricted);
         Services.AddSingleton(Linkbase.Domains.RegisteredDomains.Registry);
+        Services.AddSingleton<Linkbase.Core.Explore.GraphStyles>();
         Services.AddSingleton(new ModelCatalog(new ConfigurationBuilder().Build(), Linkbase.Domains.RegisteredDomains.Registry));
         Services.AddSingleton<CurrentModel>();
 

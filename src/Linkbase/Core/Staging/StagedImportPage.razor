@@ -1,6 +1,7 @@
 @page "/import/review/{BatchId:long}"
 @page "/import-csv/review/{BatchId:long}"
 @using System.Globalization
+@inject Linkbase.Core.Explore.GraphStyles Styles
 @inject ImportStagingService Staging
 @inject IRecordRepository Records
 @using Linkbase.Core.Explore
@@ -119,7 +120,7 @@ else if (_batch is not null)
 
     // The type's icon and colour, as everywhere else in the app.
     private LabelStyle StyleOf(string type) =>
-        _types.TryGetValue(type, out var found) ? GraphStyle.For(type, found.Color, found.Icon) : GraphStyle.For(type, null, null);
+        _types.TryGetValue(type, out var found) ? Styles.For(type, found.Color, found.Icon) : Styles.For(type, null, null);
 
     private string ChipStyle(string type) => GraphStyle.ChipStyle(StyleOf(type).Color);
 

@@ -2,6 +2,7 @@ using Bunit;
 using Linkbase.Components.Layout;
 using Linkbase.Core;
 using Linkbase.Core.Graph;
+using Linkbase.Core.Explore;
 using Linkbase.Core.Models;
 using Linkbase.Core.Records;
 using Linkbase.Data;
@@ -14,6 +15,8 @@ namespace Linkbase.Tests;
 // Quick-find's choices, which need no page.
 public class QuickFindItemsTests
 {
+    private static readonly GraphStyles Styles = new(Linkbase.Domains.RegisteredDomains.Registry);
+
     private static readonly RecordType[] Types =
     [
         new("Person", null, null, []),
@@ -21,7 +24,7 @@ public class QuickFindItemsTests
     ];
 
     private static IReadOnlyList<QuickFindItem> Arranged(string? text, params QuickFindItem[] records) =>
-        QuickFindItems.Arrange(text, records, QuickFindItems.Pages([], Types), QuickFindItems.Actions(Types));
+        QuickFindItems.Arrange(text, records, QuickFindItems.Pages(Styles, [], Types), QuickFindItems.Actions(Styles, Types));
 
     [Fact]
     public void With_no_text_it_offers_the_pages_and_the_actions()
@@ -56,7 +59,7 @@ public class QuickFindItemsTests
     [Fact]
     public void Records_come_first_then_pages_that_start_with_the_text()
     {
-        var record = QuickFindItems.ForRecord(new GraphNode("person:p1", "Person", "Persona Grata", []));
+        var record = QuickFindItems.ForRecord(Styles, new GraphNode("person:p1", "Person", "Persona Grata", []));
 
         var found = Arranged("pers", record);
 

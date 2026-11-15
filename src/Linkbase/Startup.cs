@@ -63,6 +63,7 @@ public static class Startup
 
         // Each model has its own database, and the factory connects to whichever model is current.
         services.AddSingleton(RegisteredDomains.Registry);
+        services.AddSingleton<Linkbase.Core.Explore.GraphStyles>();
         services.AddSingleton<ModelCatalog>();
         services.AddSingleton<ModelCreator>();
         // Docs:Pages names repo documents to show in the app (the demo shows the requirements). None by default.
