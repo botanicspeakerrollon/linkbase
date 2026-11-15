@@ -223,6 +223,13 @@ public class LoadTests(ITestOutputHelper output)
 
             var material = await DiscoverAsync(graph);
             var ops = Operations(graph, material);
+
+            // LINKBASE_LOAD_ONLY keeps the steps whose names contain it, to find what one kind of step costs on its own.
+            if (Environment.GetEnvironmentVariable("LINKBASE_LOAD_ONLY") is { Length: > 0 } only)
+            {
+                ops = [.. ops.Where(o => o.Name.Contains(only, StringComparison.OrdinalIgnoreCase))];
+            }
+
             var records = material.Counts.Sum(c => c.Value);
 
             // One pass first, so every level measures a warm cache, as the single-user table in the doc does.

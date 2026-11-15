@@ -192,6 +192,66 @@ ran 15 seconds after a warm-up, with JIT off.
 Not covered: row-security viewers (the test connects as the database owner, who bypasses the policies), writes alongside readers,
 the real climbing logbook, the browser and SignalR circuits, and the memory a circuit costs.
 
+### Limits: what more hardware fixes and what it doesn't
+
+Measured on the large model only, because the small and medium ones were never the limit. The samples container had 14 CPUs
+available (`docker update --cpus 14`; `--cpus 0` does *not* remove a limit) with PostgreSQL's default settings, and users
+paused 1 ms between steps, so each number is capacity, not a realistic crowd. `LINKBASE_LOAD_ONLY=<text in a step's name>`
+runs one step alone.
+
+**One step at a time, 10 users, 10 s:**
+
+| Step | Requests per second | Median | 95th |
+| --- | --- | --- | --- |
+| Open the page: schema and counts | 8.6 | 1169 ms | 1198 ms |
+| Search: following a relationship from a named record | 21 | 457 ms | 496 ms |
+| Keystroke: suggestions | 25 | 152 ms | 1335 ms |
+| Search: first 100 of a type | 14 | 416 ms | 1982 ms |
+| Search: free text, everything | 54 | 80 ms | 1138 ms |
+| Search: name contains, within a type | 204 | 4 ms | 17 ms |
+| Expand, right-click counts, draw, values of a property | 1,300 to 2,600 | 2 to 5 ms | under 11 ms |
+
+Five steps cost a database core each for a second or so; the other four are close to free. A realistic mix is dominated by
+the five, and opening the page is the worst per visit.
+
+**What more resource fixes**
+
+- **Database CPU.** Under load, the database is the bottleneck, and it is CPU-bound. Throughput rose roughly with the cores
+  given to it (2, 4 and 14 CPUs gave about 8, 17 and 43 requests per second at 10 users). A bigger database tier or
+  more cores moves the ceiling in proportion.
+- **Shared memory.** The failures above are a container limit. `--shm-size`, or `max_parallel_workers_per_gather = 0`, removes
+  them. On a managed server this is not a concern.
+- **Not measured: `shared_buffers`.** The sample uses 160 MB for a 9.5 GB database. Changing it needs a restart of the samples
+  container, which I did not do. Expect it to help the uncached scans (suggestions, first 100, free text) before anything else.
+- **Per-session planner and memory settings changed nothing.** `work_mem`, parallel workers and the like, set through the
+  connection's `Options`, made no measurable difference. Don't spend time there.
+
+**What it doesn't fix**
+
+- **Overload collapses, it doesn't degrade.** With all 14 CPUs and a pool of 20, throughput went 41.8, 34.5, 19.3 requests per
+  second at 25, 50 and 100 saturated users, and the median went from 0.14 s to 2.5 s. Adding users past the database's
+  capacity lowers throughput, because every query is a parallel plan fighting for the same cores. With the default pool of 100
+  the same test reached 11.7 per second at 100 users, so a smaller pool helps a little (less contention) but only moves the
+  collapse. The fix is to do less work per visit, not to queue it differently.
+- **Nothing is cached.** Every visitor's page open reruns the schema sampling, every keystroke reruns suggestions and every
+  circuit asks for the same counts. For a model that changes only on import, the schema, the node counts and the per-type
+  counts could be cached per model and invalidated by a write, which would take opening the page (the costliest step) from
+  about 1 s of database CPU per visit to none. This is the single largest gain available and it is code, not hardware.
+- **One server process holds every circuit.** Blazor Server keeps each user's session in memory on one replica. More
+  replicas need sticky sessions (the Helm chart sets ingress cookie affinity; the Azure template pins one replica). It scales
+  out, but a replica that restarts drops its users' sessions, and per-circuit memory and CPU are **not measured** here (that
+  needs the browser-level test). Don't plan replica counts from these numbers.
+- **Connection arithmetic.** Each replica's pool defaults to 100 connections, and PostgreSQL defaults to 100 in total (a small
+  Azure tier allows fewer). Two replicas at the default can exhaust the server. Size the pool times the replicas under
+  `max_connections`, leaving room for migrations and admin.
+- **Heavy queries scale with the data, not the users.** First 100 of a type, free text and suggestions read more as the model
+  grows. A 3.6 M record model is fine for one person (under 1 s) and starts to queue at about 10 people searching at once on
+  one 14-CPU database. Models a tenth that size sit in the comfortable zone, as the medium results show.
+
+In short: for models up to hundreds of thousands of records, the architecture is not the limit, and one modest database serves
+dozens of people. For millions of records, database CPU is the limit and buying cores helps in proportion, but caching the
+schema and counts, and keeping the heaviest searches opt-in, buys more than the next hardware tier.
+
 ## Timing a slow Explore load
 
 Explore shows a thin bar over the canvas while it works (opening the page, applying a link or saved view, searching,
