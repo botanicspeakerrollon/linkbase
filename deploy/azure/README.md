@@ -28,8 +28,11 @@ One resource group (`rg-linkbase` in `newzealandnorth`; `-ResourceGroup` and `-L
 
 **Size.** `deploy.ps1` is Light by default, which suits the small models. Add `-Size Heavy` for the large ArchiMate model, and run again to change. Postgres storage can only grow, so Heavy to Light needs the Postgres server recreated.
 
-`az group delete --name rg-linkbase` removes everything and stops the charges. The vault is then soft-deleted for
-seven days, holding its name; the next `deploy.ps1` purges it for you. Each run also deletes all but the newest three images
+`./deploy/azure/teardown.ps1` removes everything and stops the charges. It lists what's in the group and asks you to type the
+group's name first (`-Yes` skips that, `-NoWait` doesn't wait for Azure to finish, `-ResourceGroup` picks another group).
+It is the same as `az group delete --name rg-linkbase`. The vault is then soft-deleted for
+seven days, holding its name; the next `deploy.ps1` purges it for you, or `teardown.ps1 -PurgeVault` does it now, which also
+erases the secrets for good. Each run also deletes all but the newest three images
 from the registry, so repeated deploys leave one app, one database and one vault, not a pile.
 
 ## Where the secrets are
