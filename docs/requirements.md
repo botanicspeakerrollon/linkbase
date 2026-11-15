@@ -69,7 +69,7 @@ Deliberately not required by this version, and not to be treated as a defect:
 `CLAUDE.md` (architecture and working rules); [reference.md](reference.md) (feature-by-feature description);
 [models.md](models.md), [schema.md](schema.md), [audit-history-plan](history/audit-history-plan.md),
 [security-design.md](history/security-design.md), [security-roadmap.md](history/security-roadmap.md),
-[operations.md](operations.md), [performance.md](performance.md), [deploy/README.md](../deploy/README.md) and
+[change-hooks-plan](history/change-hooks-plan.md), [operations.md](operations.md), [performance.md](performance.md), [deploy/README.md](../deploy/README.md) and
 [deploy/azure/README.md](../deploy/azure/README.md).
 
 ---
@@ -259,8 +259,8 @@ How other systems learn of changes and read records without the browser. Both ar
 
 | Id | Priority | Requirement | Status |
 | --- | --- | --- | --- |
-| INT-1 | M | Every committed change to records or links (a create, edit or delete, and the change sets that import, import undo, revert, merge, correction and derived rebuild write) shall raise a change event, recorded in the same transaction as the change, so a change that rolls back raises nothing and a change that commits is never lost. This shall hold whether or not the model records history (HIS-3). An event shall carry the model, the change set's id and justification kind, and each record or link affected with its operation; a bulk change shall be one event, not one per record (as HIS-7). | Planned |
-| INT-2 | M | Change events shall be handed, after commit and in commit order per model, to any number of hooks: code registered through one documented extension point, each configured by settings, with a built-in hook that posts the event to an HTTP address. Delivery shall be at least once, with retry and back-off; a hook that fails or is slow shall never delay, block or undo the change that raised the event; each hook's position and failures shall be visible to the operator. | Planned |
+| INT-1 | M | Every committed change to records or links (a create, edit or delete, and the change sets that import, import undo, revert, merge, correction and derived rebuild write) shall raise a change event, recorded in the same transaction as the change, so a change that rolls back raises nothing and a change that commits is never lost. This shall hold whether or not the model records history (HIS-3). An event shall carry the model, the change set's id and justification kind, and each record or link affected with its type, operation and changed field keys, but no values; a bulk change shall be one event, not one per record (as HIS-7), naming the import batch instead of each record it created. | Planned — [change-hooks-plan](history/change-hooks-plan.md) |
+| INT-2 | M | Change events shall be handed, after commit and in commit order per model, to any number of hooks: code registered through one documented extension point, each configured by settings, with a built-in hook that posts the event to an HTTP address. Delivery shall be at least once, with retry and back-off, each event with a stable id; a hook that fails or is slow shall never delay, block or undo the change that raised the event, nor hold up another hook; each hook's position and failures shall be visible to the operator. | Planned — [change-hooks-plan](history/change-hooks-plan.md) |
 | INT-3 | M | An HTTP API shall let another program read a model's records without the browser: at least a free-text search (`GET /api/{model}/search?q=…`, answering as Quick-find does), and a record by type and key with its values and links, as JSON. It shall be read-only, versioned, shall authenticate every caller, and shall read as that caller so row and field security apply exactly as on the pages (SEC-2, SEC-3, SEC-9). | Planned |
 | INT-4 | S | The pages, the API and the event dispatcher shall be startable as one process (as today) or as separate processes from the same image, chosen by configuration, sharing only the database; no feature shall depend on two of them sharing memory. | Planned |
 
@@ -425,6 +425,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-15 | PERF-4: `LINKBASE_LOAD_ONLY` runs one step alone; performance.md records the limits found (database CPU, no caching, one replica, connection arithmetic). |
 | 2026-11-15 | DEM-4: `deploy.ps1 -ResetAllModels` resets all four example databases at once; `-ResetModel` still takes one or more. |
 | 2026-11-16 | New group INT (Planned): change events raised in the change's transaction and delivered to hooks after commit (INT-1, INT-2), a read-only HTTP API (INT-3), and pages, API and dispatcher runnable as separate processes (INT-4). §1.2, §2.1 and §5 updated. |
+| 2026-11-16 | INT-1 and INT-2 reworded to match [change-hooks-plan](history/change-hooks-plan.md): events name types and changed field keys but no values, an import names its batch, ids are stable, and one hook can't hold up another. Still Planned. |
 | 2026-11-15 | IMP-9: language-model providers sit behind one `ILlmToolClient` contract and a `LlmProviders` registry, so the OpenAI path no longer borrows Anthropic classes and a new provider is one client class. No behaviour change. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
