@@ -160,6 +160,6 @@ public sealed partial class RecordRepository
 
     public static string Title(string key) => char.ToUpperInvariant(key[0]) + key[1..].Replace('_', ' ');
 
-    private static string EscapeLike(string text) =>
+    internal static string EscapeLike(string text) =>
         text.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
 }
