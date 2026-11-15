@@ -211,6 +211,7 @@ public sealed partial class ImportStagingService
             ("created", created.ToJsonString(), NpgsqlDbType.Text),
             ("batch", batchId, NpgsqlDbType.Bigint));
         await transaction.CommitAsync(cancellationToken);
+        await db.Database.UseTransactionAsync(null, cancellationToken);
         var changes = await ChangesAsync(db, batchId, removing: false, [], cancellationToken);
         var watched = _hooks.Watched;
         changes.AddRange(updates.Where(u => watched.Contains(u.Type)).Select(u =>
