@@ -29,6 +29,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
         Services.AddSingleton(factory);
         Services.AddSingleton<InsightsRepository>();
         Services.AddSingleton<GraphRepository>();
+        Services.AddSingleton<IGraphRepository>(sp => sp.GetRequiredService<GraphRepository>());
         Services.AddSingleton<Linkbase.Core.Views.SavedViewRepository>();
         Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
         Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();
@@ -217,6 +218,7 @@ public abstract class UiTestBase : BunitContext, IAsyncLifetime
             _climbing = await ClimbingStore.CreateAsync(Fixture);
             Services.AddSingleton<IDbContextFactory<LinkbaseDbContext>>(_climbing);
             Services.AddSingleton<GraphRepository>();
+            Services.AddSingleton<IGraphRepository>(sp => sp.GetRequiredService<GraphRepository>());
             Services.AddSingleton<Linkbase.Core.Views.SavedViewRepository>();
             Services.AddSingleton<Linkbase.Core.Records.RecordRepository>();
             Services.AddSingleton<Linkbase.Core.History.HistoryRepository>();

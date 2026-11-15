@@ -85,6 +85,7 @@ public static class Startup
         services.AddScoped<DatabaseStatusService>();
         services.AddHealthChecks().AddCheck<ModelDatabasesHealthCheck>("databases", tags: ["ready"]);
         services.AddScoped<GraphRepository>();
+        services.AddScoped<IGraphRepository>(provider => provider.GetRequiredService<GraphRepository>());
         services.AddScoped<Core.Views.SavedViewRepository>();
         services.AddScoped<ModelLoader>();
         services.AddScoped<ModelEditor>();
