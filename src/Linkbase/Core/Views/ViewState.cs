@@ -70,6 +70,7 @@ public sealed record ExploreState
     public IReadOnlyList<ScenePosition>? Positions { get; init; }
     public bool Model { get; init; }
     public bool Table { get; init; }
+    public bool Cards { get; init; }
     public bool Totals { get; init; }
     public IReadOnlyList<string>? RelTypes { get; init; }
     public IReadOnlyList<PatternFilter>? Filters { get; init; }

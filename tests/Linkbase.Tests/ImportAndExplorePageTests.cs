@@ -316,6 +316,24 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     }
 
     [Fact]
+    public async Task A_permalink_can_open_the_cards_and_a_card_lists_only_filled_fields_and_selects_its_node()
+    {
+        var s = await SeedAsync(grade: "E1 5b");
+        var cut = OpenAt(new ExploreState { Pattern = NamedRoute(s.Route), Cards = true }.Encode());
+
+        Sees(cut, "explore-cards");
+        DoesNotSee(cut, "explore-table\"");
+        var card = cut.FindAll(".explore-card").First(c => c.TextContent.Contains(s.Route, StringComparison.Ordinal));
+        Assert.Contains("E1 5b", card.TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain(cut.FindAll(".explore-card dd"), d => string.IsNullOrWhiteSpace(d.TextContent));
+
+        ClickFresh(cut, () => cut.FindAll(".explore-card").First(c => c.TextContent.Contains(s.Route, StringComparison.Ordinal)));
+        Sees(cut, s.Route + "</h2>");
+        Sees(cut, "explore-card-selected");
+        Assert.Equal($"route:{s.RouteId}", _graph.Invocations.Safe().Last(i => i.Identifier == "select").Arguments[0]);
+    }
+
+    [Fact]
     public async Task A_permalink_can_hold_the_nodes_themselves()
     {
         var s = await SeedAsync();
@@ -625,8 +643,13 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         var cut = Render(s);
         cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations.Safe(), i => i.Identifier == "register"));
 
+        // t cycles graph, table, cards, and back to the graph.
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         Sees(cut, "explore-table-wrap");
+        Sees(cut, "explore-table\"");
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
+        Sees(cut, "explore-cards");
+        DoesNotSee(cut, "explore-table\"");
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         DoesNotSee(cut, "explore-table-wrap");
 
@@ -658,6 +681,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
         cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations.Safe(), i => i.Identifier == "scrollIntoView"));
+        await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
 

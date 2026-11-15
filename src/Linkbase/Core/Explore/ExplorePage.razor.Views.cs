@@ -33,6 +33,7 @@ public partial class ExplorePage
             Nodes = onCanvas && _nodes.Count <= ExploreState.MaxNodes ? _nodes.Keys.ToList() : null,
             Model = _showingModel,
             Table = _table && _nodes.Count > 0,
+            Cards = _cards && _nodes.Count > 0,
             Totals = _summaryOpen && onCanvas && _lastPattern is not null,
             RelTypes = _relTypes.Count > 0 ? _relTypes.ToList() : null,
             Filters = _propertyFilters.Count > 0 ? _propertyFilters.ToList() : null,
@@ -104,7 +105,7 @@ public partial class ExplorePage
     {
         ForgetCanvas();
         _lastPattern = null;
-        _table = false;
+        _view = ExploreView.Graph;
 
         // Everything here came from an address, so keep only what the model knows. The queries check again.
         _relTypes = (state.RelTypes ?? []).Where(r => r is not null && _schema!.RelTypes.Contains(r)).ToList();
@@ -154,7 +155,7 @@ public partial class ExplorePage
             await DrawAsync(null);
         }
 
-        _table = state.Table && _nodes.Count > 0;
+        _view = _nodes.Count == 0 ? ExploreView.Graph : state.Table ? ExploreView.Table : state.Cards ? ExploreView.Cards : ExploreView.Graph;
     }
 
     private static GraphPattern? CleanPattern(GraphPattern? pattern)

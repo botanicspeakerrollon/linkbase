@@ -25,13 +25,16 @@ public partial class ExplorePage
     private int _patternRemaining;
     private ContextMenu? _menu;
     private string? _loadError;
-    private bool _table;
+    private ExploreView _view = ExploreView.Graph;
+    private bool _table => _view == ExploreView.Table;
+    private bool _cards => _view == ExploreView.Cards;
+    private bool _covered => _view != ExploreView.Graph;
     private IJSObjectReference? _hotkeys;
     private int _hotkeyHandle;
     private IJSObjectReference? _download;
 
     // The keys this page handles. The layout handles the ones that work everywhere.
-    private static readonly string[] Hotkeys = ["t", "f", "c", "n", "p", "e", "s", "v", "a", "w", "r", "d", "o", "Delete", "Escape"];
+    private static readonly string[] Hotkeys = ["t", "x", "f", "c", "n", "p", "e", "s", "v", "a", "w", "r", "d", "o", "Delete", "Escape"];
 
     // Totals of the number properties over every match of the last search, shown in a panel on request.
     private bool _summaryOpen;
@@ -213,7 +216,7 @@ public partial class ExplorePage
             if (_revealRow && _hotkeys is not null)
             {
                 _revealRow = false;
-                await _hotkeys.InvokeVoidAsync("scrollIntoView", ".explore-table-selected");
+                await _hotkeys.InvokeVoidAsync("scrollIntoView", ".explore-table-selected, .explore-card-selected");
             }
 
             return;

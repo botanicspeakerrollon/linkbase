@@ -103,10 +103,12 @@
         {
             <div class="explore-tools">
                 <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small" OverrideStyles="false">
-                    <MudButton OnClick="@(() => ShowViewAsync(false))" Variant="@(_table ? Variant.Outlined : Variant.Filled)" Color="@(_table ? Color.Default : Color.Primary)"
-                               Size="Size.Small" StartIcon="@Icons.Material.Filled.Hub" title="Graph (t)" aria-pressed="@(_table ? "false" : "true")">Graph</MudButton>
-                    <MudButton OnClick="@(() => ShowViewAsync(true))" Variant="@(_table ? Variant.Filled : Variant.Outlined)" Color="@(_table ? Color.Primary : Color.Default)"
-                               Size="Size.Small" StartIcon="@Icons.Material.Filled.TableRows" title="Table (t)" aria-pressed="@(_table ? "true" : "false")">Table</MudButton>
+                    <MudButton OnClick="@(() => ShowViewAsync(ExploreView.Graph))" Variant="@(_covered ? Variant.Outlined : Variant.Filled)" Color="@(_covered ? Color.Default : Color.Primary)"
+                               Size="Size.Small" StartIcon="@Icons.Material.Filled.Hub" title="Graph (t cycles)" aria-pressed="@(_covered ? "false" : "true")">Graph</MudButton>
+                    <MudButton OnClick="@(() => ShowViewAsync(ExploreView.Table))" Variant="@(_table ? Variant.Filled : Variant.Outlined)" Color="@(_table ? Color.Primary : Color.Default)"
+                               Size="Size.Small" StartIcon="@Icons.Material.Filled.TableRows" title="Table (t cycles)" aria-pressed="@(_table ? "true" : "false")">Table</MudButton>
+                    <MudButton OnClick="@(() => ShowViewAsync(ExploreView.Cards))" Variant="@(_cards ? Variant.Filled : Variant.Outlined)" Color="@(_cards ? Color.Primary : Color.Default)"
+                               Size="Size.Small" StartIcon="@Icons.Material.Filled.ViewModule" title="Cards (t cycles)" aria-pressed="@(_cards ? "true" : "false")">Cards</MudButton>
                 </MudButtonGroup>
                 @if (_lastPattern is not null)
                 {
@@ -116,7 +118,7 @@
                 <MudMenu Label="Export" StartIcon="@Icons.Material.Filled.Download" Variant="Variant.Outlined" Size="Size.Small" Dense="true"
                          AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                     <ChildContent>
-                        <MudMenuItem OnClick="ExportNodesAsync" Icon="@Icons.Material.Outlined.TableView">Nodes (CSV)</MudMenuItem>
+                        <MudMenuItem OnClick="ExportNodesAsync" Icon="@Icons.Material.Outlined.TableView" title="Every field of the types shown, filled or not (x)">Nodes (CSV)</MudMenuItem>
                         <MudMenuItem OnClick="ExportLinksAsync" Icon="@Icons.Material.Outlined.Share">Links (CSV)</MudMenuItem>
                         <MudMenuItem OnClick="ExportJsonAsync" Icon="@Icons.Material.Outlined.DataObject">Nodes and links (JSON)</MudMenuItem>
                         <MudMenuItem OnClick="ExportPictureAsync" Icon="@Icons.Material.Outlined.Image">Picture of the graph (PNG)</MudMenuItem>
@@ -129,6 +131,12 @@
         {
             <div class="explore-table-wrap">
                 <ExploreTable Nodes="VisibleNodes.ToList()" Edges="_edges" Schema="_schema" SelectedId="@_selected?.Id" OnSelect="SelectFromTableAsync" />
+            </div>
+        }
+        else if (_cards && _nodes.Count > 0)
+        {
+            <div class="explore-table-wrap">
+                <ExploreCards Nodes="VisibleNodes.ToList()" Schema="_schema" SelectedId="@_selected?.Id" OnSelect="SelectFromTableAsync" />
             </div>
         }
 

@@ -18,14 +18,17 @@ public partial class ExplorePage
         switch (key)
         {
             case "t" when _nodes.Count > 0:
-                await ShowViewAsync(!_table);
+                await ShowViewAsync(_view switch { ExploreView.Graph => ExploreView.Table, ExploreView.Table => ExploreView.Cards, _ => ExploreView.Graph });
+                break;
+            case "x" when _nodes.Count > 0:
+                await ExportNodesAsync();
                 break;
             case "f":
-                await ShowViewAsync(false);
+                await ShowViewAsync(ExploreView.Graph);
                 await FitAsync();
                 break;
             case "c" when _nodes.Count > 0:
-                await ShowViewAsync(false);
+                await ShowViewAsync(ExploreView.Graph);
                 await ClearAsync();
                 break;
             case "n":
@@ -100,7 +103,7 @@ public partial class ExplorePage
         _selected = nodes[next];
         _menu = null;
         await SelectOnCanvasAsync(_selected.Id);
-        if (_table)
+        if (_covered)
         {
             _revealRow = true;
         }
@@ -110,18 +113,18 @@ public partial class ExplorePage
         }
     }
 
-    private async Task ShowViewAsync(bool table)
+    private async Task ShowViewAsync(ExploreView view)
     {
         _menu = null;
-        if (_table == table)
+        if (_view == view)
         {
             return;
         }
 
-        _table = table;
+        _view = view;
         SyncAddress();
-        // Nodes may have been added or removed while the table covered the canvas.
-        if (!table)
+        // Nodes may have been added or removed while the table or cards covered the canvas.
+        if (view == ExploreView.Graph)
         {
             await FitAsync();
         }

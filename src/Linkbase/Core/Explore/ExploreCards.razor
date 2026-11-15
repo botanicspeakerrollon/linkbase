@@ -1,0 +1,75 @@
+@using System.Globalization
+
+@* What's on the canvas as cards: one per node, grouped by type, each with only the fields that have a value. Better than the
+   table for records with many fields. Clicking a card selects the node, as clicking it on the canvas does. *@
+<div class="explore-cards">
+    <div class="explore-table-bar mb-3">
+        <MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_filter" Immediate="true" DebounceInterval="150"
+                      Placeholder="Filter by any part of a name or value" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.FilterList"
+                      Clearable="true" Class="explore-table-filter" aria-label="Filter the cards" />
+    </div>
+
+    @foreach (var group in Groups())
+    {
+        <div class="explore-table-heading explore-cards-heading">
+            <MudChip T="string" Size="Size.Small" Style="@ChipStyle(group.Label)" Class="ma-0">@group.Label</MudChip>
+            <span>@Count(group.Rows.Count, group.Total)</span>
+        </div>
+        <div class="explore-cards-grid">
+            @foreach (var node in group.Rows)
+            {
+                <div class="explore-card @(node.Id == SelectedId ? "explore-card-selected" : "")" role="button" tabindex="0"
+                     @onclick="@(() => OnSelect.InvokeAsync(node))" @onkeydown="@(e => KeyAsync(e, node))">
+                    <div class="explore-card-name">@node.Name</div>
+                    <dl class="explore-card-fields">
+                        @foreach (var property in node.Properties.Where(p => !string.IsNullOrWhiteSpace(p.Value) && p.Key != "name"))
+                        {
+                            <dt>@GraphStyle.PropertyTitle(property.Key)</dt>
+                            <dd>@property.Value</dd>
+                        }
+                    </dl>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Nodes.Count > 0 && !Groups().Any())
+    {
+        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary)">Nothing on the canvas matches that.</MudText>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<GraphNode> Nodes { get; set; } = [];
+    [Parameter] public GraphSchema? Schema { get; set; }
+    [Parameter] public string? SelectedId { get; set; }
+    [Parameter] public EventCallback<GraphNode> OnSelect { get; set; }
+
+    private sealed record Group(string Label, List<GraphNode> Rows, int Total);
+
+    private string? _filter;
+
+    private bool Matches(GraphNode node) =>
+        string.IsNullOrWhiteSpace(_filter)
+        || node.Name.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase)
+        || node.Properties.Any(p => p.Value.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    // In the schema's order, most common types first, as the table does, and by name within a type.
+    private IEnumerable<Group> Groups()
+    {
+        var order = Schema?.Labels.Select((label, i) => (label, i)).ToDictionary(x => x.label, x => x.i) ?? [];
+        return Nodes
+            .GroupBy(n => n.Label)
+            .OrderBy(g => order.GetValueOrDefault(g.Key, int.MaxValue)).ThenBy(g => g.Key, StringComparer.Ordinal)
+            .Select(g => new Group(g.Key, g.Where(Matches).OrderBy(n => n.Name, StringComparer.OrdinalIgnoreCase).ToList(), g.Count()))
+            .Where(g => g.Rows.Count > 0);
+    }
+
+    private Task KeyAsync(KeyboardEventArgs e, GraphNode node) =>
+        e.Key is "Enter" or " " ? OnSelect.InvokeAsync(node) : Task.CompletedTask;
+
+    private static string Count(int shown, int total) =>
+        shown == total ? total.ToString("N0", CultureInfo.InvariantCulture) : $"{shown:N0} of {total:N0}";
+
+    private string ChipStyle(string label) => GraphStyle.ChipStyle(GraphStyle.For(label, Schema).Color);
+}

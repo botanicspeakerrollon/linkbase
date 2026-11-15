@@ -137,11 +137,15 @@ more*. Nodes already drawn never move when others are added, and the zoom is kep
 like springs. *When expanding, only show* limits expansion by relationship or property. *Show values on links* labels links
 with their values (`WORKS_ON · Lead · 3`). Models can give types a colour, an icon and a caption.
 
-*Table.* `t` swaps the canvas for a table of the same nodes and links; selection is shared.
+*Table and cards.* `t` cycles the canvas through graph, table and cards. The table lists the same nodes and links by type;
+the cards show one card per node with only its non-empty fields, which reads better for records with many fields. Selection
+is shared by all three, and a saved view or link remembers which was showing.
 
 *Totals.* `s` shows count, sum, minimum, maximum and average of each number field of the search's matches.
 
-*Export.* Nodes (CSV), links (CSV), both (JSON), picture (PNG).
+*Export.* Nodes (CSV), links (CSV), both (JSON), picture (PNG). `x` exports the nodes CSV. The nodes CSV has a column for
+every field the model defines for the types shown (that the viewer may see), even when no node has a value, so the file can be
+filled in with a spreadsheet and imported again.
 
 *Find a path* (`w`). The shortest chain of links, in either direction, between the selected record and another, up to 6 links.
 It stops looking through a hub that is too busy and says so.
@@ -483,7 +487,7 @@ The `?` dialog is the source of truth; this is its content.
 | --- | --- |
 | Anywhere | `Ctrl K` Quick-find · `/` search or first field · `g h` Home · `g e` Explore · `g 1…9` rail item · `?` help |
 | Search box, empty | `← →` move between steps · `Backspace` take off the last condition · `Enter` search · `Esc` close suggestions, then leave |
-| Explore | `t` table · `s` totals · `v` views · `a` Ask · `f` fit · `c` clear · `n` `p` next or previous node · `e` expand · `w` path · `r` trace · `d` changes nearby · `Delete` remove node · `Esc` close menu or selection |
+| Explore | `t` graph, table, cards · `x` export nodes · `s` totals · `v` views · `a` Ask · `f` fit · `c` clear · `n` `p` next or previous node · `e` expand · `w` path · `r` trace · `d` changes nearby · `Delete` remove node · `Esc` close menu or selection |
 | Cleanup | `d` `u` `m` pick a finder · `r` look again |
 
 # Appendix B. Status at a glance

@@ -684,7 +684,14 @@ public sealed class BrowserTests(PostgresFixture fixture) : IAsyncLifetime, ICla
         await Assertions.Expect(_page.Locator(".explore-table-wrap")).ToBeVisibleAsync();
         await Assertions.Expect(_page.Locator("tr.explore-table-row", new() { HasText = s.Route })).ToBeVisibleAsync();
         await _page.Keyboard.PressAsync("t");
+        await Assertions.Expect(_page.Locator(".explore-card", new() { HasText = s.Route })).ToBeVisibleAsync();
+        await Assertions.Expect(_page.Locator("tr.explore-table-row")).ToHaveCountAsync(0);
+        await _page.Keyboard.PressAsync("t");
         await Assertions.Expect(_page.Locator(".explore-table-wrap")).ToHaveCountAsync(0);
+
+        // x downloads the nodes CSV without the menu.
+        var download = await _page.RunAndWaitForDownloadAsync(() => _page.Keyboard.PressAsync("x"));
+        Assert.Matches(@"^linkbase-nodes-.*\.csv$", download.SuggestedFilename);
 
         var (nodesFile, nodes) = await DownloadAsync("Nodes (CSV)");
         Assert.Matches(@"^linkbase-nodes-.*\.csv$", nodesFile);

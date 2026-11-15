@@ -457,6 +457,59 @@ html:has(.explore) {
     box-shadow: inset 3px 0 0 var(--mud-palette-primary);
 }
 
+/* Cards: a grid of records, each listing only the fields that have a value. */
+.explore-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.explore-card {
+    padding: 10px 12px;
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.explore-card:hover {
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+.explore-card:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+.explore-card-selected {
+    box-shadow: inset 3px 0 0 var(--mud-palette-primary);
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+.explore-card-name {
+    margin-bottom: 6px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.explore-card-fields {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 12px;
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+.explore-card-fields dt {
+    color: var(--mud-palette-text-secondary);
+}
+
+.explore-card-fields dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
 .explore-table-value {
     max-width: 360px;
     overflow-wrap: anywhere;
