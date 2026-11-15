@@ -115,6 +115,6 @@ old values. A deleted record has no page to show its History on, so reverting a 
   share it. `ChangeRecorderCoverageTests` reads the source and fails when a file writes `node` or `node_link` without it.
 - The one write it doesn't cover is climbing's renaming of ascents after their route (`ClimbingRecordHook`), which follows
   from the route's logged rename.
-- A domain module's rebuild finds its cause through an `AsyncLocal`: the repository sets the change set while the module's
-  hooks run, and `ReplaceDerivedAsync` reads it into `cause_change_set_id`.
+- A domain module's rebuild is told its cause: the repository passes the change set to the hooks (`AfterChangeAsync`), and
+  the module hands it to `ReplaceDerivedAsync`, which writes it to `cause_change_set_id`.
 - A module's links are not listed in a rebuild, only its records. The links follow from the records.

@@ -354,7 +354,8 @@ that list the module under `Domains`:
   and sets the fields the module keeps.
 - `AfterChangeAsync` runs once the changes are saved, with every change one action made to the watched types: records
   created, updated or deleted, with their values before and after, and links added or removed, once for each end. It's
-  for keeping derived records up to date.
+  for keeping derived records up to date. It is also given the id of the change set the changes were logged in (null when
+  the model keeps no history), which a module passes on to `ReplaceDerivedAsync` so its rebuild is traced to its cause.
 
 Climbing's hook (`ClimbingRecordHook`) is the working example: it sets a route's `grade_rank` before it's saved, names each
 ascent after its route, and rebuilds the `Trip` records, with `GenericTripService`, when an ascent's date or place changes.
