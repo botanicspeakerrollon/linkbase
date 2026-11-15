@@ -196,10 +196,12 @@ src/Linkbase/
       Import/   Parsers, corrections, trip rules and admin commands
 tests/Linkbase.Tests/
 data/samples/   Your export files (git-ignored)
-docs/           Index in docs/README.md: the reference, models, the security roadmap, operations, performance and querying Postgres
+docs/           Index in docs/README.md: the reference, requirements, architecture, models, schema, operations, performance and querying Postgres
+  history/      Plans and designs from building it (security, audit trail, deployment, extensibility), kept for the record
 models/         Model files and their CSVs, such as the example consultancy and the demo climbing logbook
+deploy/         Kubernetes, OpenShift and Docker files for the image
 scripts/        Local setup, backup, restore and recovery rehearsal
 backups/        Database backups (git-ignored)
 ```
 
-Folders are added as each phase needs them. See [CLAUDE.md](CLAUDE.md) for the architecture rules.
+See [CLAUDE.md](CLAUDE.md) for the architecture rules.
