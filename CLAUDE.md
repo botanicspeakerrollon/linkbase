@@ -46,6 +46,12 @@ choice between clever and boring, choose boring. See `README.md` for commands.
 - Small commits, one per meaningful step.
 - Be prepared to work in a new worktree or branch if other work is happening. Be aware of merge conflicts and the need to collaborate with other work.
 - User facing and repo docs must be checked for accuracy against new work, and updated if required. 
+- **Requirements stay in sync.** `docs/requirements.md` describes the app as built, so any change to behaviour updates it in
+  the same commit: reword the requirement the change affects (keys, limits, numbers and all), add a new id for new behaviour
+  (never reuse one; mark a removed feature Withdrawn), set the status honestly (Met / Partial with the gap), list any new
+  `@page` route in §5.1, and add a line to the change log (Appendix B). `RequirementsDocTests` catches a missing route,
+  duplicate or unknown ids and a bad status, but it cannot tell that a behaviour changed, so check the doc by hand before
+  saying the work is done. When asked to review the app against its docs, check `reference.md` and the in-app guide too.
 - Once new work is completed, it must be merged to main, but not pushed to remote.
 - The repo is anonymous: nothing in it may identify its owner. Commits use the repo's own `Linkbase` identity and are made
   with `TZ=UTC0` (`$env:TZ = 'UTC0'` in PowerShell), or git records the PC's time zone. Test data uses made-up people,

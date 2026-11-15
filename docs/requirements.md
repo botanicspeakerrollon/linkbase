@@ -341,6 +341,33 @@ security on; a model that doesn't is unaffected (SEC-6).
 | Identity provider | In, optional | Any ASP.NET Core authentication scheme a deployment adds, or the claims it supplies, through the one identity seam (SEC-1). |
 | Grant directory | Out, optional | A model's security parts may read people's grants from an HTTP directory with a bearer token (MOD-6). |
 
+### 5.1 Pages
+
+Every routable page, so that a new page cannot be added without being specified here. `RequirementsDocTests` fails when a
+`@page` route is missing from this table.
+
+| Route | Page | Requirements |
+| --- | --- | --- |
+| `/` | Home | UI-4, UI-5 |
+| `/explore` | Explore | FUN-1 to FUN-20 |
+| `/data/{Type}` | A type's list | REC-1, REC-2 |
+| `/data/{Type}/{*Key}` | A record | REC-3 to REC-9, HIS-2, HIS-4 |
+| `/logbook` | Logbook (climbing) | CLM-1 |
+| `/insights` | Insights (climbing) | CLM-2 |
+| `/timeline` | Timeline | TIM-1 |
+| `/cleanup` | Cleanup | CLN-1, CLN-2 |
+| `/import` | Read text | IMP-7, IMP-9 |
+| `/import/review/{BatchId:long}` | Review a staged read | IMP-3, IMP-4, IMP-8 |
+| `/import-csv` | CSV import | IMP-1, IMP-2, IMP-5, IMP-10 |
+| `/import-csv/review/{BatchId:long}` | Review a staged CSV import | IMP-3, IMP-4 |
+| `/model` | Model editor | MOD-4, MOD-5 |
+| `/new-model` | New model | IMP-6, MOD-1 |
+| `/guide` | Guide | UI-8 |
+| `/guide/climbing` | Climbing guide | UI-8 |
+| `/docs/{Slug}` | A listed document | DEM-5 |
+| `/not-found` | Page not found | — |
+| `/Error` | Error page | — |
+
 ---
 
 ## 6. Appendix A — Requirements → feature traceability
@@ -361,7 +388,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | SEC | [security-design](history/security-design.md), [models.md](models.md#security) | `RowSecurityTests`, `SecurityRuleTests`, `SecurityLabelsTests`, `FieldPolicyTests`, `HistorySecurityTests`, `IdentityTests`, `LabelUiTests` |
 | TIM, CLM | §10 Home, Timeline and Cleanup; §17 climbing | `EverydayUseTests`, `LogbookRepositoryTests`, `InsightsRepositoryTests`, `TripBuilderTests`, `ClimbingHookTests`, `GradeRankingTests` |
 | DEM | [deploy/azure/README.md](../deploy/azure/README.md), `docker-compose.demo.yml` | CI `demo` job; `ModelSetupTests` |
-| REL, OPS, MNT | Part IV | CI (`.github/workflows/ci.yml`), `.gitlab-ci.yml` |
+| REL, USE, OPS, MNT | Part IV | CI (`.github/workflows/ci.yml`), `.gitlab-ci.yml` |
 
 ## 7. Appendix B — Change log
 

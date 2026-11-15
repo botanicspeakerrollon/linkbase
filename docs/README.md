@@ -3,7 +3,7 @@
 Start here:
 
 - [reference](reference.md): what Linkbase contains, feature by feature, in the style of a manual: synopsis, description, limits, what isn't built.
-- [requirements](requirements.md): the same ground as formal, numbered, testable requirements, for tracing a change or a test back to something agreed.
+- [requirements](requirements.md): the same ground as formal, numbered, testable requirements, for tracing a change or a test back to something agreed. It describes the app as built and is updated with every change; `RequirementsDocTests` checks its structure and its page list.
 - The **user guide** is in the app, under Guide in the rail (`/guide`), written for the people using it.
 
 Current:
@@ -14,8 +14,8 @@ Current:
 - [postgres](postgres.md): getting into the databases and querying them by hand.
 - [performance](performance.md): the large Swiss rail sample and how queries are checked against it.
 - [extensibility-plan](history/extensibility-plan.md): what's built and what to do next, in order.
-- [security-roadmap](security-roadmap.md): sign-in, roles and field-level permissions (not started).
-- [security-design](security-design.md): labels (classification, departments, projects), row-level security and masking, with the Postgres mechanics (the model file's section, the rule and where grants come from are built; nothing is enforced yet).
+- [security-roadmap](history/security-roadmap.md): the original plan for sign-in, roles and field-level permissions (see the requirements, SEC, for what is built).
+- [security-design](history/security-design.md): the design for labels, row-level security and masking, with the Postgres mechanics (built; see the requirements, SEC).
 - [audit-history-plan](history/audit-history-plan.md): the audit trail, with a reason for each change (built, apart from reverting changes that touched several records).
 - [relationship-attributes](history/relationship-attributes.md): values on links, such as a partner's role (built, with filtering and updating a link's value on CSV re-import; Read text still skips it).
 - [deployment-plan](history/deployment-plan.md) and [`deploy/`](../deploy/README.md): running the one image on Kubernetes, OpenShift or Docker.
