@@ -90,7 +90,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
             InvokeAsync<TValue>(identifier, args);
     }
 
-    private IEnumerable<string> GraphCalls => _graph.Invocations.Select(i => i.Identifier);
+    private IEnumerable<string> GraphCalls => _graph.Invocations.Safe().Select(i => i.Identifier);
 
     private void Search<T>(IRenderedComponent<T> cut, string text)
         where T : IComponent
@@ -208,7 +208,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         Key(cut, "Enter");
 
         cut.WaitForAssertion(() => Assert.Contains("update", GraphCalls));
-        var drawn = _graph.Invocations.Last(i => i.Identifier == "update").Arguments;
+        var drawn = _graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments;
         Assert.Equal((await Services.GetRequiredService<GraphRepository>().SchemaAsync()).Labels.Count, ((object[])drawn[0]!).Length);
         Assert.NotEmpty((object[])drawn[1]!);
         Assert.Contains((object[])drawn[1]!, e => System.Text.RegularExpressions.Regex.IsMatch(e.ToString()!, @"relType = AT \(\d"));
@@ -226,7 +226,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         Press(cut, "Show all Crag nodes");
 
-        cut.WaitForAssertion(() => Assert.True(((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!).Length > 0));
+        cut.WaitForAssertion(() => Assert.True(((object[])_graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments[0]!).Length > 0));
         DoesNotSee(cut, "Show all Crag nodes");
     }
 
@@ -324,7 +324,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         Told("no longer exist");
         cut.WaitForAssertion(() => Assert.Contains("update", GraphCalls));
-        var drawn = (object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!;
+        var drawn = (object[])_graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments[0]!;
         Assert.Equal(2, drawn.Length);
     }
 
@@ -419,7 +419,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeDoubleClicked("model:Area"));
         cut.WaitForAssertion(() => Assert.DoesNotContain(
-            ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
+            ((object[])_graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
             n => n!.Contains("model:", StringComparison.Ordinal)));
 
         Press(cut, "Clear");
@@ -556,7 +556,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         ClickFresh(cut, () => cut.FindAll("tr.explore-table-row").First(r => r.TextContent.Contains(s.Route, StringComparison.Ordinal)));
         Sees(cut, s.Route + "</h2>");
         Sees(cut, "explore-table-selected");
-        Assert.Equal($"route:{s.RouteId}", _graph.Invocations.Last(i => i.Identifier == "select").Arguments[0]);
+        Assert.Equal($"route:{s.RouteId}", _graph.Invocations.Safe().Last(i => i.Identifier == "select").Arguments[0]);
 
         // The filter narrows every table.
         cut.Find(".explore-table-filter input").Input("E1 5b");
@@ -623,7 +623,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     {
         var s = await SeedAsync();
         var cut = Render(s);
-        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "register"));
+        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations.Safe(), i => i.Identifier == "register"));
 
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         Sees(cut, "explore-table-wrap");
@@ -642,7 +642,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         Sees(cut, "Click a node for its details");
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
         var first = cut.Find("aside h2").TextContent;
-        Assert.Equal(_graph.Invocations.Last(i => i.Identifier == "select").Arguments[0], _graph.Invocations.Last(i => i.Identifier == "reveal").Arguments[0]);
+        Assert.Equal(_graph.Invocations.Safe().Last(i => i.Identifier == "select").Arguments[0], _graph.Invocations.Safe().Last(i => i.Identifier == "reveal").Arguments[0]);
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
         Assert.NotEqual(first, cut.Find("aside h2").TextContent);
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("p"));
@@ -657,7 +657,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         // In the table, the chosen row is scrolled to.
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
-        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "scrollIntoView"));
+        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations.Safe(), i => i.Identifier == "scrollIntoView"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("t"));
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
 
@@ -671,19 +671,19 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         Sees(cut, "Click a node for its details");
 
         // With nothing selected, the keys that act on a node do nothing, and h no longer hides anything.
-        var drawn = _graph.Invocations.Count(i => i.Identifier == "update");
+        var drawn = _graph.Invocations.Safe().Count(i => i.Identifier == "update");
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("q"));
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"crag:{s.CragId}"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("h"));
-        Assert.Equal(drawn, _graph.Invocations.Count(i => i.Identifier == "update"));
+        Assert.Equal(drawn, _graph.Invocations.Safe().Count(i => i.Identifier == "update"));
         cut.WaitForAssertion(() => Assert.Equal(s.Crag, cut.Find(".explore-panel h2").TextContent.Trim()));
 
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Delete"));
         Sees(cut, "Click a node for its details");
         Assert.DoesNotContain(
-            ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
+            ((object[])_graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments[0]!).Select(n => n.ToString()),
             n => n!.Contains($"route:{s.RouteId}", StringComparison.Ordinal));
 
         // c clears the graph, from the table too, and does nothing once it's empty.
@@ -692,7 +692,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("c"));
         Sees(cut, "Type anything above");
         DoesNotSee(cut, "explore-table-wrap");
-        Assert.Empty((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!);
+        Assert.Empty((object[])_graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments[0]!);
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("c"));
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("n"));
         Sees(cut, "Type anything above");
@@ -703,7 +703,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     {
         var s = await SeedAsync();
         var cut = Render(s);
-        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations, i => i.Identifier == "register"));
+        cut.WaitForAssertion(() => Assert.Contains(JSInterop.Invocations.Safe(), i => i.Identifier == "register"));
         var before = Address;
 
         await cut.InvokeAsync(() => cut.Instance.OnHotkey("Escape"));
@@ -721,7 +721,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
     {
         var s = await SeedAsync();
         var cut = RenderPage<ExplorePage>();
-        var focuses = () => JSInterop.Invocations.Count(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal));
+        var focuses = () => JSInterop.Invocations.Safe().Count(i => i.Identifier.EndsWith("focus", StringComparison.Ordinal));
 
         // Focused as it opens, without the suggestions covering the page.
         cut.WaitForAssertion(() => Assert.Equal(1, focuses()));
@@ -757,7 +757,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
             Popovers.WaitForAssertion(() => Assert.Contains(Popovers.FindAll(".mud-menu-item"), i => i.TextContent.Contains(item, StringComparison.Ordinal)));
             ClickFresh(Popovers, () => Popovers.FindAll(".mud-menu-item").First(i => i.TextContent.Contains(item, StringComparison.Ordinal)));
             cut.WaitForAssertion(() => Assert.True(download.Invocations.Count > before));
-            var call = download.Invocations.Last();
+            var call = download.Invocations.Safe().Last();
             Assert.Matches(@"^linkbase-\w+-\d{4}-\d{2}-\d{2}-\d{4}\.(csv|json)$", (string)call.Arguments[0]!);
             var bytes = ((MemoryStream)((DotNetStreamReference)call.Arguments[2]!).Stream).ToArray();
             return System.Text.Encoding.UTF8.GetString(bytes).TrimStart('﻿');
@@ -777,7 +777,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         Press(cut, "Export");
         ClickFresh(Popovers, () => Popovers.FindAll(".mud-menu-item").First(i => i.TextContent.Contains("Picture", StringComparison.Ordinal)));
-        cut.WaitForAssertion(() => Assert.Matches(@"^linkbase-graph-.*\.png$", (string)_graph.Invocations.Last(i => i.Identifier == "savePng").Arguments[0]!));
+        cut.WaitForAssertion(() => Assert.Matches(@"^linkbase-graph-.*\.png$", (string)_graph.Invocations.Safe().Last(i => i.Identifier == "savePng").Arguments[0]!));
 
         // A removed node isn't shown, so it isn't exported either.
         await cut.InvokeAsync(() => cut.Instance.OnNodeClicked($"route:{s.RouteId}"));
@@ -796,7 +796,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
         cut.WaitForAssertion(() => Assert.Contains("fit", GraphCalls));
 
         // Removing what an expand brought in, then expanding again, brings it back.
-        bool OnGraph(string id) => ((object[])_graph.Invocations.Last(i => i.Identifier == "update").Arguments[0]!)
+        bool OnGraph(string id) => ((object[])_graph.Invocations.Safe().Last(i => i.Identifier == "update").Arguments[0]!)
             .Any(n => n.ToString()!.Contains($"id = {id},", StringComparison.Ordinal));
         Press(cut, "Expand");
         cut.WaitForAssertion(() => Assert.True(OnGraph($"route:{s.RouteId}")));
@@ -939,7 +939,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         var loaded = OpenAt(saved.State);
         loaded.WaitForAssertion(() => Assert.Contains("restore", GraphCalls));
-        var drawn = (object[])_graph.Invocations.Last(i => i.Identifier == "restore").Arguments[0]!;
+        var drawn = (object[])_graph.Invocations.Safe().Last(i => i.Identifier == "restore").Arguments[0]!;
         Assert.Single(drawn);
     }
 
@@ -957,7 +957,7 @@ public class ExplorePageTests : UiTestBase, IClassFixture<PostgresFixture>
 
         Told("1 of the records in this view no longer exist.");
         cut.WaitForAssertion(() => Assert.Contains("restore", GraphCalls));
-        var drawn = (object[])_graph.Invocations.Last(i => i.Identifier == "restore").Arguments[0]!;
+        var drawn = (object[])_graph.Invocations.Safe().Last(i => i.Identifier == "restore").Arguments[0]!;
         Assert.Single(drawn);
     }
 
