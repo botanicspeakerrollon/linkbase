@@ -182,23 +182,20 @@ public sealed partial class ImportStagingService
         // The batch stands for everything it added, so the trail has one entry for it rather than a row for each record and
         // link. The record's own history starts from the batch (see HistoryRepository). New types, fields and relationships
         // are listed, because they change the model.
-        long? changeSet = null;
-        if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
+        var logged = new List<PendingChange>
         {
-            var logged = new List<PendingChange>
-            {
-                new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create,
-                    NewValue: JsonSerializer.Serialize(new { records, links, updated = updates.Count + linkUpdates.Count })),
-            };
-            logged.AddRange(updates.SelectMany(u => ChangeRecorder.NodeUpdated(u.Id, u.OldName, RecordRepository.Values(u.OldProps), u.NewName, RecordRepository.Values(u.NewProps))));
-            logged.AddRange(linkUpdates.SelectMany(u => ChangeRecorder.LinkUpdated(u.SourceId, u.RelType, u.TargetId, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
-            logged.AddRange(newTypes.Select(t => new PendingChange(ChangeEntityKind.Definition, $"type:{t}", ChangeOp.Create)));
-            logged.AddRange(newFields.Select(f => new PendingChange(ChangeEntityKind.Definition, $"field:{f}", ChangeOp.Create)));
-            logged.AddRange(newRelationships.OfType<JsonObject>().Select(r => new PendingChange(
-                ChangeEntityKind.Definition, $"relationship:{(string?)r["from"]} {(string?)r["rel"]} {(string?)r["to"]}", ChangeOp.Create)));
-            changeSet = await ChangeRecorder.WriteAsync(connection, transaction, JustificationKind.Import, $"Import #{batchId} committed", batch.SourceUrl, logged,
-                importBatchId: batchId, cancellationToken: cancellationToken);
-        }
+            new(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Create,
+                NewValue: JsonSerializer.Serialize(new { records, links, updated = updates.Count + linkUpdates.Count })),
+        };
+        logged.AddRange(updates.SelectMany(u => ChangeRecorder.NodeUpdated(u.Id, u.OldName, RecordRepository.Values(u.OldProps), u.NewName, RecordRepository.Values(u.NewProps))));
+        logged.AddRange(linkUpdates.SelectMany(u => ChangeRecorder.LinkUpdated(u.SourceId, u.RelType, u.TargetId, RecordRepository.Values(u.OldProps), RecordRepository.Values(u.NewProps))));
+        logged.AddRange(newTypes.Select(t => new PendingChange(ChangeEntityKind.Definition, $"type:{t}", ChangeOp.Create)));
+        logged.AddRange(newFields.Select(f => new PendingChange(ChangeEntityKind.Definition, $"field:{f}", ChangeOp.Create)));
+        logged.AddRange(newRelationships.OfType<JsonObject>().Select(r => new PendingChange(
+            ChangeEntityKind.Definition, $"relationship:{(string?)r["from"]} {(string?)r["rel"]} {(string?)r["to"]}", ChangeOp.Create)));
+        var changeSet = await ChangeRecorder.WriteAsync(connection, transaction, (await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record,
+            JustificationKind.Import, $"Import #{batchId} committed", batch.SourceUrl, logged,
+            importBatchId: batchId, cancellationToken: cancellationToken);
 
         await ExecuteAsync(connection, transaction, "DELETE FROM staged_item WHERE import_batch_id = @batch", ("batch", batchId, NpgsqlDbType.Bigint));
 

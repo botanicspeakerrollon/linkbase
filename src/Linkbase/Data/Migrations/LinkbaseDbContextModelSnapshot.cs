@@ -107,6 +107,62 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("change");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.ChangeEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("CauseChangeSetId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("cause_change_set_id");
+
+                    b.Property<long?>("ChangeSetId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("change_set_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Entities")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("entities");
+
+                    b.Property<int>("EntityCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("entity_count");
+
+                    b.Property<long?>("ImportBatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("import_batch_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.HasKey("Id")
+                        .HasName("pk_change_event");
+
+                    b.HasIndex("CauseChangeSetId")
+                        .HasDatabaseName("ix_change_event_cause_change_set_id");
+
+                    b.HasIndex("ChangeSetId")
+                        .HasDatabaseName("ix_change_event_change_set_id");
+
+                    b.HasIndex("ImportBatchId")
+                        .HasDatabaseName("ix_change_event_import_batch_id");
+
+                    b.ToTable("change_event");
+                });
+
             modelBuilder.Entity("Linkbase.Data.ChangeSet", b =>
                 {
                     b.Property<long>("Id")
@@ -1075,6 +1131,33 @@ namespace Linkbase.Data.Migrations
                         .HasConstraintName("fk_change_change_set_change_set_id");
 
                     b.Navigation("ChangeSet");
+                });
+
+            modelBuilder.Entity("Linkbase.Data.ChangeEvent", b =>
+                {
+                    b.HasOne("Linkbase.Data.ChangeSet", "Cause")
+                        .WithMany()
+                        .HasForeignKey("CauseChangeSetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_change_event_change_set_cause_change_set_id");
+
+                    b.HasOne("Linkbase.Data.ChangeSet", "ChangeSet")
+                        .WithMany()
+                        .HasForeignKey("ChangeSetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_change_event_change_set_change_set_id");
+
+                    b.HasOne("Linkbase.Data.ImportBatch", "ImportBatch")
+                        .WithMany()
+                        .HasForeignKey("ImportBatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_change_event_import_batch_import_batch_id");
+
+                    b.Navigation("Cause");
+
+                    b.Navigation("ChangeSet");
+
+                    b.Navigation("ImportBatch");
                 });
 
             modelBuilder.Entity("Linkbase.Data.ChangeSet", b =>

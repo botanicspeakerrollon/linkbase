@@ -11,7 +11,6 @@ public sealed partial class ChangeRecorderCoverageTests
     // Files that write records or links without using ChangeRecorder, and why that's right.
     private static readonly Dictionary<string, string> Exempt = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["Domains/Climbing/Data/ClimbingRecordHook.cs"] = "Renames ascents after their route, which is derived from the route's own logged rename, and leaves updated_at alone.",
     };
 
     [GeneratedRegex(@"(\bdb\.(Nodes|NodeLinks)\b[^;{}]*?\.(Add|AddRange|Remove|ExecuteDeleteAsync|ExecuteUpdateAsync)\b|\b(INSERT\s+INTO|DELETE\s+FROM|UPDATE|TRUNCATE)\s+(TABLE\s+)?(node|node_link)\b)", RegexOptions.Singleline)]
@@ -38,6 +37,24 @@ public sealed partial class ChangeRecorderCoverageTests
         }
 
         Assert.True(missing.Count == 0, "These write records or links without recording the change: " + string.Join(", ", missing));
+    }
+
+    // The recorder decides what to keep from the history settings it's given, because a model with history off still raises
+    // change events. A caller that skips it when history is off would leave other systems unaware of the change.
+    [GeneratedRegex(@"\.Record\b[^;{}]*\?\s*await\s+ChangeRecorder\.Write|if\s*\([^)]*\.Record\)\s*\{\s*(\w+\s*=\s*)?await\s+ChangeRecorder\.Write|RecordHistory\)\s*\{[^}]*ChangeRecorder\.Write", RegexOptions.Singleline)]
+    private static partial Regex SkipsTheRecorderWithoutHistory();
+
+    [Fact]
+    public void No_code_path_skips_the_recorder_when_history_is_off()
+    {
+        var root = RepoPaths.Resolve("src/Linkbase");
+        var skipping = Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(f => SkipsTheRecorderWithoutHistory().IsMatch(File.ReadAllText(f)))
+            .Select(f => Path.GetRelativePath(root, f).Replace('\\', '/'))
+            .ToList();
+
+        Assert.True(skipping.Count == 0, "These skip ChangeRecorder when history is off, so no change event is raised: " + string.Join(", ", skipping));
     }
 
     [Fact]

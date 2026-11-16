@@ -287,12 +287,9 @@ public sealed class ModelLoader(IDbContextFactory<LinkbaseDbContext> contextFact
             ("reason", model.RequireReason, NpgsqlDbType.Boolean),
             ("kinds", model.SourceKinds, NpgsqlDbType.Array | NpgsqlDbType.Text),
             ("security", (object?)LabelCodec.ToJson(model.Security) ?? DBNull.Value, NpgsqlDbType.Jsonb));
-        if (model.RecordHistory)
-        {
-            var summary = System.Text.Json.JsonSerializer.Serialize(new { types = model.Types.Count, records = nodes, links });
-            await ChangeRecorder.WriteAsync(session.Connection, session.Transaction, JustificationKind.Import, $"Loaded the {model.Name} model from {Path.GetFileName(path)}", null,
-                [new PendingChange(ChangeEntityKind.Definition, $"model:{model.Name}", ChangeOp.Update, NewValue: summary)], cancellationToken: session.Token);
-        }
+        var summary = System.Text.Json.JsonSerializer.Serialize(new { types = model.Types.Count, records = nodes, links });
+        await ChangeRecorder.WriteAsync(session.Connection, session.Transaction, model.RecordHistory, JustificationKind.Import, $"Loaded the {model.Name} model from {Path.GetFileName(path)}", null,
+            [new PendingChange(ChangeEntityKind.Definition, $"model:{model.Name}", ChangeOp.Update, NewValue: summary)], cancellationToken: session.Token);
     }
 
     private static string IndexName(string definition) =>

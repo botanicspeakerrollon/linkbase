@@ -70,10 +70,7 @@ public sealed partial class ModelEditor(IDbContextFactory<LinkbaseDbContext> con
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var changes = new List<PendingChange>();
         var result = await work(db, changes);
-        if (settings.Record)
-        {
-            await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, changes, cancellationToken: cancellationToken);
-        }
+        await ChangeRecorder.WriteAsync(db, settings, JustificationKind.Manual, kept, changes, cancellationToken: cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return result;

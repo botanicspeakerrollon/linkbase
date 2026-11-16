@@ -129,6 +129,16 @@ public sealed class ClimbingHookTests(PostgresFixture fixture) : IDisposable, IC
         }
 
         await records.UpdateAsync(route, new RecordInput("La Bleue Renamed", new Dictionary<string, string?> { ["grade"] = "6a+", ["grade_system"] = "french" }));
+
+        // The rename isn't in the history, but other systems hear of it as a derived change.
+        await using (var db = target.CreateDbContext())
+        {
+            var derived = await db.ChangeEvents.AsNoTracking().Where(e => e.Kind == JustificationKind.Derived).Select(e => e.Entities).ToListAsync();
+            Assert.Contains(derived, e => System.Text.Json.Nodes.JsonNode.Parse(e)!.AsArray().Any(n =>
+                (string?)n!["id"] == $"ascent:{key}"
+                && n["fields"]!.AsArray().Select(f => (string?)f).SequenceEqual(["name"])));
+        }
+
         await records.UpdateAsync("ascent:" + key, new RecordInput("Ascent", new Dictionary<string, string?>
         {
             ["date"] = "2019-01-05",

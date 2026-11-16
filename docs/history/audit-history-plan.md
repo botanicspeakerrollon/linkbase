@@ -57,6 +57,8 @@ later keeps the log already written but stops adding to it.
 - `RecordRepository` writes the change set in the same transaction as the data, through a `ChangeRecorder`, so the two
   can't disagree.
 - `ExecuteUpdate` and `ExecuteDelete` skip `SaveChanges`, so each must call the recorder. A test fails if a write path doesn't.
+- Callers always call the recorder, even when `history.record` is false: it skips the history rows then, but still writes the
+  `change_event` that [change hooks](change-hooks-plan.md) read. A test fails if a path skips it.
 - **Import creates are not logged row by row.** A create is implied by `import_batch_id`, and the batch's justification
   carries the source. Updates and deletes of existing records are logged. Without this, a 45M-link import would write 45M
   history rows.

@@ -25,7 +25,7 @@ public sealed partial class RecordRepository
         var changes = new List<RecordChange>();
         var logged = new List<PendingChange>();
         var created = await CreateInAsync(db, type, key, input, changes, logged, cancellationToken);
-        var changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
+        var changeSet = await ChangeRecorder.WriteAsync(db, settings, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         await hooks.AfterChangeAsync(changes, changeSet, cancellationToken);
 
@@ -165,9 +165,8 @@ public sealed partial class RecordRepository
         await RecordHierarchy.CheckKindChangeAsync(db, definition, id, oldProps, node.Props, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         var after = Values(node.Props);
-        var changeSet = settings.Record
-            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, ChangeRecorder.NodeUpdated(id, oldName, before, node.Name, after).ToList(), cancellationToken: cancellationToken)
-            : null;
+        var changeSet = await ChangeRecorder.WriteAsync(
+            db, settings, JustificationKind.Manual, kept, ChangeRecorder.NodeUpdated(id, oldName, before, node.Name, after).ToList(), cancellationToken: cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         await hooks.AfterChangeAsync([new RecordChange(RecordChangeKind.Updated, node.Type, id, before, after)], changeSet, cancellationToken);
     }
@@ -221,14 +220,11 @@ public sealed partial class RecordRepository
         {
             foreach (var (relType, targetType, _) in own)
             {
-                if (settings.Record)
-                {
-                    var going = await db.NodeLinks.AsNoTracking()
-                        .Where(l => l.SourceId == id && l.RelType == relType && l.Target.Type == targetType)
-                        .Select(l => new { l.TargetId, l.Props })
-                        .ToListAsync(cancellationToken);
-                    logged.AddRange(going.Select(l => ChangeRecorder.LinkDeleted(id, relType, l.TargetId, Values(l.Props))));
-                }
+                var going = await db.NodeLinks.AsNoTracking()
+                    .Where(l => l.SourceId == id && l.RelType == relType && l.Target.Type == targetType)
+                    .Select(l => new { l.TargetId, l.Props })
+                    .ToListAsync(cancellationToken);
+                logged.AddRange(going.Select(l => ChangeRecorder.LinkDeleted(id, relType, l.TargetId, Values(l.Props))));
 
                 var removed = await db.NodeLinks.Where(l => l.SourceId == id && l.RelType == relType && l.Target.Type == targetType).ExecuteDeleteAsync(cancellationToken);
                 await CountAsync(db, type, relType, targetType, -removed, cancellationToken);
@@ -244,16 +240,13 @@ public sealed partial class RecordRepository
             }
 
             await derived.ExecuteDeleteAsync(cancellationToken);
-            if (settings.Record)
-            {
-                var refs = await db.ExternalRefs.AsNoTracking().Where(r => r.NodeId == id).Select(r => new { r.Source, r.ExternalId }).ToListAsync(cancellationToken);
-                logged.AddRange(refs.Select(r => new PendingChange(
-                    ChangeEntityKind.ExternalRef, id, ChangeOp.Delete, SnakeCaseEnumConverter<DataSource>.ToStore(r.Source), OldValue: r.ExternalId)));
-            }
+            var refs = await db.ExternalRefs.AsNoTracking().Where(r => r.NodeId == id).Select(r => new { r.Source, r.ExternalId }).ToListAsync(cancellationToken);
+            logged.AddRange(refs.Select(r => new PendingChange(
+                ChangeEntityKind.ExternalRef, id, ChangeOp.Delete, SnakeCaseEnumConverter<DataSource>.ToStore(r.Source), OldValue: r.ExternalId)));
 
             await ExternalRefRepository.RemoveForNodesAsync(db, db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).Select(n => n.Id), cancellationToken);
             await db.Nodes.Where(n => n.Id == id && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
-            changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
+            changeSet = await ChangeRecorder.WriteAsync(db, settings, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
         catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.ForeignKeyViolation)
@@ -300,9 +293,8 @@ public sealed partial class RecordRepository
         db.NodeLinks.Add(new NodeLink { SourceId = sourceId, RelType = relType, TargetId = targetId, Props = props });
         await db.SaveChangesAsync(cancellationToken);
         await CountAsync(db, source.Type, relType, target.Type, 1, cancellationToken);
-        var changeSet = settings.Record
-            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, [ChangeRecorder.LinkCreated(sourceId, relType, targetId, Values(props))], cancellationToken: cancellationToken)
-            : null;
+        var changeSet = await ChangeRecorder.WriteAsync(
+            db, settings, JustificationKind.Manual, kept, [ChangeRecorder.LinkCreated(sourceId, relType, targetId, Values(props))], cancellationToken: cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         await hooks.AfterChangeAsync(LinkChanges(RecordChangeKind.Linked, source.Type, sourceId, relType, target.Type, targetId, after: Values(props)), changeSet, cancellationToken);
     }
@@ -356,9 +348,8 @@ public sealed partial class RecordRepository
         link.Props = props;
         await db.SaveChangesAsync(cancellationToken);
         var after = Values(props);
-        var changeSet = settings.Record
-            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, ChangeRecorder.LinkUpdated(link.SourceId, link.RelType, link.TargetId, before, after).ToList(), cancellationToken: cancellationToken)
-            : null;
+        var changeSet = await ChangeRecorder.WriteAsync(
+            db, settings, JustificationKind.Manual, kept, ChangeRecorder.LinkUpdated(link.SourceId, link.RelType, link.TargetId, before, after).ToList(), cancellationToken: cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         if (!before.SequenceEqual(after))
         {
@@ -425,8 +416,9 @@ public sealed partial class RecordRepository
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         var removed = await db.NodeLinks.Where(l => l.Id == linkId).ExecuteDeleteAsync(cancellationToken);
         await CountAsync(db, link.SourceType, link.RelType, link.TargetType, -removed, cancellationToken);
-        var changeSet = settings.Record && removed > 0
-            ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, [ChangeRecorder.LinkDeleted(link.SourceId, link.RelType, link.TargetId, Values(link.Props))], cancellationToken: cancellationToken)
+        var changeSet = removed > 0
+            ? await ChangeRecorder.WriteAsync(
+                db, settings, JustificationKind.Manual, kept, [ChangeRecorder.LinkDeleted(link.SourceId, link.RelType, link.TargetId, Values(link.Props))], cancellationToken: cancellationToken)
             : null;
         await transaction.CommitAsync(cancellationToken);
         if (removed > 0)

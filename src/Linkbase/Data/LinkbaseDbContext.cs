@@ -28,6 +28,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<Justification> Justifications => Set<Justification>();
     public DbSet<ChangeSet> ChangeSets => Set<ChangeSet>();
     public DbSet<Change> Changes => Set<Change>();
+    public DbSet<ChangeEvent> ChangeEvents => Set<ChangeEvent>();
     public DbSet<GraphNodeRow> GraphNodes => Set<GraphNodeRow>();
     public DbSet<GraphEdgeRow> GraphEdges => Set<GraphEdgeRow>();
 
@@ -201,6 +202,15 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             change.HasIndex(c => new { c.EntityKind, c.EntityId, c.Id });
             change.HasIndex(c => new { c.RelatedId, c.Id });
             change.HasIndex(c => c.ChangeSetId);
+        });
+
+        modelBuilder.Entity<ChangeEvent>(changeEvent =>
+        {
+            changeEvent.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+            changeEvent.Property(e => e.Entities).HasColumnType("jsonb");
+            changeEvent.HasOne(e => e.ChangeSet).WithMany().HasForeignKey(e => e.ChangeSetId);
+            changeEvent.HasOne(e => e.Cause).WithMany().HasForeignKey(e => e.CauseChangeSetId);
+            changeEvent.HasOne(e => e.ImportBatch).WithMany().HasForeignKey(e => e.ImportBatchId);
         });
 
         modelBuilder.Entity<GraphNodeRow>(node =>

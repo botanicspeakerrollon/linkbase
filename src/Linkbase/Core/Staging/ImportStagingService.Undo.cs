@@ -102,18 +102,14 @@ public sealed partial class ImportStagingService
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        long? changeSet = null;
-        if ((await ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
-        {
-            List<PendingChange> undone =
-            [
-                new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Delete,
-                    OldValue: JsonSerializer.Serialize(new { records = recordsRemoved, links = linksRemoved, kept = kept.Count, reverted = reverted.Count })),
-                .. reverted,
-            ];
-            changeSet = await ChangeRecorder.WriteAsync(db, JustificationKind.Import, new ChangeReason($"Import #{batchId} undone", batch.SourceUrl), undone,
-                importBatchId: batchId, cancellationToken: cancellationToken);
-        }
+        List<PendingChange> undone =
+        [
+            new PendingChange(ChangeEntityKind.ImportBatch, batchId.ToString(System.Globalization.CultureInfo.InvariantCulture), ChangeOp.Delete,
+                OldValue: JsonSerializer.Serialize(new { records = recordsRemoved, links = linksRemoved, kept = kept.Count, reverted = reverted.Count })),
+            .. reverted,
+        ];
+        var changeSet = await ChangeRecorder.WriteAsync(db, await ChangeRecorder.SettingsAsync(db, cancellationToken), JustificationKind.Import, new ChangeReason($"Import #{batchId} undone", batch.SourceUrl), undone,
+            importBatchId: batchId, cancellationToken: cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         await _hooks.AfterChangeAsync(changes, changeSet, cancellationToken);

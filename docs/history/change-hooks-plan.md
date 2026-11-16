@@ -1,6 +1,6 @@
 # Change hooks plan
 
-Not built. This plans INT-1 and INT-2 in [requirements](../requirements.md#311-integration-int): telling other systems,
+Step 1 (the events) is built; the dispatcher and hooks (steps 2 to 4) are not. This plans INT-1 and INT-2 in [requirements](../requirements.md#311-integration-int): telling other systems,
 such as a message bus, a webhook or an integration platform, that records or links changed. The read API (INT-3) is a
 separate plan, but this one leans on it: events say *what* changed, and a consumer that wants the values reads them through
 the API as itself.
@@ -14,7 +14,7 @@ the API as itself.
   when one doesn't. One event per change set, so an import is one event (as HIS-7), not one per record.
 - **Written whether or not history is on.** Today callers skip the recorder when `history.record` is false. That check moves
   inside the recorder: history rows only when recording, the event always.
-- **Thin events.** An event names the records and links affected, their type, the operation and the keys of the fields that
+- **Thin events.** An event names the records and links affected (a node's id carries its type key, in lower case), the operation and the keys of the fields that
   changed. No values and no reason text. Values are read through the API, as the consumer's own identity, so row and field
   security stay in one place and a bus never holds a copy of a hidden field.
 - **At least once, in commit order, per hook.** Each hook has its own position. A hook that fails retries the same events with
@@ -35,8 +35,8 @@ One per model database, in a migration (so `model migrate` adds it to every mode
 | `change_set_id` | The change set, when history is on; null when it's off. A foreign key that, like all of them, never cascades. |
 | `kind` | The justification kind: `manual`, `import`, `derived`, `correction`. |
 | `import_batch_id` | The batch, for an import commit or undo. |
-| `cause_event_id` | For derived work (a trip rebuild), the event that caused it. |
-| `entities` | `jsonb`: up to 1,000 entries of `{kind, id, type?, source?, rel?, target?, op, fields?}`, one per thing changed (a field edit is one entry listing its keys, not one per field). |
+| `cause_change_set_id` | For derived work (a trip rebuild), the change set that caused it (null when history is off). |
+| `entities` | `jsonb`: up to 1,000 entries of `{kind, id, source?, rel?, target?, op, fields?}`, one per thing changed (a field edit is one entry listing its keys, not one per field). |
 | `entity_count` | How many things changed in all. More than `entities` holds means "too many to list": read the batch or the model again. |
 | `created_at` | When it was written. |
 
@@ -59,8 +59,9 @@ Ids, types and field keys are not sensitive values, so `entities` as JSON doesn'
   the cause.
 - **Definition and label changes** already go through the recorder, so they raise events too, with `kind` `definition` or a
   `labels` field key.
-- **The one exemption.** `ClimbingRecordHook` renames ascents after their route without the recorder. It adds those ascents to
-  the route's event, so a consumer that follows ascents hears of it.
+- **The one exemption, now gone.** `ClimbingRecordHook` renames ascents after their route. It does so in its own
+  transaction and raises a separate `derived` event for the ascents (not part of the route's event, which has already
+  committed), so a consumer that follows ascents hears of it. `ChangeRecorderCoverageTests` no longer exempts it.
 
 ## Ordering
 
@@ -162,9 +163,13 @@ identity of its own is a later step, if a model with row security needs it.
 
 ## Steps
 
-1. Migration, the table, `ChangeRecorder` writing events always (history check moved inside), the lock and `NOTIFY`, the
+1. **Done.** Migration, the table, `ChangeRecorder` writing events always (history check moved inside), the lock and `NOTIFY`, the
    climbing rename. Database tests: event with the change, none on rollback, written with history off, ids in commit order
-   with writers at once, one event per import.
+   with writers at once, one event per import. Cost on `swiss_rail` (history off, so callers now build their
+   `PendingChange` lists there): analysed, not timed end to end. Imports list only updates, deletes and new definitions
+   (creates aren't listed), which the commit already holds in memory, and a model load builds one change; grouping is
+   linear in the list and only 1,000 entries are serialised. Each write adds one row and an advisory lock held to commit.
+   Time an import commit with updates on the large sample when the writes are added to `LoadTests`.
 2. `IChangeHook`, `ChangeHookKinds`, the dispatcher with its leader lock, positions, retry and clean-up, `Linkbase:Roles`,
    and a fake hook in tests: retry, back-off, a broken hook not holding up another, two dispatchers with one working.
 3. The HTTP hook with its signature, tested against a fake handler; `hooks status|skip|replay`; metrics.
