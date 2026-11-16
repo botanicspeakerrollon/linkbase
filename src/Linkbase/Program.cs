@@ -76,9 +76,17 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-// The API answers in JSON, so its errors are not turned into the app's not-found page.
-app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"),
-    pages => pages.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+// The API answers in JSON, so its errors are not turned into the app's not-found page. This switches the feature off for it
+// rather than wrapping the line above in UseWhen, because a branch leaves the re-executed request with no endpoint and a blank 404.
+app.Use((context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api") && context.Features.Get<Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature>() is { } feature)
+    {
+        feature.Enabled = false;
+    }
+    return next(context);
+});
 
 app.UseLinkbaseSecurityHeaders();
 
