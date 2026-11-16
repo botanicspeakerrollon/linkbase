@@ -182,6 +182,7 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | `Api:Scheme` | The authentication scheme the API requires, so another (such as OpenID Connect bearer tokens) can replace API keys | `appsettings.json` or environment variable |
 | `Extraction:Enabled` | Set to `false` to hide every import, and Explore's Ask box, that sends text to the model provider | `appsettings.json` or environment variable |
 | `Ask:Fixture` | Canned answer to every question in Explore's Ask box, as a JSON pattern, instead of calling the API | environment variable |
+| `Extraction:KeepWording` | Set to `true` to let Read text keep values up to 2,000 characters and copy the text's own wording. Off by default, and set for everyone, not per user | `appsettings.json` or environment variable |
 | `Extraction:AllowPrivateAddresses` | Set to `true` to let Read text fetch pages on a private network. Off by default, so a web address can't reach the network the app runs in | `appsettings.json` or environment variable |
 | `Extraction:Fixture` | Canned extraction from a file, instead of calling the API | `linkbase-fixture-extraction` launch config or environment variable |
 

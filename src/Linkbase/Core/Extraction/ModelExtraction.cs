@@ -20,6 +20,10 @@ public sealed record ExtractionSchema(IReadOnlyList<ExtractionType> Types, IRead
     // What a module adds to the prompt about its types, such as how its grades are written.
     public string? Notes { get; init; }
 
+    // Set by Extraction:KeepWording, a decision for the whole installation. The model may then copy the text's own wording into a
+    // value, up to LongValueLength, instead of keeping values short and in its own words.
+    public bool KeepWording { get; init; }
+
     // Records a module derives can't be imported, and a field a module keeps is filled in by that module.
     public static ExtractionSchema From(
         IEnumerable<RecordType> types, IEnumerable<RelationshipDefinition> relationships, RecordHooks? hooks = null,

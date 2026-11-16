@@ -107,6 +107,7 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `Llm__Provider`, `Llm__BaseUrl`, `Llm__Model`, `Llm__MaxTokensField`, `Llm__Strict` | Use an OpenAI-compatible server instead of Anthropic, as in the [README](../README.md#configuration) | `anthropic` |
 | `Llm__ApiKey` | The key for that server, if it wants one. A secret | None, so no key is sent |
 | `Extraction__Enabled` | `false` hides every import that sends text to the model provider, and Explore's Ask box | `true` |
+| `Extraction__KeepWording` | `true` lets Read text keep values up to 2,000 characters and copy the text's own wording, instead of short facts and summaries. A company decision for the whole installation, not a user's choice; mind the copyright of the sources you read | `false` |
 | `Extraction__AllowPrivateAddresses` | `true` lets Read text fetch pages from private network addresses. By default it refuses them, and cloud metadata addresses, so a web address can't be used to reach the network the app runs in | `false` |
 | `Extraction__Fixture`, `Ask__Fixture` | A file of canned results instead of calling the API, for trying the flow with no key. Not for production | None |
 | `Models__<key>__Home__Hide__0` | A home-page panel this model leaves out (`records`, `changes`, `imports`, `growth`) | None |

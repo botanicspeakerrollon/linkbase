@@ -16,6 +16,9 @@ public static class ModelExtractionValidator
 {
     public const int MaxValueLength = 200;
 
+    // The longest value kept when Extraction:KeepWording is on. A name is always held to MaxValueLength.
+    public const int LongValueLength = 2000;
+
     // A field with this key holds a brief summary in the model's own words, so the text can't be searched for it.
     public const string SummaryField = "notes";
 
@@ -66,7 +69,7 @@ public static class ModelExtractionValidator
                 {
                     warnings.Add($"Ignored {name}'s {value.Field}: {type.Name} has no such field.");
                 }
-                else if (!props.ContainsKey(field.Key) && Check(field, value.Value, InSource, sourceText) is { } typed)
+                else if (!props.ContainsKey(field.Key) && Check(field, value.Value, InSource, sourceText, Longest(schema)) is { } typed)
                 {
                     props[field.Key] = typed;
                 }
@@ -129,7 +132,7 @@ public static class ModelExtractionValidator
                     {
                         warnings.Add($"Ignored the {value.Field} of {link.FromName} {link.RelType} {link.ToName}: {link.RelType} has no such value.");
                     }
-                    else if (!props.ContainsKey(field.Key) && Check(field, value.Value, InSource, sourceText) is { } typed)
+                    else if (!props.ContainsKey(field.Key) && Check(field, value.Value, InSource, sourceText, Longest(schema)) is { } typed)
                     {
                         props[field.Key] = typed;
                     }
@@ -153,11 +156,13 @@ public static class ModelExtractionValidator
         return new Result(records.Values.ToList(), links, warnings);
     }
 
+    private static int Longest(ExtractionSchema schema) => schema.KeepWording ? LongValueLength : MaxValueLength;
+
     // The value as the field stores it, or null if the text doesn't back it or it doesn't fit.
-    private static JsonNode? Check(ExtractionField field, string? text, Func<string?, bool> inSource, string sourceText)
+    private static JsonNode? Check(ExtractionField field, string? text, Func<string?, bool> inSource, string sourceText, int longest)
     {
         text = text?.Trim();
-        if (string.IsNullOrEmpty(text) || text.Length > MaxValueLength)
+        if (string.IsNullOrEmpty(text) || text.Length > longest)
         {
             return null;
         }

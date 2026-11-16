@@ -117,6 +117,32 @@ public class ModelExtractionValidatorTests
     }
 
     [Fact]
+    public void With_KeepWording_a_long_value_the_text_contains_is_kept_but_a_name_is_still_capped()
+    {
+        var long_ = new string('a', ModelExtractionValidator.MaxValueLength + 300);
+        var data = new ExtractedData([Project(("status", "active"), ("note", long_))], []);
+        var keep = Schema with { KeepWording = true };
+
+        var kept = ModelExtractionValidator.Validate(keep, data, Text + " " + long_);
+        var invented = ModelExtractionValidator.Validate(keep, data, Text);
+        var longName = ModelExtractionValidator.Validate(keep, new ExtractedData([new ExtractedRecord("Project", long_, [])], []), Text + " " + long_);
+
+        Assert.Contains(long_, kept.Records[0].Props, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"note\"", invented.Records[0].Props, StringComparison.Ordinal);
+        Assert.Empty(longName.Records);
+    }
+
+    [Fact]
+    public void The_prompt_forbids_copying_unless_KeepWording_is_on()
+    {
+        var off = ExtractionPrompts.BuildRequest(Schema, "Atlas", []);
+        var on = ExtractionPrompts.BuildRequest(Schema with { KeepWording = true }, "Atlas", []);
+
+        Assert.Contains("Never copy sentences", off.System + off.User, StringComparison.Ordinal);
+        Assert.DoesNotContain("Never copy sentences", on.System + on.User, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Long_values_are_not_kept_because_only_facts_are_stored()
     {
         var long_ = new string('a', ModelExtractionValidator.MaxValueLength + 1);

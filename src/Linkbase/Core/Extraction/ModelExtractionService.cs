@@ -16,8 +16,10 @@ public sealed class ModelExtractionService(
     PageTextFetcher fetcher,
     IDbContextFactory<LinkbaseDbContext> contextFactory,
     ImportStagingService staging,
-    RecordHooks? hooks = null)
+    RecordHooks? hooks = null,
+    IConfiguration? configuration = null)
 {
+    private readonly bool _keepWording = configuration?.GetValue("Extraction:KeepWording", false) ?? false;
     private const int NotesShown = 20;
     private readonly RecordHooks _hooks = hooks ?? RecordHooks.None;
 
@@ -53,7 +55,7 @@ public sealed class ModelExtractionService(
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
         if (!(await Linkbase.Core.History.ChangeRecorder.SettingsAsync(db, cancellationToken)).Record)
         {
-            throw new ExtractionFailedException("Updating records needs the model to keep a history, so the changes can be put back. This model doesn't.");
+            throw new ExtractionFailedException("Updating records needs the model to keep a history, so the changes can be put back. This model doesn't, so untick Update records that are already here.");
         }
     }
 
@@ -68,7 +70,7 @@ public sealed class ModelExtractionService(
                 await records.LinkAttributesAsync(relationship.FromType, relationship.RelType, relationship.ToType, cancellationToken);
         }
 
-        var schema = ExtractionSchema.From(types, relationships, _hooks, linkAttributes);
+        var schema = ExtractionSchema.From(types, relationships, _hooks, linkAttributes) with { KeepWording = _keepWording };
 
         var chunks = TextChunker.Split(text);
         var found = new List<ExtractedData>();

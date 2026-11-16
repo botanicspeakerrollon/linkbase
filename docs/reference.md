@@ -309,11 +309,11 @@ the right way for sites that forbid scraping). The model's types, fields, relati
 tool's schema, so the answer from the LLM can only name what the model has. Then `ModelExtractionValidator` drops any name or value not in the
 source text, or over 200 characters, and a domain's `CheckExtracted` drops what it can tell is wrong. A type that requires links
 is kept only when the text gives them. Records already here, matched by key or exact name,
-are left alone but can be linked to, unless *Update records that are already here* is ticked (off by default). Then a record with
+are left alone but can be linked to, when *Update records that are already here* is unticked (it is ticked to begin with, so a model without history must untick it). Otherwise a record with
 exactly the same name gets the values the text gives where they differ, and the review lists each change ("title: Design lead →
 Principal Designer"). A record that only has a similar name, and links, are never updated. A type a domain module watches (climbing's Area, Crag, Route
 and Ascent) is updated like any other, and the module sets the fields it keeps, such as a route's grade rank. It needs the model's history on, and undoing the import puts the
-values back. A field called *notes* is a brief summary in the model's own words, so it isn't checked against the text (it is still capped at 200 characters), and it is added to, not replaced: the text's note follows what is written, and is skipped if already there (climbing's Area, Crag and Route have one). The rest is staged for review, committed and undone exactly as a CSV import.
+values back. A field called *notes* is a brief summary in the model's own words, so it isn't checked against the text (it is capped at 200 characters, or 2,000 with `Extraction:KeepWording`, which also lets any value copy the text's wording), and it is added to, not replaced: the text's note follows what is written, and is skipped if already there (climbing's Area, Crag and Route have one). The rest is staged for review, committed and undone exactly as a CSV import.
 
 Only the extracted facts and the source address are kept, in the batch, never the page's text.
 
