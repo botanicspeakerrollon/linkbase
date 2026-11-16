@@ -36,14 +36,17 @@ dotnet tool restore
 ```
 
 `init-dev.ps1` creates a random database password in `.env` (git-ignored) and stores the matching
-connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored). The Anthropic key still goes in
-[user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
+connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored).
 
-To read text with AI later, add your Anthropic API key too:
+Reading text and the Ask box need a model provider. The app works without one; those features are just unavailable.
+For Anthropic, add your API key to
+[user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets):
 
 ```powershell
 dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
 ```
+
+To use an OpenAI-compatible server instead (including a local one), set the `Llm:*` keys; see [Configuration](#configuration).
 
 ## Everyday commands
 
