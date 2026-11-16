@@ -146,7 +146,7 @@ public sealed class RecordMerger(IDbContextFactory<LinkbaseDbContext> contextFac
 
         await db.NodePropertyLabels.Where(l => l.NodeId == dropId).ExecuteDeleteAsync(cancellationToken);
         await db.Nodes.Where(n => n.Id == dropId && n.UserId == AppUser.DefaultId).ExecuteDeleteAsync(cancellationToken);
-        var changeSet = settings.Record ? await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken) : null;
+        var changeSet = await ChangeRecorder.WriteAsync(db, settings, JustificationKind.Manual, kept, logged, cancellationToken: cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         await hooks.AfterChangeAsync(changes, changeSet, cancellationToken);
 

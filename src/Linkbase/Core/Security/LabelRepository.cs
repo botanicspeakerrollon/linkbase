@@ -98,10 +98,7 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
             db.ChangeTracker.Clear();
         }
 
-        if (history.Record)
-        {
-            await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, checkedReason, logged, cancellationToken: cancellationToken);
-        }
+        await ChangeRecorder.WriteAsync(db, history, JustificationKind.Manual, checkedReason, logged, cancellationToken: cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return changed;
@@ -174,12 +171,9 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        if (history.Record)
-        {
-            var change = new PendingChange(ChangeEntityKind.PropertyLabel, nodeId, ChangeOp.Update, key, null, null,
-                Summary(security, before), Summary(security, after));
-            await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, checkedReason, [change], cancellationToken: cancellationToken);
-        }
+        var change = new PendingChange(ChangeEntityKind.PropertyLabel, nodeId, ChangeOp.Update, key, null, null,
+            Summary(security, before), Summary(security, after));
+        await ChangeRecorder.WriteAsync(db, history, JustificationKind.Manual, checkedReason, [change], cancellationToken: cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return true;
@@ -250,10 +244,7 @@ public sealed class LabelRepository(IDbContextFactory<LinkbaseDbContext> context
             db.ChangeTracker.Clear();
         }
 
-        if (history.Record)
-        {
-            await ChangeRecorder.WriteAsync(db, JustificationKind.Manual, checkedReason, logged, cancellationToken: cancellationToken);
-        }
+        await ChangeRecorder.WriteAsync(db, history, JustificationKind.Manual, checkedReason, logged, cancellationToken: cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return changed;

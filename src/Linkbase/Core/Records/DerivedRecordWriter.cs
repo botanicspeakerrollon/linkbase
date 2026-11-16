@@ -77,23 +77,20 @@ public sealed class DerivedRecordWriter(IDbContextFactory<LinkbaseDbContext> con
         // and follow from the records, so they aren't listed.
         var settings = await ChangeRecorder.SettingsAsync(db, cancellationToken);
         var logged = new List<PendingChange>();
-        if (settings.Record)
+        var existing = await db.Nodes.AsNoTracking().Where(n => n.Type == type).Select(n => new { n.Id, n.Name, n.Props }).ToDictionaryAsync(n => n.Id, cancellationToken);
+        foreach (var node in nodes)
         {
-            var existing = await db.Nodes.AsNoTracking().Where(n => n.Type == type).Select(n => new { n.Id, n.Name, n.Props }).ToDictionaryAsync(n => n.Id, cancellationToken);
-            foreach (var node in nodes)
+            if (existing.Remove(node.Id, out var was))
             {
-                if (existing.Remove(node.Id, out var was))
-                {
-                    logged.AddRange(ChangeRecorder.NodeUpdated(node.Id, was.Name, RecordRepository.Values(was.Props), node.Name, RecordRepository.Values(node.Props)));
-                }
-                else
-                {
-                    logged.Add(ChangeRecorder.NodeCreated(node.Id, node.Name, RecordRepository.Values(node.Props)));
-                }
+                logged.AddRange(ChangeRecorder.NodeUpdated(node.Id, was.Name, RecordRepository.Values(was.Props), node.Name, RecordRepository.Values(node.Props)));
             }
-
-            logged.AddRange(existing.Values.Select(gone => ChangeRecorder.NodeDeleted(gone.Id, gone.Name, RecordRepository.Values(gone.Props))));
+            else
+            {
+                logged.Add(ChangeRecorder.NodeCreated(node.Id, node.Name, RecordRepository.Values(node.Props)));
+            }
         }
+
+        logged.AddRange(existing.Values.Select(gone => ChangeRecorder.NodeDeleted(gone.Id, gone.Name, RecordRepository.Values(gone.Props))));
 
         var old = db.NodeLinks.Where(l => l.Source.Type == type || l.Target.Type == type);
         foreach (var group in await old.GroupBy(l => new { SourceType = l.Source.Type, l.RelType, TargetType = l.Target.Type })
@@ -123,11 +120,8 @@ public sealed class DerivedRecordWriter(IDbContextFactory<LinkbaseDbContext> con
             await RecordRepository.CountAsync(db, group.Key.From, group.Key.RelType, group.Key.To, group.Count(), cancellationToken);
         }
 
-        if (settings.Record)
-        {
-            await ChangeRecorder.WriteAsync(db, JustificationKind.Derived, new ChangeReason($"{domain} rebuilt its {type} records"), logged,
-                causeChangeSetId: causeChangeSetId, cancellationToken: cancellationToken);
-        }
+        await ChangeRecorder.WriteAsync(db, settings, JustificationKind.Derived, new ChangeReason($"{domain} rebuilt its {type} records"), logged,
+            causeChangeSetId: causeChangeSetId, cancellationToken: cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return nodes.Count;

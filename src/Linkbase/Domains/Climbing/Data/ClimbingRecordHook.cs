@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Linkbase.Core.History;
 using Linkbase.Core.Records;
 using Linkbase.Data;
 using Linkbase.Domains.Climbing.Import;
@@ -103,7 +104,7 @@ public sealed class ClimbingRecordHook(
     {
         if (changes.Any(NamesAscents))
         {
-            await NameAscentsAfterTheirRoutesAsync(cancellationToken);
+            await NameAscentsAfterTheirRoutesAsync(changeSetId, cancellationToken);
         }
 
         if (!changes.Any(MovesTrips))
@@ -146,15 +147,23 @@ public sealed class ClimbingRecordHook(
     private static bool Differs(RecordChange change, string field) =>
         change.Before.GetValueOrDefault(field) != change.After.GetValueOrDefault(field);
 
-    // An ascent's name is its route's. This leaves updated_at alone, because it isn't an edit to the ascent.
-    private async Task NameAscentsAfterTheirRoutesAsync(CancellationToken cancellationToken)
+    // An ascent's name is its route's. This leaves updated_at alone, because it isn't an edit to the ascent, and the history
+    // doesn't log it, because it follows from the route's own logged change. Other systems are told, in a derived change event
+    // pointing at that change.
+    private async Task NameAscentsAfterTheirRoutesAsync(long? causeChangeSetId, CancellationToken cancellationToken)
     {
         await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
-        await db.Database.ExecuteSqlRawAsync(
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var renamed = await db.Database.SqlQueryRaw<string>(
             """
             UPDATE node a SET name = r.name
             FROM node_link l JOIN node r ON r.id = l.target_id
             WHERE a.type = 'Ascent' AND l.source_id = a.id AND l.rel_type = 'OF' AND r.type = 'Route' AND a.name <> r.name
-            """, cancellationToken);
+            RETURNING a.id AS "Value"
+            """).ToListAsync(cancellationToken);
+        await ChangeRecorder.WriteEventAsync(
+            db, JustificationKind.Derived, renamed.Select(id => new PendingChange(ChangeEntityKind.Node, id, ChangeOp.Update, "name")).ToList(),
+            causeChangeSetId, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 }

@@ -41,6 +41,13 @@ public static class ChangeRecorder
     public const int NoteLimit = 500;
     public const int SourceIdLimit = 500;
 
+    // How many things one change event lists; its entity count says how many there were.
+    public const int EventEntityLimit = 1000;
+
+    // The advisory lock that puts change events in commit order, and the channel told of each new one.
+    public const long EventLock = 7_317_146_215_001;
+    public const string EventChannel = "linkbase_change_event";
+
     public static async Task<HistorySettings> SettingsAsync(LinkbaseDbContext db, CancellationToken cancellationToken) =>
         await db.ModelSettings.AsNoTracking()
             .Select(s => HistorySettings.From(s.RecordHistory, s.RequireReason, s.SourceKinds))
@@ -98,16 +105,18 @@ public static class ChangeRecorder
 
     private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 
-    // Saves a change set with its justification and changes, in the transaction the context is in. Does nothing, and
-    // returns null, when there are no changes. Callers have already checked that history is being recorded.
+    // Saves what changed, in the transaction the context is in: the change set with its justification and changes when the
+    // model records history, and the change event for other systems in all cases. Does nothing, and returns null, when there
+    // are no changes. Returns the change set's id, or null when history is off. Callers pass the settings rather than
+    // checking them, so a model without history still raises events (ChangeRecorderCoverageTests checks that).
     public static Task<long?> WriteAsync(
-        LinkbaseDbContext db, JustificationKind kind, ChangeReason? reason, IReadOnlyList<PendingChange> changes,
+        LinkbaseDbContext db, HistorySettings settings, JustificationKind kind, ChangeReason? reason, IReadOnlyList<PendingChange> changes,
         long? importBatchId = null, long? causeChangeSetId = null, CancellationToken cancellationToken = default) =>
-        WriteAsync((NpgsqlConnection)db.Database.GetDbConnection(), (NpgsqlTransaction)db.Database.CurrentTransaction!.GetDbTransaction(),
+        WriteAsync(Connection(db), Transaction(db), settings.Record,
             kind, reason?.Note, reason?.SourceId, changes, importBatchId, causeChangeSetId, reason?.SourceKind, reason?.SourceComment, cancellationToken);
 
     public static async Task<long?> WriteAsync(
-        NpgsqlConnection connection, NpgsqlTransaction transaction, JustificationKind kind, string? note, string? sourceId,
+        NpgsqlConnection connection, NpgsqlTransaction transaction, bool recordHistory, JustificationKind kind, string? note, string? sourceId,
         IReadOnlyList<PendingChange> changes, long? importBatchId = null, long? causeChangeSetId = null,
         string? sourceKind = null, string? sourceComment = null, CancellationToken cancellationToken = default)
     {
@@ -116,6 +125,30 @@ public static class ChangeRecorder
             return null;
         }
 
+        long? changeSetId = recordHistory
+            ? await WriteHistoryAsync(connection, transaction, kind, note, sourceId, changes, importBatchId, causeChangeSetId, sourceKind, sourceComment, cancellationToken)
+            : null;
+        await WriteEventAsync(connection, transaction, kind, changeSetId, importBatchId, causeChangeSetId, changes, cancellationToken);
+        return changeSetId;
+    }
+
+    // Raises a change event alone, for a change that the history doesn't log because it follows from one it does, such as an
+    // ascent taking its route's new name. The cause is that change's change set, when history is on.
+    public static Task WriteEventAsync(
+        LinkbaseDbContext db, JustificationKind kind, IReadOnlyList<PendingChange> changes, long? causeChangeSetId, CancellationToken cancellationToken) =>
+        changes.Count == 0
+            ? Task.CompletedTask
+            : WriteEventAsync(Connection(db), Transaction(db), kind, null, null, causeChangeSetId, changes, cancellationToken);
+
+    private static NpgsqlConnection Connection(LinkbaseDbContext db) => (NpgsqlConnection)db.Database.GetDbConnection();
+
+    private static NpgsqlTransaction Transaction(LinkbaseDbContext db) => (NpgsqlTransaction)db.Database.CurrentTransaction!.GetDbTransaction();
+
+    private static async Task<long> WriteHistoryAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, JustificationKind kind, string? note, string? sourceId,
+        IReadOnlyList<PendingChange> changes, long? importBatchId, long? causeChangeSetId, string? sourceKind, string? sourceComment,
+        CancellationToken cancellationToken)
+    {
         long changeSetId;
         await using (var command = new NpgsqlCommand(
             """
@@ -155,6 +188,67 @@ public static class ChangeRecorder
         await insert.ExecuteNonQueryAsync(cancellationToken);
         return changeSetId;
     }
+
+    // The event takes a lock held until commit before it gets its id, so the next writer's event both has a higher id and
+    // commits later: a reader that takes events in id order never skips one that committed late. Advisory locks belong to one
+    // database, and each model has its own, so this is one queue per model. NOTIFY is only delivered on commit.
+    private static async Task WriteEventAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, JustificationKind kind, long? changeSetId, long? importBatchId,
+        long? causeChangeSetId, IReadOnlyList<PendingChange> changes, CancellationToken cancellationToken)
+    {
+        var (entities, count) = EventEntities(changes);
+        await using var command = new NpgsqlCommand(
+            $"""
+            SELECT pg_advisory_xact_lock({EventLock});
+            WITH e AS (
+                INSERT INTO change_event (change_set_id, kind, import_batch_id, cause_change_set_id, entities, entity_count)
+                VALUES (@set, @kind, @batch, @cause, @entities, @count) RETURNING id
+            )
+            SELECT pg_notify('{EventChannel}', id::text) FROM e;
+            """, connection, transaction);
+        command.Parameters.Add(new NpgsqlParameter("set", NpgsqlDbType.Bigint) { Value = (object?)changeSetId ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("kind", NpgsqlDbType.Text) { Value = SnakeCaseEnumConverter<JustificationKind>.ToStore(kind) });
+        command.Parameters.Add(new NpgsqlParameter("batch", NpgsqlDbType.Bigint) { Value = (object?)importBatchId ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("cause", NpgsqlDbType.Bigint) { Value = (object?)causeChangeSetId ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("entities", NpgsqlDbType.Jsonb) { Value = entities });
+        command.Parameters.Add(new NpgsqlParameter("count", NpgsqlDbType.Integer) { Value = count });
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    // One entry per thing changed, in the order first seen: a record's field edits are one entry listing the keys, with no
+    // values. A link is named by its source, relationship and target. Only the first EventEntityLimit are kept.
+    public static (string Json, int Count) EventEntities(IReadOnlyList<PendingChange> changes)
+    {
+        var groups = changes
+            .GroupBy(c => (c.Kind, c.EntityId, c.RelType, c.RelatedId))
+            .Select(g =>
+            {
+                var ops = g.Select(c => c.Op).ToHashSet();
+                var op = ops.Contains(ChangeOp.Create) && !ops.Contains(ChangeOp.Delete) ? ChangeOp.Create
+                    : ops.Contains(ChangeOp.Delete) && !ops.Contains(ChangeOp.Create) ? ChangeOp.Delete
+                    : ChangeOp.Update;
+                var fields = g.Where(c => c.Op == ChangeOp.Update && c.FieldKey is not null).Select(c => c.FieldKey!).Distinct().ToArray();
+                var link = g.Key.RelType is not null;
+                return new EventEntity(
+                    SnakeCaseEnumConverter<ChangeEntityKind>.ToStore(g.Key.Kind),
+                    link ? null : g.Key.EntityId,
+                    link ? g.Key.EntityId : null,
+                    g.Key.RelType,
+                    link ? g.Key.RelatedId : null,
+                    SnakeCaseEnumConverter<ChangeOp>.ToStore(op),
+                    fields.Length > 0 ? fields : null);
+            })
+            .ToList();
+        return (JsonSerializer.Serialize(groups.Take(EventEntityLimit), EventJson), groups.Count);
+    }
+
+    private sealed record EventEntity(string Kind, string? Id, string? Source, string? Rel, string? Target, string Op, string[]? Fields);
+
+    private static readonly JsonSerializerOptions EventJson = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
 
     private static void Add(NpgsqlCommand command, string name, IEnumerable<string?> values) =>
         command.Parameters.Add(new NpgsqlParameter(name, NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = values.ToArray() });

@@ -79,3 +79,29 @@ public class Change
     public string? OldValue { get; set; }
     public string? NewValue { get; set; }
 }
+
+// One committed change set, for other systems: what changed, by id, with no values. It's written in the same transaction as
+// the change, whether or not the model records history, and a dispatcher hands it to hooks after commit. Ids are in commit
+// order, because writing one takes a lock held until commit. See docs/history/change-hooks-plan.md.
+public class ChangeEvent
+{
+    public long Id { get; set; }
+
+    // The change set in the history, or null when the model doesn't record history.
+    public long? ChangeSetId { get; set; }
+    public ChangeSet? ChangeSet { get; set; }
+    public JustificationKind Kind { get; set; }
+    public long? ImportBatchId { get; set; }
+    public ImportBatch? ImportBatch { get; set; }
+
+    // For derived work, the change set that caused it (null when history is off).
+    public long? CauseChangeSetId { get; set; }
+    public ChangeSet? Cause { get; set; }
+
+    // JSON: up to ChangeRecorder.EventEntityLimit entries, one per record, link or definition changed.
+    public required string Entities { get; set; }
+
+    // How many changed in all. More than Entities lists means there were too many to list.
+    public int EntityCount { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+}
