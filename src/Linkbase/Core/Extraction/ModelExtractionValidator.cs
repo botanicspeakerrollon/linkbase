@@ -16,6 +16,9 @@ public static class ModelExtractionValidator
 {
     public const int MaxValueLength = 200;
 
+    // A field with this key holds a brief summary in the model's own words, so the text can't be searched for it.
+    public const string SummaryField = "notes";
+
     public sealed record Result(IReadOnlyList<StagedRecord> Records, IReadOnlyList<ExtractedLink> Links, IReadOnlyList<string> Warnings);
 
     // Equal results mean "the same text": ignores case, accents, punctuation and spacing.
@@ -166,6 +169,7 @@ public static class ModelExtractionValidator
             // Dates are written as yyyy-mm-dd whatever the text's style, so the text must at least have the year.
             FieldType.Date => sourceText.Contains(text[..4], StringComparison.Ordinal) ? typed : null,
             FieldType.List => FieldValues.SplitList(text, FieldValues.ListSeparator).All(item => inSource(item)) ? typed : null,
+            FieldType.Text when field.Key == SummaryField => typed,
             _ => inSource(text) ? typed : null,
         };
     }

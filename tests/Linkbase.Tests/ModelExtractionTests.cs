@@ -21,6 +21,7 @@ public class ModelExtractionValidatorTests
                 new RecordField("status", FieldType.Choice, ["proposed", "active"]) { Required = true },
                 new RecordField("tags", FieldType.List),
                 new RecordField("note", FieldType.Text),
+                new RecordField("notes", FieldType.Text),
             ]),
             new RecordType("Client", null, null, [new RecordField("city", FieldType.Text)]),
             new RecordType("Trip", null, null, [], Owner: "Climbing"),
@@ -98,6 +99,21 @@ public class ModelExtractionValidatorTests
         Assert.Empty(result.Records);
         Assert.Empty(result.Links);
         Assert.Equal(4, result.Warnings.Count);
+    }
+
+    [Fact]
+    public void A_notes_field_is_a_summary_so_it_need_not_be_in_the_text_but_is_still_capped()
+    {
+        var summary = "Steep and sustained, seeps after rain";
+        var tooLong = new string('b', ModelExtractionValidator.MaxValueLength + 1);
+
+        var kept = ModelExtractionValidator.Validate(Schema, new ExtractedData([Project(("status", "active"), ("notes", summary), ("note", summary))], []), Text);
+        var capped = ModelExtractionValidator.Validate(Schema, new ExtractedData([Project(("status", "active"), ("notes", tooLong))], []), Text);
+
+        var props = JsonDocument.Parse(kept.Records[0].Props).RootElement;
+        Assert.Equal(summary, props.GetProperty("notes").GetString());
+        Assert.False(props.TryGetProperty("note", out _));
+        Assert.DoesNotContain("notes", capped.Records[0].Props, StringComparison.Ordinal);
     }
 
     [Fact]
