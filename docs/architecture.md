@@ -66,7 +66,9 @@ what a model file says is in [models](models.md#security). Where each piece is:
 - **Who is asking.** `ICurrentUserAccessor` (`Core/Security/CurrentUser.cs`) gives the user, from `Security:Identity`:
   `configured`, `principal` (whoever ASP.NET Core authentication signed in) or `demo`. `DirectoryViewerResolver` turns that
   user into a `Viewer` using the grant sources the model names (its `users` table, a directory API, claims or a custom
-  provider). With no identity a viewer holds nothing and sees nothing of a model that uses levels.
+  provider). With no identity a viewer holds nothing and sees nothing of a model that uses levels. Over HTTP,
+  `/api/v1/...` (`Core/Api`) takes the user from the scheme `Api:Scheme` names (API keys by default) through
+  `ApiUserAccessor`, so the API reads as its caller under the same row and field security. See [api-plan](history/api-plan.md).
 - **Rows.** Postgres row-level security does it (`RowSecurity.cs`). `ModelDbContextFactory` gives every context a
   `ViewerConnectionInterceptor`, which tells the database the viewer each time a connection opens, so raw SQL, the graph views
   and free-text search are covered as well as LINQ. A model with security off pays nothing.

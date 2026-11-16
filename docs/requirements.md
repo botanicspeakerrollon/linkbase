@@ -37,7 +37,7 @@ One ASP.NET Core / Blazor Interactive Server app, one Postgres instance holding 
 generic data model and its pages (Explore, lists, records, import, the model editor, home, timeline, cleanup, history, saved
 views, Quick-find, the guide), the climbing domain module (logbook, insights, trips, importers), label-based row and field
 security, the operational requirements to run one instance, the demo (one command, and on Azure), and, planned, change
-hooks and a read-only HTTP API for other systems (INT-\*). Out of scope for this version: a production sign-in scheme, roles and who-may-label permissions (§1.5), and a
+hooks and, built, a read-only HTTP API for other systems (INT-\*). Out of scope for this version: a production sign-in scheme, roles and who-may-label permissions (§1.5), and a
 managed offering for customers.
 
 ### 1.3 Intended readers
@@ -79,7 +79,7 @@ Deliberately not required by this version, and not to be treated as a defect:
 ### 2.1 Product perspective
 
 Self-hosted. The app is the only writer of its databases; nothing else may write `node`, `node_link` or the history tables
-directly; other systems learn of changes through change hooks and read through the API (both planned, INT-\*), never
+directly; other systems learn of changes through change hooks (planned) and read through the API (INT-\*), never
 from the tables. The one external dependency that is optional is the LLM provider (Anthropic or an OpenAI-compatible server, for Read text and Ask); the app is fully usable with
 it disabled.
 
@@ -256,13 +256,13 @@ Crag, Route, Ascent, Partner and Trip.
 
 ### 3.11 Integration (INT)
 
-How other systems learn of changes and read records without the browser. Both are planned; the shape is in §5.
+How other systems learn of changes and read records without the browser. The read API is built; hooks are being built; the shape is in §5.
 
 | Id | Priority | Requirement | Status |
 | --- | --- | --- | --- |
 | INT-1 | M | Every committed change to records or links (a create, edit or delete, and the change sets that import, import undo, revert, merge, correction and derived rebuild write) shall raise a change event, recorded in the same transaction as the change, so a change that rolls back raises nothing and a change that commits is never lost. This shall hold whether or not the model records history (HIS-3). An event shall carry the model, the change set's id and justification kind, and each record or link affected with its id (a record's id carries its type), operation and changed field keys, but no values; a bulk change shall be one event, not one per record (as HIS-7), naming the import batch instead of each record it created. | Partial — events are written in the change's transaction (table `change_event`, capped at 1,000 listed entries), with history on or off; nothing reads them yet, as the dispatcher and hooks are INT-2. [change-hooks-plan](history/change-hooks-plan.md) |
 | INT-2 | M | Change events shall be handed, after commit and in commit order per model, to any number of hooks: code registered through one documented extension point, each configured by settings, with a built-in hook that posts the event to an HTTP address. Delivery shall be at least once, with retry and back-off, each event with a stable id; a hook that fails or is slow shall never delay, block or undo the change that raised the event, nor hold up another hook; each hook's position and failures shall be visible to the operator. | Planned — [change-hooks-plan](history/change-hooks-plan.md) |
-| INT-3 | M | An HTTP API shall let another program read a model's records without the browser: at least a free-text search (`GET /api/{model}/search?q=…`, answering as Quick-find does), and a record by type and key with its values and links, as JSON. It shall be read-only, versioned, shall authenticate every caller, and shall read as that caller so row and field security apply exactly as on the pages (SEC-2, SEC-3, SEC-9). | Planned |
+| INT-3 | M | An HTTP API shall let another program read a model's records without the browser: at least a free-text search (`GET /api/v1/{model}/search?q=…`, up to 20 matches as Quick-find finds them, `type` optional and repeatable), and a record by type and key with its values, masked field keys and links (`GET /api/v1/{model}/records/{type}/{key}`), as JSON. It shall be read-only, versioned in the path, shall authenticate every caller with a bearer token, and shall read as that caller so row and field security apply exactly as on the pages (SEC-2, SEC-3, SEC-9); a record the caller can't see is 404. Callers use API keys (`lbk_…`, stored only as a hash, made with `api-key create <user> <name> [days]`, revocable, optionally expiring); `Api:Scheme` names another authentication scheme, such as OpenID Connect bearer tokens, to take their place with no change to the endpoints, and `Api:Enabled=false` turns the API off. | Met — [api-plan](history/api-plan.md). Not yet: paging a record's links, listing a type's records |
 | INT-4 | S | The pages, the API and the event dispatcher shall be startable as one process (as today) or as separate processes from the same image, chosen by configuration, sharing only the database; no feature shall depend on two of them sharing memory. | Planned |
 
 ---
@@ -354,7 +354,7 @@ security on; a model that doesn't is unaffected (SEC-6).
 | Interface | Direction | Requirement |
 | --- | --- | --- |
 | Browser (Blazor Server, SignalR circuit) | In/out | The end-user interface. |
-| HTTP API | In, planned | Read-only JSON over HTTPS for other programs: search and read records as the authenticated caller (INT-3). Not routable pages, so not listed in §5.1. |
+| HTTP API | In | Read-only JSON over HTTPS for other programs, under `/api/v1/{model}/`: search and read records as the authenticated caller, with a bearer API key or another scheme (INT-3). Not routable pages, so not listed in §5.1. |
 | Change hooks | Out, planned | Change events handed after commit, at least once, to registered hooks such as an HTTP post or a message bus (INT-1, INT-2). |
 | Postgres | Out | One connection string per model; `pg_trgm` extension required for trigram search. |
 | LLM provider (Anthropic API, or an OpenAI-compatible server) | Out, optional | Used only for Read text and Ask (IMP-7, FUN-4); absence shall degrade those two features only (ASM-3). |
@@ -408,7 +408,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | PERF | Part IV | [performance.md](performance.md) |
 | SEC | [security-design](history/security-design.md), [models.md](models.md#security) | `RowSecurityTests`, `SecurityRuleTests`, `SecurityLabelsTests`, `FieldPolicyTests`, `HistorySecurityTests`, `IdentityTests`, `LabelUiTests` |
 | TIM, CLM | §10 Home, Timeline and Cleanup; §17 climbing | `EverydayUseTests`, `LogbookRepositoryTests`, `InsightsRepositoryTests`, `TripBuilderTests`, `ClimbingHookTests`, `GradeRankingTests` |
-| INT | Not yet (planned) | Not yet (planned) |
+| INT | [api-plan](history/api-plan.md), [change-hooks-plan](history/change-hooks-plan.md) | `ChangeEventTests`, `ApiTests`, `ApiKeyRepositoryTests`, `ApiKeyTokenTests` |
 | DEM | [deploy/azure/README.md](../deploy/azure/README.md), `docker-compose.demo.yml` | CI `demo` job; `ModelSetupTests` |
 | REL, USE, OPS, MNT | Part IV | CI (`.github/workflows/ci.yml`), `.gitlab-ci.yml` |
 
@@ -432,6 +432,8 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-16 | IMP-11 added: Read text can update records already here by exact name, opt-in, with the changes shown in review and undoable; IMP-5 reworded. |
 | 2026-11-16 | IMP-11: Read text may now update a type a domain module watches (climbing's routes, crags, areas and ascents); the module sets its own fields. |
 | 2026-11-16 | Read text no longer stages a link between two records that are already linked that way; the review shows only links that would be new. |
+
+| 2026-11-16 | INT-3 now Met: read-only `GET /api/v1/{model}/search` and `/records/{type}/{key}`, authenticated by API keys (new table `api_key`, `api-key` commands) or another scheme named by `Api:Scheme`, reading as the key's user so row and field security apply. Settings `Api:Enabled` and `Api:Scheme`. §1.2, §2.1 and §5 updated. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.

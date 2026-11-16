@@ -263,6 +263,21 @@ transaction whether or not the model records history. It names what changed and 
 
 Each write also runs `pg_notify('linkbase_change_event', id)`, which Postgres delivers on commit.
 
+### `api_key`
+Keys for the [read API](history/api-plan.md), in the default model's database only. A key is shown once when made and only a
+SHA-256 of its secret is kept.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity |
+| `key_id` | text | the public half of the key (`lbk_<key_id>_<secret>`). Unique |
+| `secret_hash` | bytea | SHA-256 of the secret half |
+| `user_id` | text | who the key reads as: the id the model's security grants look up |
+| `name` | text | what the key is for |
+| `created_at` | timestamptz | default `now()` |
+| `expires_at`, `revoked_at` | timestamptz | nullable. Either one makes the key fail |
+| `last_used_at` | timestamptz | nullable. Written at most every 5 minutes |
+
 ## Relationships
 
 ```
@@ -318,4 +333,4 @@ Climbing's Insights shapes (`climbing_ascent_facts`, `climbing_trip` and the oth
 ## Migration history
 
 `__EFMigrationsHistory` has `20261115053007_InitialCreate`, the one baseline, then `20261115234803_AddChangeEvent`
-(the `change_event` table) and any later migrations in `src/Linkbase/Data/Migrations`.
+(the `change_event` table), `20261116000422_AddApiKey` (the `api_key` table) and any later migrations in `src/Linkbase/Data/Migrations`.

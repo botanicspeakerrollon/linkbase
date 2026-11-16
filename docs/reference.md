@@ -404,6 +404,21 @@ people using the app; its keyboard table is generated from the same list as the 
 **Built.** Every page is drivable from the keys in [Appendix A](#appendix-a-keyboard). Keys are ignored while typing in a field
 (except Quick-find and the search bar's own keys). New pages and dialogs must add their own handling and hotkeys.
 
+## 16a. HTTP API
+
+**Built.** A read-only JSON API for other programs, under `/api/v1/{model}/`. Every call sends `Authorization: Bearer <key>` and
+reads as the key's user, so row and field security apply as on the pages. Errors are `{ "error": "..." }`.
+
+| Call | Answers |
+| --- | --- |
+| `GET /api/v1/{model}/search?q=…&type=…` | Up to 20 matches as Quick-find finds them: `results[]` of `id`, `type`, `key`, `name`, `properties`. `q` is required; `type` may repeat |
+| `GET /api/v1/{model}/records/{type}/{key}` | The record's `values`, the keys of fields hidden from the caller (`maskedFields`), and its `links` by relationship and direction, each with a `total` and the first few records. 404 if it doesn't exist or the caller can't see it |
+
+Make keys with the [`api-key` commands](#18-command-line). Another scheme, such as OpenID Connect, can replace keys: see
+[operations](operations.md#http-api). Design: [api-plan](history/api-plan.md).
+
+**Not yet.** Paging a record's links, listing a type's records, and anything that writes.
+
 ## 17. The climbing domain
 
 **Built.** The one domain module (`Domains/Climbing`), for models that list it under `Domains`.
@@ -438,6 +453,9 @@ themselves and are not checked against hierarchy rules. Phone-width Logbook and 
 | `model load <file> [model]` | Loads a model file, replacing everything generic in that model in one transaction |
 | `model security on\|off [model]` | Turns row security on or off, as the database owner. `on` needs a `security` section |
 | `climbing import <model> ukc\|mp\|all [--fresh] [--same-database]` | Loads the export files, one batch each, and rebuilds trips |
+| `api-key create <user> <name> [days]` | Makes an API key that reads as `<user>`, and prints it once. It expires after `days` if given |
+| `api-key list` | Lists keys (never their secrets) with whether each is active, revoked or expired, and when it was last used |
+| `api-key revoke <key id>` | Stops a key working |
 
 Migrations are never part of start-up.
 
