@@ -69,6 +69,22 @@ To show it to people on other networks without listing addresses, put Entra sign
 Container App, Authentication, Add identity provider, Microsoft, and require authentication. Then use `-AllowAnyone`. That
 step creates an app registration in your tenant, so the script doesn't do it for you.
 
+## Calling the API
+
+The demo serves the read-only API at `https://<address>/api/v1/<model>/...` (the models are `climbing-demo`, `consultancy`,
+`linkbase-code` and `archimate`). It needs the image from a deploy made after the API was added, so run `deploy.ps1` first. No
+key is built in: make one in the running app, which prints it once. The consultancy model's made-up users are `sam.partner`
+(sees every project and its budgets) and `guest` (sees only the public project, so most records are 404).
+
+```powershell
+az containerapp exec --name linkbase --resource-group rg-linkbase --command "dotnet Linkbase.dll api-key create sam.partner demo 7"
+az containerapp exec --name linkbase --resource-group rg-linkbase --command "dotnet Linkbase.dll api-key create guest demo 7"
+```
+
+Copy each `lbk_...` line, because it can't be shown again. The keys are in the default model's
+database, so they survive restarts and are removed with the demo's data. Revoke one with `api-key revoke <key id>` the same
+way. The IP restriction above covers the API too. Call it with `Invoke-RestMethod -Headers @{ Authorization = "Bearer lbk_..." } "https://<address>/api/v1/consultancy/records/Project/pr2"`.
+
 ## Search engines
 
 The app asks to be left out of search results: `robots.txt` disallows everything, every response carries an `X-Robots-Tag:
