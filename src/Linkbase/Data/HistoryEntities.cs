@@ -105,3 +105,12 @@ public class ChangeEvent
     public int EntityCount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }
+
+// How far a change hook has got through the change events: the id of the last one it took. Each hook has its own, so a slow or
+// broken hook never holds up another. See docs/history/change-hooks-plan.md.
+public class HookPosition
+{
+    public required string HookKey { get; set; }
+    public long LastEventId { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+}

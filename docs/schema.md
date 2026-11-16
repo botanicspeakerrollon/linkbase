@@ -263,6 +263,16 @@ transaction whether or not the model records history. It names what changed and 
 
 Each write also runs `pg_notify('linkbase_change_event', id)`, which Postgres delivers on commit.
 
+### `hook_position`
+How far each [change hook](history/change-hooks-plan.md) has got through `change_event`. A hook's row is made the first time it
+runs, at the newest event, so a new hook doesn't replay the past.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `hook_key` | text | PK. The hook's name under `Hooks` in configuration |
+| `last_event_id` | bigint | the id of the last event the hook took. It moves on only after the hook has handled the batch |
+| `updated_at` | timestamptz | default `now()` |
+
 ### `api_key`
 Keys for the [read API](history/api-plan.md), in the default model's database only. A key is shown once when made and only a
 SHA-256 of its secret is kept.
@@ -333,4 +343,4 @@ Climbing's Insights shapes (`climbing_ascent_facts`, `climbing_trip` and the oth
 ## Migration history
 
 `__EFMigrationsHistory` has `20261115053007_InitialCreate`, the one baseline, then `20261115234803_AddChangeEvent`
-(the `change_event` table), `20261116000422_AddApiKey` (the `api_key` table) and any later migrations in `src/Linkbase/Data/Migrations`.
+(the `change_event` table), `20261116000422_AddApiKey` (the `api_key` table), `20261116005233_AddHookPosition` (the `hook_position` table) and any later migrations in `src/Linkbase/Data/Migrations`.

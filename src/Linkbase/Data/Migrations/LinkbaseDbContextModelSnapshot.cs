@@ -504,6 +504,28 @@ namespace Linkbase.Data.Migrations
                     b.ToTable("hierarchy_level");
                 });
 
+            modelBuilder.Entity("Linkbase.Data.HookPosition", b =>
+                {
+                    b.Property<string>("HookKey")
+                        .HasColumnType("text")
+                        .HasColumnName("hook_key");
+
+                    b.Property<long>("LastEventId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("last_event_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("HookKey")
+                        .HasName("pk_hook_position");
+
+                    b.ToTable("hook_position");
+                });
+
             modelBuilder.Entity("Linkbase.Data.ImportBatch", b =>
                 {
                     b.Property<long>("Id")

@@ -1,6 +1,6 @@
 # Change hooks plan
 
-Step 1 (the events) is built; the dispatcher and hooks (steps 2 to 4) are not. This plans INT-1 and INT-2 in [requirements](../requirements.md#311-integration-int): telling other systems,
+Steps 1 (the events) and 2 in part (a basic dispatcher with the `console` hook) are built; the HTTP hook, back-off, `hooks` commands, metrics and the rest are not. This plans INT-1 and INT-2 in [requirements](../requirements.md#311-integration-int): telling other systems,
 such as a message bus, a webhook or an integration platform, that records or links changed. The read API (INT-3, built: see [api-plan](api-plan.md)) is a
 separate plan, but this one leans on it: events say *what* changed, and a consumer that wants the values reads them through
 the API as itself.
@@ -170,7 +170,10 @@ identity of its own is a later step, if a model with row security needs it.
    (creates aren't listed), which the commit already holds in memory, and a model load builds one change; grouping is
    linear in the list and only 1,000 entries are serialised. Each write adds one row and an advisory lock held to commit.
    Time an import commit with updates on the large sample when the writes are added to `LoadTests`.
-2. `IChangeHook`, `ChangeHookKinds`, the dispatcher with its leader lock, positions, retry and clean-up, `Linkbase:Roles`,
+2. **Basic version done** (`Core/Hooks`, table `hook_position`): `IChangeHook`, `ChangeHookKind`, `ChangeHookKinds` with a `console` kind that writes JSON lines to stdout,
+   and a dispatcher polling every 5 seconds. A transaction per hook and model holds `pg_try_advisory_xact_lock` while it reads, calls the
+   hook and moves the position, which does the leader lock's job. Left out for now: NOTIFY wake-up, back-off (it retries every pass), `Linkbase:Roles`,
+   `StartFrom`, clean-up, attempts and last error in `hook_position`. Planned in full: `IChangeHook`, `ChangeHookKinds`, the dispatcher with its leader lock, positions, retry and clean-up, `Linkbase:Roles`,
    and a fake hook in tests: retry, back-off, a broken hook not holding up another, two dispatchers with one working.
 3. The HTTP hook with its signature, tested against a fake handler; `hooks status|skip|replay`; metrics.
 4. Docs: operations (secrets, adding a hook), models, reference, architecture, and INT-1 and INT-2 set to Met.

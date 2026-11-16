@@ -29,6 +29,7 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
     public DbSet<ChangeSet> ChangeSets => Set<ChangeSet>();
     public DbSet<Change> Changes => Set<Change>();
     public DbSet<ChangeEvent> ChangeEvents => Set<ChangeEvent>();
+    public DbSet<HookPosition> HookPositions => Set<HookPosition>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
     public DbSet<GraphNodeRow> GraphNodes => Set<GraphNodeRow>();
     public DbSet<GraphEdgeRow> GraphEdges => Set<GraphEdgeRow>();
@@ -212,6 +213,12 @@ public class LinkbaseDbContext(DbContextOptions<LinkbaseDbContext> options) : Db
             changeEvent.HasOne(e => e.ChangeSet).WithMany().HasForeignKey(e => e.ChangeSetId);
             changeEvent.HasOne(e => e.Cause).WithMany().HasForeignKey(e => e.CauseChangeSetId);
             changeEvent.HasOne(e => e.ImportBatch).WithMany().HasForeignKey(e => e.ImportBatchId);
+        });
+
+        modelBuilder.Entity<HookPosition>(position =>
+        {
+            position.HasKey(p => p.HookKey);
+            position.Property(p => p.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<ApiKey>(key =>

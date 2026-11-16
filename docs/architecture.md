@@ -18,6 +18,7 @@ src/Linkbase/
     Ask/                Plain-English questions: the compiler, PatternChecker (checks the answer), QuestionService
     Records/            Generated list, record and edit pages, RecordRepository (behind IRecordRepository: writes, with the reads in RecordReader, derived records in DerivedRecordWriter, merging in RecordMerger and the hierarchy checks in RecordHierarchy), RecordHooks, ExternalRefRepository
     History/            ChangeRecorder (writes the audit trail and the `change_event` outbox row, in the change's transaction), HistoryRepository (reads it), ChangeReverter
+    Hooks/              Change hooks: IChangeHook, ChangeHookKinds (the kinds the app knows, `console` for now), ChangeDispatcher (hands events to hooks, each with its own position) and the background service that runs it
     Views/              Saved views and the state a page keeps in its address (ViewState)
     Paths/, Timeline/   Find a path, Trace (TraceRepository), and the timeline page
     Cleanup/, Home/     The cleanup page, and what the home page reads
@@ -47,8 +48,8 @@ tests/Linkbase.Tests/   One project: unit, Postgres (Testcontainers), bUnit page
 4. Writes through `RecordRepository` run the model's domain hooks (`RecordHooks`) and keep `link_definition.links` in step.
 5. Every write path calls `ChangeRecorder` in the same transaction, which writes the audit trail (when the model keeps history) and
    a `change_event` row (always) naming what changed but holding no values. The events are the outbox for change hooks;
-   `ChangeRecorderCoverageTests` fails when a write path forgets it. Nothing reads the events yet: the dispatcher and hooks that
-   deliver them are planned ([change-hooks-plan](history/change-hooks-plan.md), INT-2).
+   `ChangeRecorderCoverageTests` fails when a write path forgets it. A background dispatcher (`Core/Hooks`) hands the events to the
+   hooks named under `Hooks` in configuration, after commit ([change-hooks-plan](history/change-hooks-plan.md), INT-2).
 
 Over HTTP the path differs only at the start: `/api/v1/{model}/...` authenticates with the scheme `Api:Scheme` names, selects the
 model from the route, and then uses the same repositories as the pages, so row and field security apply as that caller.
@@ -61,7 +62,7 @@ The one exception is a scoped `LinkbaseDbContext` registered in `Startup.cs` for
 | --- | --- |
 | A new model with no code | A model file under `models/`, loaded with `model load` ([models](models.md)) |
 | Behaviour for some types | An `IRecordHook` in a domain: it sets fields people can't edit (`BeforeSave`), derives records and links when others change (`AfterChangeAsync`), and helps Read text with `ExtractionNotes` and `CheckExtracted` ([models](models.md)) |
-| Tell another system about changes | Not built. The events are written (`change_event`); the dispatcher and hook kinds are planned in [change-hooks-plan](history/change-hooks-plan.md) |
+| Tell another system about changes | An `IChangeHook`: a class that takes batches of change events, a `ChangeHookKind` that makes it from settings, and one line in `ChangeHookKinds.All`. `ConsoleChangeHook` is the example; an HTTP or bus hook is planned ([change-hooks-plan](history/change-hooks-plan.md)) |
 | Let another program read the data | The read API (`Core/Api`). To change how callers sign in, register an authentication scheme and name it in `Api:Scheme` ([operations](operations.md#http-api)) |
 | A domain | A folder under `Domains/`, an `IDomainModule`, and an entry in `RegisteredDomains`; models opt in with `Domains` in their configuration |
 | Pages for a domain | `Domains/<Domain>/Features/<Feature>/`, listed in the module's `NavItems` |

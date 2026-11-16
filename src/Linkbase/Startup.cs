@@ -129,6 +129,9 @@ public static class Startup
         services.AddScoped<Core.Staging.ImportStagingService>();
         services.AddSingleton(TimeProvider.System);
 
+        // Hooks that are told of committed changes, when the Hooks section names any (INT-1).
+        Core.Hooks.ChangeHookKinds.AddChangeHooks(services, configuration);
+
         // The fetcher connects only to public addresses, so a page address can't be used to reach the network the app runs in.
         // Extraction:AllowPrivateAddresses lifts that, for a deployment whose pages are on its own network.
         var allowPrivateFetch = configuration.GetValue("Extraction:AllowPrivateAddresses", false);

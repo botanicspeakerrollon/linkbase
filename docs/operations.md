@@ -183,6 +183,27 @@ dotnet run --project src/Linkbase -- api-key revoke <key id>
   deployment that registers its own `ICurrentUserAccessor` replaces the one that maps an API caller to a user, so it must
   read `HttpContext.User` for `/api` requests itself (`CurrentUser.FromPrincipal` does the mapping).
 
+## Change hooks
+
+A hook is told of each committed change (a change event: what changed, by id, never the values). Hooks are named under `Hooks` in
+configuration, and none are on by default. The only kind so far is `console`, which writes one line of JSON per event to
+standard output, where the log collector picks it up:
+
+```json
+"Hooks": { "audit-log": { "Kind": "console", "Models": ["default"], "BatchSize": 100 } }
+```
+
+- `Models` lists the models the hook hears of (none means all). `BatchSize` is how many events it is given at once (1 to 1,000).
+  An unknown kind or model stops the app at start-up, with the reason.
+- Run `model migrate` once after upgrading: each hook keeps its place in `hook_position`.
+- A new hook starts at the newest event. Events are delivered at least once and in order, so a receiver should drop repeats by the
+  event id. A hook that fails is given the same events again at the next 5 second pass, and never skips one on its own.
+- Every instance runs the dispatcher, and a lock means only one serves a hook at a time. The hook is called while a database
+  transaction is open, so a slow hook holds a connection.
+- A hook hears of every change in its models, including records some viewers can't see, as a database replica would. Treat it as
+  trusted.
+- Not built yet: an HTTP hook, back-off, a command to show or move a hook's position, and clearing old events.
+
 ## Secrets
 
 Secret values are never in the repo, and backups don't include them. This is the record of which ones exist and how to get
