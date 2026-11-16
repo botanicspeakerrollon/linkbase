@@ -356,6 +356,14 @@ that list the module under `Domains`:
   created, updated or deleted, with their values before and after, and links added or removed, once for each end. It's
   for keeping derived records up to date. It is also given the id of the change set the changes were logged in (null when
   the model keeps no history), which a module passes on to `ReplaceDerivedAsync` so its rebuild is traced to its cause.
+- `ExtractionNotes` (optional) is a paragraph about the module's types that a model reading text can't know, such as how a
+  grade is written. It is added to the prompt when the model has one of the types.
+- `CheckExtracted` (optional) runs on each record of a watched type read from text, after the generic checks, and removes any
+  value the module can tell is wrong, returning a warning for each. Reading text may also update a record already here, and
+  then `BeforeSave` and `AfterChangeAsync` run for it as for any edit.
+
+Hooks run inside the app and can change what is saved. They are not the change hooks of INT-2, which tell other systems after
+commit and are planned ([change-hooks-plan](history/change-hooks-plan.md)).
 
 Climbing's hook (`ClimbingRecordHook`) is the working example: it sets a route's `grade_rank` before it's saved, names each
 ascent after its route, and rebuilds the `Trip` records, with `GenericTripService`, when an ascent's date or place changes.

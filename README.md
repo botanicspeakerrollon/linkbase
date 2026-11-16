@@ -195,7 +195,7 @@ Environment variables use a double underscore, for example `ConnectionStrings__L
 Linkbase.sln
 src/Linkbase/
   Components/   App shell, layout, and shared components
-  Core/         Generic: the graph queries, Explore, models, record pages, CSV import and IDomainModule
+  Core/         Generic: the graph queries, Explore, models, record pages, CSV import, the read-only API and IDomainModule
   Data/         The one DbContext, entities and migrations
   Domains/      RegisteredDomains, and one folder per domain
     Climbing/

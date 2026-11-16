@@ -8,7 +8,7 @@ Start here:
 
 Current:
 
-- [architecture](architecture.md): where things live, and where access control would go.
+- [architecture](architecture.md): where things live, how a request and a change reach the data, the read API and change events, and where access control lives.
 - [models](models.md): what a model is, model files, configuring and switching models, climbing in the generic store.
 - [operations](operations.md): backing up, restoring and rebuilding the database, secrets.
 - [postgres](postgres.md): getting into the databases and querying them by hand.

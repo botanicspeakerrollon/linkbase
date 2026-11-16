@@ -447,6 +447,7 @@ Maps each requirement group to where it is described for a reader and where its 
 | 2026-11-16 | What a domain module adds is stated generically: MOD-9 to MOD-12 (record hooks), MOD-13 (pages), MOD-14 (no tables or views), MOD-15 (importers), MOD-16 (commands), MOD-17 (presentation); MOD-3 points to them and CLM-1 to CLM-5 now say which they use. No behaviour changed. |
 
 | 2026-11-16 | INT-3 now Met: read-only `GET /api/v1/{model}/search` and `/records/{type}/{key}`, authenticated by API keys (new table `api_key`, `api-key` commands) or another scheme named by `Api:Scheme`, reading as the key's user so row and field security apply. Settings `Api:Enabled` and `Api:Scheme`. §1.2, §2.1 and §5 updated. |
+| 2026-11-16 | Documentation only: architecture, models and README now cover the read API, the change-event outbox and the record hook's extraction methods. No behaviour changed. |
 
 Update this table whenever a requirement's status or wording changes; don't silently edit history above this line without a
 note here.
