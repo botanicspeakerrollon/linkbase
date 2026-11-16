@@ -153,6 +153,30 @@ public sealed class ExtractionMatchingTests(PostgresFixture fixture) : IClassFix
     }
 
     [Fact]
+    public async Task Updating_changes_a_route_a_module_watches_and_the_module_sets_its_rank()
+    {
+        var (store, service, staging) = await SetupAsync(new FakeExtractor(new ExtractedData(
+            [ClimbingExtraction.Rec("Crag", "Alpha Wall"), ClimbingExtraction.Rec("Route", "Hope", ("grade", "E2 5c"), ("grade_system", "uk_trad"))], [ClimbingExtraction.At("Hope", "Alpha Wall")])), hooks: true);
+        var (_, alpha, _) = await SeedAsync(store);
+        await using (var seed = store.CreateDbContext())
+        {
+            await seed.Nodes.Where(n => n.Type == "Route" && n.Name == "Hope")
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.Props, """{"grade":"HVS 5a","grade_system":"uk_trad"}"""));
+        }
+
+        var batch = await service.ExtractFromTextAsync("Hope, E2 5c, is at Alpha Wall.", null, null, CancellationToken.None, updateExisting: true);
+        Assert.Equal(1, (await staging.GetAsync(batch))!.Updating);
+        await staging.CommitAsync(batch);
+
+        await using var db = store.CreateDbContext();
+        var props = await db.Nodes.Where(n => n.Type == "Route" && n.Name == "Hope").Select(n => n.Props).SingleAsync();
+        var values = JsonNode.Parse(props)!.AsObject();
+        Assert.Equal("E2 5c", (string?)values["grade"]);
+        Assert.NotNull(values["grade_rank"]);
+        Assert.NotNull(alpha);
+    }
+
+    [Fact]
     public async Task A_route_is_the_same_only_at_the_crag_the_text_puts_it_at()
     {
         var (store, service, staging) = await SetupAsync(new ExtractedData(
@@ -169,9 +193,9 @@ public sealed class ExtractionMatchingTests(PostgresFixture fixture) : IClassFix
         Assert.Equal(2, await db.Nodes.CountAsync(n => n.Type == "Route" && n.Name == "Hope"));
         Assert.True(await db.NodeLinks.AnyAsync(l => l.RelType == "AT" && l.Source.Name == "Hope" && l.TargetId == beta && l.Source.ImportBatchId == batch));
 
-        // The same text again finds it, now that Beta Wall has a Hope.
-        var again = await service.ExtractFromTextAsync("Hope is at Beta Wall.", null, null, CancellationToken.None);
-        Assert.Equal((0, 2), ((await staging.GetAsync(again))!.Records, (await staging.GetAsync(again))!.AlreadyThere));
+        // The same text again finds it, now that Beta Wall has a Hope, and the link is there too, so nothing is left to add.
+        var again = await Assert.ThrowsAsync<ExtractionFailedException>(() => service.ExtractFromTextAsync("Hope is at Beta Wall.", null, null, CancellationToken.None));
+        Assert.Contains("already here", again.Message, StringComparison.Ordinal);
     }
 
     [Fact]

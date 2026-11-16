@@ -311,8 +311,8 @@ source text, or over 200 characters, and a domain's `CheckExtracted` drops what 
 is kept only when the text gives them. Records already here, matched by key or exact name,
 are left alone but can be linked to, unless *Update records that are already here* is ticked (off by default). Then a record with
 exactly the same name gets the values the text gives where they differ, and the review lists each change ("title: Design lead →
-Principal Designer"). A record that only has a similar name, a type a domain module keeps up to date (climbing's Area, Crag, Route
-and Ascent) and links are never updated, and the notes say so. It needs the model's history on, and undoing the import puts the
+Principal Designer"). A record that only has a similar name, and links, are never updated. A type a domain module watches (climbing's Area, Crag, Route
+and Ascent) is updated like any other, and the module sets the fields it keeps, such as a route's grade rank. It needs the model's history on, and undoing the import puts the
 values back. The rest is staged for review, committed and undone exactly as a CSV import.
 
 Only the extracted facts and the source address are kept, in the batch, never the page's text.

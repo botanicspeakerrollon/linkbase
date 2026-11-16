@@ -499,7 +499,7 @@ since it was staged. Things already here are never staged, only counted.
 file has changes: an empty cell leaves the value alone, and with no name column the record keeps its name. Check counts the
 records it would update, the review lists each one by what changes (`city: Bern → Zurich`), and commit writes one field-level
 entry per change to the audit trail, under the import. It needs the model to keep a history, because that is what puts the values
-back, and it can't update a type a domain module keeps up to date.
+back. A type a domain module watches (climbing's routes and crags) can be updated: the module sets the fields it keeps, such as a route's `grade_rank`, and hears of the change afterwards.
 
 A links file offers the same box, **Update links that are already here**, when the relationship carries values. It only
 changes a link's values when the two records are linked that way exactly once: a row that would otherwise match an
@@ -578,7 +578,7 @@ review's notes. A type that requires links is only kept when the text gives them
 staged for review, committed in one transaction, and can be undone from **Recent imports**. A record is keyed by the slug of its
 name, and one already here, by key or by exact name, is left as it is but can be linked to. Ticking **Update records that are already here**
 changes a record with exactly the same name to the text's values where they differ (the review shows each change, and undo puts it back).
-A merely similar name, a type a domain module keeps up to date, and links are not updated, and the model needs history on.
+A merely similar name and links are not updated, and the model needs history on.
 
 The text is sent to the configured AI model (Anthropic unless `Llm:Provider` says otherwise), and the tab says so. Set `Extraction:Enabled` to `false` to hide it.
 

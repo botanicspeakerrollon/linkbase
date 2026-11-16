@@ -104,7 +104,7 @@ public sealed class ModelExtractionService(
             db, data.Records.Select(r => (r.Type, r.Key, r.Name)).Concat(data.Links.SelectMany(l => new[] { (l.FromType, Key(l.FromName), l.FromName), (l.ToType, Key(l.ToName), l.ToName) })),
             cancellationToken);
         existing = await ExistingRecordMatcher.MatchAsync(db, schema, data, existing, notes, cancellationToken);
-        var updates = updateExisting ? await PlanUpdatesAsync(db, data, existing, notes, cancellationToken) : [];
+        var updates = updateExisting ? await PlanUpdatesAsync(db, types, data, existing, notes, cancellationToken) : [];
 
         // A new record whose key is taken by a different record gets the next free one.
         var rekeyed = new List<StagedRecord>();
@@ -188,11 +188,11 @@ public sealed class ModelExtractionService(
         links = links.Where(l => !linkedAlready.Contains((l.SourceId, l.RelType, l.TargetId))).ToList();
 
         var added = kept.Where(r => !existing.ContainsKey((r.Type, ModelExtractionValidator.Normalise(r.Name)))).ToList();
-        var alreadyThere = kept.Count - added.Count - updates.Count + linksThere;
+        var alreadyThere = kept.Count - added.Count - updates.Count;
         added = added.Select(r => Hooked(types, r)).ToList();
         if (added.Count == 0 && links.Count == 0 && updates.Count == 0)
         {
-            throw new ExtractionFailedException(alreadyThere > 0
+            throw new ExtractionFailedException(alreadyThere + linksThere > 0
                 ? "Everything found in the text is already here."
                 : $"Nothing in the text fits this model. {notes.FirstOrDefault()}".Trim());
         }
@@ -228,9 +228,10 @@ public sealed class ModelExtractionService(
     // The records in the text that are the same as one already here, by an exact name, and whose values differ. Each is staged
     // under the record's own key and name with only the values that change, so the review shows just those and a commit leaves
     // the rest alone. A name that only looks similar is not updated, because a wrong match would overwrite another record. A type
-    // a module keeps up to date isn't either, since the module would have to set its fields again.
+    // a module watches is updated too: its hooks set the fields it keeps (a route's grade_rank) on the new values, those are
+    // staged with the rest, and a commit tells the module afterwards, as for any other change.
     private async Task<List<StagedRecord>> PlanUpdatesAsync(
-        LinkbaseDbContext db,
+        LinkbaseDbContext db, IReadOnlyList<RecordType> types,
         ModelExtractionValidator.Result data,
         Dictionary<(string Type, string Name), string> existing,
         List<string> notes,
@@ -248,21 +249,10 @@ public sealed class ModelExtractionService(
 
         var updates = new List<StagedRecord>();
         var done = new HashSet<string>(StringComparer.Ordinal);
-        var moduleTypes = new HashSet<string>();
         foreach (var (record, id) in matched)
         {
             if (!nodes.TryGetValue(id!, out var node) || !done.Add(node.Id))
             {
-                continue;
-            }
-
-            if (_hooks.Watch(record.Type))
-            {
-                if (moduleTypes.Add(record.Type))
-                {
-                    notes.Add($"{record.Type} records are kept up to date by a module, so none were updated.");
-                }
-
                 continue;
             }
 
@@ -280,6 +270,25 @@ public sealed class ModelExtractionService(
             }
 
             var props = JsonNode.Parse(record.Props) as JsonObject ?? [];
+
+            // What the module keeps is worked out from the record as it will be, then staged where it differs from now.
+            if (_hooks.Watch(record.Type) && types.FirstOrDefault(t => t.Name == record.Type) is { } type)
+            {
+                var merged = JsonNode.Parse(node.Props) as JsonObject ?? [];
+                foreach (var (key, value) in props.ToList())
+                {
+                    merged[key] = value?.DeepClone();
+                }
+
+                _hooks.BeforeSave(type, node.Name, merged);
+                var after = RecordRepository.Values(merged.ToJsonString());
+                foreach (var key in after.Keys.Where(k => !props.ContainsKey(k) && now.GetValueOrDefault(k) != after[k]).ToList())
+                {
+                    props[key] = merged[key]?.DeepClone();
+                    changed.Add(key);
+                }
+            }
+
             foreach (var key in props.Select(p => p.Key).Where(k => !changed.Contains(k)).ToList())
             {
                 props.Remove(key);
