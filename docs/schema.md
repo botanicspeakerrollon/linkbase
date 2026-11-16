@@ -246,6 +246,23 @@ and the history of what was there stays.
 
 Indexes: (`entity_kind`, `entity_id`, `id`), (`related_id`, `id`), `change_set_id`. Created by `AddAuditHistory`.
 
+### `change_event`
+The outbox of [change hooks](history/change-hooks-plan.md): one row per committed change, written in the change's own
+transaction whether or not the model records history. It names what changed and never holds values.
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | bigint | PK, identity. Its order is commit order: the insert first takes a per-model advisory lock held until commit |
+| `change_set_id` | bigint | nullable, FK to `change_set.id`. Null when the model doesn't record history |
+| `kind` | text | the justification kind: `manual`, `import`, `derived` or `correction` |
+| `import_batch_id` | bigint | nullable, FK to `import_batch.id`. For an import commit or undo |
+| `cause_change_set_id` | bigint | nullable, FK to `change_set.id`. For derived work, the change set that caused it |
+| `entities` | jsonb | up to 1,000 entries of `{kind, id, source?, rel?, target?, op, fields?}`, one per thing changed. A node's `id` carries its type key (`person:z1`); a link has `source`, `rel` and `target` in place of `id`; `fields` lists the keys of an update |
+| `entity_count` | integer | how many things changed in all; more than `entities` holds means too many to list |
+| `created_at` | timestamptz | default `now()` |
+
+Each write also runs `pg_notify('linkbase_change_event', id)`, which Postgres delivers on commit.
+
 ## Relationships
 
 ```
@@ -254,6 +271,8 @@ node_type ──< node, field_definition, link_definition (as source and as targ
 node ──< node_link (as source and as target)
 import_batch ──< node, node_link, external_ref, staged_item, justification
 justification ──< change_set ──< change
+change_set ──< change_event (as the change and as the cause)
+import_batch ──< change_event
 ```
 
 ## Indexes (besides primary keys)
@@ -298,5 +317,5 @@ Climbing's Insights shapes (`climbing_ascent_facts`, `climbing_trip` and the oth
 
 ## Migration history
 
-`__EFMigrationsHistory` has `20261115053007_InitialCreate`, the one baseline, then any later migrations in
-`src/Linkbase/Data/Migrations`.
+`__EFMigrationsHistory` has `20261115053007_InitialCreate`, the one baseline, then `20261115234803_AddChangeEvent`
+(the `change_event` table) and any later migrations in `src/Linkbase/Data/Migrations`.
