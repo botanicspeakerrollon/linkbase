@@ -13,6 +13,28 @@ public sealed record CurrentUser(string? Id, IReadOnlyList<KeyValuePair<string, 
     public CurrentUser(string? id) : this(id, [])
     {
     }
+
+    // The user a signed-in principal stands for: the id is the claim named by Security:UserClaim, or the first of
+    // preferred_username, name and the name identifier that is there. Pages and the API both read it this way, so a person
+    // is the same user however they arrive.
+    public static CurrentUser FromPrincipal(ClaimsPrincipal principal, IConfiguration configuration)
+    {
+        if (principal.Identity?.IsAuthenticated != true)
+        {
+            return Anonymous;
+        }
+
+        var named = configuration["Security:UserClaim"];
+        string[] candidates = named is { Length: > 0 } ? [named] : CurrentUserClaims.IdClaims;
+        var id = candidates.Select(principal.FindFirstValue).FirstOrDefault(v => !string.IsNullOrEmpty(v));
+        return new CurrentUser(id, principal.Claims.Select(c => KeyValuePair.Create(c.Type, c.Value)).ToList());
+    }
+}
+
+public static class CurrentUserClaims
+{
+    public const string Preferred = "preferred_username";
+    public static readonly string[] IdClaims = [Preferred, ClaimTypes.Name, "name", ClaimTypes.NameIdentifier, "sub"];
 }
 
 // Supplies the current user, per request or circuit. Which one runs is the Security:Identity setting; a deployment can register
@@ -36,21 +58,8 @@ public sealed class ConfiguredUserAccessor(IConfiguration configuration) : ICurr
 // not signed in is nobody.
 public sealed class PrincipalUserAccessor(AuthenticationStateProvider authentication, IConfiguration configuration) : ICurrentUserAccessor
 {
-    private static readonly string[] IdClaims = ["preferred_username", ClaimTypes.Name, "name", ClaimTypes.NameIdentifier, "sub"];
-
-    public async ValueTask<CurrentUser> GetAsync(CancellationToken cancellationToken = default)
-    {
-        var principal = (await authentication.GetAuthenticationStateAsync()).User;
-        if (principal.Identity?.IsAuthenticated != true)
-        {
-            return CurrentUser.Anonymous;
-        }
-
-        var named = configuration["Security:UserClaim"];
-        string[] candidates = named is { Length: > 0 } ? [named] : IdClaims;
-        var id = candidates.Select(principal.FindFirstValue).FirstOrDefault(v => !string.IsNullOrEmpty(v));
-        return new CurrentUser(id, principal.Claims.Select(c => KeyValuePair.Create(c.Type, c.Value)).ToList());
-    }
+    public async ValueTask<CurrentUser> GetAsync(CancellationToken cancellationToken = default) =>
+        CurrentUser.FromPrincipal((await authentication.GetAuthenticationStateAsync()).User, configuration);
 }
 
 // How an in-house developer brings grants from a system this app has no adapter for, such as an LDAP query or a database. Register

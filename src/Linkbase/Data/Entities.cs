@@ -99,3 +99,28 @@ public class ImportBatch : ITimestamped
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 }
+
+// A key that lets another program call the read API as one user. Only a hash of the secret is kept, so a leaked database
+// doesn't leak working keys. Kept in the default model's database, like the data protection keys. See docs/history/api-plan.md.
+public class ApiKey
+{
+    public long Id { get; set; }
+
+    // The public half of the key, which finds the row. The secret half is never stored.
+    public required string KeyId { get; set; }
+
+    public required byte[] SecretHash { get; set; }
+
+    // Who the key acts as: the same id the model's security grants name (CurrentUser.Id).
+    public required string UserId { get; set; }
+
+    // What the key is for, so it can be told apart and revoked.
+    public required string Name { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? ExpiresAt { get; set; }
+    public DateTimeOffset? RevokedAt { get; set; }
+
+    // Updated at most every few minutes, so reading doesn't mean writing on every call.
+    public DateTimeOffset? LastUsedAt { get; set; }
+}
