@@ -4,11 +4,18 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json.Nodes;
 using Linkbase;
+using Linkbase.Core;
 using Linkbase.Core.Api;
 using Linkbase.Core.Models;
 using Linkbase.Core.Security;
 using Linkbase.Data;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Linkbase.Tests;
@@ -47,6 +54,11 @@ public sealed class ApiTests(PostgresFixture fixture) : IClassFixture<PostgresFi
 {
     private static readonly string Consultancy = RepoPaths.Resolve("models/consultancy/model.json");
 
+    private sealed class Factory(string connectionString) : IDbContextFactory<LinkbaseDbContext>
+    {
+        public LinkbaseDbContext CreateDbContext() => new(new DbContextOptionsBuilder<LinkbaseDbContext>().UseNpgsql(connectionString).Options);
+    }
+
     private sealed class Host(WebApplication app) : IAsyncDisposable
     {
         public HttpClient Client { get; } = new() { BaseAddress = new Uri(app.Urls.First()) };
@@ -83,7 +95,7 @@ public sealed class ApiTests(PostgresFixture fixture) : IClassFixture<PostgresFi
     private async Task<Host> StartAsync(Dictionary<string, string?>? settings = null, Action<IServiceCollection>? configure = null)
     {
         var connectionString = await fixture.CreateModelDatabaseAsync("SELECT 1");
-        var factory = new ModelFactory(connectionString);
+        var factory = new Factory(connectionString);
         await TestModels.LoadAsync(factory, Consultancy, TextWriter.Null);
         await using (var owner = factory.CreateDbContext())
         {
@@ -111,8 +123,12 @@ public sealed class ApiTests(PostgresFixture fixture) : IClassFixture<PostgresFi
         configure?.Invoke(builder.Services);
         var app = builder.Build();
         await app.Services.GetRequiredService<ModelCreator>().LoadAsync();
-        app.UseAuthentication();
-        app.UseAuthorization();
+        if (ApiSettings.Enabled(builder.Configuration))
+        {
+            app.UseAuthentication();
+            app.UseAuthorization();
+        }
+
         app.MapLinkbaseApi();
         await app.StartAsync();
         return new Host(app);
@@ -226,17 +242,14 @@ public sealed class ApiTests(PostgresFixture fixture) : IClassFixture<PostgresFi
         Assert.Equal((info.KeyId, "sam.partner", "reporting"), (listed.KeyId, listed.UserId, listed.Name));
         Assert.NotNull(listed.LastUsedAt);
         var secret = ApiKeyToken.Parse(token)!.Value.Secret;
-        await using var db = new ModelFactory(fixture.ConnectionString).CreateDbContext();
         Assert.DoesNotContain(secret, listed.ToString());
     }
 
     [Fact]
     public async Task The_api_can_be_turned_off()
     {
-        await using var host = await StartAsync(new() { ["Api:Enabled"] = "false" }, services =>
-        {
-            // With the API off nothing registers its keys or scheme, so nothing can answer.
-        });
+        // With the API off nothing registers its keys or scheme, so nothing can answer.
+        await using var host = await StartAsync(new() { ["Api:Enabled"] = "false" });
 
         using var response = await host.GetAsync("/api/v1/main/search?q=a", null);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -252,7 +265,8 @@ public sealed class ApiTests(PostgresFixture fixture) : IClassFixture<PostgresFi
         var key = await host.KeyForAsync("sam.partner");
 
         // The key no longer opens the API, and the other scheme's caller reads as that user, under the same row security.
-        await host.JsonAsync("/api/v1/main/records/Project/pr1", key, HttpStatusCode.Unauthorized);
+        using var refused = await host.GetAsync("/api/v1/main/records/Project/pr1", key);
+        Assert.Equal(HttpStatusCode.Unauthorized, refused.StatusCode);
         using var guest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/main/records/Project/pr4");
         guest.Headers.Add("X-Test-User", "guest");
         Assert.Equal(HttpStatusCode.NotFound, (await host.Client.SendAsync(guest)).StatusCode);
