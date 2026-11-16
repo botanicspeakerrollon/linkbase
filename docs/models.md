@@ -578,7 +578,7 @@ review's notes. A type that requires links is only kept when the text gives them
 staged for review, committed in one transaction, and can be undone from **Recent imports**. A record is keyed by the slug of its
 name, and one already here, by key or by exact name, is left as it is but can be linked to. Ticking **Update records that are already here**
 changes a record with exactly the same name to the text's values where they differ (the review shows each change, and undo puts it back).
-A merely similar name and links are not updated, and the model needs history on. A *notes* field is appended to rather than overwritten (the climbing model has one on Area, Crag and Route; run `model migrate` to add it to an existing database).
+A merely similar name and links are not updated, and the model needs history on. A *notes* field is appended to rather than overwritten (the climbing model has one on Area, Crag and Route; an existing database gets the field by adding it to the type in the model editor, because `model migrate` only applies schema migrations and `model load` empties the model).
 
 The text is sent to the configured AI model (Anthropic unless `Llm:Provider` says otherwise), and the tab says so. Set `Extraction:Enabled` to `false` to hide it.
 
