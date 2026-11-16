@@ -313,7 +313,7 @@ are left alone but can be linked to, unless *Update records that are already her
 exactly the same name gets the values the text gives where they differ, and the review lists each change ("title: Design lead →
 Principal Designer"). A record that only has a similar name, and links, are never updated. A type a domain module watches (climbing's Area, Crag, Route
 and Ascent) is updated like any other, and the module sets the fields it keeps, such as a route's grade rank. It needs the model's history on, and undoing the import puts the
-values back. The rest is staged for review, committed and undone exactly as a CSV import.
+values back. A field called *notes* is added to, not replaced: the text's note follows what is written, and is skipped if already there (climbing's Area, Crag and Route have one). The rest is staged for review, committed and undone exactly as a CSV import.
 
 Only the extracted facts and the source address are kept, in the batch, never the page's text.
 

@@ -6,7 +6,10 @@
   "types": [
     {
       "name": "Area", "color": "#0e7490", "icon": "Map",
-      "fields": [ { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true } ]
+      "fields": [
+        { "key": "kind", "type": "choice", "options": [ "country", "region", "area" ], "required": true },
+        { "key": "notes" }
+      ]
     },
     {
       "name": "Crag", "color": "#a16207", "icon": "Terrain",
@@ -29,7 +32,8 @@
         { "key": "discipline", "type": "choice", "options": [ "trad", "sport", "boulder", "winter", "alpine", "other" ] },
         { "key": "length_m", "type": "number" },
         { "key": "pitches", "type": "number" },
-        { "key": "grade_rank", "type": "number", "owner": "Climbing" }
+        { "key": "grade_rank", "type": "number", "owner": "Climbing" },
+        { "key": "notes" }
       ]
     },
     {

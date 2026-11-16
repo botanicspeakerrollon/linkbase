@@ -28,6 +28,7 @@ public sealed class ClimbingRecordHook(
         - A route's grade is copied exactly as written, without star ratings or other quality marks.
         - grade_system is the system the grade is written in: uk_trad for a British adjectival grade such as "E2 5c", uk_tech for a British technical grade such as "5c" beside one, french for "6b+", font for "f6A", yds for "5.10a", v for "V4". Leave it out if there is no grade.
         - length_m is the length in metres. Convert only if the text gives the length in feet.
+        - notes on an area, crag or route is a brief paraphrased summary of what the text says about it (conditions, character, access, history), never copied sentences. Leave it out if the text says nothing worth keeping.
         - An area's kind is country for a nation, region for a large division of a country, and otherwise area. The text seldom says so, so judge it from the place.
         """;
 

@@ -271,6 +271,25 @@ public sealed class ModelExtractionService(
 
             var props = JsonNode.Parse(record.Props) as JsonObject ?? [];
 
+            // Notes are added to, not replaced, so what is already written stays. Text already there is not added again.
+            if (changed.Contains("notes") && now.GetValueOrDefault("notes") is { Length: > 0 } written && (string?)props["notes"] is { } extra)
+            {
+                if (written.Contains(extra.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    changed.Remove("notes");
+                    props.Remove("notes");
+                }
+                else
+                {
+                    props["notes"] = $"{written}\n\n{extra.Trim()}";
+                }
+
+                if (changed.Count == 0)
+                {
+                    continue;
+                }
+            }
+
             // What the module keeps is worked out from the record as it will be, then staged where it differs from now.
             if (_hooks.Watch(record.Type) && types.FirstOrDefault(t => t.Name == record.Type) is { } type)
             {

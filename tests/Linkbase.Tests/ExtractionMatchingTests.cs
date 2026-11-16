@@ -153,6 +153,24 @@ public sealed class ExtractionMatchingTests(PostgresFixture fixture) : IClassFix
     }
 
     [Fact]
+    public async Task Updating_adds_to_a_routes_notes_and_does_not_repeat_them()
+    {
+        var (store, service, staging) = await SetupAsync(new FakeExtractor(new ExtractedData(
+            [ClimbingExtraction.Rec("Crag", "Alpha Wall"), ClimbingExtraction.Rec("Route", "Hope", ("notes", "Seeps after rain"))], [ClimbingExtraction.At("Hope", "Alpha Wall")])), hooks: true);
+        await SeedAsync(store);
+        await using var db = store.CreateDbContext();
+        await db.Nodes.Where(n => n.Type == "Route" && n.Name == "Hope").ExecuteUpdateAsync(s => s.SetProperty(n => n.Props, """{"notes":"Classic"}"""));
+
+        await staging.CommitAsync(await service.ExtractFromTextAsync("Hope seeps after rain.", null, null, CancellationToken.None, updateExisting: true));
+
+        var props = await db.Nodes.AsNoTracking().Where(n => n.Type == "Route" && n.Name == "Hope").Select(n => n.Props).SingleAsync();
+        Assert.Equal("Classic\n\nSeeps after rain", (string?)JsonNode.Parse(props)!["notes"]);
+
+        // The same text again has nothing new for it.
+        await Assert.ThrowsAsync<ExtractionFailedException>(() => service.ExtractFromTextAsync("Hope seeps after rain.", null, null, CancellationToken.None, updateExisting: true));
+    }
+
+    [Fact]
     public async Task Updating_changes_a_route_a_module_watches_and_the_module_sets_its_rank()
     {
         var (store, service, staging) = await SetupAsync(new FakeExtractor(new ExtractedData(
