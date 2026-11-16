@@ -314,7 +314,7 @@ public sealed class ModelExtractionServiceTests(PostgresFixture fixture) : IClas
         Assert.Contains("already here", again.Message, StringComparison.Ordinal);
     }
 
-    private const string UpdateText ="Ava Lindqvist is now Principal Designer. Zed Quinn joined the Design team.";
+    private const string UpdateText = "Ava Lindqvist is now Principal Designer. Zed Quinn joined the Design team.";
 
     [Fact]
     public async Task Text_leaves_a_record_already_here_alone_unless_asked_to_update()

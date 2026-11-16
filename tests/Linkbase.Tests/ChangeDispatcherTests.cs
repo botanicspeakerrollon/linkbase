@@ -181,7 +181,9 @@ public sealed class ChangeDispatcherTests(PostgresFixture fixture) : IDisposable
     {
         var good = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Hooks:audit:Kind"] = "console", ["Hooks:audit:Models:0"] = "default", ["Hooks:audit:BatchSize"] = "5000",
+            ["Hooks:audit:Kind"] = "console",
+            ["Hooks:audit:Models:0"] = "default",
+            ["Hooks:audit:BatchSize"] = "5000",
         }).Build();
         var hook = Assert.Single(ChangeHookKinds.Build(good, null!));
         Assert.Equal("audit", hook.Key);
