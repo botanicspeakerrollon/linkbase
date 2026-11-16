@@ -27,24 +27,47 @@ public static class Startup
         services.AddSingleton<Core.Security.RowSecurityState>();
         services.AddScoped<Core.Security.ViewerConnectionInterceptor>();
         services.AddSingleton<Core.Security.ViewerDirectories>();
+        Type pages;
         switch (identity)
         {
             case "demo":
                 // A page of example users to be, with no password, for showing security working. See DemoSignIn.
                 Components.Layout.DemoSignIn.Add(services);
-                services.AddScoped<Core.Security.ICurrentUserAccessor, Core.Security.PrincipalUserAccessor>();
+                pages = typeof(Core.Security.PrincipalUserAccessor);
                 break;
             case "principal":
-                services.AddScoped<Core.Security.ICurrentUserAccessor, Core.Security.PrincipalUserAccessor>();
+                pages = typeof(Core.Security.PrincipalUserAccessor);
                 break;
             default:
-                services.AddScoped<Core.Security.ICurrentUserAccessor, Core.Security.ConfiguredUserAccessor>();
+                pages = typeof(Core.Security.ConfiguredUserAccessor);
                 break;
         }
+
+        // Pages use the user Security:Identity chose. An API request uses whoever the API's scheme signed in (ApiUserAccessor).
+        services.AddHttpContextAccessor();
+        services.AddScoped(pages);
+        services.AddScoped<Core.Security.ICurrentUserAccessor>(provider => new Core.Api.ApiUserAccessor(
+            provider.GetRequiredService<IHttpContextAccessor>(), provider.GetRequiredService<IConfiguration>(),
+            () => (Core.Security.ICurrentUserAccessor)provider.GetRequiredService(pages)));
 
         services.AddScoped<Core.Security.IViewerResolver, Core.Security.DirectoryViewerResolver>();
         services.AddScoped<Core.Security.LabelRepository>();
         services.AddScoped<Core.Security.FieldPolicy>();
+        return services;
+    }
+
+    // The read API (INT-3). Callers sign in with the scheme named by Api:Scheme, which is API keys unless the deployment
+    // registers another, such as JwtBearer for OpenID Connect. See docs/history/api-plan.md.
+    public static IServiceCollection AddLinkbaseApi(this IServiceCollection services, IConfiguration configuration)
+    {
+        if (!Core.Api.ApiSettings.Enabled(configuration))
+        {
+            return services;
+        }
+
+        services.AddSingleton<Core.Api.ApiKeyRepository>();
+        services.AddAuthentication().AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, Core.Api.ApiKeyAuthenticationHandler>(Core.Api.ApiSettings.KeyScheme, null);
+        services.AddAuthorization();
         return services;
     }
 

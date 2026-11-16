@@ -38,6 +38,8 @@ var identity = Startup.Identity(builder.Configuration);
 var demoSignIn = identity == "demo";
 builder.Services.AddLinkbaseSecurity(identity);
 builder.Services.AddLinkbaseCore(builder.Configuration);
+builder.Services.AddLinkbaseApi(builder.Configuration);
+var apiEnabled = Linkbase.Core.Api.ApiSettings.Enabled(builder.Configuration);
 
 var app = builder.Build();
 
@@ -49,6 +51,12 @@ if (ModelCommands.IsCommand(args))
 {
     await using var scope = app.Services.CreateAsyncScope();
     return await new ModelCommands(scope.ServiceProvider, Console.Out).RunAsync(args);
+}
+
+if (Linkbase.Core.Api.ApiKeyCommands.IsCommand(args))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    return await new Linkbase.Core.Api.ApiKeyCommands(app.Services.GetRequiredService<Linkbase.Core.Api.ApiKeyRepository>(), TimeProvider.System, Console.Out).RunAsync(args);
 }
 
 foreach (var domain in RegisteredDomains.All)
@@ -68,7 +76,9 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+// The API answers in JSON, so its errors are not turned into the app's not-found page.
+app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api"),
+    pages => pages.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
 
 app.UseLinkbaseSecurityHeaders();
 
@@ -85,9 +95,13 @@ if (demoSignIn)
     app.UseAuthentication();
     app.UseAuthorization();
 }
-else if (identity == "principal" && app.Services.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() is not null)
+else if ((identity == "principal" || apiEnabled) && app.Services.GetService<Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider>() is not null)
 {
     app.UseAuthentication();
+    if (apiEnabled)
+    {
+        app.UseAuthorization();
+    }
 }
 
 if (!demoSignIn && !app.Environment.IsDevelopment() && identity != "principal")
@@ -112,6 +126,7 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => fa
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") }).WithHttpLogging(HttpLoggingFields.None).AllowAnonymous();
 
 app.MapModelSwitcher();
+Linkbase.Core.Api.ApiEndpoints.MapLinkbaseApi(app);
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

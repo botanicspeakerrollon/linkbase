@@ -1,7 +1,7 @@
 # Change hooks plan
 
 Step 1 (the events) is built; the dispatcher and hooks (steps 2 to 4) are not. This plans INT-1 and INT-2 in [requirements](../requirements.md#311-integration-int): telling other systems,
-such as a message bus, a webhook or an integration platform, that records or links changed. The read API (INT-3) is a
+such as a message bus, a webhook or an integration platform, that records or links changed. The read API (INT-3, built: see [api-plan](api-plan.md)) is a
 separate plan, but this one leans on it: events say *what* changed, and a consumer that wants the values reads them through
 the API as itself.
 

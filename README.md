@@ -36,14 +36,17 @@ dotnet tool restore
 ```
 
 `init-dev.ps1` creates a random database password in `.env` (git-ignored) and stores the matching
-connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored). The Anthropic key still goes in
-[user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets).
+connection string in `src/Linkbase/appsettings.Development.local.json` (also git-ignored).
 
-To read text with AI later, add your Anthropic API key too:
+Reading text and the Ask box need a model provider. The app works without one; those features are just unavailable.
+For Anthropic, add your API key to
+[user secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets):
 
 ```powershell
 dotnet user-secrets set Anthropic:ApiKey "<your key>" --project src/Linkbase
 ```
+
+To use an OpenAI-compatible server instead (including a local one), set the `Llm:*` keys; see [Configuration](#configuration).
 
 ## Everyday commands
 
@@ -175,6 +178,8 @@ fcose needs layout-base and cose-base at the versions its own package names.
 | `Llm:ApiKey` | With `openai`: the key, if the server wants one. Local servers usually don't | user secrets or environment variable |
 | `Llm:Model` | With `openai`: the model name the server knows. Required | `appsettings.json` or environment variable |
 | `Llm:MaxTokensField`, `Llm:Strict` | With `openai`: `max_tokens` for servers that reject `max_completion_tokens`, and `true` to ask the server to enforce the tool's schema | environment variable |
+| `Api:Enabled` | Set to `false` to turn off the read-only HTTP API (`/api/v1/...`). Keys are made with `api-key create`; see [operations](docs/operations.md#http-api) | `appsettings.json` or environment variable |
+| `Api:Scheme` | The authentication scheme the API requires, so another (such as OpenID Connect bearer tokens) can replace API keys | `appsettings.json` or environment variable |
 | `Extraction:Enabled` | Set to `false` to hide every import, and Explore's Ask box, that sends text to the model provider | `appsettings.json` or environment variable |
 | `Ask:Fixture` | Canned answer to every question in Explore's Ask box, as a JSON pattern, instead of calling the API | environment variable |
 | `Extraction:AllowPrivateAddresses` | Set to `true` to let Read text fetch pages on a private network. Off by default, so a web address can't reach the network the app runs in | `appsettings.json` or environment variable |

@@ -121,6 +121,8 @@ A `:` in a setting's name becomes `__` in a variable, so `ConnectionStrings:Link
 | `OTEL_SERVICE_NAME` | The service name telemetry carries | `linkbase` |
 | `Docs__Pages__0`, `Docs__Pages__1`, … | Repo documents to show in the app, by file name without `.md` (the demo sets `requirements`). Each gets a rail link and a page at `/docs/<name>`. Only listed names are read | None, so there is no docs page |
 | `Docs__Path` | The folder holding those documents | `docs` beside the app (the image has the requirements there), else the repo's `docs` |
+| `Api__Enabled` | `false` turns the [HTTP API](#http-api) off: no routes and no key checking | `true` |
+| `Api__Scheme` | The authentication scheme the API requires. Register another (such as JwtBearer for OpenID Connect) in the deployment and name it here to replace API keys | `ApiKey` |
 | `Security__Identity` | Where the current user comes from: `configured` (the user in `Security__User`), `principal` (whoever ASP.NET Core authentication has signed in; the deployment adds the scheme) or `demo` (a click-to-sign-in page with no password, for made-up data only: see below) | `configured` |
 | `Security__User` | With `configured` identity, who the app treats as signed in. Must be a user in the model file's `security.users`, or hold grants from a directory | None, so a model with row security on shows nothing |
 | `Security__UserClaim` | With `principal` identity, the claim holding the user's id, such as `preferred_username` or `employee_id` | The first of `preferred_username`, name, `name`, name identifier and `sub` |
@@ -158,6 +160,27 @@ rather than a path such as `/linkbase`.
 | --- | --- | --- |
 | `/health/live` | The process is up. Checks nothing else | Liveness probe |
 | `/health/ready` | Every model's database is reachable and migrated | Readiness and startup probes |
+
+## HTTP API
+
+The read-only API (`/api/v1/{model}/...`, see [reference](reference.md#16a-http-api)) needs a key per caller. Keys are in the
+default model's database (`api_key`), so run `model migrate` once after upgrading.
+
+```bash
+dotnet run --project src/Linkbase -- api-key create <user> <name> [days]
+dotnet run --project src/Linkbase -- api-key list
+dotnet run --project src/Linkbase -- api-key revoke <key id>
+```
+
+- The key is printed once, and only a SHA-256 of its secret is stored, so a lost key can't be recovered: make another. Treat a
+  key like a password. It reads as `<user>`, which must be an id the model's security grants know, or it sees nothing.
+- To rotate: create a new key, switch the caller to it, then revoke the old one.
+- Keys are not configuration secrets, so they have no row in the table below. They are in the database, and so in backups.
+- Serve the API over HTTPS only, because a bearer token is sent with every call.
+- To use OpenID Connect or another sign-in instead, register its authentication scheme (for example JwtBearer) and set
+  `Api__Scheme` to its name. The endpoints, row security and the user mapping (`Security__UserClaim`) are unchanged. A
+  deployment that registers its own `ICurrentUserAccessor` replaces the one that maps an API caller to a user, so it must
+  read `HttpContext.User` for `/api` requests itself (`CurrentUser.FromPrincipal` does the mapping).
 
 ## Secrets
 
